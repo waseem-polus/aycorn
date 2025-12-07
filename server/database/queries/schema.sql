@@ -28,6 +28,7 @@ CREATE TABLE projectChecklist (
 CREATE TABLE checklistTask (
     checklist INTEGER,
     task INTEGER,
+    taskOrder INTEGER,
 
     FOREIGN KEY (checklist) REFERENCES checklist(id),
     FOREIGN KEY (task) REFERENCES task(id)
