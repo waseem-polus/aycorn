@@ -1,4 +1,4 @@
-package sqlite
+package repos
 
 import (
 	"database/sql"
@@ -36,4 +36,22 @@ func (m *ProjectModel) All() ([]models.Project, error) {
 	}
 
 	return projects, nil
+}
+
+func (m *ProjectModel) FindOne(id int) (*models.Project, error) {
+	query := "SELECT id, name FROM project WHERE id = ?;"
+	rows, err := m.DB.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	rows.Next()
+
+	project := models.Project{}
+	err = rows.Scan(&project.ID, &project.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &project, nil
 }

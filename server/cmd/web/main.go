@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/waseem-polus/aycorn/server/internal/models/sqlite"
+	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 )
 
 type app struct {
-	projects *sqlite.ProjectModel
+	projects *repos.ProjectModel
 }
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	app := app{
-		projects: &sqlite.ProjectModel{
+		projects: &repos.ProjectModel{
 			DB: db,
 		},
 	}
