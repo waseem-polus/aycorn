@@ -6,13 +6,13 @@ import (
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
 
-type ProjectModel struct {
+type ProjectRepo struct {
 	DB *sql.DB
 }
 
-func (m *ProjectModel) All() ([]models.Project, error) {
-	query := "SELECT id, name FROM project ORDER BY id DESC;"
-	rows, err := m.DB.Query(query)
+func (repo *ProjectRepo) All() ([]models.Project, error) {
+	query := "SELECT id, name, pinned FROM project ORDER BY id DESC;"
+	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (m *ProjectModel) All() ([]models.Project, error) {
 	for rows.Next() {
 		p := models.Project{}
 
-		err := rows.Scan(&p.ID, &p.Name)
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned)
 		if err != nil {
 			return nil, err
 		}
@@ -38,9 +38,9 @@ func (m *ProjectModel) All() ([]models.Project, error) {
 	return projects, nil
 }
 
-func (m *ProjectModel) FindOne(id int) (*models.Project, error) {
-	query := "SELECT id, name FROM project WHERE id = ?;"
-	rows, err := m.DB.Query(query, id)
+func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
+	query := "SELECT id, name, pinned FROM project WHERE id = ?;"
+	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +48,53 @@ func (m *ProjectModel) FindOne(id int) (*models.Project, error) {
 	rows.Next()
 
 	project := models.Project{}
-	err = rows.Scan(&project.ID, &project.Name)
+	err = rows.Scan(&project.ID, &project.Name, &project.Pinned)
 	if err != nil {
 		return nil, err
 	}
 
 	return &project, nil
+}
+
+func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
+	query := "SELECT id, name, pinned FROM project WHERE pinned = TRUE;"
+	rows, err := repo.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	projects := []models.Project{}
+
+	for rows.Next() {
+		p := models.Project{}
+
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned)
+		if err != nil {
+			return nil, err
+		}
+
+		projects = append(projects, p)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return projects, nil
+}
+
+func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
+	query := "UPDATE project SET name = ?, pinned = ? WHERE id = ?"
+	res, err := repo.DB.Exec(query, project.Name, project.Pinned, project.ID)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
 }

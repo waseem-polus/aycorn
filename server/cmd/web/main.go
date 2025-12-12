@@ -7,10 +7,15 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
+	"github.com/waseem-polus/aycorn/server/internal/models/services"
 )
 
 type app struct {
-	projects *repos.ProjectModel
+	projectRepo   *repos.ProjectRepo
+	checklistRepo *repos.ChecklistRepo
+
+	projectService   *services.ProjectService
+	checklistService *services.ChecklistService
 }
 
 func main() {
@@ -19,10 +24,31 @@ func main() {
 		log.Fatal(err)
 	}
 
+	projectRepo := &repos.ProjectRepo{
+		DB: db,
+	}
+	checklistRepo := &repos.ChecklistRepo{
+		DB: db,
+	}
+	taskRepo := &repos.TaskRepo{
+		DB: db,
+	}
+
+	projectService := &services.ProjectService{
+		ProjectRepo:   projectRepo,
+		ChecklistRepo: checklistRepo,
+	}
+	checklistService := &services.ChecklistService{
+		ChecklistRepo: checklistRepo,
+		TaskRepo:      taskRepo,
+	}
+
 	app := app{
-		projects: &repos.ProjectModel{
-			DB: db,
-		},
+		projectRepo:   projectRepo,
+		checklistRepo: checklistRepo,
+
+		projectService:   projectService,
+		checklistService: checklistService,
 	}
 
 	port := ":8000"
