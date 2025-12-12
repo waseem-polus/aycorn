@@ -6,9 +6,9 @@ import {
   IconLayoutBoard,
   IconSettings,
 } from "@tabler/icons-react";
-import { NavPinnedProjects } from "@/components/nav-pinned-projects";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+import { NavPinnedProjects } from "@/components/sidebar/NavPinnedProjects";
+import { NavMain } from "@/components/sidebar/NavMain";
+import { NavSecondary } from "@/components/sidebar/NavSecondary";
 import {
   Sidebar,
   SidebarContent,
@@ -59,10 +59,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <a href="/">
-                <Squirrel className="!size-5" />
+                <Squirrel className="size-5!" />
                 <span className="text-base font-semibold">Aycorn Corp.</span>
               </a>
             </SidebarMenuButton>

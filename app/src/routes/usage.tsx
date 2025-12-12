@@ -1,8 +1,8 @@
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { SectionCards } from "@/components/section-cards";
+import { ChartAreaInteractive } from "@/components/usage/ChartAreaInteractive";
+import { SectionCards } from "@/components/usage/SectionCards";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Page } from "@/components/Page";
+import { Page } from "@/components/page/Page";
 
 export const Route = createFileRoute("/usage")({
   component: RouteComponent,

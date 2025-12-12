@@ -1,13 +1,6 @@
-import { Page } from "@/components/Page";
+import { Page } from "@/components/page/Page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -38,19 +31,10 @@ import {
   Calendar as CalendarIcon,
   ChevronDown,
   ChevronRightIcon,
-  CircleCheck,
-  CircleDashed,
-  CircleDot,
-  CircleMinus,
   Package,
   LandPlot,
   Search,
   User,
-  Bug,
-  Bell,
-  Bot,
-  Calendar1,
-  Circle,
   Plus,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -60,16 +44,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { IconDotsVertical } from "@tabler/icons-react";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import type { ProjectDetails } from "@/types/types";
+import TaskSideDrawer from "@/components/task/TaskSideDrawer";
+import TaskStatusIcon from "@/components/task/TaskStatusIcon";
+import TaskTypeBadge from "@/components/task/TaskTypeBadge";
 
 export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,
@@ -79,32 +58,6 @@ export const Route = createFileRoute("/project/$projectId")({
     };
   },
 });
-
-export type Project = {
-  ID: number;
-  Name: string;
-  Pinned: boolean;
-};
-
-type Task = {
-  ID: number;
-  Name: string;
-  TimeCompleted: string | null;
-  TimeStarted: string | null;
-  TimePlanned: string | null;
-  Assignee: string;
-  Priority: "Urgent" | "High" | "Medium" | "Low";
-  Type: "Test" | "Dev" | "Reminder";
-  Status: "Open" | "Todo" | "Doing" | "Blocked" | "Done";
-};
-
-type ProjectDetails = {
-  Project: Project;
-  Tasks: (Task & {
-    Checklist: number;
-    ChecklistName: string;
-  })[];
-};
 
 function RouteComponent() {
   const { projectId } = Route.useParams();
@@ -296,7 +249,9 @@ function RouteComponent() {
                   <TaskSideDrawer task={task}>
                     <Item asChild>
                       <a>
-                        <TaskStatusIcon variant={task.Status} />
+                        <ItemMedia>
+                          <TaskStatusIcon variant={task.Status} />
+                        </ItemMedia>
                         <ItemContent>
                           <ItemTitle>{task.Name}</ItemTitle>
 
@@ -361,187 +316,5 @@ function RouteComponent() {
         </div>
       </div>
     </Page>
-  );
-}
-
-function TaskStatusIcon({ variant }: { variant: Task["Status"] }) {
-  let icon = <CircleDashed className="size-4" />;
-  switch (variant) {
-    case "Open":
-      break;
-    case "Todo":
-      icon = <Circle className="size-4 stroke-orange-400" />;
-      break;
-    case "Doing":
-      icon = <CircleDot className="size-4 stroke-green-500" />;
-      break;
-    case "Blocked":
-      icon = <CircleMinus className="size-4 stroke-red-700" />;
-      break;
-    case "Done":
-      icon = <CircleCheck className="size-4 stroke-purple-600" />;
-      break;
-  }
-
-  return <ItemMedia>{icon}</ItemMedia>;
-}
-
-function TaskTypeIcon({ variant }: { variant: Task["Type"] }) {
-  let icon = <Bot className="size-4 stroke-green-500" />;
-  switch (variant) {
-    case "Dev":
-      break;
-    case "Test":
-      icon = <Bug className="size-4 stroke-blue-500" />;
-      break;
-    case "Reminder":
-      icon = <Bell className="size-4 stroke-orange-400" />;
-      break;
-  }
-
-  return icon;
-}
-
-function TaskTypeBadge({ variant }: { variant: Task["Type"] }) {
-  let color = "bg-green-100";
-  switch (variant) {
-    case "Dev":
-      break;
-    case "Test":
-      color = "bg-blue-100";
-      break;
-    case "Reminder":
-      color = "bg-orange-100";
-      break;
-  }
-
-  return (
-    <Badge variant="secondary" className={color}>
-      <TaskTypeIcon variant={variant} />
-      {variant}
-    </Badge>
-  );
-}
-
-function TaskSideDrawer({
-  task,
-  children,
-}: {
-  task: Task;
-  children: React.ReactNode;
-}) {
-  return (
-    <Drawer direction="right">
-      <DrawerTrigger>{children}</DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>{task.Name}</DrawerTitle>
-          <section className="flex flex-col py-4 gap-2">
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="status" className="min-w-1/5">
-                Status
-              </Label>
-              <Select defaultValue={task.Status}>
-                <SelectTrigger id="status" className="w-full">
-                  <SelectValue placeholder="Select a status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Open">
-                    <TaskStatusIcon variant="Open" />
-                    Open
-                  </SelectItem>
-                  <SelectItem value="Todo">
-                    <TaskStatusIcon variant="Todo" />
-                    Todo
-                  </SelectItem>
-                  <SelectItem value="Doing">
-                    <TaskStatusIcon variant="Doing" />
-                    Doing
-                  </SelectItem>
-                  <SelectItem value="Blocked">
-                    <TaskStatusIcon variant="Blocked" />
-                    Blocked
-                  </SelectItem>
-                  <SelectItem value="Done">
-                    <TaskStatusIcon variant="Done" />
-                    Done
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="type" className="min-w-1/5">
-                Type
-              </Label>
-              <Select defaultValue={task.Type}>
-                <SelectTrigger id="type" className="w-full">
-                  <SelectValue placeholder="Select a type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Dev">
-                    <TaskTypeIcon variant="Dev" />
-                    Dev
-                  </SelectItem>
-                  <SelectItem value="Test">
-                    <TaskTypeIcon variant="Test" />
-                    Test
-                  </SelectItem>
-                  <SelectItem value="Reminder">
-                    <TaskTypeIcon variant="Reminder" />
-                    Reminder
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="type" className="min-w-1/5">
-                Assignee
-              </Label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <User />
-                </InputGroupAddon>
-                <InputGroupInput value={task.Assignee} />
-              </InputGroup>
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="type" className="min-w-1/5">
-                Planned For
-              </Label>
-              <Popover>
-                <PopoverTrigger
-                  asChild
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  <Button
-                    variant="outline"
-                    className="grow flex justify-start text-sm font-normal"
-                  >
-                    <Calendar1 className="size-4 stroke-accent-foreground" />
-                    {task.TimePlanned ?? "Unscheduled"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="start"
-                >
-                  <Calendar
-                    mode="single"
-                    className="rounded-md border shadow-sm"
-                    captionLayout="dropdown"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </section>
-          <Separator />
-        </DrawerHeader>
-      </DrawerContent>
-    </Drawer>
   );
 }

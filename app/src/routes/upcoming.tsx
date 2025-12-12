@@ -1,4 +1,4 @@
-import { Page } from "@/components/Page";
+import { Page } from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/upcoming")({

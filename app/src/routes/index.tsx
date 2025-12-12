@@ -1,6 +1,5 @@
-import { Page } from "@/components/Page";
+import { Page } from "@/components/page/Page";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { Project } from "./project.$projectId";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   InputGroup,
@@ -17,6 +16,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
+import type { Project } from "@/types/types";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
