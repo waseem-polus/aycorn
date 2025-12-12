@@ -8,6 +8,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "./ui/breadcrumb";
+import React from "react";
 
 export function SiteHeader({ breadcrumb = [] }: { breadcrumb: string[] }) {
   return (
@@ -24,12 +25,12 @@ export function SiteHeader({ breadcrumb = [] }: { breadcrumb: string[] }) {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumb.map((crumb: string) => (
-              <>
+              <React.Fragment key={crumb}>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/">{crumb}</BreadcrumbLink>
                 </BreadcrumbItem>
-              </>
+              </React.Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>

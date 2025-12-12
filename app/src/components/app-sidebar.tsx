@@ -1,13 +1,11 @@
-import * as React from "react";
+import React from "react";
 import {
   IconCalendar,
   IconDashboard,
   IconFolder,
   IconLayoutBoard,
   IconSettings,
-  IconStack2,
 } from "@tabler/icons-react";
-
 import { NavPinnedProjects } from "@/components/nav-pinned-projects";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -24,9 +22,9 @@ import { Squirrel } from "lucide-react";
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Projects",
       url: "/",
-      icon: IconDashboard,
+      icon: IconFolder,
     },
     {
       title: "Khanban",
@@ -39,14 +37,9 @@ const data = {
       icon: IconCalendar,
     },
     {
-      title: "Projects",
-      url: "/projects",
-      icon: IconFolder,
-    },
-    {
-      title: "Quick Tasks",
-      url: "/quickTasks",
-      icon: IconStack2,
+      title: "Usage",
+      url: "/usage",
+      icon: IconDashboard,
     },
   ],
   navSecondary: [
@@ -54,20 +47,6 @@ const data = {
       title: "Settings",
       url: "/settings",
       icon: IconSettings,
-    },
-  ],
-  pinnedProjects: [
-    {
-      name: "CRM Sales Platform",
-      url: "/project/123",
-    },
-    {
-      name: "Fitness Tracker Wearable App",
-      url: "/project/456",
-    },
-    {
-      name: "Mobile Banking App",
-      url: "/project/789",
     },
   ],
 };
@@ -92,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavPinnedProjects items={data.pinnedProjects} />
+        <NavPinnedProjects />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>

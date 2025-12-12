@@ -20,31 +20,36 @@ import {
 } from "@/components/ui/sidebar";
 import { PinOffIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import type { Project } from "@/routes/project.$projectId";
+import { useEffect, useState } from "react";
 
-export function NavPinnedProjects({
-  items,
-}: {
-  items: {
-    name: string;
-    url: string;
-  }[];
-}) {
+export function NavPinnedProjects() {
   const { isMobile } = useSidebar();
+  const [pinnedProjects, setPinnedProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/project/pinned")
+      .then((res) => res.json())
+      .then((pins: Project[]) => setPinnedProjects(pins));
+  }, []);
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Pinned Projects</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
+        {pinnedProjects.map((project) => (
+          <SidebarMenuItem key={project.Name}>
             <SidebarMenuButton asChild>
               <Link
-                to={item.url}
+                to={"/project/$projectId"}
+                params={{
+                  projectId: project.ID.toString(),
+                }}
                 search={{
-                  name: item.name,
+                  name: project.Name,
                 }}
               >
-                <span>{item.name}</span>
+                <span>{project.Name}</span>
               </Link>
             </SidebarMenuButton>
             <DropdownMenu>
