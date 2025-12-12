@@ -10,61 +10,33 @@ type ChecklistRepo struct {
 	DB *sql.DB
 }
 
-type ChecklistTask struct {
-	models.Task
-	Checklist     int
-	ChecklistName string
-}
-
-func (repo *ChecklistRepo) InProject(projectId int) ([]ChecklistTask, error) {
+func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) {
 	query := `
-		SELECT
-			c.id,
-			c.name,
-			t.id,
-		    t.name,
-			t.timeCreated,
-		    t.timeCompleted,
-		    t.timePlanned,
-		    t.assignee,
-		    t.priority,
-			t.type,
-			t.status
-		FROM projectChecklist pc
-			INNER JOIN checklist c ON pc.checklist = c.id
-			INNER JOIN checklistTask ct ON ct.checklist = c.id
-			INNER JOIN task t ON t.id = ct.task
-		WHERE pc.project = ? ORDER BY c.id;
-	`
+			SELECT c.id, c.name
+			FROM projectChecklist pc
+				INNER JOIN checklist c ON pc.checklist = c.id
+			WHERE pc.project = ? ORDER BY c.id;
+		`
 	rows, err := repo.DB.Query(query, projectId)
 	if err != nil {
 		return nil, err
 
 	}
 
-	checklistTasks := []ChecklistTask{}
+	checklists := []models.Checklist{}
 
 	for rows.Next() {
-		ct := ChecklistTask{}
+		c := models.Checklist{}
 
 		err := rows.Scan(
-			&ct.Checklist,
-			&ct.ChecklistName,
-			&ct.ID,
-			&ct.Name,
-			&ct.TimeCreated,
-			&ct.TimeCompleted,
-			&ct.TimePlanned,
-			&ct.Assignee,
-			&ct.Priority,
-			&ct.Type,
-			&ct.Status,
+			&c.ID,
+			&c.Name,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		checklistTasks = append(checklistTasks, ct)
+		checklists = append(checklists, c)
 	}
 
 	err = rows.Err()
@@ -72,7 +44,9 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]ChecklistTask, error) {
 		return nil, err
 	}
 
-	return checklistTasks, nil
+	defer rows.Close()
+
+	return checklists, nil
 }
 
 func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
@@ -89,6 +63,8 @@ func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 
 	return &checklist, nil
 }

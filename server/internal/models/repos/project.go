@@ -35,6 +35,8 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	return projects, nil
 }
 
@@ -52,6 +54,8 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 
 	return &project, nil
 }
@@ -81,11 +85,13 @@ func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	return projects, nil
 }
 
 func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
-	query := "UPDATE project SET name = ?, pinned = ? WHERE id = ?"
+	query := "UPDATE project SET name = ?, pinned = ? WHERE id = ?;"
 	res, err := repo.DB.Exec(query, project.Name, project.Pinned, project.ID)
 	if err != nil {
 		return false, err

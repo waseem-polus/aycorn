@@ -51,6 +51,34 @@ func (app *app) getPinnedProjects(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func (app *app) getProjectChecklists(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	projectId, err := strconv.Atoi(r.PathValue("projectId"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	checklists, err := app.checklistService.GetChecklistsInProject(projectId)
+	if err != nil {
+		w.Write(nil)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(checklists)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)

@@ -24,3 +24,9 @@ type Task struct {
 	Type          string
 	Status        string
 }
+
+type ChecklistTask struct {
+	Task
+	Checklist     int
+	ChecklistName string
+}

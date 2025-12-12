@@ -7,14 +7,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TaskPriorityIcon from "./TaskPriorityIcon";
+import { useContext } from "react";
+import { TaskContext } from "@/contexts/task/TaskContext";
 
 export function SelectTaskPriority({
-  priority,
+  onChange = () => {},
 }: {
-  priority: Task["Priority"];
+  onChange?: () => void;
 }) {
+  const { state, setState } = useContext(TaskContext);
+  const handleValueChange = (newPriority: Task["Priority"]) => {
+    setState({ ...state, Priority: newPriority });
+    onChange();
+  };
+
   return (
-    <Select defaultValue={priority}>
+    <Select defaultValue={state.Priority} onValueChange={handleValueChange}>
       <SelectTrigger id="priority" className="w-full">
         <SelectValue placeholder="Select a priority" />
       </SelectTrigger>

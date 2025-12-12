@@ -7,10 +7,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TaskStatusIcon from "./TaskStatusIcon";
+import { useContext } from "react";
+import { TaskContext } from "@/contexts/task/TaskContext";
 
-export function SelectTaskStatus({ status }: { status: Task["Status"] }) {
+export function SelectTaskStatus({
+  onChange = () => {},
+}: {
+  onChange?: () => void;
+}) {
+  const { state, setState } = useContext(TaskContext);
+  const handleValueChange = (newStatus: Task["Status"]) => {
+    setState({ ...state, Status: newStatus });
+    onChange();
+  };
+
   return (
-    <Select defaultValue={status}>
+    <Select defaultValue={state.Status} onValueChange={handleValueChange}>
       <SelectTrigger id="status" className="w-full">
         <SelectValue placeholder="Select a status" />
       </SelectTrigger>

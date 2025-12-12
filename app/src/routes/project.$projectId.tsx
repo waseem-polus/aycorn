@@ -13,6 +13,7 @@ import { IconDotsVertical } from "@tabler/icons-react";
 import type { ProjectDetails } from "@/types/types";
 import { TaskTable } from "@/components/project/TaskTable";
 import { EditableProjectName } from "@/components/project/EditableProjectName";
+import { ProjectProvider } from "@/contexts/project/ProjectProvider";
 
 export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,
@@ -53,37 +54,50 @@ function RouteComponent() {
     fetch(`http://localhost:8000/api/project/${projectId}`)
       .then((res) => res.json())
       .then((res: ProjectDetails) => {
-        setProjectDetails(res);
+        const processedTasks = res.Tasks.map((task) => ({
+          ...task,
+          TimePlanned: task.TimePlanned ? new Date(task.TimePlanned) : null,
+          TimeStarted: task.TimeStarted ? new Date(task.TimeStarted) : null,
+          TimeCompleted: task.TimeCompleted
+            ? new Date(task.TimeCompleted)
+            : null,
+        }));
+        setProjectDetails({
+          ...res,
+          Tasks: processedTasks,
+        });
       });
   }, [projectId]);
 
   return (
-    <Page breadcrumb={["Projects", name]}>
-      <div className="flex justify-between">
-        <EditableProjectName
-          projectDetails={projectDetails}
-          setProjectDetails={setProjectDetails}
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <IconDotsVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem>Rename</DropdownMenuItem>
-            <DropdownMenuItem>Pin</DropdownMenuItem>
-            <DropdownMenuItem>Make a copy</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <TaskTable projectDetails={projectDetails} />
-    </Page>
+    <ProjectProvider defaultState={projectDetails.Project}>
+      <Page breadcrumb={["Projects", name]}>
+        <div className="flex justify-between">
+          <EditableProjectName
+            projectDetails={projectDetails}
+            setProjectDetails={setProjectDetails}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <IconDotsVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem>Rename</DropdownMenuItem>
+              <DropdownMenuItem>Pin</DropdownMenuItem>
+              <DropdownMenuItem>Make a copy</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <TaskTable projectDetails={projectDetails} />
+      </Page>
+    </ProjectProvider>
   );
 }

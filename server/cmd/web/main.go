@@ -16,6 +16,7 @@ type app struct {
 
 	projectService   *services.ProjectService
 	checklistService *services.ChecklistService
+	taskService      *services.TaskService
 }
 
 func main() {
@@ -35,12 +36,16 @@ func main() {
 	}
 
 	projectService := &services.ProjectService{
-		ProjectRepo:   projectRepo,
-		ChecklistRepo: checklistRepo,
+		ProjectRepo: projectRepo,
+		TaskRepo:    taskRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
+	}
+
+	taskService := &services.TaskService{
+		TaskRepo: taskRepo,
 	}
 
 	app := app{
@@ -49,6 +54,7 @@ func main() {
 
 		projectService:   projectService,
 		checklistService: checklistService,
+		taskService:      taskService,
 	}
 
 	port := ":8000"
@@ -59,4 +65,5 @@ func main() {
 
 	log.Printf("Listening on %s", port)
 	server.ListenAndServe()
+	db.Close()
 }

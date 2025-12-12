@@ -7,10 +7,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TaskTypeIcon from "./TaskTypeIcon";
+import { useContext } from "react";
+import { TaskContext } from "@/contexts/task/TaskContext";
 
-export function SelectTaskType({ type }: { type: Task["Type"] }) {
+export function SelectTaskType({
+  onChange = () => {},
+}: {
+  onChange?: () => void;
+}) {
+  const { state, setState } = useContext(TaskContext);
+  const handleValueChange = (newType: Task["Type"]) => {
+    setState({ ...state, Type: newType });
+    onChange();
+  };
+
   return (
-    <Select defaultValue={type}>
+    <Select defaultValue={state.Type} onValueChange={handleValueChange}>
       <SelectTrigger id="type" className="w-full">
         <SelectValue placeholder="Select a type" />
       </SelectTrigger>
