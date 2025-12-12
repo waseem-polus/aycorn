@@ -1,20 +1,26 @@
 CREATE TABLE project (
     id INTEGER PRIMARY KEY,
-    name VARCHAR
+    name VARCHAR,
+    pinned BOOLEAN,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE checklist (
     id INTEGER PRIMARY KEY,
-    name VARCHAR
+    name VARCHAR,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE task (
     id INTEGER PRIMARY KEY,
     name VARCHAR,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeCompleted TIMESTAMP DEFAULT NULL,
     timePlanned TIMESTAMP DEFAULT NULL,
     assignee VARCHAR,
-    priority TEXT CHECK(priority IN ('urgent','high','medium','low'))
+    priority TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),
+    type TEXT CHECK(type IN ('Dev', 'Test', 'Reminder')),
+    status TEXT CHECK(status IN ('Open', 'Todo', 'Doing', 'Blocked', 'Done'))
 );
 
 CREATE TABLE projectChecklist (
