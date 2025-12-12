@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { PinOffIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import type { Project } from "@/routes/project.$projectId";
+import type { Project } from "@/types/types";
 import { useEffect, useState } from "react";
 
 export function NavPinnedProjects() {

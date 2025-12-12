@@ -38,6 +38,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { CreateTaskDialog } from "../task/CreateTaskDialog";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import TaskPriorityIcon from "../task/TaskPriorityIcon";
 
 export function TaskTable({
   projectDetails,
@@ -69,12 +71,14 @@ export function TaskTable({
             {filteredTasks.length ?? 0} tasks
           </InputGroupAddon>
         </InputGroup>
-        <CreateTaskDialog>
-          <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
-            <Plus />
-            New Task
-          </Button>
-        </CreateTaskDialog>
+        <TaskProvider>
+          <CreateTaskDialog>
+            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
+              <Plus />
+              New Task
+            </Button>
+          </CreateTaskDialog>
+        </TaskProvider>
       </div>
 
       <div className="flex flex-row gap-2">
@@ -132,50 +136,54 @@ export function TaskTable({
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task, i) => (
               <React.Fragment key={task.ID}>
-                <TaskSideDrawer task={task}>
-                  <Item asChild>
-                    <a>
-                      <ItemMedia>
-                        <TaskStatusIcon variant={task.Status} />
-                      </ItemMedia>
-                      <ItemContent>
-                        <ItemTitle>{task.Name}</ItemTitle>
+                <TaskProvider defaultState={task}>
+                  <TaskSideDrawer>
+                    <Item asChild>
+                      <a>
+                        <ItemMedia className="flex flex-col">
+                          <TaskStatusIcon variant={task.Status} />
+                          <TaskPriorityIcon variant={task.Priority} />
+                        </ItemMedia>
+                        <ItemContent>
+                          <ItemTitle>{task.Name}</ItemTitle>
 
-                        <ItemDescription>
-                          <span className="w-full flex gap-2">
-                            <Badge variant="secondary">
-                              <User className="size-2" />
-                              {task.Assignee}
-                            </Badge>
-                            <Badge variant="secondary">
-                              <CalendarIcon className="size-2" />
-                              {task.TimePlanned !== null
-                                ? new Date(task.TimePlanned).toLocaleDateString(
-                                    "en-US",
-                                    {
+                          <ItemDescription>
+                            <span className="w-full flex gap-2">
+                              <Badge variant="secondary">
+                                <User className="size-2" />
+                                {task.Assignee === ""
+                                  ? "Unasssigned"
+                                  : task.Assignee}
+                              </Badge>
+                              <Badge variant="secondary">
+                                <CalendarIcon className="size-2" />
+                                {task.TimePlanned !== null
+                                  ? new Date(
+                                      task.TimePlanned,
+                                    ).toLocaleDateString("en-US", {
                                       year: "numeric",
                                       month: "short",
                                       day: "numeric",
-                                    },
-                                  )
-                                : "Unscheduled"}
+                                    })
+                                  : "Unscheduled"}
+                              </Badge>
+                            </span>
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                          <span className="w-full flex justify-end gap-2">
+                            <TaskTypeBadge variant={task.Type} />
+                            <Badge variant="outline">
+                              <LandPlot className="size-2" />
+                              {task.ChecklistName}
                             </Badge>
                           </span>
-                        </ItemDescription>
-                      </ItemContent>
-                      <ItemActions>
-                        <span className="w-full flex justify-end gap-2">
-                          <TaskTypeBadge variant={task.Type} />
-                          <Badge variant="outline">
-                            <LandPlot className="size-2" />
-                            {task.Checklist}
-                          </Badge>
-                        </span>
-                        <ChevronRightIcon className="size-4" />
-                      </ItemActions>
-                    </a>
-                  </Item>
-                </TaskSideDrawer>
+                          <ChevronRightIcon className="size-4" />
+                        </ItemActions>
+                      </a>
+                    </Item>
+                  </TaskSideDrawer>
+                </TaskProvider>
 
                 {filteredTasks.length - 1 != i && <ItemSeparator />}
               </React.Fragment>

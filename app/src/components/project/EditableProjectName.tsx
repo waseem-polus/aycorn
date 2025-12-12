@@ -1,6 +1,5 @@
 import type { ProjectDetails } from "@/types/types";
 import { useState } from "react";
-import { Input } from "../ui/input";
 import { toast } from "sonner";
 
 export function EditableProjectName({
@@ -10,32 +9,22 @@ export function EditableProjectName({
   projectDetails: ProjectDetails;
   setProjectDetails: (projectDetails: ProjectDetails) => void;
 }) {
-  const [editingProjectName, setEditingProjectName] = useState(false);
   const [draftProjectName, setDraftProjectName] = useState(
     projectDetails.Project.Name,
   );
 
   return (
     <div className="grow flex flex-col text-wrap">
-      {!editingProjectName ? (
-        <h1
-          className="text-2xl py-1 px-3 hover:bg-neutral-50 rounded-md "
-          onClick={() => setEditingProjectName(true)}
-        >
-          {projectDetails.Project.Name}
-        </h1>
-      ) : (
-        <Input
-          value={draftProjectName}
-          placeholder="Project Name"
-          className="text-2xl md:text-2xl"
-          autoFocus
-          minLength={1}
-          onChange={(e) => {
-            setDraftProjectName(e.target.value);
-          }}
-          onBlur={() => {
-            setEditingProjectName(false);
+      <input
+        value={draftProjectName}
+        placeholder="Project Name..."
+        className="text-2xl md:text-2xl border outline-0 border-transparent shadow-none"
+        minLength={1}
+        onChange={(e) => {
+          setDraftProjectName(e.target.value);
+        }}
+        onBlur={() => {
+          if (draftProjectName.trim() !== projectDetails.Project.Name)
             toast.promise(
               fetch(
                 `http://localhost:8000/api/project/${projectDetails.Project.ID}`,
@@ -71,9 +60,8 @@ export function EditableProjectName({
                 },
               },
             );
-          }}
-        />
-      )}
+        }}
+      />
     </div>
   );
 }

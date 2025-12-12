@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
+import { TaskContext } from "@/contexts/task/TaskContext";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -28,22 +29,38 @@ function isValidDate(date: Date | undefined) {
   return !isNaN(date.getTime());
 }
 
-export function DatePickerInput() {
+export function DatePickerInput({
+  onChange = () => {},
+}: {
+  onChange?: () => void;
+}) {
+  const { state: task, setState: setTask } = useContext(TaskContext);
+
   const [open, setOpen] = useState(false);
+
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [month, setMonth] = useState<Date | undefined>(date);
-  const [value, setValue] = useState(formatDate(date));
 
   return (
     <div className="relative flex gap-2 grow">
       <Input
         id="date"
-        value={value}
+        value={
+          task.TimePlanned?.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }) ?? ""
+        }
         placeholder={formatDate(new Date())}
         className="bg-background pl-10"
+        onBlur={onChange}
         onChange={(e) => {
           const date = new Date(e.target.value);
-          setValue(e.target.value);
+          setTask({
+            ...task,
+            TimePlanned: new Date(e.target.value),
+          });
           if (isValidDate(date)) {
             setDate(date);
             setMonth(date);
@@ -81,7 +98,11 @@ export function DatePickerInput() {
             onMonthChange={setMonth}
             onSelect={(date) => {
               setDate(date);
-              setValue(formatDate(date));
+              setTask({
+                ...task,
+                TimePlanned: date ?? null,
+              });
+              onChange();
               setOpen(false);
             }}
           />
