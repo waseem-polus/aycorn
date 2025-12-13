@@ -2,7 +2,6 @@ package repos
 
 import (
 	"database/sql"
-	"log"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
@@ -25,11 +24,9 @@ func (repo *TaskRepo) InProject(projectId int) ([]models.ChecklistTask, error) {
 		    t.priority,
 			t.type,
 			t.status
-		FROM projectChecklist pc
-			INNER JOIN checklist c ON pc.checklist = c.id
-			INNER JOIN checklistTask ct ON ct.checklist = c.id
-			INNER JOIN task t ON t.id = ct.task
-		WHERE pc.project = ? ORDER BY c.id;
+		FROM checklist c
+			INNER JOIN task t ON t.checklist = c.id
+		WHERE c.project = ? ORDER BY c.id;
 	`
 	rows, err := repo.DB.Query(query, projectId)
 	if err != nil {
@@ -81,9 +78,8 @@ func (repo *TaskRepo) InChecklist(checklistId int) ([]models.Task, error) {
 		    t.timePlanned,
 		    t.assignee
 		    t.priority
-		FROM checklistTask ct
-			LEFT JOIN task t ON ct.task = t.id
-		WHERE ct.checklist = ?
+		FROM task t
+		WHERE t.checklist = ?
 		ORDER BY t.id;
 	`
 
@@ -117,35 +113,19 @@ func (repo *TaskRepo) InChecklist(checklistId int) ([]models.Task, error) {
 
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (int64, error) {
 	query := `
-		INSERT INTO task (name, timePlanned, assignee, priority, type, status)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO task (name, checklist, timePlanned, assignee, priority, type, status)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING id;
 	`
 	res, err := repo.DB.Exec(query,
 		newTask.Name,
+		newTask.Checklist,
 		newTask.TimePlanned,
 		newTask.Assignee,
 		newTask.Priority,
 		newTask.Type,
 		newTask.Status,
 	)
-	if err != nil {
-		return 0, err
-	}
-
-	id, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	log.Println("Created task ", id)
-
-	return id, nil
-}
-
-func (repo *TaskRepo) CreateChecklistTask(checklist int, task int64) (int64, error) {
-	query := "INSERT INTO checklistTask (checklist, task) VALUES (?, ?);"
-	res, err := repo.DB.Exec(query, checklist, task)
 	if err != nil {
 		return 0, err
 	}
@@ -162,6 +142,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	query := `
 		UPDATE task SET
 			name = ?,
+			checklist = ?,
 			timeCreated = ?,
 			timeCompleted = ?,
 			timePlanned = ?,
@@ -175,6 +156,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	res, err := repo.DB.Exec(
 		query,
 		task.Name,
+		task.Checklist,
 		task.TimeCreated,
 		task.TimeCompleted,
 		task.TimePlanned,
@@ -192,9 +174,6 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	log.Println(task)
-	log.Println("Affected ", rowsAffected, " rows")
 
 	return rowsAffected > 0, nil
 }

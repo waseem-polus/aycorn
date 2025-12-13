@@ -6,13 +6,15 @@ import (
 )
 
 type ProjectService struct {
-	ProjectRepo *repos.ProjectRepo
-	TaskRepo    *repos.TaskRepo
+	ProjectRepo   *repos.ProjectRepo
+	TaskRepo      *repos.TaskRepo
+	ChecklistRepo *repos.ChecklistRepo
 }
 
 type projectDetails struct {
-	Project *models.Project
-	Tasks   []models.ChecklistTask
+	Project    *models.Project
+	Checklists []models.Checklist
+	Tasks      []models.ChecklistTask
 }
 
 func (s *ProjectService) GetProjectDetails(projectId int) (*projectDetails, error) {
@@ -21,14 +23,20 @@ func (s *ProjectService) GetProjectDetails(projectId int) (*projectDetails, erro
 		return nil, err
 	}
 
-	checklistTasks, err := s.TaskRepo.InProject(projectId)
+	checklists, err := s.ChecklistRepo.InProject(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks, err := s.TaskRepo.InProject(projectId)
 	if err != nil {
 		return nil, err
 	}
 
 	return &projectDetails{
-		Project: project,
-		Tasks:   checklistTasks,
+		Project:    project,
+		Tasks:      tasks,
+		Checklists: checklists,
 	}, nil
 }
 

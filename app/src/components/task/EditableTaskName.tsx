@@ -18,7 +18,7 @@ export function EditableTaskName({
         suppressContentEditableWarning
         data-placeholder="Task Name..."
         className={cn(
-          "ce-placeholder outline-0 border border-transparent font-normal text-2xl md:text-2xl text-wrap min-h-8 leading-tight focus:outline-none ",
+          "ce-placeholder outline-0 border border-transparent font-normal text-2xl md:text-2xl text-wrap min-h-8 leading-tight focus:outline-none focus:border-b-input",
           className,
         )}
         onBlur={(e) => {

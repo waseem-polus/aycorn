@@ -12,11 +12,10 @@ type ChecklistRepo struct {
 
 func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) {
 	query := `
-			SELECT c.id, c.name
-			FROM projectChecklist pc
-				INNER JOIN checklist c ON pc.checklist = c.id
-			WHERE pc.project = ? ORDER BY c.id;
-		`
+		SELECT c.id, c.name, c.project, c.timeCreated
+		FROM checklist c
+		WHERE c.project = ? ORDER BY c.id;
+	`
 	rows, err := repo.DB.Query(query, projectId)
 	if err != nil {
 		return nil, err
@@ -31,6 +30,8 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) 
 		err := rows.Scan(
 			&c.ID,
 			&c.Name,
+			&c.Project,
+			&c.TimeCreated,
 		)
 		if err != nil {
 			return nil, err
@@ -50,7 +51,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) 
 }
 
 func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
-	query := "SELECT id, name FROM checklist WHERE id = ?;"
+	query := "SELECT id, name, project, timeCreated FROM checklist WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -59,7 +60,7 @@ func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
 	rows.Next()
 
 	checklist := models.Checklist{}
-	err = rows.Scan(&checklist.ID, &checklist.Name)
+	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated)
 	if err != nil {
 		return nil, err
 	}

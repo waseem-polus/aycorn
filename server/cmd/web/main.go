@@ -36,8 +36,9 @@ func main() {
 	}
 
 	projectService := &services.ProjectService{
-		ProjectRepo: projectRepo,
-		TaskRepo:    taskRepo,
+		ProjectRepo:   projectRepo,
+		TaskRepo:      taskRepo,
+		ChecklistRepo: checklistRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,

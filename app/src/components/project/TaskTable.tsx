@@ -25,8 +25,7 @@ import {
   User,
   Plus,
 } from "lucide-react";
-import type { ProjectDetails } from "@/types/types";
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import TaskSideDrawer from "@/components/task/TaskSideDrawer";
 import TaskStatusIcon from "@/components/task/TaskStatusIcon";
 import TaskTypeBadge from "@/components/task/TaskTypeBadge";
@@ -41,19 +40,17 @@ import { CreateTaskDialog } from "../task/CreateTaskDialog";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "../task/TaskPriorityIcon";
 import { defaultTaskContextValue } from "@/contexts/task/TaskContext";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 
-export function TaskTable({
-  projectDetails,
-}: {
-  projectDetails: ProjectDetails;
-}) {
+export function TaskTable() {
+  const { Tasks } = useContext(ProjectContext);
   const [search, setSearch] = useState("");
   const filteredTasks = useMemo(
     () =>
-      projectDetails.Tasks.filter((task) => {
+      Tasks.filter((task) => {
         return task.Name.toLowerCase().includes(search.toLowerCase());
       }),
-    [search, projectDetails],
+    [search, Tasks],
   );
 
   return (
@@ -185,7 +182,7 @@ export function TaskTable({
                             <TaskTypeBadge variant={task.Type} />
                             <Badge variant="outline">
                               <LandPlot className="size-2" />
-                              {task.ChecklistName}
+                              {task.Checklist}
                             </Badge>
                           </span>
                           <ChevronRightIcon className="size-4" />

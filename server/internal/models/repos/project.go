@@ -11,7 +11,7 @@ type ProjectRepo struct {
 }
 
 func (repo *ProjectRepo) All() ([]models.Project, error) {
-	query := "SELECT id, name, pinned FROM project ORDER BY id DESC;"
+	query := "SELECT id, name, pinned, timeCreated FROM project ORDER BY id DESC;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 	for rows.Next() {
 		p := models.Project{}
 
-		err := rows.Scan(&p.ID, &p.Name, &p.Pinned)
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
-	query := "SELECT id, name, pinned FROM project WHERE id = ?;"
+	query := "SELECT id, name, pinned, timeCreated FROM project WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 	rows.Next()
 
 	project := models.Project{}
-	err = rows.Scan(&project.ID, &project.Name, &project.Pinned)
+	err = rows.Scan(&project.ID, &project.Name, &project.Pinned, &project.TimeCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
-	query := "SELECT id, name, pinned FROM project WHERE pinned = TRUE;"
+	query := "SELECT id, name, pinned, timeCreated FROM project WHERE pinned = TRUE;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
 	for rows.Next() {
 		p := models.Project{}
 
-		err := rows.Scan(&p.ID, &p.Name, &p.Pinned)
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated)
 		if err != nil {
 			return nil, err
 		}

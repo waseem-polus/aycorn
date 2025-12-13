@@ -12,6 +12,7 @@ export type Checklist = {
 export type Task = {
   ID: number;
   Name: string;
+  Checklist: number;
   TimeCompleted: Date | null;
   TimeStarted: Date | null;
   TimePlanned: Date | null;
@@ -22,7 +23,6 @@ export type Task = {
 };
 
 export type ChecklistTask = Task & {
-  Checklist: Checklist["ID"];
   ChecklistName: Checklist["Name"];
 };
 

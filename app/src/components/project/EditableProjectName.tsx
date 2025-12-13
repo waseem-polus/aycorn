@@ -1,17 +1,15 @@
-import type { ProjectDetails } from "@/types/types";
-import { useState } from "react";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export function EditableProjectName({
-  projectDetails,
-  setProjectDetails,
-}: {
-  projectDetails: ProjectDetails;
-  setProjectDetails: (projectDetails: ProjectDetails) => void;
-}) {
-  const [draftProjectName, setDraftProjectName] = useState(
-    projectDetails.Project.Name,
-  );
+export function EditableProjectName() {
+  const { Project, SetProject } = useContext(ProjectContext);
+
+  const [draftProjectName, setDraftProjectName] = useState(Project.Name);
+
+  useEffect(() => {
+    setDraftProjectName(Project.Name);
+  }, [Project.Name, setDraftProjectName]);
 
   return (
     <div className="grow flex flex-col text-wrap">
@@ -24,38 +22,26 @@ export function EditableProjectName({
           setDraftProjectName(e.target.value);
         }}
         onBlur={() => {
-          if (draftProjectName.trim() !== projectDetails.Project.Name)
+          if (draftProjectName.trim() !== Project.Name)
             toast.promise(
-              fetch(
-                `http://localhost:8000/api/project/${projectDetails.Project.ID}`,
-                {
-                  method: "PUT",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    ...projectDetails,
-                    Project: {
-                      ...projectDetails.Project,
-                      Name: draftProjectName,
-                    },
-                  }),
+              fetch(`http://localhost:8000/api/project/${Project.ID}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
                 },
-              ),
+                body: JSON.stringify(Project),
+              }),
               {
                 loading: "Renaming Project",
                 success: () => {
-                  setProjectDetails({
-                    ...projectDetails,
-                    Project: {
-                      ...projectDetails.Project,
-                      Name: draftProjectName,
-                    },
+                  SetProject({
+                    ...Project,
+                    Name: draftProjectName,
                   });
                   return "Renamed Project!";
                 },
                 error: () => {
-                  setDraftProjectName(projectDetails.Project.Name);
+                  setDraftProjectName(Project.Name);
                   return "Failed Renaming Project :(";
                 },
               },

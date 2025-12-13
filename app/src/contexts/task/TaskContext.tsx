@@ -1,18 +1,16 @@
-import type { ChecklistTask } from "@/types/types";
+import type { Task } from "@/types/types";
 import { createContext } from "react";
 
 export type TaskContextType = {
-  state: ChecklistTask;
-  setState: (task: ChecklistTask) => void;
+  state: Task;
+  setState: (task: Task) => void;
 };
 
 export const defaultTaskContextValue: TaskContextType = {
   state: {
-    Checklist: 0,
-    ChecklistName: "",
-
     ID: 0,
     Name: "",
+    Checklist: 0,
     TimeCompleted: null,
     TimeStarted: null,
     TimePlanned: null,

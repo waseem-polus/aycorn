@@ -15,12 +15,7 @@ func (s *TaskService) CreateChecklistTask(newTask *models.ChecklistTask) (bool, 
 		return false, err
 	}
 
-	success, err := s.TaskRepo.CreateChecklistTask(newTask.Checklist, newTaskId)
-	if err != nil {
-		return false, err
-	}
-
-	return success > 0, nil
+	return newTaskId > 0, nil
 }
 
 func (s *TaskService) UpdateTask(updatedTask *models.ChecklistTask) (bool, error) {

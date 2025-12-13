@@ -7,12 +7,16 @@ CREATE TABLE project (
 
 CREATE TABLE checklist (
     id INTEGER PRIMARY KEY,
+    project INTEGER,
     name VARCHAR,
-    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (project) REFERENCES project(id)
 );
 
 CREATE TABLE task (
     id INTEGER PRIMARY KEY,
+    checklist INTEGER,
     name VARCHAR,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeCompleted TIMESTAMP DEFAULT NULL,
@@ -20,24 +24,9 @@ CREATE TABLE task (
     assignee VARCHAR,
     priority TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),
     type TEXT CHECK(type IN ('Dev', 'Test', 'Reminder')),
-    status TEXT CHECK(status IN ('Open', 'Todo', 'Doing', 'Blocked', 'Done'))
-);
+    status TEXT CHECK(status IN ('Open', 'Todo', 'Doing', 'Blocked', 'Done')),
 
-CREATE TABLE projectChecklist (
-    project INTEGER,
-    checklist INTEGER,
-
-    FOREIGN KEY (project) REFERENCES project(id),
     FOREIGN KEY (checklist) REFERENCES checklist(id)
-);
-
-CREATE TABLE checklistTask (
-    checklist INTEGER,
-    task INTEGER,
-    taskOrder INTEGER,
-
-    FOREIGN KEY (checklist) REFERENCES checklist(id),
-    FOREIGN KEY (task) REFERENCES task(id)
 );
 
 -- CREATE TABLE resource (
