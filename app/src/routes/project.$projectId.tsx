@@ -18,7 +18,7 @@ function RouteComponent() {
   return (
     <ProjectProvider>
       <Page breadcrumb={["Projects"]}>
-        <ProjectDetails projectId={projectId} />
+        <ProjectDetails projectId={Number.parseInt(projectId)} />
       </Page>
     </ProjectProvider>
   );

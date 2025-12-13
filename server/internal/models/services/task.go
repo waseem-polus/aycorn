@@ -9,17 +9,26 @@ type TaskService struct {
 	TaskRepo *repos.TaskRepo
 }
 
-func (s *TaskService) CreateChecklistTask(newTask *models.ChecklistTask) (bool, error) {
-	newTaskId, err := s.TaskRepo.CreateTask(newTask)
+func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.Task, error) {
+	newTask, err := s.TaskRepo.CreateTask(task)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return newTaskId > 0, nil
+	return newTask, nil
 }
 
 func (s *TaskService) UpdateTask(updatedTask *models.ChecklistTask) (bool, error) {
 	success, err := s.TaskRepo.UpdateTask(updatedTask)
+	if err != nil {
+		return false, err
+	}
+
+	return success, nil
+}
+
+func (s *TaskService) DeleteTask(taskId int) (bool, error) {
+	success, err := s.TaskRepo.DeleteTask(taskId)
 	if err != nil {
 		return false, err
 	}

@@ -76,7 +76,7 @@ func (repo *TaskRepo) InChecklist(checklistId int) ([]models.Task, error) {
 		    t.name,
 		    t.timeCompleted,
 		    t.timePlanned,
-		    t.assignee
+		    t.assignee,
 		    t.priority
 		FROM task t
 		WHERE t.checklist = ?
@@ -111,7 +111,7 @@ func (repo *TaskRepo) InChecklist(checklistId int) ([]models.Task, error) {
 	return tasks, nil
 }
 
-func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (int64, error) {
+func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
 	query := `
 		INSERT INTO task (name, checklist, timePlanned, assignee, priority, type, status)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -127,15 +127,20 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (int64, error) {
 		newTask.Status,
 	)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return id, nil
+	task, err := repo.FindOne(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }
 
 func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
@@ -166,6 +171,75 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Status,
 		task.ID,
 	)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
+	query := `
+		SELECT
+			t.id,
+			t.name,
+			t.timeCreated,
+			t.timeCompleted,
+			t.timePlanned,
+			t.assignee,
+			t.priority,
+			t.type,
+			t.status,
+			t.checklist
+		FROM task t
+		WHERE t.id = ?;
+	`
+	rows, err := repo.DB.Query(query, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	task := models.Task{}
+	rows.Next()
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	err = rows.Scan(
+		&task.ID,
+		&task.Name,
+		&task.TimeCreated,
+		&task.TimeCompleted,
+		&task.TimePlanned,
+		&task.Assignee,
+		&task.Priority,
+		&task.Type,
+		&task.Status,
+		&task.Checklist,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	return &task, nil
+}
+
+func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
+	query := "DELETE FROM task WHERE id = ?;"
+
+	res, err := repo.DB.Exec(query, taskId)
+	if err != nil {
+		return false, err
+	}
+
 	if err != nil {
 		return false, err
 	}

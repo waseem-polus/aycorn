@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
 )
@@ -14,22 +15,22 @@ func (app *app) postTask(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	newTask := models.ChecklistTask{}
+	task := models.ChecklistTask{}
 
-	err := json.NewDecoder(r.Body).Decode(&newTask)
+	err := json.NewDecoder(r.Body).Decode(&task)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println(err.Error())
 		return
 	}
 
-	success, err := app.taskService.CreateChecklistTask(&newTask)
+	newTask, err := app.taskService.CreateChecklistTask(&task)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println(err.Error())
 	}
 
-	res, err := json.Marshal(success)
+	res, err := json.Marshal(newTask)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		log.Println(err.Error())
@@ -58,6 +59,34 @@ func (app *app) putTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println(err.Error())
+	}
+
+	res, err := json.Marshal(success)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
+func (app *app) deleteTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	taskId, err := strconv.Atoi(r.PathValue("taskId"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	success, err := app.taskService.DeleteTask(taskId)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
 	}
 
 	res, err := json.Marshal(success)

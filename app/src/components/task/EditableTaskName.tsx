@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { cn } from "@/lib/utils";
+import type { Task } from "@/types/types";
 
 export function EditableTaskName({
   onChange = () => {},
   className = "",
 }: {
-  onChange?: () => void;
+  onChange?: (task: Task) => void;
   className?: string;
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
@@ -25,7 +26,7 @@ export function EditableTaskName({
           const text = e.currentTarget.textContent ?? "";
           if (text.trim() !== task.Name) {
             setTask({ ...task, Name: text });
-            onChange();
+            onChange({ ...task, Name: text });
           }
         }}
         onKeyDown={(e) => {

@@ -13,12 +13,12 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 export function SelectTaskPriority({
   onChange = () => {},
 }: {
-  onChange?: () => void;
+  onChange?: (task: Task) => void;
 }) {
   const { state, setState } = useContext(TaskContext);
   const handleValueChange = (newPriority: Task["Priority"]) => {
     setState({ ...state, Priority: newPriority });
-    onChange();
+    onChange({ ...state, Priority: newPriority });
   };
 
   return (

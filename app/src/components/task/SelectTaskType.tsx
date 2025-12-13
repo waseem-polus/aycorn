@@ -13,12 +13,12 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 export function SelectTaskType({
   onChange = () => {},
 }: {
-  onChange?: () => void;
+  onChange?: (task: Task) => void;
 }) {
   const { state, setState } = useContext(TaskContext);
   const handleValueChange = (newType: Task["Type"]) => {
     setState({ ...state, Type: newType });
-    onChange();
+    onChange({ ...state, Type: newType });
   };
 
   return (

@@ -10,12 +10,17 @@ import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 
-export function SelectChecklist() {
+export function SelectChecklist({
+  onChange,
+}: {
+  onChange: (task: Task) => void;
+}) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Checklists: checklists } = useContext(ProjectContext);
 
   const handleValueChange = (newType: Task["Type"]) => {
     setTask({ ...task, Checklist: Number.parseInt(newType) });
+    onChange({ ...task, Checklist: Number.parseInt(newType) });
   };
 
   return (

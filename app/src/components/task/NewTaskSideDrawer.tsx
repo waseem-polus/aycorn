@@ -1,0 +1,38 @@
+import { TaskContext } from "@/contexts/task/TaskContext";
+import { useTaskMutation } from "@/queries/useTaskMutation";
+import TaskSideDrawer from "./TaskSideDrawer";
+import { Button } from "../ui/button";
+import { Plus } from "lucide-react";
+import { useContext } from "react";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import type { Task } from "@/types/types";
+
+export function NewTaskSideDrawer() {
+  const { state: task, setState: setTask } = useContext(TaskContext);
+  const { Project, Checklists } = useContext(ProjectContext);
+  const { create } = useTaskMutation(Project.ID);
+
+  return (
+    <TaskSideDrawer>
+      <Button
+        className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
+        onClick={() =>
+          create.mutate(
+            {
+              ...task,
+              Checklist: Checklists[0]?.ID,
+            },
+            {
+              onSuccess: (newTask: Task) => {
+                setTask(newTask);
+              },
+            },
+          )
+        }
+      >
+        <Plus />
+        New Task
+      </Button>
+    </TaskSideDrawer>
+  );
+}

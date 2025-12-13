@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import type { Task } from "@/types/types";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -32,7 +33,7 @@ function isValidDate(date: Date | undefined) {
 export function DatePickerInput({
   onChange = () => {},
 }: {
-  onChange?: () => void;
+  onChange?: (task: Task) => void;
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
 
@@ -54,7 +55,12 @@ export function DatePickerInput({
         }
         placeholder={formatDate(new Date())}
         className="bg-background pl-10"
-        onBlur={onChange}
+        onBlur={(e) =>
+          onChange({
+            ...task,
+            TimePlanned: new Date(e.target.value),
+          })
+        }
         onChange={(e) => {
           const date = new Date(e.target.value);
           setTask({
@@ -102,7 +108,10 @@ export function DatePickerInput({
                 ...task,
                 TimePlanned: date ?? null,
               });
-              onChange();
+              onChange({
+                ...task,
+                TimePlanned: date ?? null,
+              });
               setOpen(false);
             }}
           />

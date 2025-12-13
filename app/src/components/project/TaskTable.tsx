@@ -23,7 +23,6 @@ import {
   LandPlot,
   Search,
   User,
-  Plus,
 } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 import TaskSideDrawer from "@/components/task/TaskSideDrawer";
@@ -36,11 +35,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { CreateTaskDialog } from "../task/CreateTaskDialog";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "../task/TaskPriorityIcon";
-import { defaultTaskContextValue } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { NewTaskSideDrawer } from "../task/NewTaskSideDrawer";
 
 export function TaskTable() {
   const { Tasks } = useContext(ProjectContext);
@@ -70,21 +68,7 @@ export function TaskTable() {
           </InputGroupAddon>
         </InputGroup>
         <TaskProvider>
-          <CreateTaskDialog>
-            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
-              <Plus />
-              New Task
-            </Button>
-          </CreateTaskDialog>
-        </TaskProvider>
-
-        <TaskProvider defaultState={defaultTaskContextValue.state}>
-          <TaskSideDrawer>
-            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
-              <Plus />
-              New Task
-            </Button>
-          </TaskSideDrawer>
+          <NewTaskSideDrawer />
         </TaskProvider>
       </div>
 
@@ -152,7 +136,9 @@ export function TaskTable() {
                           <TaskPriorityIcon variant={task.Priority} />
                         </ItemMedia>
                         <ItemContent>
-                          <ItemTitle>{task.Name}</ItemTitle>
+                          <ItemTitle>
+                            {task.Name != "" ? task.Name : "Unnamed"}
+                          </ItemTitle>
 
                           <ItemDescription>
                             <span className="w-full flex gap-2">

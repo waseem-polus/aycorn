@@ -10,31 +10,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IconDotsVertical } from "@tabler/icons-react";
 import { useContext, useEffect } from "react";
-import {
-  ProjectContext,
-  type ProjectContextType,
-} from "@/contexts/project/ProjectContext";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
+import type { Task } from "@/types/types";
 
-export function ProjectDetails({ projectId }: { projectId: string }) {
+export function ProjectDetails({ projectId }: { projectId: number }) {
   const { SetProject, SetChecklists, SetTasks } = useContext(ProjectContext);
+  const { isPending, error, data, isFetching } =
+    useProjectDetailsQuery(projectId);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/project/${projectId}`)
-      .then((res) => res.json())
-      .then((res: ProjectContextType) => {
-        const processedTasks = res.Tasks.map((task) => ({
-          ...task,
-          TimePlanned: task.TimePlanned ? new Date(task.TimePlanned) : null,
-          TimeStarted: task.TimeStarted ? new Date(task.TimeStarted) : null,
-          TimeCompleted: task.TimeCompleted
-            ? new Date(task.TimeCompleted)
-            : null,
-        }));
-        SetTasks(processedTasks);
-        SetChecklists(res.Checklists);
-        SetProject(res.Project);
-      });
-  }, [projectId, SetProject, SetChecklists, SetTasks]);
+    if (data && !isPending && !isFetching) {
+      const processedTasks = data.Tasks.map((task: Task) => ({
+        ...task,
+        TimePlanned: task.TimePlanned ? new Date(task.TimePlanned) : null,
+        TimeStarted: task.TimeStarted ? new Date(task.TimeStarted) : null,
+        TimeCompleted: task.TimeCompleted ? new Date(task.TimeCompleted) : null,
+      }));
+      SetTasks(processedTasks);
+      SetChecklists(data.Checklists);
+      SetProject(data.Project);
+    }
+  }, [data, isFetching, isPending, SetProject, SetChecklists, SetTasks]);
 
   return (
     <>

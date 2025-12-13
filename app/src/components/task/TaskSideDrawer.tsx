@@ -1,6 +1,7 @@
 import {
   Drawer,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -17,41 +18,35 @@ import { SelectTaskType } from "./SelectTaskType";
 import { SelectTaskPriority } from "./SelectTaskPriority";
 import { DatePickerInput } from "../DatePickerInput";
 import { User } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "./EditableTaskName";
 import { SelectChecklist } from "./SelectChecklist";
+import { useTaskMutation } from "@/queries/useTaskMutation";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import type { Task } from "@/types/types";
+import { Button } from "../ui/button";
 
 export default function TaskSideDrawer({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { state: task, setState: setTask } = useContext(TaskContext);
-  const [pendingChanges, setPendingChanges] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleTaskChanges = () => {
-    setPendingChanges(true);
+  const { state: task, setState: setTask } = useContext(TaskContext);
+  const { Project } = useContext(ProjectContext);
+  const { update, deleteTask } = useTaskMutation(Project.ID);
+
+  const handleTaskChanges = (updatedTask: Task) => {
+    update.mutate(updatedTask);
   };
 
-  useEffect(() => {
-    if (pendingChanges) {
-      const method = task.ID > 0 ? "PUT" : "POST";
-      fetch("http://localhost:8000/api/task", {
-        method,
-        body: JSON.stringify(task),
-      })
-        .then((res) => res.json())
-        .then((success) => setPendingChanges(!success));
-    }
-  }, [task, pendingChanges]);
-
   return (
-    <Drawer direction="right">
+    <Drawer direction="right" open={open} onOpenChange={setOpen}>
       <DrawerTrigger>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <div></div>
           <DrawerTitle>
             <EditableTaskName onChange={handleTaskChanges} />
           </DrawerTitle>
@@ -66,7 +61,12 @@ export default function TaskSideDrawer({
                 </InputGroupAddon>
                 <InputGroupInput
                   value={task.Assignee}
-                  onBlur={handleTaskChanges}
+                  onBlur={(e) =>
+                    handleTaskChanges({
+                      ...task,
+                      Assignee: e.target.value,
+                    })
+                  }
                   onChange={(e) => {
                     setTask({
                       ...task,
@@ -81,7 +81,7 @@ export default function TaskSideDrawer({
               <Label htmlFor="name" className="min-w-1/5">
                 Checklist
               </Label>
-              <SelectChecklist />
+              <SelectChecklist onChange={handleTaskChanges} />
             </div>
 
             <br className="my-0.5" />
@@ -116,6 +116,18 @@ export default function TaskSideDrawer({
           </section>
           <Separator />
         </DrawerHeader>
+        <DrawerFooter>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              deleteTask.mutate(task.ID, {
+                onSuccess: () => setOpen(false),
+              });
+            }}
+          >
+            Delete
+          </Button>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );
