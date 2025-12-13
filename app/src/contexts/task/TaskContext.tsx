@@ -18,7 +18,7 @@ export const defaultTaskContextValue: TaskContextType = {
     TimePlanned: null,
     Assignee: "",
     Priority: "Low",
-    Type: "Test",
+    Type: "Dev",
     Status: "Open",
   },
   setState: () => {},

@@ -2,7 +2,6 @@ import {
   Drawer,
   DrawerContent,
   DrawerHeader,
-  DrawerOverlay,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
@@ -37,8 +36,9 @@ export default function TaskSideDrawer({
 
   useEffect(() => {
     if (pendingChanges) {
+      const method = task.ID > 0 ? "PUT" : "POST";
       fetch("http://localhost:8000/api/task", {
-        method: "PUT",
+        method,
         body: JSON.stringify(task),
       })
         .then((res) => res.json())
@@ -84,7 +84,7 @@ export default function TaskSideDrawer({
               <SelectChecklist />
             </div>
 
-            <br className="my-2" />
+            <br className="my-0.5" />
 
             <div className="flex flex-row gap-3">
               <Label htmlFor="status" className="min-w-1/5">

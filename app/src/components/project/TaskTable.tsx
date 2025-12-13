@@ -40,6 +40,7 @@ import {
 import { CreateTaskDialog } from "../task/CreateTaskDialog";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "../task/TaskPriorityIcon";
+import { defaultTaskContextValue } from "@/contexts/task/TaskContext";
 
 export function TaskTable({
   projectDetails,
@@ -78,6 +79,15 @@ export function TaskTable({
               New Task
             </Button>
           </CreateTaskDialog>
+        </TaskProvider>
+
+        <TaskProvider defaultState={defaultTaskContextValue.state}>
+          <TaskSideDrawer>
+            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
+              <Plus />
+              New Task
+            </Button>
+          </TaskSideDrawer>
         </TaskProvider>
       </div>
 
