@@ -16,8 +16,7 @@ import type { Task } from "@/types/types";
 
 export function ProjectDetails({ projectId }: { projectId: number }) {
   const { SetProject, SetChecklists, SetTasks } = useContext(ProjectContext);
-  const { isPending, error, data, isFetching } =
-    useProjectDetailsQuery(projectId);
+  const { isPending, data, isFetching } = useProjectDetailsQuery(projectId);
 
   useEffect(() => {
     if (data && !isPending && !isFetching) {

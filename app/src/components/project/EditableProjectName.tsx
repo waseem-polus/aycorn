@@ -1,52 +1,29 @@
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useContext, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useContext } from "react";
+import { EditableHeader } from "../EditableHeader";
+import { useProjectMutation } from "@/queries/useProjectMutation";
 
 export function EditableProjectName() {
   const { Project, SetProject } = useContext(ProjectContext);
-
-  const [draftProjectName, setDraftProjectName] = useState(Project.Name);
-
-  useEffect(() => {
-    setDraftProjectName(Project.Name);
-  }, [Project.Name, setDraftProjectName]);
+  const { updateProject } = useProjectMutation(Project.ID);
 
   return (
     <div className="grow flex flex-col text-wrap">
-      <input
-        value={draftProjectName}
+      <EditableHeader
+        value={Project.Name}
+        setValue={(newName) => {
+          if (newName !== Project.Name) {
+            SetProject({
+              ...Project,
+              Name: newName,
+            });
+            updateProject.mutate({
+              ...Project,
+              Name: newName,
+            });
+          }
+        }}
         placeholder="Project Name..."
-        className="text-2xl md:text-2xl border outline-0 border-transparent shadow-none"
-        minLength={1}
-        onChange={(e) => {
-          setDraftProjectName(e.target.value);
-        }}
-        onBlur={() => {
-          if (draftProjectName.trim() !== Project.Name)
-            toast.promise(
-              fetch(`http://localhost:8000/api/project/${Project.ID}`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(Project),
-              }),
-              {
-                loading: "Renaming Project",
-                success: () => {
-                  SetProject({
-                    ...Project,
-                    Name: draftProjectName,
-                  });
-                  return "Renamed Project!";
-                },
-                error: () => {
-                  setDraftProjectName(Project.Name);
-                  return "Failed Renaming Project :(";
-                },
-              },
-            );
-        }}
       />
     </div>
   );

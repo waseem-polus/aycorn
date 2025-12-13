@@ -1,6 +1,6 @@
 import { Page } from "@/components/page/Page";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -17,26 +17,25 @@ import {
 } from "@/components/ui/item";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
 import type { Project } from "@/types/types";
+import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { data: projects, isFetching } = useAllProjectsQuery();
   const [search, setSearch] = useState("");
 
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) =>
+    if (isFetching || !projects) {
+      return [];
+    }
+
+    return projects.filter((project: Project) =>
       project.Name.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [projects, search]);
-
-  useEffect(() => {
-    fetch("http://localhost:8000/api/project")
-      .then((res) => res.json())
-      .then((projects: Project[]) => setProjects(projects));
-  }, []);
+  }, [projects, search, isFetching]);
 
   return (
     <Page breadcrumb={["Projects"]}>
@@ -65,8 +64,8 @@ function RouteComponent() {
 
         <div className="rounded-md border">
           <ItemGroup>
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project, i) => (
+            {!isFetching && filteredProjects.length > 0 ? (
+              filteredProjects.map((project: Project, i: number) => (
                 <React.Fragment key={project.ID}>
                   <Item asChild>
                     <Link
