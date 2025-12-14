@@ -12,7 +12,7 @@ export const defaultTaskContextValue: TaskContextType = {
     Name: "",
     Checklist: 0,
     TimeCompleted: null,
-    TimeCreated: "",
+    TimeCreated: new Date().toISOString(),
     TimePlanned: null,
     Assignee: "",
     Priority: "Low",
