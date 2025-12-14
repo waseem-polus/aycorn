@@ -136,19 +136,41 @@ export function TaskTable() {
                           <TaskPriorityIcon variant={task.Priority} />
                         </ItemMedia>
                         <ItemContent>
-                          <ItemTitle>
-                            {task.Name != "" ? task.Name : "Unnamed"}
-                          </ItemTitle>
+                          {task.Name !== "" ? (
+                            <ItemTitle>{task.Name}</ItemTitle>
+                          ) : (
+                            <ItemTitle className="text-neutral-400">
+                              New Task
+                            </ItemTitle>
+                          )}
 
                           <ItemDescription>
                             <span className="w-full flex gap-2">
-                              <Badge variant="secondary">
+                              <Badge
+                                variant={
+                                  task.Assignee !== "" ? "secondary" : "outline"
+                                }
+                                className={
+                                  task.Assignee !== "" ? "" : "text-neutral-500"
+                                }
+                              >
                                 <User className="size-2" />
                                 {task.Assignee === ""
-                                  ? "Unasssigned"
+                                  ? "Not Assigned"
                                   : task.Assignee}
                               </Badge>
-                              <Badge variant="secondary">
+                              <Badge
+                                variant={
+                                  task.TimePlanned !== null
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                className={
+                                  task.TimePlanned !== null
+                                    ? ""
+                                    : "text-neutral-500"
+                                }
+                              >
                                 <CalendarIcon className="size-2" />
                                 {task.TimePlanned !== null
                                   ? new Date(
@@ -158,7 +180,7 @@ export function TaskTable() {
                                       month: "short",
                                       day: "numeric",
                                     })
-                                  : "Unscheduled"}
+                                  : "Not Scheduled"}
                               </Badge>
                             </span>
                           </ItemDescription>
@@ -168,7 +190,7 @@ export function TaskTable() {
                             <TaskTypeBadge variant={task.Type} />
                             <Badge variant="outline">
                               <LandPlot className="size-2" />
-                              {task.Checklist}
+                              {task.ChecklistName}
                             </Badge>
                           </span>
                           <ChevronRightIcon className="size-4" />

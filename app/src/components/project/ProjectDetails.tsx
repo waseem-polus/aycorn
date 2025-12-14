@@ -23,7 +23,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
       const processedTasks = data.Tasks.map((task: Task) => ({
         ...task,
         TimePlanned: task.TimePlanned ? new Date(task.TimePlanned) : null,
-        TimeStarted: task.TimeStarted ? new Date(task.TimeStarted) : null,
+        TimeStarted: task.TimeCreated ? new Date(task.TimeCreated) : null,
         TimeCompleted: task.TimeCompleted ? new Date(task.TimeCompleted) : null,
       }));
       SetTasks(processedTasks);

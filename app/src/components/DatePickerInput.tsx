@@ -47,25 +47,27 @@ export function DatePickerInput({
       <Input
         id="date"
         value={
-          task.TimePlanned?.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }) ?? ""
+          task.TimePlanned === null
+            ? ""
+            : new Date(task.TimePlanned).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
         }
         placeholder={formatDate(new Date())}
-        className="bg-background pl-10"
+        className="bg-background pl-10 placeholder:text-neutral-400"
         onBlur={(e) =>
           onChange({
             ...task,
-            TimePlanned: new Date(e.target.value),
+            TimePlanned: e.target.value,
           })
         }
         onChange={(e) => {
           const date = new Date(e.target.value);
           setTask({
             ...task,
-            TimePlanned: new Date(e.target.value),
+            TimePlanned: e.target.value,
           });
           if (isValidDate(date)) {
             setDate(date);

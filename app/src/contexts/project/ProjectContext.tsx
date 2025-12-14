@@ -1,12 +1,12 @@
-import type { Checklist, Project, Task } from "@/types/types";
+import type { Checklist, ChecklistTask, Project, Task } from "@/types/types";
 import { createContext } from "react";
 
 export type ProjectContextType = {
   Project: Project;
   SetProject: (project: Project) => void;
 
-  Tasks: Task[];
-  SetTasks: (tasks: Task[]) => void;
+  Tasks: ChecklistTask[];
+  SetTasks: (tasks: ChecklistTask[]) => void;
 
   Checklists: Checklist[];
   SetChecklists: (checklists: Checklist[]) => void;

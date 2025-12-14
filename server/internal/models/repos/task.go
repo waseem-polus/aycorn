@@ -26,7 +26,7 @@ func (repo *TaskRepo) InProject(projectId int) ([]models.ChecklistTask, error) {
 			t.status
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
-		WHERE c.project = ? ORDER BY c.id;
+		WHERE c.project = ? ORDER BY t.timeCreated DESC;
 	`
 	rows, err := repo.DB.Query(query, projectId)
 	if err != nil {

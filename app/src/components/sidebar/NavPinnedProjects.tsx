@@ -1,6 +1,6 @@
 "use client";
 
-import { IconDots, IconFolder, IconTrash } from "@tabler/icons-react";
+import { IconDots, IconTrash } from "@tabler/icons-react";
 
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { PinOffIcon } from "lucide-react";
+import { Fullscreen, Link2, PinOffIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { usePinnedProjectsQuery } from "@/queries/usePinnedProjectsQuery";
 import type { Project } from "@/types/types";
@@ -59,17 +59,22 @@ export function NavPinnedProjects() {
                   </SidebarMenuAction>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-24 rounded-lg"
+                  className="rounded-lg"
                   side={isMobile ? "bottom" : "right"}
                   align={isMobile ? "end" : "start"}
                 >
                   <DropdownMenuItem>
-                    <IconFolder />
+                    <PinOffIcon />
+                    <span>Remove Pin</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Fullscreen />
                     <span>Open</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <PinOffIcon />
-                    <span>Unpin</span>
+                    <Link2 />
+                    <span>Copy link</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive">

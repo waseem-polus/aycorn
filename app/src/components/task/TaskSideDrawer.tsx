@@ -1,6 +1,7 @@
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -17,7 +18,7 @@ import { SelectTaskStatus } from "./SelectTaskStatus";
 import { SelectTaskType } from "./SelectTaskType";
 import { SelectTaskPriority } from "./SelectTaskPriority";
 import { DatePickerInput } from "../DatePickerInput";
-import { User } from "lucide-react";
+import { ChevronDown, ChevronUp, User } from "lucide-react";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "./EditableTaskName";
@@ -26,6 +27,11 @@ import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 import { Button } from "../ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible";
 
 export default function TaskSideDrawer({
   children,
@@ -33,6 +39,7 @@ export default function TaskSideDrawer({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
@@ -44,13 +51,27 @@ export default function TaskSideDrawer({
 
   return (
     <Drawer direction="right" open={open} onOpenChange={setOpen}>
-      <DrawerTrigger>{children}</DrawerTrigger>
+      <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>
             <EditableTaskName onChange={handleTaskChanges} />
           </DrawerTitle>
-          <section className="flex flex-col py-4 gap-2">
+          <DrawerDescription>
+            {"Created "}
+            {new Date(task.TimeCreated).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}{" "}
+            (
+            {new Date(task.TimeCreated).toLocaleTimeString("en-US", {
+              timeStyle: "short",
+            })}
+            )
+          </DrawerDescription>
+
+          <section className="flex flex-col pt-4 gap-2">
             <div className="flex flex-row gap-3">
               <Label htmlFor="type" className="min-w-1/5">
                 Assignee
@@ -61,6 +82,8 @@ export default function TaskSideDrawer({
                 </InputGroupAddon>
                 <InputGroupInput
                   value={task.Assignee}
+                  placeholder="Assignee"
+                  className="placeholder:text-neutral-400"
                   onBlur={(e) =>
                     handleTaskChanges({
                       ...task,
@@ -84,35 +107,45 @@ export default function TaskSideDrawer({
               <SelectChecklist onChange={handleTaskChanges} />
             </div>
 
-            <br className="my-0.5" />
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="status" className="min-w-1/5">
-                Status
-              </Label>
-              <SelectTaskStatus onChange={handleTaskChanges} />
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="type" className="min-w-1/5">
-                Type
-              </Label>
-              <SelectTaskType onChange={handleTaskChanges} />
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Label htmlFor="priority" className="min-w-1/5">
-                Priority
-              </Label>
-              <SelectTaskPriority onChange={handleTaskChanges} />
-            </div>
-
             <div className="flex flex-row gap-3">
               <Label htmlFor="type" className="min-w-1/5">
                 Date
               </Label>
               <DatePickerInput onChange={handleTaskChanges} />
             </div>
+            <Collapsible open={expanded} onOpenChange={setExpanded}>
+              <CollapsibleContent className="flex flex-col gap-2">
+                <div className="flex flex-row gap-3">
+                  <Label htmlFor="status" className="min-w-1/5">
+                    Status
+                  </Label>
+                  <SelectTaskStatus onChange={handleTaskChanges} />
+                </div>
+
+                <div className="flex flex-row gap-3">
+                  <Label htmlFor="type" className="min-w-1/5">
+                    Type
+                  </Label>
+                  <SelectTaskType onChange={handleTaskChanges} />
+                </div>
+
+                <div className="flex flex-row gap-3">
+                  <Label htmlFor="priority" className="min-w-1/5">
+                    Priority
+                  </Label>
+                  <SelectTaskPriority onChange={handleTaskChanges} />
+                </div>
+              </CollapsibleContent>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="link"
+                  className="text-xs text-neutral-500 py-1 w-full flex justify-center"
+                >
+                  {expanded ? <ChevronUp /> : <ChevronDown />}
+                  {expanded ? "Hide" : "Show"} 3 fields
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
           </section>
           <Separator />
         </DrawerHeader>
