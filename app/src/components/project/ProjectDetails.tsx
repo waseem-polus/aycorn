@@ -1,4 +1,4 @@
-import { TaskTable } from "@/components/project/TaskTable";
+import { TableView } from "@/components/project/tableView/TableView";
 import { EditableProjectName } from "@/components/project/EditableProjectName";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,8 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import type { Task } from "@/types/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { TaskFilters } from "./TaskFilters";
+import { KhanbanView } from "./khanbanView/KhanbanView";
 
 export function ProjectDetails({
   view,
@@ -64,17 +66,23 @@ export function ProjectDetails({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Tabs value={view} onValueChange={setView}>
-        <TabsList>
-          <TabsTrigger value="table">Table</TabsTrigger>
-          <TabsTrigger value="khanban">Khanban</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-        </TabsList>
-        <TabsContent value="table">
-          <TaskTable />
-        </TabsContent>
-        <TabsContent value="khanban">Khanban</TabsContent>
-      </Tabs>
+
+      <div className="flex flex-col gap-4">
+        <Tabs value={view} onValueChange={setView}>
+          <TabsList>
+            <TabsTrigger value="table">Table</TabsTrigger>
+            <TabsTrigger value="khanban">Khanban</TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          </TabsList>
+          <TaskFilters />
+          <TabsContent value="table">
+            <TableView />
+          </TabsContent>
+          <TabsContent value="khanban">
+            <KhanbanView />
+          </TabsContent>
+        </Tabs>
+      </div>
     </>
   );
 }
