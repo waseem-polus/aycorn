@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TaskPriorityIcon from "./TaskPriorityIcon";
+import TaskPriorityIcon from "./icons/TaskPriorityIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 

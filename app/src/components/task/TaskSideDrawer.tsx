@@ -14,15 +14,15 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "../ui/input-group";
-import { SelectTaskStatus } from "./SelectTaskStatus";
-import { SelectTaskType } from "./SelectTaskType";
-import { SelectTaskPriority } from "./SelectTaskPriority";
+import { SelectTaskStatus } from "./taskDrawer/SelectTaskStatus";
+import { SelectTaskType } from "./taskDrawer/SelectTaskType";
+import { SelectTaskPriority } from "./taskDrawer/SelectTaskPriority";
 import { DatePickerInput } from "../DatePickerInput";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { EditableTaskName } from "./EditableTaskName";
-import { SelectChecklist } from "./SelectChecklist";
+import { EditableTaskName } from "./taskDrawer/EditableTaskName";
+import { SelectChecklist } from "./taskDrawer/SelectChecklist";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";

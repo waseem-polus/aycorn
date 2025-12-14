@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TaskTypeIcon from "./TaskTypeIcon";
+import TaskTypeIcon from "./icons/TaskTypeIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 

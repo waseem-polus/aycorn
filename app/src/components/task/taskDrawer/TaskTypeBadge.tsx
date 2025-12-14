@@ -1,6 +1,6 @@
 import type { Task } from "@/types/types";
-import { Badge } from "../ui/badge";
-import TaskTypeIcon from "./TaskTypeIcon";
+import { Badge } from "../../ui/badge";
+import TaskTypeIcon from "./icons/TaskTypeIcon";
 
 export default function TaskTypeBadge({ variant }: { variant: Task["Type"] }) {
   let color = "bg-green-100";

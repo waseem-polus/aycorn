@@ -26,8 +26,8 @@ import {
 } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 import TaskSideDrawer from "@/components/task/TaskSideDrawer";
-import TaskStatusIcon from "@/components/task/TaskStatusIcon";
-import TaskTypeBadge from "@/components/task/TaskTypeBadge";
+import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
+import TaskTypeBadge from "@/components/task/taskDrawer/TaskTypeBadge";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import TaskPriorityIcon from "../task/TaskPriorityIcon";
+import TaskPriorityIcon from "../task/taskDrawer/icons/TaskPriorityIcon";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { NewTaskSideDrawer } from "../task/NewTaskSideDrawer";
 
