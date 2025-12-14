@@ -1,4 +1,4 @@
-import type { Checklist, ChecklistTask, Project, Task } from "@/types/types";
+import type { Checklist, ChecklistTask, Project } from "@/types/types";
 import { createContext } from "react";
 
 export type ProjectContextType = {
@@ -17,6 +17,7 @@ export const defaultProjectContextValue: ProjectContextType = {
     ID: 0,
     Name: "",
     Pinned: false,
+    TimeCreated: "",
   },
   Tasks: [],
   Checklists: [],
