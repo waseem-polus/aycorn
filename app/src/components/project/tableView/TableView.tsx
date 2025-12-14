@@ -36,94 +36,92 @@ export function TableView() {
   );
 
   return (
-    <div className="rounded-md border">
-      <ItemGroup>
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map((task, i) => (
-            <React.Fragment key={task.ID}>
-              <TaskProvider defaultState={task}>
-                <TaskSideDrawer>
-                  <Item asChild>
-                    <a>
-                      <ItemMedia className="flex flex-col">
-                        <TaskStatusIcon variant={task.Status} />
-                        <TaskPriorityIcon variant={task.Priority} />
-                      </ItemMedia>
-                      <ItemContent>
-                        {task.Name !== "" ? (
-                          <ItemTitle>{task.Name}</ItemTitle>
-                        ) : (
-                          <ItemTitle className="text-neutral-400">
-                            New Task
-                          </ItemTitle>
-                        )}
+    <ItemGroup className="h-full rounded-md border overflow-auto">
+      {filteredTasks.length > 0 ? (
+        filteredTasks.map((task, i) => (
+          <React.Fragment key={task.ID}>
+            <TaskProvider defaultState={task}>
+              <TaskSideDrawer>
+                <Item asChild>
+                  <a>
+                    <ItemMedia className="flex flex-col">
+                      <TaskStatusIcon variant={task.Status} />
+                      <TaskPriorityIcon variant={task.Priority} />
+                    </ItemMedia>
+                    <ItemContent>
+                      {task.Name !== "" ? (
+                        <ItemTitle>{task.Name}</ItemTitle>
+                      ) : (
+                        <ItemTitle className="text-neutral-400">
+                          New Task
+                        </ItemTitle>
+                      )}
 
-                        <ItemDescription>
-                          <span className="w-full flex gap-2">
-                            <Badge
-                              variant={
-                                task.Assignee !== "" ? "secondary" : "outline"
-                              }
-                              className={
-                                task.Assignee !== "" ? "" : "text-neutral-500"
-                              }
-                            >
-                              <User className="size-2" />
-                              {task.Assignee === ""
-                                ? "Not Assigned"
-                                : task.Assignee}
-                            </Badge>
-                            <Badge
-                              variant={
-                                task.TimePlanned !== null
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              className={
-                                task.TimePlanned !== null
-                                  ? ""
-                                  : "text-neutral-500"
-                              }
-                            >
-                              <CalendarIcon className="size-2" />
-                              {task.TimePlanned !== null
-                                ? new Date(task.TimePlanned).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                    },
-                                  )
-                                : "Not Scheduled"}
-                            </Badge>
-                          </span>
-                        </ItemDescription>
-                      </ItemContent>
-                      <ItemActions>
-                        <span className="w-full flex justify-end gap-2">
-                          <TaskTypeBadge variant={task.Type} />
-                          <Badge variant="outline">
-                            <LandPlot className="size-2" />
-                            {task.ChecklistName}
+                      <ItemDescription>
+                        <span className="w-full flex gap-2">
+                          <Badge
+                            variant={
+                              task.Assignee !== "" ? "secondary" : "outline"
+                            }
+                            className={
+                              task.Assignee !== "" ? "" : "text-neutral-500"
+                            }
+                          >
+                            <User className="size-2" />
+                            {task.Assignee === ""
+                              ? "Not Assigned"
+                              : task.Assignee}
+                          </Badge>
+                          <Badge
+                            variant={
+                              task.TimePlanned !== null
+                                ? "secondary"
+                                : "outline"
+                            }
+                            className={
+                              task.TimePlanned !== null
+                                ? ""
+                                : "text-neutral-500"
+                            }
+                          >
+                            <CalendarIcon className="size-2" />
+                            {task.TimePlanned !== null
+                              ? new Date(task.TimePlanned).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  },
+                                )
+                              : "Not Scheduled"}
                           </Badge>
                         </span>
-                        <ChevronRightIcon className="size-4" />
-                      </ItemActions>
-                    </a>
-                  </Item>
-                </TaskSideDrawer>
-              </TaskProvider>
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <span className="w-full flex justify-end gap-2">
+                        <TaskTypeBadge variant={task.Type} />
+                        <Badge variant="outline">
+                          <LandPlot className="size-2" />
+                          {task.ChecklistName}
+                        </Badge>
+                      </span>
+                      <ChevronRightIcon className="size-4" />
+                    </ItemActions>
+                  </a>
+                </Item>
+              </TaskSideDrawer>
+            </TaskProvider>
 
-              {filteredTasks.length - 1 != i && <ItemSeparator />}
-            </React.Fragment>
-          ))
-        ) : (
-          <Empty>
-            <EmptyDescription>No Tasks Found</EmptyDescription>
-          </Empty>
-        )}
-      </ItemGroup>
-    </div>
+            {filteredTasks.length - 1 != i && <ItemSeparator />}
+          </React.Fragment>
+        ))
+      ) : (
+        <Empty>
+          <EmptyDescription>No Tasks Found</EmptyDescription>
+        </Empty>
+      )}
+    </ItemGroup>
   );
 }

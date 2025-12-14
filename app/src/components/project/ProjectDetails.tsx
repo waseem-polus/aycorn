@@ -45,7 +45,7 @@ export function ProjectDetails({
 
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex justify-between align-top overflow-hidden">
         <EditableProjectName />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -67,18 +67,22 @@ export function ProjectDetails({
         </DropdownMenu>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Tabs value={view} onValueChange={setView}>
+      <div className="flex flex-col gap-4 h-full overflow-hidden">
+        <Tabs value={view} onValueChange={setView} className="h-full">
           <TabsList>
             <TabsTrigger value="table">Table</TabsTrigger>
             <TabsTrigger value="khanban">Khanban</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           </TabsList>
           <TaskFilters />
-          <TabsContent value="table">
+          <TabsContent className="h-full overflow-hidden" value="table">
             <TableView />
           </TabsContent>
-          <TabsContent value="khanban">
+          <TabsContent
+            id="wazm"
+            className="h-full overflow-hidden"
+            value="khanban"
+          >
             <KhanbanView />
           </TabsContent>
         </Tabs>

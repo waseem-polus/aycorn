@@ -2,7 +2,7 @@ import { KhanbanColumn } from "./KhanbanColumn";
 
 export function KhanbanView() {
   return (
-    <div className="div flex gap-2">
+    <div className="div flex gap-2 h-full">
       <KhanbanColumn status="Blocked" description="Tasks cannot be started" />
       <KhanbanColumn status="Open" description="Tasks are being planned" />
       <KhanbanColumn status="Todo" description="Tasks are ready to start" />

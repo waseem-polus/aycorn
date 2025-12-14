@@ -5,17 +5,16 @@ import TaskSideDrawer from "@/components/task/TaskSideDrawer";
 import { Badge } from "@/components/ui/badge";
 import {
   Item,
-  ItemActions,
   ItemContent,
-  ItemDescription,
+  ItemFooter,
   ItemGroup,
-  ItemMedia,
+  ItemHeader,
   ItemTitle,
 } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import type { Task } from "@/types/types";
-import { CalendarIcon, ChevronRightIcon, LandPlot, User } from "lucide-react";
+import { CalendarIcon, LandPlot, User } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 
 export function KhanbanColumn({
@@ -36,42 +35,48 @@ export function KhanbanColumn({
   );
 
   return (
-    <ItemGroup className="border rounded w-1/5 overflow-hidden p-1 flex flex-col gap-1">
-      <div className="p-1">
+    <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full">
+      <div className="mb-1">
         <span className="flex items-center gap-2">
           <TaskStatusIcon variant={status} />
           {status}
         </span>
         <span className="text-neutral-500 text-sm">{description}</span>
       </div>
+      <ItemGroup className="h-full overflow-y-scroll flex flex-col gap-2 pr-2">
+        {filteredTasks.map((task) => {
+          if (task.Status !== status) {
+            return;
+          }
 
-      {filteredTasks.map((task) => {
-        if (task.Status !== status) {
-          return;
-        }
+          return (
+            <TaskProvider defaultState={task} key={task.ID}>
+              <TaskSideDrawer>
+                <Item
+                  asChild
+                  className="border border-neutral-200 rounded-lg w-full box-border"
+                >
+                  <a>
+                    <ItemHeader className="flex justify-between">
+                      <TaskPriorityIcon variant={task.Priority} />
+                      <Badge variant="outline">
+                        <LandPlot className="size-2" />
+                        {task.ChecklistName}
+                      </Badge>
+                    </ItemHeader>
+                    <ItemContent>
+                      {task.Name !== "" ? (
+                        <ItemTitle>{task.Name}</ItemTitle>
+                      ) : (
+                        <ItemTitle className="text-neutral-400">
+                          New Task
+                        </ItemTitle>
+                      )}
+                    </ItemContent>
 
-        return (
-          <TaskProvider defaultState={task} key={task.ID}>
-            <TaskSideDrawer>
-              <Item
-                asChild
-                className="border border-neutral-200 rounded-lg w-full box-border"
-              >
-                <a>
-                  <ItemMedia className="flex flex-col">
-                    <TaskPriorityIcon variant={task.Priority} />
-                  </ItemMedia>
-                  <ItemContent>
-                    {task.Name !== "" ? (
-                      <ItemTitle>{task.Name}</ItemTitle>
-                    ) : (
-                      <ItemTitle className="text-neutral-400">
-                        New Task
-                      </ItemTitle>
-                    )}
-
-                    <ItemDescription>
-                      <span className="w-full flex gap-2">
+                    <ItemFooter>
+                      <span className="w-full flex flex-col gap-2">
+                        <TaskTypeBadge variant={task.Type} />
                         <Badge
                           variant={
                             task.Assignee !== "" ? "secondary" : "outline"
@@ -106,24 +111,14 @@ export function KhanbanColumn({
                             : "Not Scheduled"}
                         </Badge>
                       </span>
-                    </ItemDescription>
-                  </ItemContent>
-                  <ItemActions>
-                    <span className="w-full flex justify-end gap-2">
-                      <TaskTypeBadge variant={task.Type} />
-                      <Badge variant="outline">
-                        <LandPlot className="size-2" />
-                        {task.ChecklistName}
-                      </Badge>
-                    </span>
-                    <ChevronRightIcon className="size-4" />
-                  </ItemActions>
-                </a>
-              </Item>
-            </TaskSideDrawer>
-          </TaskProvider>
-        );
-      })}
-    </ItemGroup>
+                    </ItemFooter>
+                  </a>
+                </Item>
+              </TaskSideDrawer>
+            </TaskProvider>
+          );
+        })}
+      </ItemGroup>
+    </div>
   );
 }
