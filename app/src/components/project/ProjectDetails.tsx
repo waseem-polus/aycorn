@@ -13,8 +13,17 @@ import { useContext, useEffect } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import type { Task } from "@/types/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
-export function ProjectDetails({ projectId }: { projectId: number }) {
+export function ProjectDetails({
+  view,
+  setView,
+  projectId,
+}: {
+  view: string;
+  setView: (view: string) => void;
+  projectId: number;
+}) {
   const { SetProject, SetChecklists, SetTasks } = useContext(ProjectContext);
   const { isPending, data, isFetching } = useProjectDetailsQuery(projectId);
 
@@ -55,7 +64,17 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <TaskTable />
+      <Tabs value={view} onValueChange={setView}>
+        <TabsList>
+          <TabsTrigger value="table">Table</TabsTrigger>
+          <TabsTrigger value="khanban">Khanban</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+        </TabsList>
+        <TabsContent value="table">
+          <TaskTable />
+        </TabsContent>
+        <TabsContent value="khanban">Khanban</TabsContent>
+      </Tabs>
     </>
   );
 }
