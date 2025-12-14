@@ -16,6 +16,7 @@ import type { Task } from "@/types/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TaskFilters } from "./TaskFilters";
 import { KhanbanView } from "./khanbanView/KhanbanView";
+import { UpcomingView } from "./upcomingView/UpcomingView";
 
 export function ProjectDetails({
   view,
@@ -75,15 +76,14 @@ export function ProjectDetails({
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           </TabsList>
           <TaskFilters />
-          <TabsContent className="h-full overflow-hidden" value="table">
+          <TabsContent value="table" className="h-full overflow-hidden">
             <TableView />
           </TabsContent>
-          <TabsContent
-            id="wazm"
-            className="h-full overflow-hidden"
-            value="khanban"
-          >
+          <TabsContent value="khanban" className="h-full overflow-hidden">
             <KhanbanView />
+          </TabsContent>
+          <TabsContent value="upcoming" className="h-full overflow-hidden">
+            <UpcomingView />
           </TabsContent>
         </Tabs>
       </div>

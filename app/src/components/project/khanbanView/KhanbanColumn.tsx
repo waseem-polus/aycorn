@@ -76,7 +76,7 @@ export function KhanbanColumn({
                   </ItemContent>
 
                   <ItemFooter>
-                    <span className="w-full flex flex-col gap-2">
+                    <span className="w-full flex flex-col gap-1">
                       <TaskTypeBadge variant={task.Type} />
                       <Badge
                         variant={task.Assignee !== "" ? "secondary" : "outline"}
