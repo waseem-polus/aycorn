@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
+	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 )
 
 func (app *app) getAllProjects(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +91,18 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectDetails, err := app.projectService.GetProjectDetails(projectId)
+	q := r.URL.Query()
+
+	taskFilters := &repos.TaskFilters{
+		SearchQuery:    q.Get("search"),
+		ChecklistQuery: q.Get("checklist"),
+		TypeQuery:      q.Get("type"),
+		StatusQuery:    q.Get("status"),
+		PriorityQuery:  q.Get("priority"),
+		AssigneeQuery:  q.Get("assignee"),
+	}
+
+	projectDetails, err := app.projectService.GetProjectDetails(projectId, taskFilters)
 	if err != nil {
 		w.Write(nil)
 		log.Println(err.Error())

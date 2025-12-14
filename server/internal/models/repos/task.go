@@ -10,7 +10,16 @@ type TaskRepo struct {
 	DB *sql.DB
 }
 
-func (repo *TaskRepo) InProject(projectId int) ([]models.ChecklistTask, error) {
+type TaskFilters struct {
+	SearchQuery    string
+	ChecklistQuery string
+	TypeQuery      string
+	StatusQuery    string
+	PriorityQuery  string
+	AssigneeQuery  string
+}
+
+func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]models.ChecklistTask, error) {
 	query := `
 		SELECT
 			c.id,
@@ -26,9 +35,25 @@ func (repo *TaskRepo) InProject(projectId int) ([]models.ChecklistTask, error) {
 			t.status
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
-		WHERE c.project = ? ORDER BY t.timeCreated DESC;
+		WHERE c.project = ?
+			AND (:search = "" OR t.name LIKE :search)
+			AND (:checklist = "" OR t.checklist LIKE :checklist)
+			AND (:type = "" OR t.type LIKE :type)
+			AND (:status = "" OR t.status LIKE :status)
+			AND (:priority = "" OR t.priority LIKE :priority)
+			AND (:assignee = "" OR t.name LIKE :assignee)
+		ORDER BY t.timeCreated DESC;
 	`
-	rows, err := repo.DB.Query(query, projectId)
+	rows, err := repo.DB.Query(
+		query,
+		projectId,
+		sql.Named("search", "%"+taskFilters.SearchQuery+"%"),
+		sql.Named("checklist", taskFilters.ChecklistQuery),
+		sql.Named("type", taskFilters.TypeQuery),
+		sql.Named("status", taskFilters.StatusQuery),
+		sql.Named("priority", taskFilters.PriorityQuery),
+		sql.Named("assignee", taskFilters.AssigneeQuery),
+	)
 	if err != nil {
 		return nil, err
 

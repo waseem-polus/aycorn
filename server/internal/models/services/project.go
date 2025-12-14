@@ -17,7 +17,7 @@ type projectDetails struct {
 	Tasks      []models.ChecklistTask
 }
 
-func (s *ProjectService) GetProjectDetails(projectId int) (*projectDetails, error) {
+func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.TaskFilters) (*projectDetails, error) {
 	project, err := s.ProjectRepo.FindOne(projectId)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (s *ProjectService) GetProjectDetails(projectId int) (*projectDetails, erro
 		return nil, err
 	}
 
-	tasks, err := s.TaskRepo.InProject(projectId)
+	tasks, err := s.TaskRepo.InProject(projectId, taskFilters)
 	if err != nil {
 		return nil, err
 	}
