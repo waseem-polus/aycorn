@@ -27,8 +27,12 @@ export function ProjectDetails({
   setView: (view: string) => void;
   projectId: number;
 }) {
-  const { SetProject, SetChecklists, SetTasks } = useContext(ProjectContext);
-  const { isPending, data, isFetching } = useProjectDetailsQuery(projectId);
+  const { SetProject, SetChecklists, SetTasks, Filter } =
+    useContext(ProjectContext);
+  const { isPending, data, isFetching, refetch } = useProjectDetailsQuery(
+    projectId,
+    Filter,
+  );
 
   useEffect(() => {
     if (data && !isPending && !isFetching) {
@@ -43,6 +47,10 @@ export function ProjectDetails({
       SetProject(data.Project);
     }
   }, [data, isFetching, isPending, SetProject, SetChecklists, SetTasks]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch, Filter]);
 
   return (
     <>

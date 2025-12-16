@@ -95,11 +95,11 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 
 	taskFilters := &repos.TaskFilters{
 		SearchQuery:    q.Get("search"),
-		ChecklistQuery: q.Get("checklist"),
-		TypeQuery:      q.Get("type"),
-		StatusQuery:    q.Get("status"),
-		PriorityQuery:  q.Get("priority"),
-		AssigneeQuery:  q.Get("assignee"),
+		ChecklistQuery: getQuerySlice(q, "checklist"),
+		TypeQuery:      getQuerySlice(q, "type"),
+		StatusQuery:    getQuerySlice(q, "status"),
+		PriorityQuery:  getQuerySlice(q, "priority"),
+		AssigneeQuery:  getQuerySlice(q, "assignee"),
 	}
 
 	projectDetails, err := app.projectService.GetProjectDetails(projectId, taskFilters)

@@ -1,3 +1,7 @@
+export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
+export const TYPES = ["Test", "Dev", "Reminder"] as const;
+export const STATUSES = ["Open", "Todo", "Doing", "Blocked", "Done"] as const;
+
 export type Project = {
   ID: number;
   Name: string;
@@ -19,9 +23,9 @@ export type Task = {
   TimeCompleted: string | null;
   TimePlanned: string | null;
   Assignee: string;
-  Priority: "Urgent" | "High" | "Medium" | "Low";
-  Type: "Test" | "Dev" | "Reminder";
-  Status: "Open" | "Todo" | "Doing" | "Blocked" | "Done";
+  Priority: (typeof PRIORITIES)[number];
+  Type: (typeof TYPES)[number];
+  Status: (typeof STATUSES)[number];
 };
 
 export type ChecklistTask = Task & {
@@ -32,4 +36,13 @@ export type ProjectDetails = {
   Project: Project;
   Checklists: Checklist[];
   Tasks: ChecklistTask[];
+};
+
+export type TaskFilter = {
+  Name: Task["Name"];
+  Checklist: Task["Checklist"][];
+  Assignee: Task["Assignee"][];
+  Priority: Task["Priority"][];
+  Type: Task["Type"][];
+  Status: Task["Status"][];
 };

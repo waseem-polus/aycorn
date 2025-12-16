@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { Checklist, Project, ChecklistTask } from "@/types/types";
+import type {
+  Checklist,
+  Project,
+  ChecklistTask,
+  TaskFilter,
+} from "@/types/types";
 import { defaultProjectContextValue, ProjectContext } from "./ProjectContext";
 
 export function ProjectProvider({
@@ -12,16 +17,24 @@ export function ProjectProvider({
   const [project, setProject] = useState<Project>(defaultState);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [tasks, setTasks] = useState<ChecklistTask[]>([]);
+  const [filters, setFilters] = useState<TaskFilter>(
+    defaultProjectContextValue.Filter,
+  );
 
   return (
     <ProjectContext.Provider
       value={{
         Project: project,
         SetProject: setProject,
+
         Tasks: tasks,
         SetTasks: setTasks,
+
         Checklists: checklists,
         SetChecklists: setChecklists,
+
+        Filter: filters,
+        SetFilter: setFilters,
       }}
     >
       {children}

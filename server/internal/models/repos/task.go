@@ -2,6 +2,7 @@ package repos
 
 import (
 	"database/sql"
+	"strings"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
@@ -12,11 +13,11 @@ type TaskRepo struct {
 
 type TaskFilters struct {
 	SearchQuery    string
-	ChecklistQuery string
-	TypeQuery      string
-	StatusQuery    string
-	PriorityQuery  string
-	AssigneeQuery  string
+	ChecklistQuery []string
+	TypeQuery      []string
+	StatusQuery    []string
+	PriorityQuery  []string
+	AssigneeQuery  []string
 }
 
 func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]models.ChecklistTask, error) {
@@ -36,24 +37,52 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
 		WHERE c.project = ?
-			AND (:search = "" OR t.name LIKE :search)
-			AND (:checklist = "" OR t.checklist LIKE :checklist)
-			AND (:type = "" OR t.type LIKE :type)
-			AND (:status = "" OR t.status LIKE :status)
-			AND (:priority = "" OR t.priority LIKE :priority)
-			AND (:assignee = "" OR t.name LIKE :assignee)
-		ORDER BY t.timeCreated DESC;
 	`
-	rows, err := repo.DB.Query(
-		query,
-		projectId,
-		sql.Named("search", "%"+taskFilters.SearchQuery+"%"),
-		sql.Named("checklist", taskFilters.ChecklistQuery),
-		sql.Named("type", taskFilters.TypeQuery),
-		sql.Named("status", taskFilters.StatusQuery),
-		sql.Named("priority", taskFilters.PriorityQuery),
-		sql.Named("assignee", taskFilters.AssigneeQuery),
-	)
+	args := []any{projectId}
+
+	if taskFilters.SearchQuery != "" {
+		query += " AND t.name LIKE ?"
+		args = append(args, "%"+taskFilters.SearchQuery+"%")
+	}
+
+	if len(taskFilters.ChecklistQuery) > 0 {
+		query += " AND t.checklist IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.ChecklistQuery)), ",") + ")"
+		for _, v := range taskFilters.ChecklistQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.TypeQuery) > 0 {
+		query += " AND t.type IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.TypeQuery)), ",") + ")"
+		for _, v := range taskFilters.TypeQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.StatusQuery) > 0 {
+		query += " AND t.status IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StatusQuery)), ",") + ")"
+		for _, v := range taskFilters.StatusQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.PriorityQuery) > 0 {
+		query += " AND t.priority IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.PriorityQuery)), ",") + ")"
+		for _, v := range taskFilters.PriorityQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.AssigneeQuery) > 0 {
+		query += " AND t.assignee IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.AssigneeQuery)), ",") + ")"
+		for _, v := range taskFilters.AssigneeQuery {
+			args = append(args, v)
+		}
+	}
+
+	query += " ORDER BY t.timeCreated DESC"
+
+	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 
