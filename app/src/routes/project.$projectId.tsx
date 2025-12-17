@@ -1,11 +1,12 @@
-import { Page } from "@/components/page/Page";
+import { Page, PageContent, PageHeader } from "@/components/page/Page";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ProjectProvider } from "@/contexts/project/ProjectProvider";
 import { ProjectDetails } from "@/components/project/ProjectDetails";
+import { ProjectHeader } from "@/components/project/ProjectHeader";
 
 export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { view?: string } => {
     return {
       view: (search.view as string) ?? "table",
     };
@@ -20,12 +21,17 @@ function RouteComponent() {
 
   return (
     <ProjectProvider>
-      <Page breadcrumb={["Projects"]}>
-        <ProjectDetails
-          projectId={Number.parseInt(projectId)}
-          view={view}
-          setView={setView}
-        />
+      <Page>
+        <PageHeader breadcrumb={["Projects"]}>
+          <ProjectHeader />
+        </PageHeader>
+        <PageContent>
+          <ProjectDetails
+            projectId={Number.parseInt(projectId)}
+            view={view ?? "table"}
+            setView={setView}
+          />
+        </PageContent>
       </Page>
     </ProjectProvider>
   );

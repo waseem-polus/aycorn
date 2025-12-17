@@ -2,7 +2,7 @@ import { ChartAreaInteractive } from "@/components/usage/ChartAreaInteractive";
 import { SectionCards } from "@/components/usage/SectionCards";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Page } from "@/components/page/Page";
+import { Page, PageContent, PageHeader } from "@/components/page/Page";
 
 export const Route = createFileRoute("/usage")({
   component: RouteComponent,
@@ -10,11 +10,14 @@ export const Route = createFileRoute("/usage")({
 
 function RouteComponent() {
   return (
-    <Page breadcrumb={[]} fullWidth>
+    <Page>
+      <PageHeader breadcrumb={[]} />
       <SectionCards />
-      <div className="lg:px-6">
-        <ChartAreaInteractive />
-      </div>
+      <PageContent fullWidth>
+        <div className="lg:px-6">
+          <ChartAreaInteractive />
+        </div>
+      </PageContent>
     </Page>
   );
 }

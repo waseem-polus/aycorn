@@ -37,6 +37,8 @@ export function DatePickerInput({
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
 
+  console.log(task.Name, task.ID);
+
   const [open, setOpen] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -108,11 +110,11 @@ export function DatePickerInput({
               setDate(date);
               setTask({
                 ...task,
-                TimePlanned: date ?? null,
+                TimePlanned: date?.toISOString() ?? null,
               });
               onChange({
                 ...task,
-                TimePlanned: date ?? null,
+                TimePlanned: date?.toISOString() ?? null,
               });
               setOpen(false);
             }}

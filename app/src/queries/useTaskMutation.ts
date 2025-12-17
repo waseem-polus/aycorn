@@ -14,6 +14,7 @@ const getSaveTaskQuery = (isNewTask: boolean) => {
 };
 
 const invalidateQueries = (projectId: number) => {
+  console.log("SUBBES");
   queryClient.invalidateQueries({ queryKey: ["projectDetails", projectId] });
 };
 

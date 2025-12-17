@@ -32,12 +32,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
+import { useIsMobile } from "@/hooks/useMobile";
 
 export default function TaskSideDrawer({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
@@ -50,7 +52,11 @@ export default function TaskSideDrawer({
   };
 
   return (
-    <Drawer direction="right" open={open} onOpenChange={setOpen}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
@@ -84,18 +90,18 @@ export default function TaskSideDrawer({
                   value={task.Assignee}
                   placeholder="Assignee"
                   className="placeholder:text-neutral-400"
-                  onBlur={(e) =>
-                    handleTaskChanges({
-                      ...task,
-                      Assignee: e.target.value,
-                    })
-                  }
                   onChange={(e) => {
                     setTask({
                       ...task,
                       Assignee: e.target.value,
                     });
                   }}
+                  onBlur={(e) =>
+                    handleTaskChanges({
+                      ...task,
+                      Assignee: e.target.value,
+                    })
+                  }
                 />
               </InputGroup>
             </div>

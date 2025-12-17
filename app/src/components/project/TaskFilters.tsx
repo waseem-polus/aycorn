@@ -13,9 +13,10 @@ import { ChecklistFilter } from "./taskFilters/ChecklistFilter";
 import { StatusFilter } from "./taskFilters/StatusFilter";
 import { PriorityFilter } from "./taskFilters/PriorityFilter";
 import { TypeFilter } from "./taskFilters/StatusFilter copy";
+import { Link } from "@tanstack/react-router";
 
 export function TaskFilters() {
-  const { Tasks, SetFilter, Filter } = useContext(ProjectContext);
+  const { Project, Tasks, SetFilter, Filter } = useContext(ProjectContext);
 
   return (
     <>
@@ -35,10 +36,15 @@ export function TaskFilters() {
             {Tasks.length ?? 0} tasks
           </InputGroupAddon>
         </InputGroup>
-        <Button variant="outline">
-          <LandPlot />
-          Checklists
-        </Button>
+        <Link
+          to="/project/checklists/$projectId"
+          params={{ projectId: Project.ID.toString() }}
+        >
+          <Button variant="outline">
+            <LandPlot />
+            Checklists
+          </Button>
+        </Link>
         <TaskProvider>
           <NewTaskSideDrawer />
         </TaskProvider>

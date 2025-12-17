@@ -12,17 +12,17 @@ export function useProjectMutation(projectId: number) {
           body: JSON.stringify(project),
         },
       );
+
       return res.json();
     },
-    onSuccess: () => () =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["projectDetails", projectId],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["pinnedProjects"],
-        }),
-      ]),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["projectDetails", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pinnedProjects"],
+      });
+    },
   });
 
   return { updateProject };

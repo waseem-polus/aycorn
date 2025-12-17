@@ -1,14 +1,5 @@
 import { TableView } from "@/components/project/tableView/TableView";
 import { EditableProjectName } from "@/components/project/EditableProjectName";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { IconDotsVertical } from "@tabler/icons-react";
 import { useContext, useEffect } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
@@ -56,24 +47,6 @@ export function ProjectDetails({
     <>
       <div className="flex justify-between align-top overflow-hidden">
         <EditableProjectName />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <IconDotsVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem>Rename</DropdownMenuItem>
-            <DropdownMenuItem>Pin</DropdownMenuItem>
-            <DropdownMenuItem>Make a copy</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <div className="flex flex-col gap-4 h-full overflow-hidden">

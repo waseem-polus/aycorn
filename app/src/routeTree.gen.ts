@@ -14,6 +14,7 @@ import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as KhanbanRouteImport } from './routes/khanban'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
+import { Route as ProjectChecklistsProjectIdRouteImport } from './routes/project/checklists.$projectId'
 
 const UsageRoute = UsageRouteImport.update({
   id: '/usage',
@@ -40,6 +41,12 @@ const ProjectProjectIdRoute = ProjectProjectIdRouteImport.update({
   path: '/project/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectChecklistsProjectIdRoute =
+  ProjectChecklistsProjectIdRouteImport.update({
+    id: '/project/checklists/$projectId',
+    path: '/project/checklists/$projectId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +62,7 @@ export interface FileRoutesByTo {
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,12 +71,25 @@ export interface FileRoutesById {
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/khanban' | '/upcoming' | '/usage' | '/project/$projectId'
+  fullPaths:
+    | '/'
+    | '/khanban'
+    | '/upcoming'
+    | '/usage'
+    | '/project/$projectId'
+    | '/project/checklists/$projectId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/khanban' | '/upcoming' | '/usage' | '/project/$projectId'
+  to:
+    | '/'
+    | '/khanban'
+    | '/upcoming'
+    | '/usage'
+    | '/project/$projectId'
+    | '/project/checklists/$projectId'
   id:
     | '__root__'
     | '/'
@@ -75,6 +97,7 @@ export interface FileRouteTypes {
     | '/upcoming'
     | '/usage'
     | '/project/$projectId'
+    | '/project/checklists/$projectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -83,6 +106,7 @@ export interface RootRouteChildren {
   UpcomingRoute: typeof UpcomingRoute
   UsageRoute: typeof UsageRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
+  ProjectChecklistsProjectIdRoute: typeof ProjectChecklistsProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/checklists/$projectId': {
+      id: '/project/checklists/$projectId'
+      path: '/project/checklists/$projectId'
+      fullPath: '/project/checklists/$projectId'
+      preLoaderRoute: typeof ProjectChecklistsProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -131,6 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   UpcomingRoute: UpcomingRoute,
   UsageRoute: UsageRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
+  ProjectChecklistsProjectIdRoute: ProjectChecklistsProjectIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
