@@ -19,7 +19,7 @@ import { SelectTaskType } from "./taskDrawer/SelectTaskType";
 import { SelectTaskPriority } from "./taskDrawer/SelectTaskPriority";
 import { DatePickerInput } from "../DatePickerInput";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "./taskDrawer/EditableTaskName";
 import { SelectChecklist } from "./taskDrawer/SelectChecklist";
@@ -36,8 +36,10 @@ import { useIsMobile } from "@/hooks/useMobile";
 
 export default function TaskSideDrawer({
   children,
+  onOpenChange = () => {},
 }: {
   children: React.ReactNode;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -55,7 +57,10 @@ export default function TaskSideDrawer({
     <Drawer
       direction={isMobile ? "bottom" : "right"}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(open) => {
+        setOpen(open);
+        onOpenChange(open);
+      }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>

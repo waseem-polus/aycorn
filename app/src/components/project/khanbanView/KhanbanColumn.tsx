@@ -15,7 +15,7 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import type { Task } from "@/types/types";
 import { CalendarIcon, LandPlot, User } from "lucide-react";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 
 export function KhanbanColumn({
   status,
@@ -25,16 +25,12 @@ export function KhanbanColumn({
   description: string;
 }) {
   const { Tasks } = useContext(ProjectContext);
-  const [search, setSearch] = useState("");
   const filteredTasks = useMemo(
     () =>
       Tasks.filter((task) => {
-        return (
-          task.Name.toLowerCase().includes(search.toLowerCase()) &&
-          task.Status === status
-        );
+        return task.Status === status;
       }),
-    [search, Tasks, status],
+    [Tasks, status],
   );
 
   return (

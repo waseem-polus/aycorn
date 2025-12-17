@@ -10,18 +10,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
-
-function formatDate(date: Date | undefined) {
-  if (!date) {
-    return "";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
+import { useDateFormat } from "@/hooks/useDateFormatter";
 
 function isValidDate(date: Date | undefined) {
   if (!date) {
@@ -37,43 +26,37 @@ export function DatePickerInput({
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
 
-  console.log(task.Name, task.ID);
-
   const [open, setOpen] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [month, setMonth] = useState<Date | undefined>(date);
 
+  const { toFormatted, toISO } = useDateFormat();
+
   return (
     <div className="relative flex gap-2 grow">
       <Input
         id="date"
-        value={
-          task.TimePlanned === null
-            ? ""
-            : new Date(task.TimePlanned).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-        }
-        placeholder={formatDate(new Date())}
+        value={toFormatted(task.TimePlanned)}
+        placeholder={toFormatted(new Date())}
         className="bg-background pl-10 placeholder:text-neutral-400"
-        onBlur={(e) =>
-          onChange({
-            ...task,
-            TimePlanned: e.target.value,
-          })
-        }
+        onBlur={(e) => {
+          if (isValidDate(new Date(e.target.value))) {
+            onChange({
+              ...task,
+              TimePlanned: e.target.value,
+            });
+          }
+        }}
         onChange={(e) => {
           const date = new Date(e.target.value);
-          setTask({
-            ...task,
-            TimePlanned: e.target.value,
-          });
           if (isValidDate(date)) {
             setDate(date);
             setMonth(date);
+            setTask({
+              ...task,
+              TimePlanned: toISO(e.target.value),
+            });
           }
         }}
         onKeyDown={(e) => {

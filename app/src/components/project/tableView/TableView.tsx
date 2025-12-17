@@ -16,29 +16,23 @@ import {
   LandPlot,
   User,
 } from "lucide-react";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext } from "react";
 import TaskSideDrawer from "@/components/task/TaskSideDrawer";
 import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
 import TaskTypeBadge from "@/components/task/taskDrawer/TaskTypeBadge";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "../../task/taskDrawer/icons/TaskPriorityIcon";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useDateFormat } from "@/hooks/useDateFormatter";
 
 export function TableView() {
   const { Tasks } = useContext(ProjectContext);
-  const [search, setSearch] = useState("");
-  const filteredTasks = useMemo(
-    () =>
-      Tasks.filter((task) => {
-        return task.Name.toLowerCase().includes(search.toLowerCase());
-      }),
-    [search, Tasks],
-  );
+  const { toFormatted } = useDateFormat();
 
   return (
     <ItemGroup className="h-full rounded-md border overflow-auto">
-      {filteredTasks.length > 0 ? (
-        filteredTasks.map((task, i) => (
+      {Tasks.length > 0 ? (
+        Tasks.map((task, i) => (
           <React.Fragment key={task.ID}>
             <TaskProvider defaultState={task}>
               <TaskSideDrawer>
@@ -86,14 +80,7 @@ export function TableView() {
                           >
                             <CalendarIcon className="size-2" />
                             {task.TimePlanned !== null
-                              ? new Date(task.TimePlanned).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  },
-                                )
+                              ? toFormatted(task.TimePlanned)
                               : "Not Scheduled"}
                           </Badge>
                         </span>
@@ -114,7 +101,7 @@ export function TableView() {
               </TaskSideDrawer>
             </TaskProvider>
 
-            {filteredTasks.length - 1 != i && <ItemSeparator />}
+            {Tasks.length - 1 != i && <ItemSeparator />}
           </React.Fragment>
         ))
       ) : (

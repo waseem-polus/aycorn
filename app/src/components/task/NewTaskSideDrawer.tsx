@@ -1,4 +1,7 @@
-import { TaskContext } from "@/contexts/task/TaskContext";
+import {
+  defaultTaskContextValue,
+  TaskContext,
+} from "@/contexts/task/TaskContext";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import TaskSideDrawer from "./TaskSideDrawer";
 import { Button } from "../ui/button";
@@ -13,7 +16,13 @@ export function NewTaskSideDrawer() {
   const { create } = useTaskMutation(Project.ID);
 
   return (
-    <TaskSideDrawer>
+    <TaskSideDrawer
+      onOpenChange={(open) => {
+        if (!open) {
+          setTask(defaultTaskContextValue.state);
+        }
+      }}
+    >
       <Button
         className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
         onClick={() =>
