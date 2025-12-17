@@ -15,7 +15,11 @@ import { PriorityFilter } from "./taskFilters/PriorityFilter";
 import { TypeFilter } from "./taskFilters/StatusFilter copy";
 import { Link } from "@tanstack/react-router";
 
-export function TaskFilters() {
+export function TaskFilters({
+  setTaskDrawerOpen,
+}: {
+  setTaskDrawerOpen: (open: boolean) => void;
+}) {
   const { Project, Tasks, SetFilter, Filter } = useContext(ProjectContext);
 
   return (
@@ -46,7 +50,7 @@ export function TaskFilters() {
           </Button>
         </Link>
         <TaskProvider>
-          <NewTaskSideDrawer />
+          <NewTaskSideDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
         </TaskProvider>
       </div>
 

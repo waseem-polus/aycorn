@@ -1,9 +1,8 @@
 import { TableView } from "@/components/project/tableView/TableView";
 import { EditableProjectName } from "@/components/project/EditableProjectName";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
-import type { Task } from "@/types/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TaskFilters } from "./TaskFilters";
 import { KhanbanView } from "./khanbanView/KhanbanView";
@@ -18,22 +17,18 @@ export function ProjectDetails({
   setView: (view: string) => void;
   projectId: number;
 }) {
+  const [newTaskOpen, setNewTaskOpen] = useState(false);
   const { SetProject, SetChecklists, SetTasks, Filter } =
     useContext(ProjectContext);
   const { isPending, data, isFetching, refetch } = useProjectDetailsQuery(
     projectId,
     Filter,
+    !newTaskOpen,
   );
 
   useEffect(() => {
     if (data && !isPending && !isFetching) {
-      const processedTasks = data.Tasks.map((task: Task) => ({
-        ...task,
-        TimePlanned: task.TimePlanned ? new Date(task.TimePlanned) : null,
-        TimeStarted: task.TimeCreated ? new Date(task.TimeCreated) : null,
-        TimeCompleted: task.TimeCompleted ? new Date(task.TimeCompleted) : null,
-      }));
-      SetTasks(processedTasks);
+      SetTasks(data.Tasks);
       SetChecklists(data.Checklists);
       SetProject(data.Project);
     }
@@ -56,7 +51,7 @@ export function ProjectDetails({
             <TabsTrigger value="khanban">Khanban</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           </TabsList>
-          <TaskFilters />
+          <TaskFilters setTaskDrawerOpen={setNewTaskOpen} />
           <TabsContent value="table" className="h-full overflow-hidden">
             <TableView />
           </TabsContent>

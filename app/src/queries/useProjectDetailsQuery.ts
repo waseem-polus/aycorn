@@ -1,9 +1,14 @@
 import type { TaskFilter } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useProjectDetailsQuery(projectId: number, filter: TaskFilter) {
+export function useProjectDetailsQuery(
+  projectId: number,
+  filter: TaskFilter,
+  enabled: boolean,
+) {
   const { isPending, error, data, isFetching, refetch } = useQuery({
     queryKey: ["projectDetails", projectId],
+    enabled: enabled,
     queryFn: async () => {
       const url = new URL(`http://localhost:8000/api/project/${projectId}`);
       url.searchParams.set("search", filter?.Name ?? "");

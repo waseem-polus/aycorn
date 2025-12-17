@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
+import { useDateFormat } from "@/hooks/useDateFormatter";
 import type { Task } from "@/types/types";
 import { CalendarIcon, LandPlot, User } from "lucide-react";
 import { useContext, useMemo } from "react";
@@ -32,6 +33,8 @@ export function KhanbanColumn({
       }),
     [Tasks, status],
   );
+
+  const { toFormatted } = useDateFormat();
 
   return (
     <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full">
@@ -93,14 +96,7 @@ export function KhanbanColumn({
                       >
                         <CalendarIcon className="size-2" />
                         {task.TimePlanned !== null
-                          ? new Date(task.TimePlanned).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              },
-                            )
+                          ? toFormatted(task.TimePlanned)
                           : "Not Scheduled"}
                       </Badge>
                     </span>

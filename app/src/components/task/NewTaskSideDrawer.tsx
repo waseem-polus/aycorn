@@ -10,7 +10,11 @@ import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 
-export function NewTaskSideDrawer() {
+export function NewTaskSideDrawer({
+  setTaskDrawerOpen,
+}: {
+  setTaskDrawerOpen: (open: boolean) => void;
+}) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project, Checklists } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
@@ -18,6 +22,7 @@ export function NewTaskSideDrawer() {
   return (
     <TaskSideDrawer
       onOpenChange={(open) => {
+        setTaskDrawerOpen(open);
         if (!open) {
           setTask(defaultTaskContextValue.state);
         }

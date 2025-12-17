@@ -33,6 +33,7 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { useIsMobile } from "@/hooks/useMobile";
+import { useDateFormat } from "@/hooks/useDateFormatter";
 
 export default function TaskSideDrawer({
   children,
@@ -48,6 +49,8 @@ export default function TaskSideDrawer({
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
   const { update, deleteTask } = useTaskMutation(Project.ID);
+
+  const { toFormatted } = useDateFormat();
 
   const handleTaskChanges = (updatedTask: Task) => {
     update.mutate(updatedTask);
@@ -70,12 +73,7 @@ export default function TaskSideDrawer({
           </DrawerTitle>
           <DrawerDescription>
             {"Created "}
-            {new Date(task.TimeCreated).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}{" "}
-            (
+            {toFormatted(task.TimeCreated)} (
             {new Date(task.TimeCreated).toLocaleTimeString("en-US", {
               timeStyle: "short",
             })}
