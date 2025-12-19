@@ -41,7 +41,7 @@ function RouteComponent() {
     <Page>
       <PageHeader breadcrumb={["Projects"]} />
       <PageContent>
-        <h1 className="text-2xl">Projects</h1>
+        <h1 className="text-2xl p-1">Projects</h1>
 
         <div className="flex flex-col gap-4">
           <div className="flex gap-4">

@@ -17,10 +17,11 @@ export function EditableHeader({
   return (
     <h1
       contentEditable
+      spellCheck={false}
       suppressContentEditableWarning
       data-placeholder={placeholder}
       className={cn(
-        "ce-placeholder outline-0 border border-transparent font-normal text-2xl md:text-2xl text-wrap min-h-8 leading-tight focus:outline-none ",
+        "ce-placeholder not-focus:hover:bg-neutral-100 rounded-lg p-1 not-focus:hover:underline outline-0 border border-transparent font-normal text-2xl md:text-2xl text-wrap min-h-8 leading-tight focus:outline-none ",
         className,
       )}
       onBlur={(e) => {

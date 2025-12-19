@@ -1,3 +1,5 @@
+import { ChecklistFilters } from "@/components/checklists/ChecklistFilters";
+import { ChecklistsTable } from "@/components/checklists/ChecklistTable";
 import { Page, PageContent, PageHeader } from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -12,7 +14,13 @@ function RouteComponent() {
   return (
     <Page>
       <PageHeader breadcrumb={["Projects", "Checklists"]} />
-      <PageContent>Checklilsts</PageContent>
+      <PageContent>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl p-1">Checklists</h1>
+          <ChecklistFilters />
+          <ChecklistsTable />
+        </div>
+      </PageContent>
     </Page>
   );
 }
