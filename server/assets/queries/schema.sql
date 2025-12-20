@@ -10,9 +10,32 @@ CREATE TABLE checklist (
     project INTEGER,
     name VARCHAR,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isDefault BOOLEAN,
 
     FOREIGN KEY (project) REFERENCES project(id)
 );
+
+CREATE TRIGGER oneDefaultChecklistPerProject_Update
+AFTER UPDATE OF isDefault ON checklist
+WHEN NEW.isDefault = True
+BEGIN
+    UPDATE checklist
+    SET isDefault = 0
+    WHERE project = NEW.project
+      AND id != NEW.id
+      AND isDefault = 1;
+END;
+
+CREATE TRIGGER oneDefaultChecklistPerProject_Insert
+AFTER INSERT ON checklist
+WHEN NEW.isDefault = 1
+BEGIN
+    UPDATE checklist
+    SET isDefault = 0
+    WHERE project = NEW.project
+      AND id != NEW.id
+      AND isDefault = 1;
+END;
 
 CREATE TABLE task (
     id INTEGER PRIMARY KEY,

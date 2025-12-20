@@ -2,6 +2,10 @@ export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
 export const TYPES = ["Test", "Dev", "Reminder"] as const;
 export const STATUSES = ["Open", "Todo", "Doing", "Blocked", "Done"] as const;
 
+export type Status = (typeof STATUSES)[number];
+export type Type = (typeof TYPES)[number];
+export type Priority = (typeof PRIORITIES)[number];
+
 export type Project = {
   ID: number;
   Name: string;
@@ -13,6 +17,13 @@ export type Checklist = {
   ID: number;
   Name: string;
   TimeCreated: string;
+  IsDefault: boolean;
+};
+
+export type ChecklistDetails = Checklist & {
+  DoneCount: number;
+  TotalCount: number;
+  Status: Status;
 };
 
 export type Task = {
@@ -23,9 +34,9 @@ export type Task = {
   TimeCompleted: string | null;
   TimePlanned: string | null;
   Assignee: string;
-  Priority: (typeof PRIORITIES)[number];
-  Type: (typeof TYPES)[number];
-  Status: (typeof STATUSES)[number];
+  Priority: Priority;
+  Type: Type;
+  Status: Status;
 };
 
 export type ChecklistTask = Task & {
@@ -34,7 +45,7 @@ export type ChecklistTask = Task & {
 
 export type ProjectDetails = {
   Project: Project;
-  Checklists: Checklist[];
+  Checklists: ChecklistDetails[];
   Tasks: ChecklistTask[];
 };
 

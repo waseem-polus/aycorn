@@ -13,14 +13,14 @@ import { ChecklistFilter } from "./taskFilters/ChecklistFilter";
 import { StatusFilter } from "./taskFilters/StatusFilter";
 import { PriorityFilter } from "./taskFilters/PriorityFilter";
 import { TypeFilter } from "./taskFilters/StatusFilter copy";
-import { Link } from "@tanstack/react-router";
+import ChecklistSideDrawer from "../checklists/sidedrawer/ChecklistSideDrawer";
 
 export function TaskFilters({
   setTaskDrawerOpen,
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { Project, Tasks, SetFilter, Filter } = useContext(ProjectContext);
+  const { Tasks, SetFilter, Filter } = useContext(ProjectContext);
 
   return (
     <>
@@ -40,15 +40,13 @@ export function TaskFilters({
             {Tasks.length ?? 0} tasks
           </InputGroupAddon>
         </InputGroup>
-        <Link
-          to="/project/checklists/$projectId"
-          params={{ projectId: Project.ID.toString() }}
-        >
+
+        <ChecklistSideDrawer>
           <Button variant="outline">
             <LandPlot />
             Checklists
           </Button>
-        </Link>
+        </ChecklistSideDrawer>
         <TaskProvider>
           <NewTaskSideDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
         </TaskProvider>

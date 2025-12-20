@@ -1,5 +1,6 @@
 import type {
   Checklist,
+  ChecklistDetails,
   ChecklistTask,
   Project,
   TaskFilter,
@@ -13,8 +14,8 @@ export type ProjectContextType = {
   Tasks: ChecklistTask[];
   SetTasks: (tasks: ChecklistTask[]) => void;
 
-  Checklists: Checklist[];
-  SetChecklists: (checklists: Checklist[]) => void;
+  Checklists: ChecklistDetails[];
+  SetChecklists: (checklists: ChecklistDetails[]) => void;
 
   Filter: TaskFilter;
   SetFilter: (filter: TaskFilter) => void;

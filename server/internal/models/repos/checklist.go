@@ -10,11 +10,28 @@ type ChecklistRepo struct {
 	DB *sql.DB
 }
 
-func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) {
+func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, error) {
 	query := `
-		SELECT c.id, c.name, c.project, c.timeCreated
+		SELECT c.id,
+			c.name,
+			c.project,
+			c.timeCreated,
+			c.isDefault,
+			COUNT(t.id),
+			SUM(CASE WHEN t.status = "Done" THEN 1 ELSE 0 END),
+			CASE
+		        WHEN COUNT(t.id) = 0 THEN "Open"
+		        WHEN SUM(CASE WHEN t.status != "Open"    THEN 1 ELSE 0 END) = 0 THEN "Open"
+		        WHEN SUM(CASE WHEN t.status != "Blocked" THEN 1 ELSE 0 END) = 0 THEN "Blocked"
+		        WHEN SUM(CASE WHEN t.status != "Todo"    THEN 1 ELSE 0 END) = 0 THEN "Todo"
+		        WHEN SUM(CASE WHEN t.status != "Done"    THEN 1 ELSE 0 END) = 0 THEN "Done"
+		        ELSE "Doing"
+			END
 		FROM checklist c
-		WHERE c.project = ? ORDER BY c.id;
+			LEFT JOIN task t ON t.checklist = c.id
+		WHERE c.project = ?
+		GROUP BY c.id
+		ORDER BY c.id;
 	`
 	rows, err := repo.DB.Query(query, projectId)
 	if err != nil {
@@ -22,16 +39,20 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.Checklist, error) 
 
 	}
 
-	checklists := []models.Checklist{}
+	checklists := []models.ChecklistDetails{}
 
 	for rows.Next() {
-		c := models.Checklist{}
+		c := models.ChecklistDetails{}
 
 		err := rows.Scan(
 			&c.ID,
 			&c.Name,
 			&c.Project,
 			&c.TimeCreated,
+			&c.IsDefault,
+			&c.TotalCount,
+			&c.DoneCount,
+			&c.Status,
 		)
 		if err != nil {
 			return nil, err

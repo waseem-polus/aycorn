@@ -3,15 +3,13 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { ChevronLeft, Plus, Search } from "lucide-react";
-import { NewTaskSideDrawer } from "../task/NewTaskSideDrawer";
 import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "../ui/button";
+import { Plus, Search } from "lucide-react";
 
 export function ChecklistFilters() {
-  const { Project, Tasks, SetFilter, Filter } = useContext(ProjectContext);
+  const { Checklists, SetFilter, Filter } = useContext(ProjectContext);
 
   return (
     <div className="flex gap-2">
@@ -25,12 +23,12 @@ export function ChecklistFilters() {
           <Search />
         </InputGroupAddon>
         <InputGroupAddon align="inline-end">
-          {Tasks.length ?? 0} tasks
+          {Checklists.length ?? 0} lists
         </InputGroupAddon>
       </InputGroup>
       <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
         <Plus />
-        New Task
+        New
       </Button>
     </div>
   );

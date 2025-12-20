@@ -28,3 +28,24 @@ INSERT INTO task ( id, checklist, name, timeCreated, timeCompleted, timePlanned,
 -- Internal Tools / Maintenance
 (9, 5, 'Database backup audit', '2025-02-01 15:30:00', '2025-02-02 09:00:00', '2025-02-02 08:00:00', 'Grace', 'Medium', 'Test', 'Done'),
 (10, 5, 'Refactor legacy scripts', '2025-02-03 10:00:00', NULL, NULL, 'Henry', 'Low', 'Dev', 'Todo');
+
+
+
+
+
+
+SELECT c.id,
+	c.name,
+	c.project,
+	c.timeCreated,
+	c.isDefault,
+	COUNT(t.id) totalTasks,
+	SUM(CASE WHEN t.status = "Done" THEN 1 ELSE 0 END) doneTasks,
+	SUM(CASE WHEN t.status != "Open"    THEN 1 ELSE 0 END) notOpen,
+	SUM(CASE WHEN t.status != "Blocked" THEN 1 ELSE 0 END) notBlocked,
+	SUM(CASE WHEN t.status != "Todo"    THEN 1 ELSE 0 END) notTodo,
+	SUM(CASE WHEN t.status != "Done"    THEN 1 ELSE 0 END) notDone
+FROM checklist c
+	LEFT JOIN task t ON t.checklist = c.id
+GROUP BY c.id
+ORDER BY c.id;

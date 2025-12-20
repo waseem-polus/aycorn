@@ -14,6 +14,14 @@ type Checklist struct {
 	Name        string
 	Project     int
 	TimeCreated *time.Time
+	IsDefault   bool
+}
+
+type ChecklistDetails struct {
+	Checklist
+	DoneCount  int
+	TotalCount int
+	Status     string
 }
 
 type Task struct {

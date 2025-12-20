@@ -15,7 +15,7 @@ import React from "react";
 import TaskStatusIcon from "../task/taskDrawer/icons/TaskStatusIcon";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Ellipsis, Menu } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 
 type ChecklistTableItem = Checklist & {
   CompletedCount: number;

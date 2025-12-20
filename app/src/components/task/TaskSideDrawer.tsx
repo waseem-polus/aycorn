@@ -19,7 +19,7 @@ import { SelectTaskType } from "./taskDrawer/SelectTaskType";
 import { SelectTaskPriority } from "./taskDrawer/SelectTaskPriority";
 import { DatePickerInput } from "../DatePickerInput";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "./taskDrawer/EditableTaskName";
 import { SelectChecklist } from "./taskDrawer/SelectChecklist";

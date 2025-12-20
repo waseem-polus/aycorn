@@ -15,7 +15,7 @@ type ChecklistDetails struct {
 	Tasks     []models.Task
 }
 
-func (s *ChecklistService) GetChecklistsInProject(checklistId int) ([]models.Checklist, error) {
+func (s *ChecklistService) GetChecklistsInProject(checklistId int) ([]models.ChecklistDetails, error) {
 	checklists, err := s.ChecklistRepo.InProject(checklistId)
 	if err != nil {
 		return nil, err

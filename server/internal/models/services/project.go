@@ -13,7 +13,7 @@ type ProjectService struct {
 
 type projectDetails struct {
 	Project    *models.Project
-	Checklists []models.Checklist
+	Checklists []models.ChecklistDetails
 	Tasks      []models.ChecklistTask
 }
 
