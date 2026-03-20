@@ -24,5 +24,9 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/task", app.putTask)
 	mux.HandleFunc("DELETE /api/task/{taskId}", app.deleteTask)
 
+	mux.HandleFunc("POST /api/checklist/{projectId}", app.postChecklist)
+	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
+	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)
+
 	return mux
 }

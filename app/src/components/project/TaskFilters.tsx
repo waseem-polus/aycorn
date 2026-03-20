@@ -13,7 +13,7 @@ import { ChecklistFilter } from "./taskFilters/ChecklistFilter";
 import { StatusFilter } from "./taskFilters/StatusFilter";
 import { PriorityFilter } from "./taskFilters/PriorityFilter";
 import { TypeFilter } from "./taskFilters/StatusFilter copy";
-import ChecklistSideDrawer from "../checklists/sidedrawer/ChecklistSideDrawer";
+import ChecklistSideDrawer from "../checklists/sidedrawer/ChecklistsSideTable";
 
 export function TaskFilters({
   setTaskDrawerOpen,

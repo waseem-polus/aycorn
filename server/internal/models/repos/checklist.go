@@ -71,8 +71,8 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 	return checklists, nil
 }
 
-func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
-	query := "SELECT id, name, project, timeCreated FROM checklist WHERE id = ?;"
+func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
+	query := "SELECT id, name, project, timeCreated, isDefault FROM checklist WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
 	rows.Next()
 
 	checklist := models.Checklist{}
-	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated)
+	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated, &checklist.IsDefault)
 	if err != nil {
 		return nil, err
 	}
@@ -89,4 +89,65 @@ func (repo *ChecklistRepo) FindOne(id int) (*models.Checklist, error) {
 	defer rows.Close()
 
 	return &checklist, nil
+}
+
+func (repo *ChecklistRepo) CreateChecklist(projectId int) (*models.Checklist, error) {
+	query := "INSERT INTO checklist (name, project, isDefault) VALUES (?, ?, ?) RETURNING id;"
+	res, err := repo.DB.Exec(query,
+		"",
+		projectId,
+		false,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	checklist, err := repo.FindOne(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return checklist, nil
+}
+
+func (repo *ChecklistRepo) UpdateChecklist(checklist *models.Checklist) (bool, error) {
+	query := "UPDATE checklist SET name = ?, isDefault = ? WHERE id = ?;"
+
+	res, err := repo.DB.Exec(
+		query,
+		checklist.Name,
+		checklist.IsDefault,
+		checklist.ID,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
+func (repo *ChecklistRepo) DeleteChecklist(checklistId int) (bool, error) {
+	query := "DELETE FROM checklist WHERE id = ?;"
+
+	res, err := repo.DB.Exec(query, checklistId)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
 }

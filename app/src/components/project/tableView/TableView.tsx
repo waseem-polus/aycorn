@@ -91,7 +91,9 @@ export function TableView() {
                         <TaskTypeBadge variant={task.Type} />
                         <Badge variant="outline">
                           <LandPlot className="size-2" />
-                          {task.ChecklistName}
+                          {task.ChecklistName !== ""
+                            ? task.ChecklistName
+                            : "New Checklist"}
                         </Badge>
                       </span>
                       <ChevronRightIcon className="size-4" />

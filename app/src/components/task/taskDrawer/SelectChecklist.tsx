@@ -25,7 +25,7 @@ export function SelectChecklist({
 
   return (
     <Select
-      defaultValue={checklists[0]?.ID.toString()}
+      defaultValue={task.Checklist.toString()}
       onValueChange={handleValueChange}
     >
       <SelectTrigger id="checklist" className="w-full">
@@ -34,7 +34,7 @@ export function SelectChecklist({
       <SelectContent>
         {checklists.map((checklist) => (
           <SelectItem value={checklist.ID.toString()} key={checklist.ID}>
-            {checklist.Name}
+            {checklist.Name !== "" ? checklist.Name : "New Checklist"}
           </SelectItem>
         ))}
       </SelectContent>

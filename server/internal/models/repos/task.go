@@ -294,10 +294,6 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 		return false, err
 	}
 
-	if err != nil {
-		return false, err
-	}
-
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return false, err

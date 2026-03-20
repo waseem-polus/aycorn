@@ -33,6 +33,7 @@ export function ChecklistsTable() {
       CompletedCount: 1,
       TaskCount: 3,
       Status: "Blocked",
+      IsDefault: false,
     },
     {
       ID: 2,
@@ -41,7 +42,7 @@ export function ChecklistsTable() {
       CompletedCount: 9,
       TaskCount: 10,
       Status: "Doing",
-      Default: true,
+      IsDefault: true,
     },
     {
       ID: 3,
@@ -50,6 +51,7 @@ export function ChecklistsTable() {
       CompletedCount: 0,
       TaskCount: 4,
       Status: "Todo",
+      IsDefault: false,
     },
     {
       ID: 4,
@@ -58,6 +60,7 @@ export function ChecklistsTable() {
       CompletedCount: 4,
       TaskCount: 4,
       Status: "Done",
+      IsDefault: false,
     },
   ];
 

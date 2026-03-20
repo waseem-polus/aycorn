@@ -1,5 +1,4 @@
 import type {
-  Checklist,
   ChecklistDetails,
   ChecklistTask,
   Project,
