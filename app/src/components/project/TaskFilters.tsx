@@ -14,6 +14,7 @@ import { StatusFilter } from "./taskFilters/StatusFilter";
 import { PriorityFilter } from "./taskFilters/PriorityFilter";
 import { TypeFilter } from "./taskFilters/StatusFilter copy";
 import ChecklistSideDrawer from "../checklists/sidedrawer/ChecklistsSideTable";
+import { Settings } from "@/features/calendar/settings/settings";
 
 export function TaskFilters({
   setTaskDrawerOpen,
@@ -50,6 +51,7 @@ export function TaskFilters({
         <TaskProvider>
           <NewTaskSideDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
         </TaskProvider>
+        <Settings />
       </div>
 
       <div className="flex flex-row gap-2">
