@@ -27,7 +27,7 @@ const data = {
       icon: IconFolder,
     },
     {
-      title: "Khanban",
+      title: "Kanban",
       url: "/khanban",
       icon: IconLayoutBoard,
     },

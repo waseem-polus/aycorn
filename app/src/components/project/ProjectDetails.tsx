@@ -7,6 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TaskFilters } from "./TaskFilters";
 import { KhanbanView } from "./khanbanView/KhanbanView";
 import { UpcomingView } from "./upcomingView/UpcomingView";
+import {
+  IconCalendarMonth,
+  IconCalendarWeek,
+  IconLayoutBoard,
+  IconList,
+} from "@tabler/icons-react";
 
 export function ProjectDetails({
   view,
@@ -47,9 +53,18 @@ export function ProjectDetails({
       <div className="flex flex-col gap-4 h-full overflow-hidden">
         <Tabs value={view} onValueChange={setView} className="h-full">
           <TabsList>
-            <TabsTrigger value="table">Table</TabsTrigger>
-            <TabsTrigger value="khanban">Khanban</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="table">
+              <IconList />
+              List
+            </TabsTrigger>
+            <TabsTrigger value="khanban">
+              <IconLayoutBoard />
+              Kanban
+            </TabsTrigger>
+            <TabsTrigger value="month">
+              <IconCalendarWeek />
+              Month
+            </TabsTrigger>
           </TabsList>
           <TaskFilters setTaskDrawerOpen={setNewTaskOpen} />
           <TabsContent value="table" className="h-full overflow-hidden">
@@ -58,7 +73,10 @@ export function ProjectDetails({
           <TabsContent value="khanban" className="h-full overflow-hidden">
             <KhanbanView />
           </TabsContent>
-          <TabsContent value="upcoming" className="h-full overflow-hidden">
+          <TabsContent value="month" className="h-full overflow-hidden">
+            <UpcomingView />
+          </TabsContent>
+          <TabsContent value="labels" className="h-full overflow-hidden">
             <UpcomingView />
           </TabsContent>
         </Tabs>
