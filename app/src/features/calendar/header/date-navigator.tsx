@@ -1,40 +1,26 @@
 import { formatDate } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buttonHover, transition } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
-import {
-  getEventsCount,
-  navigateDate,
-  rangeText,
-} from "@/features/calendar/helpers";
+import { navigateDate } from "@/features/calendar/helpers";
 
-import type { IEvent } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 
 interface IProps {
   view: TCalendarView;
-  events: IEvent[];
 }
 
 const MotionButton = motion.create(Button);
-const MotionBadge = motion.create(Badge);
 
-export function DateNavigator({ view, events }: IProps) {
+export function DateNavigator({ view }: IProps) {
   const { selectedDate, setSelectedDate } = useCalendar();
 
   const month = formatDate(selectedDate, "MMMM");
   const year = selectedDate.getFullYear();
   const today = new Date();
-
-  const eventCount = useMemo(
-    () => getEventsCount(events, selectedDate, view),
-    [events, selectedDate, view],
-  );
 
   const handlePrevious = () =>
     setSelectedDate(navigateDate(selectedDate, view, "previous"));
@@ -43,7 +29,7 @@ export function DateNavigator({ view, events }: IProps) {
   const handleToday = () => setSelectedDate(today);
 
   return (
-    <div className="space-y-0.5">
+    <div className="flex flex-row gap-2">
       <div className="flex items-center gap-2">
         <motion.span
           className="text-lg font-semibold"
@@ -53,18 +39,6 @@ export function DateNavigator({ view, events }: IProps) {
         >
           {month} {year}
         </motion.span>
-        <AnimatePresence mode="wait">
-          <MotionBadge
-            key={eventCount}
-            variant="secondary"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={transition}
-          >
-            {eventCount} events
-          </MotionBadge>
-        </AnimatePresence>
       </div>
 
       <div className="flex items-center gap-2">

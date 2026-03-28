@@ -1,8 +1,8 @@
 import { Page, PageContent, PageHeader } from "@/components/page/Page";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ProjectProvider } from "@/contexts/project/ProjectProvider";
-import { ProjectDetails } from "@/components/project/ProjectDetails";
-import { ProjectHeader } from "@/components/project/ProjectHeader";
+import { ProjectDetails } from "@/components/project/project";
+import { ProjectHeader } from "@/components/project/project-header";
 
 export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,

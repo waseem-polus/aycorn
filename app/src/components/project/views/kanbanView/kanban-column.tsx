@@ -18,7 +18,7 @@ import type { Task } from "@/types/types";
 import { CalendarIcon, LandPlot, User } from "lucide-react";
 import { useContext, useMemo } from "react";
 
-export function KhanbanColumn({
+export function KanbanColumn({
   status,
   description,
 }: {
@@ -37,7 +37,7 @@ export function KhanbanColumn({
   const { toFormatted } = useDateFormat();
 
   return (
-    <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full">
+    <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-0">
       <div className="mb-1">
         <span className="flex items-center gap-2">
           <TaskStatusIcon variant={status} />

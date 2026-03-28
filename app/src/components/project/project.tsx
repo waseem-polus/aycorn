@@ -1,23 +1,22 @@
-import { TableView } from "@/components/project/tableView/TableView";
-import { EditableProjectName } from "@/components/project/EditableProjectName";
+import { ListView } from "@/components/project/views/listView/list-view";
+import { EditableProjectName } from "@/components/project/editable-project-name";
 import { useContext, useEffect, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { TaskFilters } from "./TaskFilters";
-import { KhanbanView } from "./khanbanView/KhanbanView";
+import { KanbanView } from "./views/kanbanView/kanban-view";
 import {
   IconCalendarMonth,
   IconCalendarWeek,
   IconLayoutBoard,
   IconList,
 } from "@tabler/icons-react";
-import { MonthView } from "./calendarViews/monthView";
+import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { CALENDAR_ITEMS_MOCK, USERS_MOCK } from "@/features/calendar/mocks";
-import { WeekView } from "./calendarViews/weekView";
-import { FullCalendarView } from "./fullCalendarView/FullCalendarView";
+import { WeekView } from "./views/calendarViews/week-view";
+import { FullCalendarView } from "./views/fullCalendarView/full-calendar-view";
 
 export function ProjectDetails({
   view,
@@ -51,11 +50,11 @@ export function ProjectDetails({
 
   return (
     <>
-      <div className="flex justify-between align-top overflow-hidden">
+      <div className="flex justify-between align-top overflow-visible">
         <EditableProjectName />
       </div>
 
-      <div className="flex flex-col gap-4 h-full overflow-hidden">
+      <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
         <CalendarProvider
           events={CALENDAR_ITEMS_MOCK}
           users={USERS_MOCK}
@@ -87,19 +86,29 @@ export function ProjectDetails({
                 </TabsTrigger>
               </TabsList>
 
-              <TaskFilters setTaskDrawerOpen={setNewTaskOpen} />
-
-              <TabsContent value="table" className="h-full overflow-hidden">
-                <TableView />
+              <TabsContent
+                value="table"
+                className="h-full overflow-visible min-h-0"
+              >
+                <ListView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
-              <TabsContent value="khanban" className="h-full overflow-hidden">
-                <KhanbanView />
+              <TabsContent
+                value="khanban"
+                className="h-full overflow-visible min-h-0"
+              >
+                <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
-              <TabsContent value="month" className="h-full overflow-hidden">
-                <MonthView />
+              <TabsContent
+                value="month"
+                className="h-full overflow-visible min-h-0"
+              >
+                <MonthView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
-              <TabsContent value="week" className="h-full overflow-hidden">
-                <WeekView />
+              <TabsContent
+                value="week"
+                className="h-full overflow-visible min-h-0"
+              >
+                <WeekView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
               <TabsContent
                 value="full-calendar"
