@@ -41,7 +41,7 @@ export function KanbanColumn({
   );
 
   return (
-    <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-0">
+    <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
       <div className="mb-1">
         <span className="flex items-center gap-2">
           <TaskStatusIcon variant={status} />
