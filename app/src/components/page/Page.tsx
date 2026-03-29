@@ -6,9 +6,9 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "../ui/breadcrumb";
+} from "@/components/ui/breadcrumb";
 import React from "react";
-import { Toaster } from "../ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
