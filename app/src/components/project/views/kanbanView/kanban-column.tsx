@@ -28,7 +28,7 @@ export function KanbanColumn({
 
   const kanbanColClass = cva(
     [
-      "h-full overflow-y-scroll w-full min-w-0 overflow-x-visible flex flex-col gap-2 pr-2",
+      "h-full overflow-y-scroll w-full min-w-0 overflow-x-visible flex flex-col gap-2 p-2 rounded-xl",
     ],
     {
       variants: {
@@ -42,7 +42,7 @@ export function KanbanColumn({
 
   return (
     <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
-      <div className="mb-1">
+      <div className="p-2">
         <span className="flex items-center gap-2">
           <TaskStatusIcon variant={status} />
           {status}

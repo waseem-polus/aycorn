@@ -1,5 +1,3 @@
-"use client";
-
 import { isSameDay, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import { fadeIn, transition } from "@/features/calendar/animations";

@@ -80,7 +80,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		}
 	}
 
-	query += " ORDER BY t.timeCreated DESC"
+	query += " ORDER BY t.timePlanned, t.timeCreated DESC"
 
 	rows, err := repo.DB.Query(query, args...)
 	if err != nil {

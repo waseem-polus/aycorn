@@ -1,5 +1,3 @@
-"use client";
-
 import { format, parseISO } from "date-fns";
 import { Calendar, Clock, Text, User } from "lucide-react";
 import type { ReactNode } from "react";

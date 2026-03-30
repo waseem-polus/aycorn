@@ -58,7 +58,7 @@ export function KanbanView({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="div flex gap-2 h-full min-h-0">
+        <div className="div flex gap-2 h-full">
           <KanbanColumn
             status="Blocked"
             description="Tasks cannot be started"

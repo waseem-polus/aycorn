@@ -27,7 +27,7 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
       <TaskSideDrawer>
         <Item
           asChild
-          className="border border-neutral-200 rounded-lg w-full box-border"
+          className="border border-neutral-200 bg-background rounded-lg w-full box-border"
         >
           <a ref={setNodeRef} style={style} {...listeners} {...attributes}>
             <ItemHeader className="flex justify-between">

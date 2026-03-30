@@ -1,13 +1,14 @@
 import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 
 export function useDraggableItem(id: string, data?: Record<string, unknown>) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id, data });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id,
+    data,
+  });
 
   const style = {
-    transform: CSS.Translate.toString(transform),
-    visibility: isDragging ? "hidden" : "visible",
+    opacity: isDragging ? 0.3 : 1,
+    pointerEvents: isDragging ? "none" : "auto",
     cursor: isDragging ? "grabbing" : "grab",
   };
 
