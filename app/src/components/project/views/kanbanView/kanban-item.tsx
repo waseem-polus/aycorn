@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import TaskPriorityIcon from "@/components/task/taskDrawer/icons/TaskPriorityIcon";
-import TaskTypeBadge from "@/components/task/taskDrawer/TaskTypeBadge";
-import TaskSideDrawer from "@/components/task/TaskSideDrawer";
+import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "@/features/task/properties/task-type-badge";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import {
   Item,
   ItemContent,
@@ -24,7 +24,7 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
 
   return (
     <TaskProvider defaultState={task} key={task.ID}>
-      <TaskSideDrawer>
+      <TaskEditorDrawer>
         <Item
           asChild
           className="border border-neutral-200 bg-background rounded-lg w-full box-border"
@@ -70,7 +70,7 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
             </ItemFooter>
           </a>
         </Item>
-      </TaskSideDrawer>
+      </TaskEditorDrawer>
     </TaskProvider>
   );
 }

@@ -1,5 +1,5 @@
 import type { Task } from "@/types/types";
-import { Badge } from "../../ui/badge";
+import { Badge } from "../../../components/ui/badge";
 import TaskTypeIcon from "./icons/TaskTypeIcon";
 
 export default function TaskTypeBadge({ variant }: { variant: Task["Type"] }) {

@@ -17,11 +17,11 @@ import {
   User,
 } from "lucide-react";
 import React, { useContext } from "react";
-import TaskSideDrawer from "@/components/task/TaskSideDrawer";
-import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
-import TaskTypeBadge from "@/components/task/taskDrawer/TaskTypeBadge";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import TaskTypeBadge from "@/features/task/properties/task-type-badge";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import TaskPriorityIcon from "../../../task/taskDrawer/icons/TaskPriorityIcon";
+import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { ViewHeader } from "../view-header";
@@ -44,7 +44,7 @@ export function ListView({
             Tasks.map((task, i) => (
               <React.Fragment key={task.ID}>
                 <TaskProvider defaultState={task}>
-                  <TaskSideDrawer>
+                  <TaskEditorDrawer>
                     <Item asChild>
                       <a>
                         <ItemMedia className="flex flex-col">
@@ -109,7 +109,7 @@ export function ListView({
                         </ItemActions>
                       </a>
                     </Item>
-                  </TaskSideDrawer>
+                  </TaskEditorDrawer>
                 </TaskProvider>
 
                 {Tasks.length - 1 != i && <ItemSeparator />}

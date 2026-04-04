@@ -1,4 +1,4 @@
-import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
+import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
 import { Badge } from "@/components/ui/badge";
 import { ItemGroup } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";

@@ -3,14 +3,14 @@ import {
   TaskContext,
 } from "@/contexts/task/TaskContext";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import TaskSideDrawer from "./TaskSideDrawer";
-import { Button } from "../ui/button";
+import TaskEditorDrawer from "./task-editor-drawer";
+import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
 import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 
-export function NewTaskSideDrawer({
+export function NewTaskEditorDrawer({
   setTaskDrawerOpen,
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
@@ -20,7 +20,7 @@ export function NewTaskSideDrawer({
   const { create } = useTaskMutation(Project.ID);
 
   return (
-    <TaskSideDrawer
+    <TaskEditorDrawer
       onOpenChange={(open) => {
         setTaskDrawerOpen(open);
         if (!open) {
@@ -47,6 +47,6 @@ export function NewTaskSideDrawer({
         <Plus />
         New Task
       </Button>
-    </TaskSideDrawer>
+    </TaskEditorDrawer>
   );
 }

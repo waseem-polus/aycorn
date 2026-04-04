@@ -13,7 +13,7 @@ export function EditableTaskName({
   const { state: task, setState: setTask } = useContext(TaskContext);
 
   return (
-    <div className="grow flex flex-col text-wrap">
+    <div className="grow flex flex-col text-wrap mt-6 mb-2">
       <h1
         contentEditable
         suppressContentEditableWarning

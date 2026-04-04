@@ -7,7 +7,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Goal, Trash2 } from "lucide-react";
-import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
+import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
 import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,

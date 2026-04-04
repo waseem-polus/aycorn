@@ -1,5 +1,5 @@
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { NewTaskSideDrawer } from "@/components/task/NewTaskSideDrawer";
+import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 import { ChecklistFilter } from "@/components/project/filters/checklist-filter";
 import { StatusFilter } from "@/components/project/filters/status-filter";
 import { PriorityFilter } from "@/components/project/filters/priority-filter";
@@ -18,7 +18,7 @@ export function ViewHeader({
         <TaskSearch />
         <ProjectChecklists />
         <TaskProvider>
-          <NewTaskSideDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
+          <NewTaskEditorDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
         </TaskProvider>
       </div>
 

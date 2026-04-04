@@ -12,9 +12,9 @@ import {
 import { Progress } from "../ui/progress";
 import type { Checklist, Task } from "@/types/types";
 import React from "react";
-import TaskStatusIcon from "../task/taskDrawer/icons/TaskStatusIcon";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
 
 type ChecklistTableItem = Checklist & {

@@ -10,7 +10,7 @@ import {
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ChevronDown } from "lucide-react";
 import { TYPES } from "@/types/types";
-import TaskTypeIcon from "@/components/task/taskDrawer/icons/TaskTypeIcon";
+import TaskTypeIcon from "@/features/task/properties/icons/TaskTypeIcon";
 
 export function TypeFilter() {
   const { SetFilter, Filter } = useContext(ProjectContext);

@@ -10,7 +10,7 @@ import {
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ChevronDown } from "lucide-react";
 import { STATUSES } from "@/types/types";
-import TaskStatusIcon from "@/components/task/taskDrawer/icons/TaskStatusIcon";
+import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
 
 export function StatusFilter() {
   const { SetFilter, Filter } = useContext(ProjectContext);

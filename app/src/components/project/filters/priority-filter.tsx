@@ -10,7 +10,7 @@ import {
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ChevronDown } from "lucide-react";
 import { PRIORITIES } from "@/types/types";
-import TaskPriorityIcon from "@/components/task/taskDrawer/icons/TaskPriorityIcon";
+import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 
 export function PriorityFilter() {
   const { SetFilter, Filter } = useContext(ProjectContext);
