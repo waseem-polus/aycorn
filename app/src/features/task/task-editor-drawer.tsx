@@ -18,10 +18,12 @@ import type { Task } from "@/types/types";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { RichEditor } from "@/features/editor/rich-editor";
-import { TaskEditorHeader } from "./header/task-editor-header";
-import { TaskProperty } from "./properties/task-property";
-import { CollapsibleSection } from "./properties/collapsible-section";
-import { TaskAssignee } from "./properties/task-assignee";
+import { TaskEditorHeader } from "@/features/task/header/task-editor-header";
+import { TaskProperty } from "@/features/task/properties/task-property";
+import { CollapsibleSection } from "@/features/task/properties/collapsible-section";
+import { TaskAssignee } from "@/features/task/properties/task-assignee";
+import type { Value } from "platejs";
+import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 
 export default function TaskEditorDrawer({
   children,
@@ -33,7 +35,7 @@ export default function TaskEditorDrawer({
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
-  const { state: task } = useContext(TaskContext);
+  const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
   const { update } = useTaskMutation(Project.ID);
 
@@ -41,6 +43,12 @@ export default function TaskEditorDrawer({
 
   const handleTaskChanges = (updatedTask: Task) => {
     update.mutate(updatedTask);
+  };
+
+  const { isPending, isFetching, data } = useTaskBodyQuery(task.ID, open);
+  const handleEditorValueChange = (value: Value) => {
+    setTask({ ...task, Body: value });
+    handleTaskChanges({ ...task, Body: value });
   };
 
   return (
@@ -87,10 +95,16 @@ export default function TaskEditorDrawer({
           </CollapsibleSection>
         </section>
 
-        <RichEditor
-          onDebounceChange={(value) => console.log(JSON.stringify(value))}
-          debounceDuration={250}
-        />
+        {open && (task.ID === 0 || (data && !isFetching && !isPending)) ? (
+          <RichEditor
+            key={`${task.ID}-${open}`}
+            onDebounceChange={handleEditorValueChange}
+            debounceDuration={250}
+            initialValue={data}
+          />
+        ) : (
+          <p>Loading body...</p>
+        )}
 
         <DrawerFooter className="p-2 border-t">
           <span className="flex justify-end text-sm text-muted-foreground">

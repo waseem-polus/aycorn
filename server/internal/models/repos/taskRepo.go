@@ -123,56 +123,15 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 	return checklistTasks, nil
 }
 
-func (repo *TaskRepo) InChecklist(checklistId int) ([]models.Task, error) {
-	query := `
-		SELECT
-			t.id,
-		    t.name,
-		    t.timeCompleted,
-		    t.timePlanned,
-		    t.assignee,
-		    t.priority
-		FROM task t
-		WHERE t.checklist = ?
-		ORDER BY t.id;
-	`
-
-	rows, err := repo.DB.Query(query, checklistId)
-	if err != nil {
-		return nil, err
-	}
-
-	tasks := []models.Task{}
-
-	for rows.Next() {
-		c := models.Task{}
-
-		err := rows.Scan(&c.ID, &c.Name, &c.TimeCompleted, &c.TimePlanned, &c.Assignee, &c.Priority)
-		if err != nil {
-			return nil, err
-		}
-
-		tasks = append(tasks, c)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	return tasks, nil
-}
-
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
 	query := `
-		INSERT INTO task (name, checklist, timePlanned, assignee, priority, type, status)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO task (name, body, checklist, timePlanned, assignee, priority, type, status)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id;
 	`
 	res, err := repo.DB.Exec(query,
 		newTask.Name,
+		newTask.Body,
 		newTask.Checklist,
 		newTask.TimePlanned,
 		newTask.Assignee,
@@ -201,6 +160,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	query := `
 		UPDATE task SET
 			name = ?,
+			body = ?,
 			checklist = ?,
 			timeCreated = ?,
 			timeCompleted = ?,
@@ -215,6 +175,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	res, err := repo.DB.Exec(
 		query,
 		task.Name,
+		task.Body,
 		task.Checklist,
 		task.TimeCreated,
 		task.TimeCompleted,
@@ -242,6 +203,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		SELECT
 			t.id,
 			t.name,
+			t.body,
 			t.timeCreated,
 			t.timeCompleted,
 			t.timePlanned,
@@ -268,6 +230,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 	err = rows.Scan(
 		&task.ID,
 		&task.Name,
+		&task.Body,
 		&task.TimeCreated,
 		&task.TimeCompleted,
 		&task.TimePlanned,
@@ -300,4 +263,28 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 	}
 
 	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
+	query := "SELECT t.body FROM task t WHERE t.id = ?;"
+	rows, err := repo.DB.Query(query, taskId)
+	if err != nil {
+		return "[]", err
+	}
+
+	rows.Next()
+	err = rows.Err()
+	if err != nil {
+		return "[]", err
+	}
+
+	taskBody := "[]"
+	err = rows.Scan(&taskBody)
+	if err != nil {
+		return "[]", err
+	}
+
+	defer rows.Close()
+
+	return taskBody, nil
 }

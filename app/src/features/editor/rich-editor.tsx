@@ -43,15 +43,14 @@ export function RichEditor({
       ...ListKit,
       ...AutoformatKit,
     ],
+    value: initialValue,
   });
 
   const [value, setValue] = useState<Value>(initialValue);
+
   const handleChange = ({ value }: { value: Value }) => {
     setValue(value);
   };
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
 
   const debouncedValue = useDebounce(value, debounceDuration);
   useEffect(() => {

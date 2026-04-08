@@ -9,6 +9,34 @@ import (
 	"github.com/waseem-polus/aycorn/server/internal/models"
 )
 
+func (app *app) getTaskBody(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	taskId, err := strconv.Atoi(r.PathValue("taskId"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	taskBody, err := app.taskService.GetTaskBody(taskId)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(taskBody)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) postTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)

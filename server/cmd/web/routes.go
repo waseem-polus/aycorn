@@ -20,6 +20,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 
+	mux.HandleFunc("GET /api/task/body/{taskId}", app.getTaskBody)
 	mux.HandleFunc("POST /api/task", app.postTask)
 	mux.HandleFunc("PUT /api/task", app.putTask)
 	mux.HandleFunc("DELETE /api/task/{taskId}", app.deleteTask)

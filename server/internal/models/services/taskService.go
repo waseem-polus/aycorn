@@ -9,6 +9,15 @@ type TaskService struct {
 	TaskRepo *repos.TaskRepo
 }
 
+func (s *TaskService) GetTaskBody(taskId int) (string, error) {
+	taskBody, err := s.TaskRepo.GetTaskBody(taskId)
+	if err != nil {
+		return "[]", err
+	}
+
+	return taskBody, nil
+}
+
 func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.Task, error) {
 	newTask, err := s.TaskRepo.CreateTask(task)
 	if err != nil {

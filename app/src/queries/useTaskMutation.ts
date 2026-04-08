@@ -7,7 +7,7 @@ const getSaveTaskQuery = (isNewTask: boolean) => {
   return async (task: Task) => {
     const res = await fetch("http://localhost:8000/api/task", {
       method: method,
-      body: JSON.stringify(task),
+      body: JSON.stringify({ ...task, Body: JSON.stringify(task.Body) }),
     });
     return await res.json();
   };

@@ -40,7 +40,8 @@ END;
 CREATE TABLE task (
     id INTEGER PRIMARY KEY,
     checklist INTEGER,
-    name VARCHAR,
+    name VARCHAR DEFAULT '',
+    body TEXT DEFAULT '[]',
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeCompleted TIMESTAMP DEFAULT NULL,
     timePlanned TIMESTAMP DEFAULT NULL,

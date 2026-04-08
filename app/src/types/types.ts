@@ -1,3 +1,5 @@
+import type { Value } from "platejs";
+
 export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
 export const TYPES = ["Test", "Dev", "Reminder"] as const;
 export const STATUSES = ["Open", "Todo", "Doing", "Blocked", "Done"] as const;
@@ -29,6 +31,7 @@ export type ChecklistDetails = Checklist & {
 export type Task = {
   ID: number;
   Name: string;
+  Body: Value;
   Checklist: number;
   TimeCreated: string;
   TimeCompleted: string | null;

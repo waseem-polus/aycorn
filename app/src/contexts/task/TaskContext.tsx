@@ -10,6 +10,7 @@ export const defaultTaskContextValue: TaskContextType = {
   state: {
     ID: 0,
     Name: "",
+    Body: [],
     Checklist: 0,
     TimeCompleted: null,
     TimeCreated: new Date().toISOString(),
