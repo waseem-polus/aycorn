@@ -24,6 +24,7 @@ import { CollapsibleSection } from "@/features/task/properties/collapsible-secti
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import type { Value } from "platejs";
 import { useTaskBodyQuery } from "@/queries/useTaskQuery";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TaskEditorDrawer({
   children,
@@ -95,15 +96,20 @@ export default function TaskEditorDrawer({
           </CollapsibleSection>
         </section>
 
-        {open && (task.ID === 0 || (data && !isFetching && !isPending)) ? (
+        {open &&
+        (task.ID === 0 || (data !== undefined && !isFetching && !isPending)) ? (
           <RichEditor
             key={`${task.ID}-${open}`}
             onDebounceChange={handleEditorValueChange}
             debounceDuration={250}
-            initialValue={data}
+            initialValue={data === "" ? [] : data}
           />
         ) : (
-          <p>Loading body...</p>
+          <div className="flex h-full w-full flex-col gap-2 py-4 px-8">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
         )}
 
         <DrawerFooter className="p-2 border-t">

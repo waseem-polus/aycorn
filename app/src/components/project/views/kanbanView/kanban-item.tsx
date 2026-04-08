@@ -29,7 +29,13 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
           asChild
           className="border border-neutral-200 bg-background rounded-lg w-full box-border"
         >
-          <a ref={setNodeRef} style={style} {...listeners} {...attributes}>
+          <a
+            ref={setNodeRef}
+            style={style}
+            {...listeners}
+            {...attributes}
+            className="overflow-clip"
+          >
             <ItemHeader className="flex justify-between">
               <TaskPriorityIcon variant={task.Priority} />
               <Badge variant="outline">
