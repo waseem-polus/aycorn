@@ -13,6 +13,7 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { Ellipsis, Maximize2 } from "lucide-react";
 import { useContext } from "react";
+import { toast } from "sonner";
 
 export function TaskEditorHeader({
   setOpen = () => {},
@@ -52,16 +53,24 @@ export function TaskEditorHeader({
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => {
-                    deleteTask.mutate(task.ID, {
-                      onSuccess: () => setOpen(false),
-                    });
-                  }}
-                  variant="destructive"
-                >
-                  Delete Task
-                </DropdownMenuItem>
+                <DrawerClose asChild>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const taskName =
+                        task.Name === "" ? "New Task" : task.Name;
+                      deleteTask.mutate(task.ID, {
+                        onSuccess: () => toast(`Deleted '${taskName}'`),
+                        onError: () => {
+                          toast(`Failed deleting '${taskName}'`);
+                          setOpen(true);
+                        },
+                      });
+                    }}
+                    variant="destructive"
+                  >
+                    Delete Task
+                  </DropdownMenuItem>
+                </DrawerClose>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
