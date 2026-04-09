@@ -13,19 +13,24 @@ import {
   EventBullet,
   MonthEventBadge,
 } from "@/features/calendar/views/monthView";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
+import { NewTaskEditorDrawer } from "./new-task-editor-drawer";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
 
 interface IProps {
   cell: ICalendarCell;
   events: IEvent[];
   eventPositions: Record<string, number>;
+  setTaskDrawerOpen: (open: boolean) => void;
 }
 
 const MAX_VISIBLE_EVENTS = 3;
 
-export function DayCell({ cell, events, eventPositions }: IProps) {
+export function DayCell({
+  cell,
+  events,
+  eventPositions,
+  setTaskDrawerOpen,
+}: IProps) {
   const { day, currentMonth, date } = cell;
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -88,7 +93,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
     () => (
       <motion.div
         className={cn(
-          "flex h-full lg:min-h-40 flex-col gap-1 border-l border-b",
+          "flex h-full lg:min-h-40 flex-col gap-1 border-l border-b group",
           isSunday(date) && "border-l-0",
         )}
         initial={{ opacity: 0, y: 10 }}
@@ -96,16 +101,29 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         transition={transition}
       >
         <DroppableArea date={date} className="w-full h-full py-2">
-          <motion.span
-            className={cn(
-              "h-6 px-1 text-xs font-semibold lg:px-2",
-              !currentMonth && "opacity-20",
-              isToday(date) &&
-                "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
+          <motion.div className="flex px-1 justify-between align-middle w-full lg:px-2">
+            <motion.span
+              className={cn(
+                "h-6 text-xs font-semibold",
+                !currentMonth && "opacity-20",
+                isToday(date) &&
+                  "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
+              )}
+            >
+              {day}
+            </motion.span>
+
+            {!isMobile && (
+              <motion.span className="flex justify-center items-center group">
+                <TaskProvider>
+                  <NewTaskEditorDrawer
+                    date={date}
+                    setTaskDrawerOpen={setTaskDrawerOpen}
+                  ></NewTaskEditorDrawer>
+                </TaskProvider>
+              </motion.span>
             )}
-          >
-            {day}
-          </motion.span>
+          </motion.div>
 
           <motion.div
             className={cn(
@@ -113,21 +131,9 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
               !currentMonth && "opacity-50",
             )}
           >
-            {cellEvents.length === 0 && !isMobile ? (
-              <div className="w-full h-full flex justify-center items-center group">
-                <AddEditEventDialog startDate={date}>
-                  <Button
-                    variant="ghost"
-                    className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="max-sm:hidden">Add Event</span>
-                  </Button>
-                </AddEditEventDialog>
-              </div>
-            ) : (
-              [0, 1, 2].map(renderEventAtPosition)
-            )}
+            {cellEvents.length >= 0 &&
+              !isMobile &&
+              [0, 1, 2].map(renderEventAtPosition)}
           </motion.div>
 
           {showMobileMore && (
@@ -164,6 +170,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
       showMoreCount,
       renderEventAtPosition,
       isMobile,
+      setTaskDrawerOpen,
     ],
   );
 

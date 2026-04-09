@@ -278,7 +278,7 @@ export function formatTime(
 ): string {
   const parsedDate = typeof date === "string" ? parseISO(date) : date;
   if (!isValid(parsedDate)) return "";
-  return format(parsedDate, use24HourFormat ? "HH:mm" : "h:mm a");
+  return format(parsedDate, use24HourFormat ? "HH" : "h a");
 }
 
 export const getFirstLetters = (str: string): string => {
