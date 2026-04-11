@@ -1,4 +1,4 @@
-import { Page } from "@/components/Page";
+import { Page, PageContent, PageHeader } from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/khanban")({
@@ -7,8 +7,11 @@ export const Route = createFileRoute("/khanban")({
 
 function RouteComponent() {
   return (
-    <Page breadcrumb={["Khanban"]}>
-      <h1>Khanban Board</h1>
+    <Page>
+      <PageHeader breadcrumb={["Khanban"]} />
+      <PageContent>
+        <h1>Khanban Board</h1>
+      </PageContent>
     </Page>
   );
 }
