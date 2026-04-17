@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
+import { type DateRange } from "react-day-picker";
 import {
   Popover,
   PopoverContent,
@@ -12,13 +12,6 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 
-function isValidDate(date: Date | undefined) {
-  if (!date) {
-    return false;
-  }
-  return !isNaN(date.getTime());
-}
-
 export function DatePickerInput({
   onChange = () => {},
 }: {
@@ -28,53 +21,34 @@ export function DatePickerInput({
 
   const [open, setOpen] = useState(false);
 
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [month, setMonth] = useState<Date | undefined>(date);
+  const [date, setDate] = useState<DateRange | undefined>(undefined);
+  const [month, setMonth] = useState<Date | undefined>(undefined);
 
   const { toFormatted, toISO } = useDateFormat();
 
+  const selectedDate = () => (
+    <span className="flex align-middle font-normal">
+      {toFormatted(task.TimePlannedStart)}
+
+      {task.TimePlannedEnd !== null && " → "}
+      {task.TimePlannedEnd !== null && toFormatted(task.TimePlannedEnd)}
+    </span>
+  );
+  const placeholder = () => (
+    <span className="font-normal text-neutral-400">Select a date</span>
+  );
+
   return (
     <div className="relative flex gap-2 grow">
-      <Input
-        id="date"
-        value={toFormatted(task.TimePlanned)}
-        placeholder={toFormatted(new Date())}
-        className="bg-background pl-10 placeholder:text-neutral-400"
-        onBlur={(e) => {
-          if (isValidDate(new Date(e.target.value))) {
-            onChange({
-              ...task,
-              TimePlanned: e.target.value,
-            });
-          }
-        }}
-        onChange={(e) => {
-          const date = new Date(e.target.value);
-          if (isValidDate(date)) {
-            setDate(date);
-            setMonth(date);
-            setTask({
-              ...task,
-              TimePlanned: toISO(e.target.value),
-            });
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date-picker"
-            variant="ghost"
-            className="absolute top-1/2 left-2 size-6 -translate-y-1/2"
+            variant="outline"
+            className="flex grow justify-start placeholder:"
           >
             <CalendarIcon className="size-3.5" />
-            <span className="sr-only">Select date</span>
+            {task.TimePlannedStart !== null ? selectedDate() : placeholder()}
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -84,22 +58,24 @@ export function DatePickerInput({
           sideOffset={10}
         >
           <Calendar
-            mode="single"
+            mode="range"
             selected={date}
             captionLayout="dropdown"
             month={month}
             onMonthChange={setMonth}
             onSelect={(date) => {
               setDate(date);
+              console.log(date);
               setTask({
                 ...task,
-                TimePlanned: date?.toISOString() ?? null,
+                TimePlannedStart: date?.from?.toISOString() ?? null,
+                TimePlannedEnd: date?.to?.toISOString() ?? null,
               });
               onChange({
                 ...task,
-                TimePlanned: date?.toISOString() ?? null,
+                TimePlannedStart: date?.from?.toISOString() ?? null,
+                TimePlannedEnd: date?.to?.toISOString() ?? null,
               });
-              setOpen(false);
             }}
           />
         </PopoverContent>

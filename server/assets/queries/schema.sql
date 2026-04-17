@@ -43,8 +43,9 @@ CREATE TABLE task (
     name VARCHAR DEFAULT '',
     body TEXT DEFAULT '[]',
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timePlannedStart TIMESTAMP DEFAULT NULL,
+    timePlannedEnd   TIMESTAMP DEFAULT NULL,
     timeCompleted TIMESTAMP DEFAULT NULL,
-    timePlanned TIMESTAMP DEFAULT NULL,
     assignee VARCHAR,
     priority TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),
     type TEXT CHECK(type IN ('Dev', 'Test', 'Reminder')),
@@ -52,6 +53,22 @@ CREATE TABLE task (
 
     FOREIGN KEY (checklist) REFERENCES checklist(id)
 );
+
+CREATE TRIGGER checkTimePlannedEnd_Insert
+BEFORE INSERT ON task
+WHEN NEW.timePlannedEnd IS NOT NULL
+   AND (NEW.timePlannedStart IS NULL OR NEW.timePlannedEnd < NEW.timePlannedStart)
+BEGIN
+    SELECT RAISE(ABORT, 'timePlannedEnd cannot be set without timePlannedStart, and must be on or after it');
+END;
+
+CREATE TRIGGER checkTimePlannedEnd_Update
+BEFORE UPDATE ON task
+WHEN NEW.timePlannedEnd IS NOT NULL
+   AND (NEW.timePlannedStart IS NULL OR NEW.timePlannedEnd < NEW.timePlannedStart)
+BEGIN
+    SELECT RAISE(ABORT, 'timePlannedEnd cannot be set without timePlannedStart, and must be on or after it');
+END;
 
 -- CREATE TABLE resource (
 --     id INTEGER PRIMARY KEY,

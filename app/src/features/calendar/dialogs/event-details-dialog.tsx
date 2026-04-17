@@ -22,6 +22,7 @@ interface IProps {
   children: ReactNode;
 }
 
+/** @deprecated wazm */
 export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);

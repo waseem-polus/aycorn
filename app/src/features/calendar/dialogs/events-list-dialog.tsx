@@ -24,6 +24,7 @@ interface EventListDialogProps {
   children?: ReactNode;
 }
 
+/** @deprecated */
 export function EventListDialog({
   date,
   events,

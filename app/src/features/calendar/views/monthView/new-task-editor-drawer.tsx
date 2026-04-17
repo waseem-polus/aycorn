@@ -29,7 +29,7 @@ export function NewTaskEditorDrawer({
         {
           ...task,
           Checklist: Checklists[0]?.ID,
-          TimePlanned: toISO(date),
+          TimePlannedStart: toISO(date),
         },
         {
           onSuccess: (newTask: Task) => {

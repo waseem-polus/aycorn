@@ -18,11 +18,11 @@ export function MonthView({
 
   const events: IEvent[] = Tasks.map((task) => ({
     id: task.ID,
-    startDate: task.TimePlanned || task.TimeCreated,
-    endDate: task.TimePlanned || task.TimeCreated,
+    startDate: task.TimePlannedStart || task.TimeCreated,
+    endDate: task.TimePlannedEnd || task.TimePlannedStart || task.TimeCreated,
     title: task.Name,
     color: getColorForTaskType(task.Type),
-    description: "",
+    description: task.ChecklistName,
     user: { id: task.Assignee, name: task.Assignee, picturePath: null },
   }));
 
@@ -30,6 +30,12 @@ export function MonthView({
     const startDate = parseISO(event.startDate);
     const endDate = parseISO(event.endDate);
     return isSameDay(startDate, endDate);
+  });
+
+  const multiDayEvents = events.filter((event) => {
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    return !isSameDay(startDate, endDate);
   });
 
   return (
@@ -40,7 +46,8 @@ export function MonthView({
         <Suspense fallback={<MonthViewSkeleton />}>
           <CalendarMonthView
             singleDayEvents={singleDayEvents}
-            multiDayEvents={[]}
+            multiDayEvents={multiDayEvents}
+            setTaskDrawerOpen={setTaskDrawerOpen}
           />
         </Suspense>
       </div>

@@ -33,10 +33,25 @@ export function KanbanColumn({
     {
       variants: {
         activeDropZone: {
-          false: false,
-          true: "bg-primary/10",
+          true: "", // color applied via compoundVariants
+          false: "",
+        },
+        type: {
+          Blocked: "",
+          Open: "",
+          Todo: "",
+          Doing: "",
+          Done: "",
         },
       },
+      compoundVariants: [
+        { activeDropZone: true, type: "Blocked", class: "bg-red-50" },
+        { activeDropZone: true, type: "Open", class: "bg-primary/10" },
+        { activeDropZone: true, type: "Todo", class: "bg-orange-50" },
+        { activeDropZone: true, type: "Doing", class: "bg-green-50" },
+        { activeDropZone: true, type: "Done", class: "bg-purple-50" },
+      ],
+      defaultVariants: { activeDropZone: false, type: "Open" },
     },
   );
 
@@ -53,7 +68,7 @@ export function KanbanColumn({
         <span className="text-neutral-500 text-sm">{description}</span>
       </div>
       <ItemGroup
-        className={kanbanColClass({ activeDropZone: isOver })}
+        className={kanbanColClass({ activeDropZone: isOver, type: status })}
         ref={setNodeRef}
       >
         {filteredTasks.map((task) => (
