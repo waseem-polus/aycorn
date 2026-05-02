@@ -28,8 +28,9 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			t.id,
 		    t.name,
 			t.timeCreated,
+		    t.timePlannedStart,
+		    t.timePlannedEnd,
 		    t.timeCompleted,
-		    t.timePlanned,
 		    t.assignee,
 		    t.priority,
 			t.type,
@@ -80,7 +81,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		}
 	}
 
-	query += " ORDER BY t.timePlanned, t.timeCreated DESC"
+	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"
 
 	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
@@ -99,8 +100,9 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			&ct.ID,
 			&ct.Name,
 			&ct.TimeCreated,
+			&ct.TimePlannedStart,
+			&ct.TimePlannedEnd,
 			&ct.TimeCompleted,
-			&ct.TimePlanned,
 			&ct.Assignee,
 			&ct.Priority,
 			&ct.Type,
@@ -125,15 +127,17 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
 	query := `
-		INSERT INTO task (name, body, checklist, timePlanned, assignee, priority, type, status)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, status)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id;
 	`
-	res, err := repo.DB.Exec(query,
+	res, err := repo.DB.Exec(
+		query,
 		newTask.Name,
 		newTask.Body,
 		newTask.Checklist,
-		newTask.TimePlanned,
+		newTask.TimePlannedStart,
+		newTask.TimePlannedEnd,
 		newTask.Assignee,
 		newTask.Priority,
 		newTask.Type,
@@ -163,8 +167,9 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 			body = ?,
 			checklist = ?,
 			timeCreated = ?,
+			timePlannedStart = ?,
+			timePlannedEnd = ?,
 			timeCompleted = ?,
-			timePlanned = ?,
 			assignee = ?,
 			priority = ?,
 			type = ?,
@@ -178,8 +183,9 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Body,
 		task.Checklist,
 		task.TimeCreated,
+		task.TimePlannedStart,
+		task.TimePlannedEnd,
 		task.TimeCompleted,
-		task.TimePlanned,
 		task.Assignee,
 		task.Priority,
 		task.Type,
@@ -205,8 +211,9 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 			t.name,
 			t.body,
 			t.timeCreated,
+			t.timePlannedStart,
+			t.timePlannedEnd,
 			t.timeCompleted,
-			t.timePlanned,
 			t.assignee,
 			t.priority,
 			t.type,
@@ -232,8 +239,9 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		&task.Name,
 		&task.Body,
 		&task.TimeCreated,
+		&task.TimePlannedStart,
+		&task.TimePlannedEnd,
 		&task.TimeCompleted,
-		&task.TimePlanned,
 		&task.Assignee,
 		&task.Priority,
 		&task.Type,

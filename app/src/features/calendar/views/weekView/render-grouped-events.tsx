@@ -1,10 +1,14 @@
 import { areIntervalsOverlapping, parseISO } from "date-fns";
 import { getEventBlockStyle } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
-import { EventBlock } from "@/features/calendar/views/weekAndDayView/event-block";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { EventBlock } from "@/features/calendar/views/weekView/event-block";
 
 interface RenderGroupedEventsProps {
-  groupedEvents: IEvent[][];
+  groupedEvents: Task[][];
   day: Date;
 }
 
@@ -26,12 +30,12 @@ export function RenderGroupedEvents({
           otherGroup.some((otherEvent) =>
             areIntervalsOverlapping(
               {
-                start: parseISO(event.startDate),
-                end: parseISO(event.endDate),
+                start: parseISO(getTaskStartDate(event)),
+                end: parseISO(getTaskEndDate(event)),
               },
               {
-                start: parseISO(otherEvent.startDate),
-                end: parseISO(otherEvent.endDate),
+                start: parseISO(getTaskStartDate(otherEvent)),
+                end: parseISO(getTaskEndDate(otherEvent)),
               },
             ),
           ),
@@ -40,7 +44,7 @@ export function RenderGroupedEvents({
       if (!hasOverlap) style = { ...style, width: "100%", left: "0%" };
 
       return (
-        <div key={event.id} className="absolute p-1" style={style}>
+        <div key={event.ID} className="absolute p-1" style={style}>
           <EventBlock event={event} />
         </div>
       );

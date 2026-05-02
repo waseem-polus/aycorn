@@ -8,7 +8,9 @@ import { EventListDialog } from "@/features/calendar/dialogs/events-list-dialog"
 import { DroppableArea } from "@/features/calendar/dragAndDrop/droppable-area";
 import { getMonthCellEvents } from "@/features/calendar/helpers";
 import { useMediaQuery } from "@/features/calendar/hooks";
-import type { ICalendarCell, IEvent } from "@/features/calendar/interfaces";
+import type { ICalendarCell } from "@/features/calendar/interfaces";
+import { getTaskStartDate, getTaskColor } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
 import {
   EventBullet,
   MonthEventBadge,
@@ -18,7 +20,7 @@ import { TaskProvider } from "@/contexts/task/TaskProvider";
 
 interface IProps {
   cell: ICalendarCell;
-  events: IEvent[];
+  events: Task[];
   eventPositions: Record<string, number>;
   setTaskDrawerOpen: (open: boolean) => void;
 }
@@ -58,24 +60,24 @@ export function DayCell({
         );
       }
       const showBullet = isSameMonth(
-        new Date(event.startDate),
+        new Date(getTaskStartDate(event)),
         currentCellMonth,
       );
 
       return (
         <motion.div
-          key={`event-${event.id}-${position}`}
+          key={`event-${event.ID}-${position}`}
           className="lg:flex-1"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: position * 0.1, ...transition }}
         >
           {showBullet && (
-            <EventBullet className="lg:hidden" color={event.color} />
+            <EventBullet className="lg:hidden" color={getTaskColor(event)} />
           )}
           <MonthEventBadge
             className="hidden lg:flex"
-            event={event}
+            task={event}
             cellDate={startOfDay(date)}
           />
         </motion.div>
@@ -154,7 +156,7 @@ export function DayCell({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, ...transition }}
             >
-              <EventListDialog date={date} events={cellEvents} />
+              <EventListDialog date={date} tasks={cellEvents} />
             </motion.div>
           )}
         </DroppableArea>
@@ -176,7 +178,7 @@ export function DayCell({
 
   if (isMobile && currentMonth) {
     return (
-      <EventListDialog date={date} events={cellEvents}>
+      <EventListDialog date={date} tasks={cellEvents}>
         {cellContent}
       </EventListDialog>
     );

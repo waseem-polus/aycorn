@@ -34,8 +34,9 @@ export type Task = {
   Body: Value;
   Checklist: number;
   TimeCreated: string;
+  TimePlannedStart: string | null;
+  TimePlannedEnd: string | null;
   TimeCompleted: string | null;
-  TimePlanned: string | null;
   Assignee: string;
   Priority: Priority;
   Type: Type;

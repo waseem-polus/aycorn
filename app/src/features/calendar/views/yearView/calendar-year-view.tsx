@@ -5,12 +5,13 @@ import { staggerContainer, transition } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { EventListDialog } from "@/features/calendar/dialogs/events-list-dialog";
 import { getCalendarCells } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { getTaskStartDate, getTaskColor } from "@/features/calendar/interfaces";
 import { EventBullet } from "@/features/calendar/views/monthView";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayEvents: Task[];
+  multiDayEvents: Task[];
 }
 
 const MONTHS = [
@@ -37,7 +38,6 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
 
   return (
     <div className="flex flex-col h-full  overflow-y-auto p-4  sm:p-6">
-      {/* Year grid */}
       <motion.div
         initial="initial"
         animate="animate"
@@ -57,7 +57,6 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
               transition={{ delay: monthIndex * 0.05, ...transition }}
               aria-label={`${month} ${currentYear} calendar`}
             >
-              {/* Month header */}
               <button
                 type="button"
                 className="w-full px-3 py-2 text-center font-semibold text-sm sm:text-base cursor-pointer hover:bg-primary/20 transition-colors bg-transparent border-none appearance-none"
@@ -82,7 +81,7 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
                   const isCurrentMonth = isSameMonth(cell.date, monthDate);
                   const isToday = isSameDay(cell.date, new Date());
                   const dayEvents = allEvents.filter((event) =>
-                    isSameDay(new Date(event.startDate), cell.date),
+                    isSameDay(new Date(getTaskStartDate(event)), cell.date),
                   );
                   const hasEvents = dayEvents.length > 0;
 
@@ -98,7 +97,7 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
                       )}
                     >
                       {isCurrentMonth && hasEvents ? (
-                        <EventListDialog date={cell.date} events={dayEvents}>
+                        <EventListDialog date={cell.date} tasks={dayEvents}>
                           <div className="w-full h-full flex flex-col items-center justify-start gap-0.5">
                             <span
                               className={cn(
@@ -115,15 +114,15 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
                                   .slice(0, 2)
                                   .map((event) => (
                                     <EventBullet
-                                      key={event.id}
-                                      color={event.color}
+                                      key={event.ID}
+                                      color={getTaskColor(event)}
                                       className="size-1.5"
                                     />
                                   ))
                               ) : (
                                 <div className="flex flex-col justify-center items-center">
                                   <EventBullet
-                                    color={dayEvents[0].color}
+                                    color={getTaskColor(dayEvents[0])}
                                     className="size-1.5"
                                   />
                                   <span className="text-[0.6rem]">

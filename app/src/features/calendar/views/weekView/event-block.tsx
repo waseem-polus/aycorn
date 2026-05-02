@@ -1,21 +1,27 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { differenceInMinutes, parseISO } from "date-fns";
-import type { HTMLAttributes } from "react";
+import { useCallback, useContext, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
 import { DraggableEvent } from "@/features/calendar/dragAndDrop/draggable-event";
 import { ResizableEvent } from "@/features/calendar/dragAndDrop/resizable-event";
 import { formatTime } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+  getTaskColor,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 const calendarWeekEventCardVariants = cva(
   "flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-offset-2",
   {
     variants: {
       color: {
-        // Colored variants
         blue: "border-blue-200 bg-blue-100/50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-950",
         green:
           "border-green-200 bg-green-100/50 text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950/50 dark:text-green-300 dark:hover:bg-green-950",
@@ -27,7 +33,6 @@ const calendarWeekEventCardVariants = cva(
         orange:
           "border-orange-200 bg-orange-100/50 text-orange-700 hover:bg-orange-100 dark:border-orange-800 dark:bg-orange-950/50 dark:text-orange-300 dark:hover:bg-orange-950",
 
-        // Dot variants
         "blue-dot":
           "border-border bg-card text-foreground hover:bg-accent [&_svg]:fill-blue-600 dark:[&_svg]:fill-blue-500",
         "green-dot":
@@ -52,19 +57,27 @@ interface IProps
   extends
     HTMLAttributes<HTMLDivElement>,
     Omit<VariantProps<typeof calendarWeekEventCardVariants>, "color"> {
-  event: IEvent;
+  event: Task;
 }
 
 export function EventBlock({ event, className }: IProps) {
   const { badgeVariant, use24HourFormat } = useCalendar();
 
-  const start = parseISO(event.startDate);
-  const end = parseISO(event.endDate);
+  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
+  const setTaskEditorDrawerOpen = useCallback(
+    (open: boolean) =>
+      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
+    [SetViewSettings, ViewSettings],
+  );
+
+  const start = parseISO(getTaskStartDate(event));
+  const end = parseISO(getTaskEndDate(event));
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
 
+  const taskColor = getTaskColor(event);
   const color = (
-    badgeVariant === "dot" ? `${event.color}-dot` : event.color
+    badgeVariant === "dot" ? `${taskColor}-dot` : taskColor
   ) as VariantProps<typeof calendarWeekEventCardVariants>["color"];
 
   const calendarWeekEventCardClasses = cn(
@@ -75,37 +88,39 @@ export function EventBlock({ event, className }: IProps) {
   return (
     <ResizableEvent event={event}>
       <DraggableEvent event={event}>
-        <EventDetailsDialog event={event}>
-          <button
-            type="button"
-            className={calendarWeekEventCardClasses}
-            style={{ height: `${heightInPixels}px` }}
-          >
-            <div className="flex items-center gap-1.5 truncate">
-              {badgeVariant === "dot" && (
-                <svg
-                  width="8"
-                  height="8"
-                  viewBox="0 0 8 8"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="shrink-0"
-                  aria-hidden="true"
-                >
-                  <circle cx="4" cy="4" r="4" />
-                </svg>
+        <TaskProvider defaultState={event}>
+          <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
+            <button
+              type="button"
+              className={calendarWeekEventCardClasses}
+              style={{ height: `${heightInPixels}px` }}
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                {badgeVariant === "dot" && (
+                  <svg
+                    width="8"
+                    height="8"
+                    viewBox="0 0 8 8"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <circle cx="4" cy="4" r="4" />
+                  </svg>
+                )}
+
+                <p className="truncate font-semibold">{event.Name}</p>
+              </div>
+
+              {durationInMinutes > 25 && (
+                <p>
+                  {formatTime(start, use24HourFormat)} -{" "}
+                  {formatTime(end, use24HourFormat)}
+                </p>
               )}
-
-              <p className="truncate font-semibold">{event.title}</p>
-            </div>
-
-            {durationInMinutes > 25 && (
-              <p>
-                {formatTime(start, use24HourFormat)} -{" "}
-                {formatTime(end, use24HourFormat)}
-              </p>
-            )}
-          </button>
-        </EventDetailsDialog>
+            </button>
+          </TaskEditorDrawer>
+        </TaskProvider>
       </DraggableEvent>
     </ResizableEvent>
   );

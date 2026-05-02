@@ -25,17 +25,18 @@ type ChecklistDetails struct {
 }
 
 type Task struct {
-	ID            int
-	Checklist     int
-	Name          string
-	Body          string
-	TimeCreated   *time.Time
-	TimeCompleted *time.Time
-	TimePlanned   *time.Time
-	Assignee      string
-	Priority      string
-	Type          string
-	Status        string
+	ID               int
+	Checklist        int
+	Name             string
+	Body             string
+	TimeCreated      *time.Time
+	TimePlannedStart *time.Time
+	TimePlannedEnd   *time.Time
+	TimeCompleted    *time.Time
+	Assignee         string
+	Priority         string
+	Type             string
+	Status           string
 }
 
 type ChecklistTask struct {

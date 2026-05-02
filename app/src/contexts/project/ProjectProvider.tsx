@@ -5,7 +5,12 @@ import type {
   ChecklistTask,
   TaskFilter,
 } from "@/types/types";
-import { defaultProjectContextValue, ProjectContext } from "./ProjectContext";
+import {
+  defaultProjectContextValue,
+  defaultViewSettings,
+  ProjectContext,
+  type ViewSettings,
+} from "./ProjectContext";
 
 export function ProjectProvider({
   defaultState = defaultProjectContextValue.Project,
@@ -20,6 +25,8 @@ export function ProjectProvider({
   const [filters, setFilters] = useState<TaskFilter>(
     defaultProjectContextValue.Filter,
   );
+  const [viewSettings, setViewSettings] =
+    useState<ViewSettings>(defaultViewSettings);
 
   return (
     <ProjectContext.Provider
@@ -35,6 +42,9 @@ export function ProjectProvider({
 
         Filter: filters,
         SetFilter: setFilters,
+
+        ViewSettings: viewSettings,
+        SetViewSettings: setViewSettings,
       }}
     >
       {children}

@@ -1,23 +1,18 @@
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
+import { type DateRange } from "react-day-picker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ClockCheckIcon, ClockIcon } from "lucide-react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
-
-function isValidDate(date: Date | undefined) {
-  if (!date) {
-    return false;
-  }
-  return !isNaN(date.getTime());
-}
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import { isSameDay } from "date-fns";
 
 export function DatePickerInput({
   onChange = () => {},
@@ -28,80 +23,141 @@ export function DatePickerInput({
 
   const [open, setOpen] = useState(false);
 
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [month, setMonth] = useState<Date | undefined>(date);
+  const [date, setDate] = useState<DateRange | undefined>({
+    from:
+      task.TimePlannedStart !== null
+        ? new Date(task.TimePlannedStart)
+        : undefined,
+    to:
+      task.TimePlannedEnd !== null ? new Date(task.TimePlannedEnd) : undefined,
+  });
+  const [month, setMonth] = useState<Date | undefined>(undefined);
 
-  const { toFormatted, toISO } = useDateFormat();
+  const { toFormatted } = useDateFormat();
+
+  const getTimeFromISO = (iso: string | null) => {
+    if (!iso) return "";
+    const date = new Date(iso);
+    return date.toTimeString().slice(0, 5);
+  };
+
+  const setTimeOnDate = (isoDate: string | null, time: string) => {
+    if (!isoDate || !time) return isoDate;
+    const date = new Date(isoDate);
+    const [hours, minutes] = time.split(":");
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return date.toISOString();
+  };
+
+  const handleTimeChange = (type: "start" | "end", time: string) => {
+    const currentStart = task.TimePlannedStart;
+    const currentEnd = task.TimePlannedEnd;
+
+    const newStart =
+      type === "start" ? setTimeOnDate(currentStart, time) : currentStart;
+    const newEnd =
+      type === "end" ? setTimeOnDate(currentEnd, time) : currentEnd;
+
+    setTask({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
+    onChange({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
+  };
+
+  const selectedDate = () => {
+    if (task.TimePlannedStart === null) {
+      return (
+        <span className="font-normal text-neutral-400">Select a date</span>
+      );
+    }
+
+    const hasEndDate =
+      task.TimePlannedEnd !== null &&
+      !isSameDay(task.TimePlannedStart, task.TimePlannedEnd);
+
+    return (
+      <span className="flex align-middle font-normal">
+        {toFormatted(task.TimePlannedStart)}
+
+        {hasEndDate && " → "}
+        {hasEndDate && toFormatted(task.TimePlannedEnd)}
+      </span>
+    );
+  };
 
   return (
     <div className="relative flex gap-2 grow">
-      <Input
-        id="date"
-        value={toFormatted(task.TimePlanned)}
-        placeholder={toFormatted(new Date())}
-        className="bg-background pl-10 placeholder:text-neutral-400"
-        onBlur={(e) => {
-          if (isValidDate(new Date(e.target.value))) {
-            onChange({
-              ...task,
-              TimePlanned: e.target.value,
-            });
-          }
-        }}
-        onChange={(e) => {
-          const date = new Date(e.target.value);
-          if (isValidDate(date)) {
-            setDate(date);
-            setMonth(date);
-            setTask({
-              ...task,
-              TimePlanned: toISO(e.target.value),
-            });
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date-picker"
-            variant="ghost"
-            className="absolute top-1/2 left-2 size-6 -translate-y-1/2"
+            variant="outline"
+            className="flex grow justify-start placeholder:"
           >
             <CalendarIcon className="size-3.5" />
-            <span className="sr-only">Select date</span>
+            {selectedDate()}
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto overflow-hidden p-0"
+          className="flex flex-col w-auto overflow-hidden p-2 gap-3"
           align="start"
           alignOffset={-8}
           sideOffset={10}
         >
           <Calendar
-            mode="single"
+            mode="range"
+            className="p-0"
             selected={date}
             captionLayout="dropdown"
             month={month}
             onMonthChange={setMonth}
             onSelect={(date) => {
               setDate(date);
+              const existingTimeStart = getTimeFromISO(task.TimePlannedStart);
+              const existingTimeEnd = getTimeFromISO(task.TimePlannedEnd);
+
+              const newStart = date?.from
+                ? setTimeOnDate(date.from.toISOString(), existingTimeStart)
+                : null;
+              const newEnd = date?.to
+                ? setTimeOnDate(date.to.toISOString(), existingTimeEnd)
+                : null;
+
               setTask({
                 ...task,
-                TimePlanned: date?.toISOString() ?? null,
+                TimePlannedStart: newStart,
+                TimePlannedEnd: newEnd,
               });
               onChange({
                 ...task,
-                TimePlanned: date?.toISOString() ?? null,
+                TimePlannedStart: newStart,
+                TimePlannedEnd: newEnd,
               });
-              setOpen(false);
             }}
           />
+          <InputGroup>
+            <InputGroupAddon>
+              <ClockIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              className="w-full"
+              id="timeStart"
+              type="time"
+              value={getTimeFromISO(task.TimePlannedStart)}
+              onChange={(e) => handleTimeChange("start", e.target.value)}
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <InputGroupAddon>
+              <ClockCheckIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              className="w-full"
+              id="timeEnd"
+              type="time"
+              value={getTimeFromISO(task.TimePlannedEnd)}
+              onChange={(e) => handleTimeChange("end", e.target.value)}
+            />
+          </InputGroup>
         </PopoverContent>
       </Popover>
     </div>

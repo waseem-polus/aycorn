@@ -77,20 +77,23 @@ export function ListView({
                               </Badge>
                               <Badge
                                 variant={
-                                  task.TimePlanned !== null
+                                  task.TimePlannedStart !== null
                                     ? "secondary"
                                     : "outline"
                                 }
                                 className={
-                                  task.TimePlanned !== null
+                                  task.TimePlannedStart !== null
                                     ? ""
                                     : "text-neutral-500"
                                 }
                               >
                                 <CalendarIcon className="size-2" />
-                                {task.TimePlanned !== null
-                                  ? toFormatted(task.TimePlanned)
+                                {task.TimePlannedStart !== null
+                                  ? toFormatted(task.TimePlannedStart)
                                   : "Not Scheduled"}
+
+                                {task.TimePlannedEnd !== null &&
+                                  " → " + toFormatted(task.TimePlannedEnd)}
                               </Badge>
                             </span>
                           </ItemDescription>

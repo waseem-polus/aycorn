@@ -1,5 +1,5 @@
-import { COLORS } from "@/features/calendar/constants";
-import type { IEvent, IUser } from "@/features/calendar/interfaces";
+import type { Task, Type, Priority, Status, Value } from "@/types/types";
+import type { IUser } from "@/features/calendar/interfaces";
 
 export const USERS_MOCK: IUser[] = [
   {
@@ -115,36 +115,42 @@ const events = [
   "Home renovation meeting",
 ];
 
-const mockGenerator = (numberOfEvents: number): IEvent[] => {
-  const result: IEvent[] = [];
+const assignees = ["Michael Doe", "Alice Johnson", "Robert Smith", "Emily Davis"];
+const types: Type[] = ["Dev", "Reminder", "Test"];
+const priorities: Priority[] = ["Urgent", "High", "Medium", "Low"];
+const statuses: Status[] = ["Open", "Todo", "Doing", "Blocked", "Done"];
+
+const mockGenerator = (numberOfEvents: number): Task[] => {
+  const result: Task[] = [];
   let currentId = 1;
 
-  const randomUser = USERS_MOCK[Math.floor(Math.random() * USERS_MOCK.length)];
-
-  // Date range: 30 days before and after now
   const now = new Date();
   const startRange = new Date(now);
   startRange.setDate(now.getDate() - 30);
   const endRange = new Date(now);
   endRange.setDate(now.getDate() + 30);
 
-  // Create an event happening now
-  const currentEvent = {
-    id: currentId++,
-    startDate: new Date(now.getTime() - 30 * 60000).toISOString(),
-    endDate: new Date(now.getTime() + 30 * 60000).toISOString(),
-    title: events[Math.floor(Math.random() * events.length)],
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    user: randomUser,
+  const currentTime = now.toISOString();
+  const currentType = types[Math.floor(Math.random() * types.length)];
+
+  const currentEvent: Task = {
+    ID: currentId++,
+    Name: events[Math.floor(Math.random() * events.length)],
+    Body: "" as Value,
+    Checklist: 1,
+    TimeCreated: currentTime,
+    TimePlannedStart: new Date(now.getTime() - 30 * 60000).toISOString(),
+    TimePlannedEnd: new Date(now.getTime() + 30 * 60000).toISOString(),
+    TimeCompleted: null,
+    Assignee: assignees[Math.floor(Math.random() * assignees.length)],
+    Priority: priorities[Math.floor(Math.random() * priorities.length)],
+    Type: currentType,
+    Status: statuses[Math.floor(Math.random() * statuses.length)],
   };
 
   result.push(currentEvent);
 
-  // Generate the remaining events
   for (let i = 0; i < numberOfEvents - 1; i++) {
-    // Determine if this is a multi-day event (10% chance)
     const isMultiDay = Math.random() < 0.1;
 
     const startDate = new Date(
@@ -152,7 +158,6 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
         Math.random() * (endRange.getTime() - startRange.getTime()),
     );
 
-    // Set time between 8 AM and 8 PM
     startDate.setHours(
       8 + Math.floor(Math.random() * 12),
       Math.floor(Math.random() * 60),
@@ -163,7 +168,6 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
     const endDate = new Date(startDate);
 
     if (isMultiDay) {
-      // Multi-day event: Add 1-4 days
       const additionalDays = Math.floor(Math.random() * 4) + 1;
       endDate.setDate(startDate.getDate() + additionalDays);
       endDate.setHours(
@@ -173,23 +177,28 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
         0,
       );
     } else {
-      // Same-day event: Add 1-3 hours
       endDate.setHours(endDate.getHours() + Math.floor(Math.random() * 3) + 1);
     }
 
+    const eventType = types[Math.floor(Math.random() * types.length)];
+
     result.push({
-      id: currentId++,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      title: events[Math.floor(Math.random() * events.length)],
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      user: USERS_MOCK[Math.floor(Math.random() * USERS_MOCK.length)],
+      ID: currentId++,
+      Name: events[Math.floor(Math.random() * events.length)],
+      Body: "" as Value,
+      Checklist: 1,
+      TimeCreated: startDate.toISOString(),
+      TimePlannedStart: startDate.toISOString(),
+      TimePlannedEnd: endDate.toISOString(),
+      TimeCompleted: Math.random() > 0.7 ? endDate.toISOString() : null,
+      Assignee: assignees[Math.floor(Math.random() * assignees.length)],
+      Priority: priorities[Math.floor(Math.random() * priorities.length)],
+      Type: eventType,
+      Status: statuses[Math.floor(Math.random() * statuses.length)],
     });
   }
 
   return result;
 };
 
-export const CALENDAR_ITEMS_MOCK: IEvent[] = mockGenerator(80);
+export const CALENDAR_ITEMS_MOCK: Task[] = mockGenerator(80);

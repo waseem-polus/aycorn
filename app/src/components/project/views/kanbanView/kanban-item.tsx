@@ -62,15 +62,20 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
                   {task.Assignee === "" ? "Not Assigned" : task.Assignee}
                 </Badge>
                 <Badge
-                  variant={task.TimePlanned !== null ? "secondary" : "outline"}
+                  variant={
+                    task.TimePlannedStart !== null ? "secondary" : "outline"
+                  }
                   className={
-                    task.TimePlanned !== null ? "" : "text-neutral-500"
+                    task.TimePlannedStart !== null ? "" : "text-neutral-500"
                   }
                 >
                   <CalendarIcon className="size-2" />
-                  {task.TimePlanned !== null
-                    ? toFormatted(task.TimePlanned)
+                  {task.TimePlannedStart !== null
+                    ? toFormatted(task.TimePlannedStart)
                     : "Not Scheduled"}
+
+                  {task.TimePlannedEnd !== null &&
+                    " → " + toFormatted(task.TimePlannedEnd)}
                 </Badge>
               </span>
             </ItemFooter>

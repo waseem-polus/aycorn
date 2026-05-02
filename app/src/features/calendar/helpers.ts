@@ -26,8 +26,10 @@ import {
   subYears,
 } from "date-fns";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import type { ICalendarCell, IEvent } from "@/components/interfaces";
-import type { TCalendarView, TEventColor } from "@/components/types";
+import type { ICalendarCell } from "@/features/calendar/interfaces";
+import { getTaskStartDate, getTaskEndDate } from "@/features/calendar/interfaces";
+import type { TCalendarView, TEventColor } from "@/features/calendar/types";
+import type { Task } from "@/types/types";
 
 const FORMAT_STRING = "MMM d, yyyy";
 
@@ -78,7 +80,7 @@ export function navigateDate(
 }
 
 export function getEventsCount(
-  events: IEvent[],
+  events: Task[],
   date: Date,
   view: TCalendarView,
 ): number {
@@ -91,23 +93,23 @@ export function getEventsCount(
   };
 
   const compareFn = compareFns[view];
-  return events.filter((event) => compareFn(parseISO(event.startDate), date))
+  return events.filter((event) => compareFn(parseISO(getTaskStartDate(event)), date))
     .length;
 }
 
-export function groupEvents(dayEvents: IEvent[]): IEvent[][] {
+export function groupEvents(dayEvents: Task[]): Task[][] {
   const sortedEvents = dayEvents.sort(
-    (a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime(),
+    (a, b) => parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime(),
   );
-  const groups: IEvent[][] = [];
+  const groups: Task[][] = [];
 
   for (const event of sortedEvents) {
-    const eventStart = parseISO(event.startDate);
+    const eventStart = parseISO(getTaskStartDate(event));
     let placed = false;
 
     for (const group of groups) {
       const lastEventInGroup = group[group.length - 1];
-      const lastEventEnd = parseISO(lastEventInGroup.endDate);
+      const lastEventEnd = parseISO(getTaskEndDate(lastEventInGroup));
 
       if (eventStart >= lastEventEnd) {
         group.push(event);
@@ -123,17 +125,17 @@ export function groupEvents(dayEvents: IEvent[]): IEvent[][] {
 }
 
 export function getEventBlockStyle(
-  event: IEvent,
+  event: Task,
   day: Date,
   groupIndex: number,
   groupSize: number,
 ) {
-  const startDate = parseISO(event.startDate);
-  const dayStart = startOfDay(day); // Use startOfDay instead of manual reset
+  const startDate = parseISO(getTaskStartDate(event));
+  const dayStart = startOfDay(day);
   const eventStart = startDate < dayStart ? dayStart : startDate;
   const startMinutes = differenceInMinutes(eventStart, dayStart);
 
-  const top = (startMinutes / 1440) * 100; // 1440 minutes in a day
+  const top = (startMinutes / 1440) * 100;
   const width = 100 / groupSize;
   const left = groupIndex * width;
 
@@ -144,7 +146,7 @@ export function getCalendarCells(selectedDate: Date): ICalendarCell[] {
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth();
 
-  const daysInMonth = endOfMonth(selectedDate).getDate(); // Faster than new Date(year, month + 1, 0)
+  const daysInMonth = endOfMonth(selectedDate).getDate();
   const firstDayOfMonth = startOfMonth(selectedDate).getDay();
   const daysInPrevMonth = endOfMonth(new Date(year, month - 1)).getDate();
   const totalDays = firstDayOfMonth + daysInMonth;
@@ -174,8 +176,8 @@ export function getCalendarCells(selectedDate: Date): ICalendarCell[] {
 }
 
 export function calculateMonthEventPositions(
-  multiDayEvents: IEvent[],
-  singleDayEvents: IEvent[],
+  multiDayEvents: Task[],
+  singleDayEvents: Task[],
   selectedDate: Date,
 ): Record<string, number> {
   const monthStart = startOfMonth(selectedDate);
@@ -191,27 +193,27 @@ export function calculateMonthEventPositions(
   const sortedEvents = [
     ...multiDayEvents.sort((a, b) => {
       const aDuration = differenceInDays(
-        parseISO(a.endDate),
-        parseISO(a.startDate),
+        parseISO(getTaskEndDate(a)),
+        parseISO(getTaskStartDate(a)),
       );
       const bDuration = differenceInDays(
-        parseISO(b.endDate),
-        parseISO(b.startDate),
+        parseISO(getTaskEndDate(b)),
+        parseISO(getTaskStartDate(b)),
       );
       return (
         bDuration - aDuration ||
-        parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime()
+        parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime()
       );
     }),
     ...singleDayEvents.sort(
       (a, b) =>
-        parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime(),
+        parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime(),
     ),
   ];
 
   sortedEvents.forEach((event) => {
-    const eventStart = parseISO(event.startDate);
-    const eventEnd = parseISO(event.endDate);
+    const eventStart = parseISO(getTaskStartDate(event));
+    const eventEnd = parseISO(getTaskEndDate(event));
     const eventDays = eachDayOfInterval({
       start: eventStart < monthStart ? monthStart : eventStart,
       end: eventEnd > monthEnd ? monthEnd : eventEnd,
@@ -236,7 +238,7 @@ export function calculateMonthEventPositions(
         const dayKey = startOfDay(day).toISOString();
         occupiedPositions[dayKey][position] = true;
       });
-      eventPositions[event.id] = position;
+      eventPositions[event.ID] = position;
     }
   });
 
@@ -245,13 +247,13 @@ export function calculateMonthEventPositions(
 
 export function getMonthCellEvents(
   date: Date,
-  events: IEvent[],
+  events: Task[],
   eventPositions: Record<string, number>,
 ) {
   const dayStart = startOfDay(date);
   const eventsForDate = events.filter((event) => {
-    const eventStart = parseISO(event.startDate);
-    const eventEnd = parseISO(event.endDate);
+    const eventStart = parseISO(getTaskStartDate(event));
+    const eventEnd = parseISO(getTaskEndDate(event));
     return (
       (dayStart >= eventStart && dayStart <= eventEnd) ||
       isSameDay(dayStart, eventStart) ||
@@ -262,8 +264,8 @@ export function getMonthCellEvents(
   return eventsForDate
     .map((event) => ({
       ...event,
-      position: eventPositions[event.id] ?? -1,
-      isMultiDay: event.startDate !== event.endDate,
+      position: eventPositions[event.ID] ?? -1,
+      isMultiDay: getTaskStartDate(event) !== getTaskEndDate(event),
     }))
     .sort((a, b) => {
       if (a.isMultiDay && !b.isMultiDay) return -1;
@@ -289,18 +291,18 @@ export const getFirstLetters = (str: string): string => {
 };
 
 export const getEventsForDay = (
-  events: IEvent[],
+  events: Task[],
   date: Date,
   isWeek = false,
-): IEvent[] => {
+): (Task & { point?: "start" | "end" | "none" })[] => {
   const targetDate = startOfDay(date);
   return events
     .filter((event) => {
-      const startOfDayForEventStart = startOfDay(parseISO(event.startDate));
-      const startOfDayForEventEnd = startOfDay(parseISO(event.endDate));
+      const startOfDayForEventStart = startOfDay(parseISO(getTaskStartDate(event)));
+      const startOfDayForEventEnd = startOfDay(parseISO(getTaskEndDate(event)));
       if (isWeek) {
         return (
-          event.startDate !== event.endDate &&
+          getTaskStartDate(event) !== getTaskEndDate(event) &&
           startOfDayForEventStart <= targetDate &&
           startOfDayForEventEnd >= targetDate
         );
@@ -311,8 +313,8 @@ export const getEventsForDay = (
       );
     })
     .map((event) => {
-      const eventStart = startOfDay(parseISO(event.startDate));
-      const eventEnd = startOfDay(parseISO(event.endDate));
+      const eventStart = startOfDay(parseISO(getTaskStartDate(event)));
+      const eventEnd = startOfDay(parseISO(getTaskEndDate(event)));
       let point: "start" | "end" | "none" | undefined;
 
       if (isSameDay(eventStart, eventEnd)) {
@@ -332,14 +334,14 @@ export const getWeekDates = (date: Date): Date[] => {
   return Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 };
 
-export const getEventsForWeek = (events: IEvent[], date: Date): IEvent[] => {
+export const getEventsForWeek = (events: Task[], date: Date): Task[] => {
   const weekDates = getWeekDates(date);
   const startOfWeekDate = weekDates[0];
   const endOfWeekDate = weekDates[6];
 
   return events.filter((event) => {
-    const eventStart = parseISO(event.startDate);
-    const eventEnd = parseISO(event.endDate);
+    const eventStart = parseISO(getTaskStartDate(event));
+    const eventEnd = parseISO(getTaskEndDate(event));
     return (
       isValid(eventStart) &&
       isValid(eventEnd) &&
@@ -349,13 +351,13 @@ export const getEventsForWeek = (events: IEvent[], date: Date): IEvent[] => {
   });
 };
 
-export const getEventsForMonth = (events: IEvent[], date: Date): IEvent[] => {
+export const getEventsForMonth = (events: Task[], date: Date): Task[] => {
   const startOfMonthDate = startOfMonth(date);
   const endOfMonthDate = endOfMonth(date);
 
   return events.filter((event) => {
-    const eventStart = parseISO(event.startDate);
-    const eventEnd = parseISO(event.endDate);
+    const eventStart = parseISO(getTaskStartDate(event));
+    const eventEnd = parseISO(getTaskEndDate(event));
     return (
       isValid(eventStart) &&
       isValid(eventEnd) &&
@@ -365,15 +367,15 @@ export const getEventsForMonth = (events: IEvent[], date: Date): IEvent[] => {
   });
 };
 
-export const getEventsForYear = (events: IEvent[], date: Date): IEvent[] => {
+export const getEventsForYear = (events: Task[], date: Date): Task[] => {
   if (!events || !Array.isArray(events) || !isValid(date)) return [];
 
   const startOfYearDate = startOfYear(date);
   const endOfYearDate = endOfYear(date);
 
   return events.filter((event) => {
-    const eventStart = parseISO(event.startDate);
-    const eventEnd = parseISO(event.endDate);
+    const eventStart = parseISO(getTaskStartDate(event));
+    const eventEnd = parseISO(getTaskEndDate(event));
     return (
       isValid(eventStart) &&
       isValid(eventEnd) &&
@@ -411,7 +413,7 @@ export const getBgColor = (color: string): string => {
   return colorClasses[color as TEventColor] || "";
 };
 
-export const useGetEventsByMode = (events: IEvent[]) => {
+export const useGetEventsByMode = (events: Task[]) => {
   const { view, selectedDate } = useCalendar();
 
   switch (view) {

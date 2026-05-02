@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { ReactNode } from "react";
+import { useCallback, useContext, type ReactNode } from "react";
 import {
   Modal,
   ModalContent,
@@ -10,29 +10,40 @@ import {
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { formatTime } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { getTaskColor, getTaskStartDate } from "@/features/calendar/interfaces";
 import {
   EventBullet,
   dayCellVariants,
 } from "@/features/calendar/views/monthView";
-import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 
 interface EventListDialogProps {
   date: Date;
-  events: IEvent[];
+  tasks: Task[];
   maxVisibleEvents?: number;
   children?: ReactNode;
 }
 
+/** @deprecated */
 export function EventListDialog({
   date,
-  events,
+  tasks,
   maxVisibleEvents = 3,
   children,
 }: EventListDialogProps) {
-  const cellEvents = events;
+  const cellEvents = tasks;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
   const { badgeVariant, use24HourFormat } = useCalendar();
+
+  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
+  const setTaskEditorDrawerOpen = useCallback(
+    (open: boolean) =>
+      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
+    [SetViewSettings, ViewSettings],
+  );
 
   const defaultTrigger = (
     <span className="cursor-pointer">
@@ -51,7 +62,10 @@ export function EventListDialog({
         <ModalHeader>
           <ModalTitle className="my-2">
             <div className="flex items-center gap-2">
-              <EventBullet color={cellEvents[0]?.color} className="" />
+              <EventBullet
+                color={cellEvents[0] ? getTaskColor(cellEvents[0]) : "blue"}
+                className=""
+              />
               <p className="text-sm font-medium">
                 Events on {format(date, "EEEE, MMMM d, yyyy")}
               </p>
@@ -60,26 +74,28 @@ export function EventListDialog({
         </ModalHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-2">
           {cellEvents.length > 0 ? (
-            cellEvents.map((event) => (
-              <EventDetailsDialog event={event} key={event.id}>
-                <div
-                  className={cn(
-                    "flex items-center gap-2 p-2 border rounded-md hover:bg-muted cursor-pointer",
-                    {
-                      [dayCellVariants({ color: event.color })]:
-                        badgeVariant === "colored",
-                    },
-                  )}
-                >
-                  <EventBullet color={event.color} />
-                  <div className="flex justify-between items-center w-full">
-                    <p className="text-sm font-medium">{event.title}</p>
-                    <p className="text-xs">
-                      {formatTime(event.startDate, use24HourFormat)}
-                    </p>
+            cellEvents.map((task) => (
+              <TaskProvider defaultState={task} key={task.ID}>
+                <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 p-2 border rounded-md hover:bg-muted cursor-pointer",
+                      {
+                        [dayCellVariants({ color: getTaskColor(task) })]:
+                          badgeVariant === "colored",
+                      },
+                    )}
+                  >
+                    <EventBullet color={getTaskColor(task)} />
+                    <div className="flex justify-between items-center w-full">
+                      <p className="text-sm font-medium">{task.Name}</p>
+                      <p className="text-xs">
+                        {formatTime(getTaskStartDate(task), use24HourFormat)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </EventDetailsDialog>
+                </TaskEditorDrawer>
+              </TaskProvider>
             ))
           ) : (
             <p className="text-sm text-muted-foreground">
