@@ -5,9 +5,6 @@ import { isSameDay, parseISO } from "date-fns";
 import { CalendarViewHeader } from "./calendar-views-header";
 import { Suspense } from "react";
 import { MonthViewSkeleton } from "@/features/calendar/skeletons/month-view-skeleton";
-import type { IEvent } from "@/features/calendar/interfaces";
-import type { TEventColor } from "@/features/calendar/types";
-import type { Type } from "@/types/types";
 
 export function MonthView({
   setTaskDrawerOpen,
@@ -16,25 +13,23 @@ export function MonthView({
 }) {
   const { Tasks } = useContext(ProjectContext);
 
-  const events: IEvent[] = Tasks.map((task) => ({
-    id: task.ID,
-    startDate: task.TimePlannedStart || task.TimeCreated,
-    endDate: task.TimePlannedEnd || task.TimePlannedStart || task.TimeCreated,
-    title: task.Name,
-    color: getColorForTaskType(task.Type),
-    description: task.ChecklistName,
-    user: { id: task.Assignee, name: task.Assignee, picturePath: null },
-  }));
+  const singleDayEvents = Tasks.filter((task) => {
+    if (task.TimePlannedStart === null) {
+      return false;
+    }
 
-  const singleDayEvents = events.filter((event) => {
-    const startDate = parseISO(event.startDate);
-    const endDate = parseISO(event.endDate);
+    const startDate = parseISO(task.TimePlannedStart);
+    const endDate = parseISO(task.TimePlannedEnd ?? task.TimePlannedStart);
     return isSameDay(startDate, endDate);
   });
 
-  const multiDayEvents = events.filter((event) => {
-    const startDate = parseISO(event.startDate);
-    const endDate = parseISO(event.endDate);
+  const multiDayEvents = Tasks.filter((task) => {
+    if (task.TimePlannedStart === null) {
+      return false;
+    }
+
+    const startDate = parseISO(task.TimePlannedStart);
+    const endDate = parseISO(task.TimePlannedEnd ?? task.TimePlannedStart);
     return !isSameDay(startDate, endDate);
   });
 
@@ -53,15 +48,4 @@ export function MonthView({
       </div>
     </div>
   );
-}
-
-function getColorForTaskType(priority: Type): TEventColor {
-  switch (priority) {
-    case "Dev":
-      return "green";
-    case "Reminder":
-      return "orange";
-    case "Test":
-      return "blue";
-  }
 }

@@ -9,6 +9,7 @@ import {
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { LandPlotIcon } from "lucide-react";
 
 export function SelectChecklist({
   onChange,
@@ -29,7 +30,10 @@ export function SelectChecklist({
       onValueChange={handleValueChange}
     >
       <SelectTrigger id="checklist" className="w-full">
-        <SelectValue placeholder="Select a checklist" />
+        <div className="flex gap-2">
+          <LandPlotIcon />
+          <SelectValue placeholder="Select a checklist" />
+        </div>
       </SelectTrigger>
       <SelectContent>
         {checklists.map((checklist) => (

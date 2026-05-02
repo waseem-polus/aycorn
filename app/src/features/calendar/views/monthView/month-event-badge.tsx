@@ -3,18 +3,25 @@ import { cva } from "class-variance-authority";
 import { endOfDay, isSameDay, parseISO, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
 import { DraggableEvent } from "@/features/calendar/dragAndDrop/draggable-event";
 import { formatTime } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+  getTaskColor,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
 import { EventBullet } from "@/features/calendar/views/monthView";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import { useCallback, useContext } from "react";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 const eventBadgeVariants = cva(
   "flex w-full h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-grab",
   {
     variants: {
       color: {
-        // Colored variants
         blue: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300",
         green:
           "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300",
@@ -26,7 +33,6 @@ const eventBadgeVariants = cva(
         orange:
           "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300",
 
-        // Dot variants
         "blue-dot": "bg-bg-secondary text-t-primary [&_svg]:fill-blue-600",
         "green-dot": "bg-bg-secondary text-t-primary [&_svg]:fill-green-600",
         "red-dot": "bg-bg-secondary text-t-primary [&_svg]:fill-red-600",
@@ -52,7 +58,7 @@ interface IProps extends Omit<
   VariantProps<typeof eventBadgeVariants>,
   "color" | "multiDayPosition"
 > {
-  event: IEvent;
+  task: Task;
   cellDate: Date;
   eventCurrentDay?: number;
   eventTotalDays?: number;
@@ -61,17 +67,24 @@ interface IProps extends Omit<
 }
 
 export function MonthEventBadge({
-  event,
+  task,
   cellDate,
   eventCurrentDay,
   eventTotalDays,
   className,
   position: propPosition,
 }: IProps) {
+  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
+  const setTaskEditorDrawerOpen = useCallback(
+    (open: boolean) =>
+      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
+    [SetViewSettings, ViewSettings],
+  );
+
   const { badgeVariant, use24HourFormat } = useCalendar();
 
-  const itemStart = startOfDay(parseISO(event.startDate));
-  const itemEnd = endOfDay(parseISO(event.endDate));
+  const itemStart = startOfDay(parseISO(getTaskStartDate(task)));
+  const itemEnd = endOfDay(parseISO(getTaskEndDate(task)));
 
   if (cellDate < itemStart || cellDate > itemEnd) return null;
 
@@ -94,8 +107,9 @@ export function MonthEventBadge({
   const renderBadgeText = ["first", "none"].includes(position);
   const renderBadgeTime = ["last", "none"].includes(position);
 
+  const taskColor = getTaskColor(task);
   const color = (
-    badgeVariant === "dot" ? `${event.color}-dot` : event.color
+    badgeVariant === "dot" ? `${taskColor}-dot` : taskColor
   ) as VariantProps<typeof eventBadgeVariants>["color"];
 
   const eventBadgeClasses = cn(
@@ -110,34 +124,39 @@ export function MonthEventBadge({
   }[position || "none"];
 
   return (
-    <DraggableEvent event={event} className={marginClass}>
-      <EventDetailsDialog event={event}>
-        <button type="button" className={eventBadgeClasses}>
-          <div className="flex items-center gap-1.5 truncate">
-            {!["middle", "last"].includes(position) &&
-              badgeVariant === "dot" && <EventBullet color={event.color} />}
+    <DraggableEvent event={task} className={marginClass}>
+      <TaskProvider defaultState={task}>
+        <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
+          <button type="button" className={eventBadgeClasses}>
+            <div className="flex items-center gap-1.5 truncate">
+              {!["middle", "last"].includes(position) &&
+                badgeVariant === "dot" && <EventBullet color={taskColor} />}
 
-            {renderBadgeText && (
-              <p className="flex-1 truncate font-semibold">
-                {eventCurrentDay && (
-                  <span className="text-xs">
-                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
-                  </span>
-                )}
-                {event.title}
-              </p>
-            )}
-          </div>
+              {renderBadgeText && (
+                <p className="flex-1 truncate font-semibold">
+                  {eventCurrentDay && (
+                    <span className="text-xs">
+                      Day {eventCurrentDay} of {eventTotalDays}{" "}
+                    </span>
+                  )}
+                  {task.Name}
+                </p>
+              )}
+            </div>
 
-          <div className="hidden sm:block">
-            {renderBadgeTime && (
-              <span>
-                {formatTime(new Date(event.startDate), use24HourFormat)}
-              </span>
-            )}
-          </div>
-        </button>
-      </EventDetailsDialog>
+            <div className="hidden sm:block">
+              {renderBadgeTime && (
+                <span>
+                  {formatTime(
+                    new Date(getTaskStartDate(task)),
+                    use24HourFormat,
+                  )}
+                </span>
+              )}
+            </div>
+          </button>
+        </TaskEditorDrawer>
+      </TaskProvider>
     </DraggableEvent>
   );
 }

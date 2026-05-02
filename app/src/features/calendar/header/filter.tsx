@@ -8,20 +8,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import type { TEventColor } from "@/features/calendar/types";
+import type { Type } from "@/types/types";
 
 export default function FilterEvents() {
-  const { selectedColors, filterEventsBySelectedColors, clearFilter } =
+  const { selectedTypes, filterEventsBySelectedTypes, clearFilter } =
     useCalendar();
 
-  const colors: TEventColor[] = [
-    "blue",
-    "green",
-    "red",
-    "yellow",
-    "purple",
-    "orange",
-  ];
+  const taskTypes: Type[] = ["Dev", "Reminder", "Test"];
 
   return (
     <DropdownMenu>
@@ -31,22 +24,22 @@ export default function FilterEvents() {
         </Toggle>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        {colors.map((color) => (
+        {taskTypes.map((taskType) => (
           <DropdownMenuItem
-            key={color}
+            key={taskType}
             className="flex items-center gap-2 cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
-              filterEventsBySelectedColors(color);
+              filterEventsBySelectedTypes(taskType);
             }}
           >
             <div
-              className={`size-3.5 rounded-full bg-${color}-600 dark:bg-${color}-700`}
+              className={`size-3.5 rounded-full bg-${taskType}-600 dark:bg-${taskType}-700`}
             />
             <span className="capitalize flex justify-center items-center gap-2">
-              {color}
+              {taskType}
               <span>
-                {selectedColors.includes(color) && (
+                {selectedTypes.includes(taskType) && (
                   <span className="text-blue-500">
                     <CheckIcon className="size-4" />
                   </span>
@@ -57,7 +50,7 @@ export default function FilterEvents() {
         ))}
         <Separator className="my-2" />
         <DropdownMenuItem
-          disabled={selectedColors.length === 0}
+          disabled={selectedTypes.length === 0}
           className="flex gap-2 cursor-pointer"
           onClick={(e) => {
             e.preventDefault();

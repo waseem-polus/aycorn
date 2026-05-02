@@ -7,17 +7,24 @@ import {
   transition,
 } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { DroppableArea } from "@/features/calendar/dragAndDrop/droppable-area";
 import { groupEvents } from "@/features/calendar/helpers";
-import type { IEvent } from "@/features/calendar/interfaces";
-import { CalendarTimeline } from "@/features/calendar/views/weekAndDayView/calendar-time-line";
-import { RenderGroupedEvents } from "@/features/calendar/views/weekAndDayView/render-grouped-events";
-import { WeekViewMultiDayEventsRow } from "@/features/calendar/views/weekAndDayView/week-view-multi-day-events-row";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { CalendarTimeline } from "@/features/calendar/views/weekView/calendar-time-line";
+import { RenderGroupedEvents } from "@/features/calendar/views/weekView/render-grouped-events";
+import { WeekViewMultiDayEventsRow } from "@/features/calendar/views/weekView/week-view-multi-day-events-row";
+import { NewTaskEditorDrawer } from "./new-task-editor-drawer";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import { useCallback, useContext } from "react";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayEvents: Task[];
+  multiDayEvents: Task[];
 }
 
 export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
@@ -26,6 +33,17 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
   const weekStart = startOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
+  const handleOpenModal = useCallback(
+    (open: boolean) => {
+      SetViewSettings({
+        ...ViewSettings,
+        isTaskEditorOpen: open,
+      });
+    },
+    [SetViewSettings, ViewSettings],
+  );
 
   return (
     <motion.div
@@ -53,14 +71,12 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
             multiDayEvents={multiDayEvents}
           />
 
-          {/* Week header */}
           <motion.div
             className="relative z-20 flex border-b"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={transition}
           >
-            {/* Time column header - responsive width */}
             <div className="w-18"></div>
             <div className="grid flex-1 grid-cols-7  border-l">
               {weekDays.map((day, index) => (
@@ -71,14 +87,12 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05, ...transition }}
                 >
-                  {/* Mobile: Show only day abbreviation and number */}
                   <span className="block sm:hidden">
                     {format(day, "EEE").charAt(0)}
                     <span className="block font-semibold text-t-secondary text-xs">
                       {format(day, "d")}
                     </span>
                   </span>
-                  {/* Desktop: Show full format */}
                   <span className="hidden sm:inline">
                     {format(day, "EE")}{" "}
                     <span className="ml-1 font-semibold text-t-secondary">
@@ -93,7 +107,6 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
 
         <ScrollArea className="h-[736px]" type="always">
           <div className="flex">
-            {/* Hours column */}
             <motion.div className="relative w-18" variants={staggerContainer}>
               {hours.map((hour, index) => (
                 <motion.div
@@ -118,7 +131,6 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
               ))}
             </motion.div>
 
-            {/* Week grid */}
             <motion.div
               className="relative flex-1 border-l"
               variants={staggerContainer}
@@ -127,8 +139,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                 {weekDays.map((day, dayIndex) => {
                   const dayEvents = singleDayEvents.filter(
                     (event) =>
-                      isSameDay(parseISO(event.startDate), day) ||
-                      isSameDay(parseISO(event.endDate), day),
+                      isSameDay(parseISO(getTaskStartDate(event)), day) ||
+                      isSameDay(parseISO(getTaskEndDate(event)), day),
                   );
                   const groupedEvents = groupEvents(dayEvents);
 
@@ -159,12 +171,13 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             minute={0}
                             className="absolute inset-x-0 top-0  h-[48px]"
                           >
-                            <AddEditEventDialog
-                              startDate={day}
-                              startTime={{ hour, minute: 0 }}
-                            >
-                              <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-                            </AddEditEventDialog>
+                            <TaskProvider>
+                              <NewTaskEditorDrawer
+                                date={day}
+                                startTime={{ hour, minute: 0 }}
+                                setTaskDrawerOpen={handleOpenModal}
+                              />
+                            </TaskProvider>
                           </DroppableArea>
 
                           <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
@@ -175,12 +188,13 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             minute={30}
                             className="absolute inset-x-0 bottom-0 h-[48px]"
                           >
-                            <AddEditEventDialog
-                              startDate={day}
-                              startTime={{ hour, minute: 30 }}
-                            >
-                              <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-                            </AddEditEventDialog>
+                            <TaskProvider>
+                              <NewTaskEditorDrawer
+                                date={day}
+                                startTime={{ hour, minute: 30 }}
+                                setTaskDrawerOpen={handleOpenModal}
+                              />
+                            </TaskProvider>
                           </DroppableArea>
                         </motion.div>
                       ))}

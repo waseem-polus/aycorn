@@ -8,12 +8,12 @@ import {
   getCalendarCells,
 } from "@/features/calendar/helpers";
 
-import type { IEvent } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
 import { DayCell } from "@/features/calendar/views/monthView";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayEvents: Task[];
+  multiDayEvents: Task[];
   setTaskDrawerOpen: (open: boolean) => void;
 }
 
@@ -42,7 +42,7 @@ export function CalendarMonthView({
 
   return (
     <motion.div
-      className="h-full min-h-0 overflow-hidden"
+      className="w-full h-full min-h-0 overflow-hidden box-border pb-10"
       initial="initial"
       animate="animate"
       variants={staggerContainer}

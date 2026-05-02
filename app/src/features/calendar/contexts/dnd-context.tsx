@@ -9,12 +9,14 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import type { IEvent } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useTaskMutation } from "@/queries/useTaskMutation";
 
 interface DragDropContextType {
-  draggedEvent: IEvent | null;
+  draggedEvent: Task | null;
   isDragging: boolean;
-  startDrag: (event: IEvent) => void;
+  startDrag: (event: Task) => void;
   endDrag: () => void;
   handleEventDrop: (date: Date, hour?: number, minute?: number) => void;
 }
@@ -28,17 +30,19 @@ const DragDropContext = createContext<DragDropContextType | undefined>(
 );
 
 export function DndProvider({ children }: DndProviderProps) {
-  const { updateEvent } = useCalendar();
+  const { Project } = useContext(ProjectContext);
+  const { update } = useTaskMutation(Project.ID);
+
   const [dragState, setDragState] = useState<{
-    draggedEvent: IEvent | null;
+    draggedEvent: Task | null;
     isDragging: boolean;
   }>({ draggedEvent: null, isDragging: false });
 
   const onEventDroppedRef = useRef<
-    ((event: IEvent, newStartDate: Date, newEndDate: Date) => void) | null
+    ((event: Task, newStartDate: Date, newEndDate: Date) => void) | null
   >(null);
 
-  const startDrag = useCallback((event: IEvent) => {
+  const startDrag = useCallback((event: Task) => {
     setDragState({ draggedEvent: event, isDragging: true });
   }, []);
 
@@ -47,9 +51,13 @@ export function DndProvider({ children }: DndProviderProps) {
   }, []);
 
   const calculateNewDates = useCallback(
-    (event: IEvent, targetDate: Date, hour?: number, minute?: number) => {
-      const originalStart = new Date(event.startDate);
-      const originalEnd = new Date(event.endDate);
+    (event: Task, targetDate: Date, hour?: number, minute?: number) => {
+      const originalStart = new Date(
+        event.TimePlannedStart ?? event.TimeCreated,
+      );
+      const originalEnd = new Date(
+        event.TimePlannedEnd ?? event.TimePlannedStart ?? event.TimeCreated,
+      );
       const duration = originalEnd.getTime() - originalStart.getTime();
 
       const newStart = new Date(targetDate);
@@ -87,15 +95,15 @@ export function DndProvider({ children }: DndProviderProps) {
         hour,
         minute,
       );
-      const originalStart = new Date(draggedEvent.startDate);
+      const originalStart = new Date(
+        draggedEvent.TimePlannedStart ?? draggedEvent.TimeCreated,
+      );
 
-      // Check if dropped in same position
       if (isSamePosition(originalStart, newStart)) {
         endDrag();
         return;
       }
 
-      // Instantly update event
       const callback = onEventDroppedRef.current;
       if (callback) {
         callback(draggedEvent, newStart, newEnd);
@@ -105,25 +113,21 @@ export function DndProvider({ children }: DndProviderProps) {
     [dragState, calculateNewDates, isSamePosition, endDrag],
   );
 
-  // Default event update handler
   const handleEventUpdate = useCallback(
-    (event: IEvent, newStartDate: Date, newEndDate: Date) => {
-      try {
-        const updatedEvent = {
-          ...event,
-          startDate: newStartDate.toISOString(),
-          endDate: newEndDate.toISOString(),
-        };
-        updateEvent(updatedEvent);
-        toast.success("Event updated successfully");
-      } catch {
-        toast.error("Failed to update event");
-      }
+    (event: Task, newStartDate: Date, newEndDate: Date) => {
+      const updatedEvent = {
+        ...event,
+        TimePlannedStart: newStartDate.toISOString(),
+        TimePlannedEnd: newEndDate.toISOString(),
+      };
+      update.mutate(updatedEvent, {
+        onSuccess: () => toast.success("Task updated successfully"),
+        onError: () => toast.error("Failed to update task"),
+      });
     },
-    [updateEvent],
+    [update],
   );
 
-  // Set default callback
   React.useEffect(() => {
     onEventDroppedRef.current = handleEventUpdate;
   }, [handleEventUpdate]);

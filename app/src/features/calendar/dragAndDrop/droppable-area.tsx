@@ -1,4 +1,4 @@
-import React, { type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useDragDrop } from "@/features/calendar/contexts/dnd-context";
 
 interface DroppableAreaProps {

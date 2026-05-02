@@ -9,12 +9,16 @@ import {
   startOfWeek,
 } from "date-fns";
 import { useMemo } from "react";
-import type { IEvent } from "@/features/calendar/interfaces";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
 import { MonthEventBadge } from "@/features/calendar/views/monthView";
 
 interface IProps {
   selectedDate: Date;
-  multiDayEvents: IEvent[];
+  multiDayEvents: Task[];
 }
 
 export function WeekViewMultiDayEventsRow({
@@ -28,8 +32,8 @@ export function WeekViewMultiDayEventsRow({
   const processedEvents = useMemo(() => {
     return multiDayEvents
       .map((event) => {
-        const start = parseISO(event.startDate);
-        const end = parseISO(event.endDate);
+        const start = parseISO(getTaskStartDate(event));
+        const end = parseISO(getTaskEndDate(event));
         const adjustedStart = isBefore(start, weekStart) ? weekStart : start;
         const adjustedEnd = isAfter(end, weekEnd) ? weekEnd : end;
         const startIndex = differenceInDays(adjustedStart, weekStart);
@@ -73,15 +77,12 @@ export function WeekViewMultiDayEventsRow({
 
   const hasEventsInWeek = useMemo(() => {
     return multiDayEvents.some((event) => {
-      const start = parseISO(event.startDate);
-      const end = parseISO(event.endDate);
+      const start = parseISO(getTaskStartDate(event));
+      const end = parseISO(getTaskEndDate(event));
 
       return (
-        // Event starts within the week
         (start >= weekStart && start <= weekEnd) ||
-        // Event ends within the week
         (end >= weekStart && end <= weekEnd) ||
-        // Event spans the entire week
         (start <= weekStart && end >= weekEnd)
       );
     });
@@ -131,8 +132,8 @@ export function WeekViewMultiDayEventsRow({
 
               return (
                 <MonthEventBadge
-                  key={`${event.id}-${dayIndex}`}
-                  event={event}
+                  key={`${event.ID}-${dayIndex}`}
+                  task={event}
                   cellDate={startOfDay(day)}
                   position={position}
                 />

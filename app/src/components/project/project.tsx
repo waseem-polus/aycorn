@@ -16,7 +16,6 @@ import { CalendarProvider } from "@/features/calendar/contexts/calendar-context"
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { CALENDAR_ITEMS_MOCK, USERS_MOCK } from "@/features/calendar/mocks";
 import { WeekView } from "./views/calendarViews/week-view";
-import { FullCalendarView } from "./views/fullCalendarView/full-calendar-view";
 
 export function ProjectDetails({
   view,
@@ -79,11 +78,6 @@ export function ProjectDetails({
                   <IconCalendarMonth />
                   Week
                 </TabsTrigger>
-
-                <TabsTrigger value="full-calendar">
-                  <IconCalendarMonth />
-                  Full Calendar
-                </TabsTrigger>
               </TabsList>
 
               <TabsContent
@@ -109,12 +103,6 @@ export function ProjectDetails({
                 className="h-full overflow-visible min-h-0"
               >
                 <WeekView setTaskDrawerOpen={setNewTaskOpen} />
-              </TabsContent>
-              <TabsContent
-                value="full-calendar"
-                className="h-full overflow-hidden"
-              >
-                <FullCalendarView />
               </TabsContent>
             </Tabs>
           </DndProvider>

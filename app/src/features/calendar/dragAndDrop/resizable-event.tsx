@@ -9,28 +9,36 @@ import {
 import { motion } from "framer-motion";
 import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
-import type { IEvent } from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useTaskMutation } from "@/queries/useTaskMutation";
 
 interface ResizableEventBlockProps {
-  event: IEvent;
+  event: Task;
   children: React.ReactNode;
   className?: string;
 }
 
 const PIXELS_PER_HOUR = 96;
 const MINUTES_PER_PIXEL = 60 / PIXELS_PER_HOUR;
-const MIN_DURATION = 15; // in minutes
+const MIN_DURATION = 15;
 
 export function ResizableEvent({
   event,
   children,
   className,
 }: ResizableEventBlockProps) {
-  const { updateEvent, use24HourFormat } = useCalendar();
+  const { use24HourFormat } = useCalendar();
+  const { Project } = useContext(ProjectContext);
+  const { update } = useTaskMutation(Project.ID);
 
   const [isResizing, setIsResizing] = useState(false);
   const [resizePreview, setResizePreview] = useState<{
@@ -38,8 +46,8 @@ export function ResizableEvent({
     end: string;
   } | null>(null);
 
-  const start = useMemo(() => parseISO(event.startDate), [event.startDate]);
-  const end = useMemo(() => parseISO(event.endDate), [event.endDate]);
+  const start = useMemo(() => parseISO(getTaskStartDate(event)), [event]);
+  const end = useMemo(() => parseISO(getTaskEndDate(event)), [event]);
   const durationInMinutes = useMemo(
     () => differenceInMinutes(end, start),
     [start, end],
@@ -89,10 +97,10 @@ export function ResizableEvent({
         end: format(newEnd, use24HourFormat ? "HH:mm" : "h:mm a"),
       });
 
-      updateEvent({
+      update.mutate({
         ...event,
-        startDate: newStart.toISOString(),
-        endDate: newEnd.toISOString(),
+        TimePlannedStart: newStart.toISOString(),
+        TimePlannedEnd: newEnd.toISOString(),
       });
     },
     [
@@ -101,7 +109,7 @@ export function ResizableEvent({
       durationInMinutes,
       resizeBoundaries,
       use24HourFormat,
-      updateEvent,
+      update,
       event,
     ],
   );

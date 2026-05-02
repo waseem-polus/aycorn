@@ -5,12 +5,16 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
-import type { IEvent } from "@/features/calendar/interfaces";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
+import type { Task } from "@/types/types";
 import { MonthEventBadge } from "@/features/calendar/views/monthView";
 
 interface IProps {
   selectedDate: Date;
-  multiDayEvents: IEvent[];
+  multiDayEvents: Task[];
 }
 
 export function DayViewMultiDayEventsRow({
@@ -22,8 +26,8 @@ export function DayViewMultiDayEventsRow({
 
   const multiDayEventsInDay = multiDayEvents
     .filter((event) => {
-      const eventStart = parseISO(event.startDate);
-      const eventEnd = parseISO(event.endDate);
+      const eventStart = parseISO(getTaskStartDate(event));
+      const eventEnd = parseISO(getTaskEndDate(event));
 
       return (
         isWithinInterval(dayStart, { start: eventStart, end: eventEnd }) ||
@@ -33,12 +37,12 @@ export function DayViewMultiDayEventsRow({
     })
     .sort((a, b) => {
       const durationA = differenceInDays(
-        parseISO(a.endDate),
-        parseISO(a.startDate),
+        parseISO(getTaskEndDate(a)),
+        parseISO(getTaskStartDate(a)),
       );
       const durationB = differenceInDays(
-        parseISO(b.endDate),
-        parseISO(b.startDate),
+        parseISO(getTaskEndDate(b)),
+        parseISO(getTaskStartDate(b)),
       );
       return durationB - durationA;
     });
@@ -50,8 +54,8 @@ export function DayViewMultiDayEventsRow({
       <div className="w-18"></div>
       <div className="flex flex-1 flex-col gap-1 border-l py-1">
         {multiDayEventsInDay.map((event) => {
-          const eventStart = startOfDay(parseISO(event.startDate));
-          const eventEnd = startOfDay(parseISO(event.endDate));
+          const eventStart = startOfDay(parseISO(getTaskStartDate(event)));
+          const eventEnd = startOfDay(parseISO(getTaskEndDate(event)));
           const currentDate = startOfDay(selectedDate);
 
           const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1;
@@ -59,8 +63,8 @@ export function DayViewMultiDayEventsRow({
 
           return (
             <MonthEventBadge
-              key={event.id}
-              event={event}
+              key={event.ID}
+              task={event}
               cellDate={selectedDate}
               eventCurrentDay={eventCurrentDay}
               eventTotalDays={eventTotalDays}
