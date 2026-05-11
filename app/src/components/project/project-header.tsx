@@ -20,12 +20,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 export function ProjectHeader() {
-  const { Project } = useContext(ProjectContext);
-  const { updateProject } = useProjectMutation(Project.ID);
+  const navigate = useNavigate();
+
+  const { Project, Tasks, Checklists } = useContext(ProjectContext);
+  const { updateProject, deleteProject } = useProjectMutation(Project.ID);
 
   const projectName = useMemo(
     () => (Project.Name !== "" ? Project.Name : "New Project"),
@@ -39,6 +42,7 @@ export function ProjectHeader() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteDialogOpen, setisDeleteDialogOpen] = useState(false);
   const [input, setInput] = useState("");
 
@@ -61,7 +65,10 @@ export function ProjectHeader() {
 
       <Dialog
         open={isDeleteDialogOpen}
-        onOpenChange={(open) => setisDeleteDialogOpen(open)}
+        onOpenChange={(open) => {
+          setisDeleteDialogOpen(open);
+          setInput("");
+        }}
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -87,21 +94,20 @@ export function ProjectHeader() {
           <DialogHeader>
             <DialogTitle>Delete Project</DialogTitle>
             <DialogDescription>
-              This action is permanent and cannot be undone. All tasks,
-              checklists, and project data will be deleted.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2 py-2">
-            <Label
-              htmlFor="confirm-input"
-              className="text-sm text-muted-foreground"
-            >
-              Type{" "}
+              This action is permanent and cannot be undone.{" "}
+              <b>
+                {Tasks.length} task{Tasks.length !== 1 ? "s" : ""}
+              </b>{" "}
+              and{" "}
+              <b>
+                {Checklists.length} checklist
+                {Checklists.length !== 1 ? "s" : ""}
+              </b>{" "}
+              will be deleted. Type
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center gap-1 rounded px-1 text-foreground hover:bg-muted transition-colors"
+                className="inline-flex items-center gap-1 rounded px-1 font-bold text-foreground hover:bg-muted transition-colors underline"
               >
                 {projectName}
                 {copied ? (
@@ -109,37 +115,48 @@ export function ProjectHeader() {
                 ) : (
                   <Copy className="h-3 w-3 text-muted-foreground" />
                 )}
-              </button>{" "}
-              to confirm
-            </Label>
+              </button>
+              to confirm.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 pb-2">
             <Input
               id="confirm-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              // onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
-              placeholder={projectName}
+              placeholder="Project Name..."
               autoComplete="off"
               aria-invalid={isError}
             />
-            {isError && (
-              <p className="text-xs text-destructive">
-                Project name doesn't match.
-              </p>
-            )}
           </div>
 
           <DialogFooter>
             <DialogClose>
               <Button variant="ghost">Cancel</Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button
-                variant="destructive"
-                disabled={input !== projectName || isError}
-              >
-                Delete
-              </Button>
-            </DialogClose>
+            <Button
+              variant="destructive"
+              disabled={input !== projectName || isError || isDeleting}
+              onClick={() => {
+                setIsDeleting(true);
+                deleteProject.mutate(Project.ID, {
+                  onSuccess: () =>
+                    navigate({
+                      to: "/",
+                    }).then(() =>
+                      setTimeout(
+                        () => toast(`Deleted ${Project.Name} successfully.`),
+                        200,
+                      ),
+                    ),
+                  onError: () => toast(`Failed deleting project.`),
+                  onSettled: () => setIsDeleting(false),
+                });
+              }}
+            >
+              Confirm and Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
