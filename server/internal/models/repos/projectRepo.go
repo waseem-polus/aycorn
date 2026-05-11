@@ -119,3 +119,18 @@ func (repo *ProjectRepo) CreateProject() (int64, error) {
 
 	return id, nil
 }
+
+func (repo *ProjectRepo) DeleteProject(projectId int) (bool, error) {
+	query := "DELETE FROM project WHERE id = ?;"
+	res, err := repo.DB.Exec(query, projectId)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
+}

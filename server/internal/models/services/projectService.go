@@ -75,3 +75,22 @@ func (s *ProjectService) CreateProject() (int64, error) {
 
 	return id, nil
 }
+
+func (s *ProjectService) DeleteProject(projectId int) (bool, error) {
+	tasksSuccess, err := s.TaskRepo.DeleteTasksInProject(projectId)
+	if err != nil {
+		return false, err
+	}
+
+	checklistsSuccess, err := s.ChecklistRepo.DeleteChecklistsInProject(projectId)
+	if err != nil {
+		return false, err
+	}
+
+	projectSuccess, err := s.ProjectRepo.DeleteProject(projectId)
+	if err != nil {
+		return false, err
+	}
+
+	return tasksSuccess && checklistsSuccess && projectSuccess, nil
+}

@@ -169,3 +169,31 @@ func (app *app) postProject(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(res)
 }
+
+func (app *app) deleteProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	projectId, err := strconv.Atoi(r.PathValue("projectId"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	success, err := app.projectService.DeleteProject(projectId)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(success)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}

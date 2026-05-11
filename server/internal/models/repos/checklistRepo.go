@@ -151,3 +151,19 @@ func (repo *ChecklistRepo) DeleteChecklist(checklistId int) (bool, error) {
 
 	return rowsAffected > 0, nil
 }
+
+func (repo *ChecklistRepo) DeleteChecklistsInProject(projectId int) (bool, error) {
+	query := "DELETE FROM checklist WHERE project = ?;"
+
+	res, err := repo.DB.Exec(query, projectId)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}

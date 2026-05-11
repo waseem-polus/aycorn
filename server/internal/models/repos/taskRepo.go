@@ -273,6 +273,26 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
+func (repo *TaskRepo) DeleteTasksInProject(projectId int) (bool, error) {
+	query := `
+		DELETE FROM task WHERE checklist IN (
+			SELECT id FROM checklist WHERE project = ?
+		);
+    `
+
+	res, err := repo.DB.Exec(query, projectId)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
 func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
 	query := "SELECT t.body FROM task t WHERE t.id = ?;"
 	rows, err := repo.DB.Query(query, taskId)
