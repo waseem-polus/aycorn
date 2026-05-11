@@ -1,5 +1,5 @@
 import { Page, PageContent, PageHeader } from "@/components/page/Page";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useMemo, useState } from "react";
 import {
   InputGroup,
@@ -18,6 +18,7 @@ import {
 import { Empty, EmptyDescription } from "@/components/ui/empty";
 import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
+import { useProjectsMutation } from "@/queries/useProjectsMutation";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
   const { data: projects, isFetching } = useAllProjectsQuery();
+  const { createProject } = useProjectsMutation();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const filteredProjects = useMemo(() => {
@@ -58,7 +61,18 @@ function RouteComponent() {
                 {filteredProjects.length ?? 0} projects
               </InputGroupAddon>
             </InputGroup>
-            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
+              onClick={() =>
+                createProject.mutate(undefined, {
+                  onSuccess: (res) =>
+                    navigate({
+                      to: "/project/$projectId",
+                      params: { projectId: res },
+                    }),
+                })
+              }
+            >
               <Plus />
               New Project
             </Button>
@@ -75,8 +89,12 @@ function RouteComponent() {
                         params={{ projectId: `${project.ID}` }}
                       >
                         <ItemContent>
-                          <ItemTitle>
-                            {project.Name}
+                          <ItemTitle
+                            className={
+                              project.Name === "" ? "text-neutral-400" : ""
+                            }
+                          >
+                            {project.Name !== "" ? project.Name : "New Project"}
                             {project.Pinned && (
                               <Pin className="stroke-red-400 size-4" />
                             )}

@@ -23,7 +23,7 @@ export function EditableProjectName() {
             });
           }
         }}
-        placeholder="Project Name..."
+        placeholder="New Project..."
       />
     </div>
   );

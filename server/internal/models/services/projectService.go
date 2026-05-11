@@ -66,3 +66,12 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 
 	return success, nil
 }
+
+func (s *ProjectService) CreateProject() (int64, error) {
+	id, err := s.ProjectRepo.CreateProject()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}

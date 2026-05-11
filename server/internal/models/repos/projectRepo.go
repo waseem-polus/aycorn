@@ -104,3 +104,18 @@ func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
 
 	return affected > 0, nil
 }
+
+func (repo *ProjectRepo) CreateProject() (int64, error) {
+	query := "INSERT INTO project (name, pinned) VALUES ('', false);"
+	res, err := repo.DB.Exec(query)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
