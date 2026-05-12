@@ -1,5 +1,16 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import type { DragEndEvent, Over } from "@dnd-kit/core";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import type {
+  DragEndEvent,
+  DragStartEvent,
+  Over,
+} from "@dnd-kit/core";
 import {
   SelectionArea as ViselectArea,
   type SelectionEvent,
@@ -18,6 +29,11 @@ type SelectionAreaProps = {
   children: ReactNode;
   className?: string;
 };
+
+type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
+
+const hasModifier = (e: { ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean }) =>
+  !!(e.ctrlKey || e.metaKey || e.shiftKey);
 
 export const useSelection = ({
   onDragWithSelection,
@@ -49,21 +65,50 @@ export const useSelection = ({
     [setSelectedIds],
   );
 
-  const getSelectionProps = useCallback(
-    (id: string) => ({
-      "data-id": id,
-      "data-selected": (selectedIds.has(id) ? "" : undefined) as
-        | ""
-        | undefined,
-      className: "selectable",
-    }),
-    [selectedIds],
+  const getItemProps = useCallback(
+    (id: string, opts?: { listeners?: DragListeners }) => {
+      const sourceListeners = opts?.listeners;
+      const wrappedListeners: DragListeners = {};
+      if (sourceListeners) {
+        for (const [key, handler] of Object.entries(sourceListeners)) {
+          if (key === "onPointerDown") {
+            wrappedListeners[key] = (e: React.SyntheticEvent) => {
+              if (hasModifier(e as unknown as React.PointerEvent)) return;
+              handler(e);
+            };
+          } else {
+            wrappedListeners[key] = handler;
+          }
+        }
+      }
+
+      return {
+        "data-id": id,
+        "data-selected": (selectedIds.has(id) ? "" : undefined) as
+          | ""
+          | undefined,
+        className: "selectable",
+        ...wrappedListeners,
+        onClick: (e: React.MouseEvent) => {
+          if (hasModifier(e)) {
+            e.preventDefault();
+          } else {
+            setSelectedIds(new Set());
+          }
+        },
+      };
+    },
+    [selectedIds, setSelectedIds],
   );
 
   const handleBeforeStart = useCallback(
     (e: SelectionEvent): boolean | void => {
       const target = e.event?.target;
+      const native = e.event;
+      const modifierHeld =
+        !!native && hasModifier(native as unknown as PointerEvent);
       if (
+        !modifierHeld &&
         target instanceof Element &&
         target.closest("[data-task-card], [data-drag-handle]")
       ) {
@@ -73,20 +118,28 @@ export const useSelection = ({
     [],
   );
 
-  const handleStart = useCallback(
-    (e: SelectionEvent) => {
-      const native = e.event;
-      const isAppend =
-        !!native &&
-        "ctrlKey" in native &&
-        (native.ctrlKey || native.metaKey);
-      // TODO: range-select via Shift — placeholder for future implementation
-      if (!isAppend) {
-        setSelectedIds(new Set());
-      }
-    },
-    [setSelectedIds],
-  );
+  const handleStart = useCallback((e: SelectionEvent) => {
+    const native = e.event;
+    const isAppend =
+      !!native &&
+      "ctrlKey" in native &&
+      (native.ctrlKey || native.metaKey);
+    if (!isAppend) {
+      e.selection.clearSelection();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: PointerEvent) => {
+      if (!(e.target instanceof Element)) return;
+      if (hasModifier(e)) return;
+      if (e.target.closest(".selectable")) return;
+      if (selectedIdsRef.current.size === 0) return;
+      clearSelection();
+    };
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
+  }, [clearSelection]);
 
   const handleMove = useCallback(
     (e: SelectionEvent) => {
@@ -106,8 +159,6 @@ export const useSelection = ({
     [setSelectedIds],
   );
 
-  const handleStop = useCallback(() => {}, []);
-
   const SelectionArea = useMemo(
     () =>
       function SelectionAreaWrapper({
@@ -121,13 +172,23 @@ export const useSelection = ({
             onBeforeStart={handleBeforeStart}
             onStart={handleStart}
             onMove={handleMove}
-            onStop={handleStop}
           >
             {children}
           </ViselectArea>
         );
       },
-    [handleBeforeStart, handleStart, handleMove, handleStop],
+    [handleBeforeStart, handleStart, handleMove],
+  );
+
+  const wrapDragStart = useCallback(
+    (consumer: (e: DragStartEvent) => void) => (e: DragStartEvent) => {
+      const activeId = String(e.active.id);
+      if (!selectedIdsRef.current.has(activeId)) {
+        setSelectedIds(new Set());
+      }
+      consumer(e);
+    },
+    [setSelectedIds],
   );
 
   const wrapDragEnd = useCallback(
@@ -150,7 +211,8 @@ export const useSelection = ({
     isSelected,
     clearSelection,
     SelectionArea,
-    getSelectionProps,
+    getItemProps,
+    wrapDragStart,
     wrapDragEnd,
   };
 };
