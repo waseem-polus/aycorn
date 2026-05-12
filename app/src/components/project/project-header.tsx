@@ -12,19 +12,20 @@ export function ProjectHeader() {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  const togglePin = () =>
+    updateProject.mutate({ ...Project, Pinned: !Project.Pinned });
+
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => {
-          updateProject.mutate({ ...Project, Pinned: !Project.Pinned });
-        }}
-      >
+      <Button variant="ghost" size="icon-sm" onClick={togglePin}>
         {Project.Pinned ? <PinOff /> : <Pin />}
       </Button>
 
-      <ProjectDropdownMenu onDeleteClick={() => setIsDeleteDialogOpen(true)} />
+      <ProjectDropdownMenu
+        pinned={Project.Pinned}
+        onPinClick={togglePin}
+        onDeleteClick={() => setIsDeleteDialogOpen(true)}
+      />
 
       <DeleteProjectDialog
         open={isDeleteDialogOpen}

@@ -8,11 +8,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface ProjectDropdownMenuProps {
+type ProjectDropdownMenuProps = {
+  pinned: boolean;
+  onPinClick: () => void;
   onDeleteClick: () => void;
-}
+};
 
 export function ProjectDropdownMenu({
+  pinned,
+  onPinClick,
   onDeleteClick,
 }: ProjectDropdownMenuProps) {
   return (
@@ -27,9 +31,9 @@ export function ProjectDropdownMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32">
-        <DropdownMenuItem>Rename</DropdownMenuItem>
-        <DropdownMenuItem>Pin</DropdownMenuItem>
-        <DropdownMenuItem>Make a copy</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onPinClick}>
+          {pinned ? "Unpin" : "Pin"}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={onDeleteClick}>
           Delete
