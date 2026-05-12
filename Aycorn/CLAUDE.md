@@ -68,6 +68,7 @@ server/
 
 - Use **Tailwind CSS** for all styling. No CSS modules, no styled-components.
 - If **shadcn/ui** has a component for something, use it — don't write a custom component from scratch.
+- **Adding shadcn components** — always use the shadcn CLI (`npx shadcn@latest add <component>`) to install. It writes the component file into `src/components/ui/` and installs the right peer deps. Don't `npm install` the radix package by hand or hand-author the wrapper file.
 - Loading states and empty states are handled per-component. If a shared pattern becomes obvious (e.g., a skeleton wrapper used in 3+ places), flag it as a refactor opportunity but don't abstract prematurely.
 
 ---

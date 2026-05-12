@@ -8,8 +8,8 @@ import {
   ItemGroup,
   ItemMedia,
   ItemSeparator,
-  ItemTitle,
 } from "@/components/ui/item";
+import { ListViewTaskName } from "./list-view/list-view-task-name";
 import {
   Calendar as CalendarIcon,
   ChevronRightIcon,
@@ -52,13 +52,7 @@ export function ListView({
                           <TaskPriorityIcon variant={task.Priority} />
                         </ItemMedia>
                         <ItemContent>
-                          {task.Name !== "" ? (
-                            <ItemTitle>{task.Name}</ItemTitle>
-                          ) : (
-                            <ItemTitle className="text-neutral-400">
-                              New Task
-                            </ItemTitle>
-                          )}
+                          <ListViewTaskName />
 
                           <ItemDescription>
                             <span className="w-full flex gap-2">

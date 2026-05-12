@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   flexRender,
@@ -28,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Project } from "@/types/types";
+import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
 
@@ -52,9 +53,9 @@ export function ProjectsDataTable({
   const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const columns = useMemo<ColumnDef<Project>[]>(
-    () => [
+  const columns: ColumnDef<Project>[] = [
       {
         id: "select",
         header: ({ table }) => (
@@ -83,27 +84,14 @@ export function ProjectsDataTable({
       {
         accessorKey: "Name",
         header: ({ column }) => <SortableHeader label="Name" column={column} />,
-        cell: ({ row }) => {
-          const project = row.original;
-          const isEmpty = project.Name === "";
-          const displayName = isEmpty ? "New Project" : project.Name;
-          return (
-            <div className="flex items-center gap-2 min-w-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    className={`truncate group-hover:underline ${
-                      isEmpty ? "text-neutral-400" : ""
-                    }`}
-                  >
-                    {displayName}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{displayName}</TooltipContent>
-              </Tooltip>
-            </div>
-          );
-        },
+        cell: ({ row }) => (
+          <ProjectNameCell
+            project={row.original}
+            isEditing={editingId === row.original.ID}
+            onStartEdit={() => setEditingId(row.original.ID)}
+            onStopEdit={() => setEditingId(null)}
+          />
+        ),
       },
       {
         accessorKey: "Pinned",
@@ -144,12 +132,15 @@ export function ProjectsDataTable({
       },
       {
         id: "actions",
-        cell: ({ row }) => <ProjectRowActions project={row.original} />,
+        cell: ({ row }) => (
+          <ProjectRowActions
+            project={row.original}
+            onRename={() => setEditingId(row.original.ID)}
+          />
+        ),
         enableSorting: false,
       },
-    ],
-    [],
-  );
+    ];
 
   const table = useReactTable({
     data,
@@ -166,6 +157,7 @@ export function ProjectsDataTable({
   });
 
   const handleRowClick = (row: Row<Project>) => {
+    if (editingId !== null) return;
     navigate({
       to: "/project/$projectId",
       params: { projectId: `${row.original.ID}` },

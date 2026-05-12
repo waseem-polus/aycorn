@@ -12,7 +12,12 @@ import { useProjectMutation } from "@/queries/useProjectMutation";
 import type { Project } from "@/types/types";
 import { ProjectsListDeleteDialog } from "@/components/projects/projects-list-delete-dialog";
 
-export function ProjectRowActions({ project }: { project: Project }) {
+type ProjectRowActionsProps = {
+  project: Project;
+  onRename: () => void;
+};
+
+export function ProjectRowActions({ project, onRename }: ProjectRowActionsProps) {
   const { updateProject } = useProjectMutation(project.ID);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -25,6 +30,7 @@ export function ProjectRowActions({ project }: { project: Project }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
               updateProject.mutate({ ...project, Pinned: !project.Pinned })
