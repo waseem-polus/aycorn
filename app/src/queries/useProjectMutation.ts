@@ -22,6 +22,9 @@ export function useProjectMutation(projectId: number) {
       queryClient.invalidateQueries({
         queryKey: ["pinnedProjects"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["allProjects"],
+      });
     },
   });
 
@@ -42,6 +45,9 @@ export function useProjectMutation(projectId: number) {
       });
       queryClient.invalidateQueries({
         queryKey: ["pinnedProjects"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["allProjects"],
       });
     },
   });

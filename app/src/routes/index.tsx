@@ -1,24 +1,17 @@
 import { Page, PageContent, PageHeader } from "@/components/page/Page";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import React, { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Pin, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Item,
-  ItemContent,
-  ItemGroup,
-  ItemSeparator,
-  ItemTitle,
-} from "@/components/ui/item";
-import { Empty, EmptyDescription } from "@/components/ui/empty";
 import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useProjectsMutation } from "@/queries/useProjectsMutation";
+import { ProjectsDataTable } from "@/components/projects/projects-data-table";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -78,41 +71,7 @@ function RouteComponent() {
             </Button>
           </div>
 
-          <div className="rounded-md border">
-            <ItemGroup>
-              {!isFetching && filteredProjects.length > 0 ? (
-                filteredProjects.map((project: Project, i: number) => (
-                  <React.Fragment key={project.ID}>
-                    <Item asChild>
-                      <Link
-                        to="/project/$projectId"
-                        params={{ projectId: `${project.ID}` }}
-                      >
-                        <ItemContent>
-                          <ItemTitle
-                            className={
-                              project.Name === "" ? "text-neutral-400" : ""
-                            }
-                          >
-                            {project.Name !== "" ? project.Name : "New Project"}
-                            {project.Pinned && (
-                              <Pin className="stroke-red-400 size-4" />
-                            )}
-                          </ItemTitle>
-                        </ItemContent>
-                      </Link>
-                    </Item>
-
-                    {filteredProjects.length - 1 != i && <ItemSeparator />}
-                  </React.Fragment>
-                ))
-              ) : (
-                <Empty>
-                  <EmptyDescription>No Projects Found</EmptyDescription>
-                </Empty>
-              )}
-            </ItemGroup>
-          </div>
+          <ProjectsDataTable data={filteredProjects} isFetching={isFetching} />
         </div>
       </PageContent>
     </Page>

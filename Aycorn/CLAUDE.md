@@ -83,6 +83,8 @@ server/
 ## Code Style
 
 - **File length:** Aim for short-to-moderate. If a file is getting long, split it by purpose (not just by line count).
+- **One component per file.** Each component lives in its own file. If a component has dependent / child components, put them in a directory named after the parent (without the extension) alongside the parent file. Example: `projects-data-table.tsx` lives next to a `table/` directory that contains its child components like `sortable-header.tsx` and `project-row-actions.tsx`.
+- **Function declaration style.** Components are declared with `function Name() {}`. Every other function — event handlers, helpers, and anything else defined inside a component or module — uses `const name = () => {}`. This makes components visually distinct from the handlers and helpers around them.
 - **Naming:** Clear and descriptive. One word is great if it's unambiguous; use more words if needed for clarity. Never sacrifice clarity for brevity.
 - **Abstraction:** Accept some repetition to keep readability. Abstract into hooks wherever it makes sense — hooks are the primary abstraction mechanism on the frontend.
 - **Dependencies:**
