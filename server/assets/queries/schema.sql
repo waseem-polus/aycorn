@@ -2,18 +2,36 @@ CREATE TABLE project (
     id INTEGER PRIMARY KEY,
     name VARCHAR,
     pinned BOOLEAN,
-    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TRIGGER setProjectTimeModified
+AFTER UPDATE ON project
+FOR EACH ROW
+WHEN NEW.timeModified IS OLD.timeModified
+BEGIN
+    UPDATE project SET timeModified = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TABLE checklist (
     id INTEGER PRIMARY KEY,
     project INTEGER,
     name VARCHAR,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isDefault BOOLEAN,
 
     FOREIGN KEY (project) REFERENCES project(id)
 );
+
+CREATE TRIGGER setChecklistTimeModified
+AFTER UPDATE ON checklist
+FOR EACH ROW
+WHEN NEW.timeModified IS OLD.timeModified
+BEGIN
+    UPDATE checklist SET timeModified = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER oneDefaultChecklistPerProject_Update
 AFTER UPDATE OF isDefault ON checklist
@@ -43,6 +61,7 @@ CREATE TABLE task (
     name VARCHAR DEFAULT '',
     body TEXT DEFAULT '[]',
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timePlannedStart TIMESTAMP DEFAULT NULL,
     timePlannedEnd   TIMESTAMP DEFAULT NULL,
     timeCompleted TIMESTAMP DEFAULT NULL,
@@ -53,6 +72,14 @@ CREATE TABLE task (
 
     FOREIGN KEY (checklist) REFERENCES checklist(id)
 );
+
+CREATE TRIGGER setTaskTimeModified
+AFTER UPDATE ON task
+FOR EACH ROW
+WHEN NEW.timeModified IS OLD.timeModified
+BEGIN
+    UPDATE task SET timeModified = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER checkTimePlannedEnd_Insert
 BEFORE INSERT ON task
