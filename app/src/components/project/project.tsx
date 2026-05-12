@@ -59,38 +59,38 @@ export function ProjectDetails({
 
   return (
     <SelectionContext.Provider value={selection}>
-      <div className="flex justify-between align-top overflow-visible">
-        <EditableProjectName />
-      </div>
+      <SelectionArea className="flex flex-col gap-4 grow min-h-0 overflow-visible">
+        <div className="flex justify-between align-top overflow-visible">
+          <EditableProjectName />
+        </div>
 
-      <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
-        <CalendarProvider
-          events={CALENDAR_ITEMS_MOCK}
-          users={USERS_MOCK}
-          view="month"
-        >
-          <DndProvider>
-            <Tabs value={view} onValueChange={setView} className="h-full">
-              <TabsList>
-                <TabsTrigger value="table">
-                  <IconList />
-                  List
-                </TabsTrigger>
-                <TabsTrigger value="khanban">
-                  <IconLayoutBoard />
-                  Kanban
-                </TabsTrigger>
-                <TabsTrigger value="month">
-                  <IconCalendarWeek />
-                  Month
-                </TabsTrigger>
-                <TabsTrigger value="week">
-                  <IconCalendarMonth />
-                  Week
-                </TabsTrigger>
-              </TabsList>
+        <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
+          <CalendarProvider
+            events={CALENDAR_ITEMS_MOCK}
+            users={USERS_MOCK}
+            view="month"
+          >
+            <DndProvider>
+              <Tabs value={view} onValueChange={setView} className="h-full">
+                <TabsList>
+                  <TabsTrigger value="table">
+                    <IconList />
+                    List
+                  </TabsTrigger>
+                  <TabsTrigger value="khanban">
+                    <IconLayoutBoard />
+                    Kanban
+                  </TabsTrigger>
+                  <TabsTrigger value="month">
+                    <IconCalendarWeek />
+                    Month
+                  </TabsTrigger>
+                  <TabsTrigger value="week">
+                    <IconCalendarMonth />
+                    Week
+                  </TabsTrigger>
+                </TabsList>
 
-              <SelectionArea className="h-full min-h-0">
                 <TabsContent
                   value="table"
                   className="h-full overflow-visible min-h-0"
@@ -115,11 +115,11 @@ export function ProjectDetails({
                 >
                   <WeekView setTaskDrawerOpen={setNewTaskOpen} />
                 </TabsContent>
-              </SelectionArea>
-            </Tabs>
-          </DndProvider>
-        </CalendarProvider>
-      </div>
+              </Tabs>
+            </DndProvider>
+          </CalendarProvider>
+        </div>
+      </SelectionArea>
 
       <AnimatePresence>
         {selectedTasks.length > 0 && (

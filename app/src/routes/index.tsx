@@ -12,6 +12,7 @@ import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
 import { ProjectsDataTable } from "@/components/projects/projects-data-table";
+import { SelectionContext, useSelection } from "@/hooks/useSelection";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -22,6 +23,8 @@ function RouteComponent() {
   const { createProject } = useAllProjectsMutation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const selection = useSelection();
+  const { SelectionArea } = selection;
 
   const filteredProjects = useMemo(() => {
     if (isFetching || !projects) {
@@ -37,42 +40,49 @@ function RouteComponent() {
     <Page>
       <PageHeader breadcrumb={["Projects"]} />
       <PageContent>
-        <h1 className="text-2xl p-1">Projects</h1>
+        <SelectionContext.Provider value={selection}>
+          <SelectionArea className="flex flex-col gap-4 h-full">
+            <h1 className="text-2xl p-1">Projects</h1>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4">
-            <InputGroup>
-              <InputGroupInput
-                placeholder="Filter Projects..."
-                onChange={(e) => setSearch(e.target.value)}
-                value={search}
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <InputGroup>
+                  <InputGroupInput
+                    placeholder="Filter Projects..."
+                    onChange={(e) => setSearch(e.target.value)}
+                    value={search}
+                  />
+                  <InputGroupAddon>
+                    <Search />
+                  </InputGroupAddon>
+                  <InputGroupAddon align="inline-end">
+                    {filteredProjects.length ?? 0} projects
+                  </InputGroupAddon>
+                </InputGroup>
+                <Button
+                  className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
+                  onClick={() =>
+                    createProject.mutate(undefined, {
+                      onSuccess: (res) =>
+                        navigate({
+                          to: "/project/$projectId",
+                          params: { projectId: res },
+                        }),
+                    })
+                  }
+                >
+                  <Plus />
+                  New Project
+                </Button>
+              </div>
+
+              <ProjectsDataTable
+                data={filteredProjects}
+                isFetching={isFetching}
               />
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-              <InputGroupAddon align="inline-end">
-                {filteredProjects.length ?? 0} projects
-              </InputGroupAddon>
-            </InputGroup>
-            <Button
-              className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
-              onClick={() =>
-                createProject.mutate(undefined, {
-                  onSuccess: (res) =>
-                    navigate({
-                      to: "/project/$projectId",
-                      params: { projectId: res },
-                    }),
-                })
-              }
-            >
-              <Plus />
-              New Project
-            </Button>
-          </div>
-
-          <ProjectsDataTable data={filteredProjects} isFetching={isFetching} />
-        </div>
+            </div>
+          </SelectionArea>
+        </SelectionContext.Provider>
       </PageContent>
     </Page>
   );

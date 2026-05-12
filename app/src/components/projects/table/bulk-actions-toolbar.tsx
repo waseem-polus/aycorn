@@ -57,7 +57,10 @@ export function BulkActionsToolbar({
 
   return (
     <>
-      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-lg border bg-background px-3 py-1.5 shadow-lg">
+      <div
+        data-keep-selection=""
+        className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-lg border bg-background px-3 py-1.5 shadow-lg"
+      >
         <span className="text-sm font-medium px-2">{count} selected</span>
         <Button
           variant="ghost"

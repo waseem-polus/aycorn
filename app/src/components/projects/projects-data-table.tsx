@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   flexRender,
@@ -7,7 +7,9 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type OnChangeFn,
   type Row,
+  type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
 import { format, formatDistanceToNow } from "date-fns";
@@ -32,6 +34,8 @@ import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-too
 import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
+import { useSharedSelection } from "@/hooks/useSelection";
+import { cn } from "@/lib/utils";
 
 interface ProjectsDataTableProps {
   data: Project[];
@@ -54,8 +58,21 @@ export function ProjectsDataTable({
 }: ProjectsDataTableProps) {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [rowSelection, setRowSelection] = useState({});
   const [editingId, setEditingId] = useState<number | null>(null);
+  const { getItemProps, selectedIds, setSelectedIds } = useSharedSelection();
+
+  const rowSelection = useMemo<RowSelectionState>(
+    () =>
+      Object.fromEntries(Array.from(selectedIds).map((id) => [id, true])),
+    [selectedIds],
+  );
+
+  const handleRowSelectionChange: OnChangeFn<RowSelectionState> = (updater) => {
+    const next = typeof updater === "function" ? updater(rowSelection) : updater;
+    setSelectedIds(
+      new Set(Object.keys(next).filter((id) => next[id])),
+    );
+  };
 
   const columns: ColumnDef<Project>[] = [
     {
@@ -169,7 +186,7 @@ export function ProjectsDataTable({
     columns,
     state: { sorting, rowSelection },
     onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -221,30 +238,48 @@ export function ProjectsDataTable({
           </TableHeader>
           <TableBody>
             {!isFetching && table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleRowClick(row)}
-                  className="group cursor-pointer"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={
-                        cell.column.id === "select"
-                          ? (e) => e.stopPropagation()
-                          : undefined
-                      }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const itemProps = getItemProps(row.id);
+                const itemOnClick = (
+                  itemProps as {
+                    onClick?: (e: React.MouseEvent) => void;
+                  }
+                ).onClick;
+                const itemClassName =
+                  (itemProps.className as string | undefined) ?? "";
+                return (
+                  <TableRow
+                    key={row.id}
+                    {...itemProps}
+                    data-task-card=""
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={(e) => {
+                      itemOnClick?.(e);
+                      if (!e.defaultPrevented) handleRowClick(row);
+                    }}
+                    className={cn(
+                      "group cursor-pointer",
+                      itemClassName,
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        onClick={
+                          cell.column.id === "select"
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

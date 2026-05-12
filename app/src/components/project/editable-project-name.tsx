@@ -8,7 +8,7 @@ export function EditableProjectName() {
   const { updateProject } = useProjectMutation(Project.ID);
 
   return (
-    <div className="grow flex flex-col text-wrap">
+    <div className="grow flex flex-col text-wrap select-text">
       <EditableHeader
         value={Project.Name}
         setValue={(newName) => {
