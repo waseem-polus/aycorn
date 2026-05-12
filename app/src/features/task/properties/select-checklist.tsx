@@ -11,28 +11,46 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { LandPlotIcon } from "lucide-react";
 
+type Props = {
+  onChange?: (task: Task) => void;
+  value?: number;
+  onValueChange?: (value: number) => void;
+  placeholder?: string;
+};
+
 export function SelectChecklist({
-  onChange,
-}: {
-  onChange: (task: Task) => void;
-}) {
+  onChange = () => {},
+  value,
+  onValueChange,
+  placeholder = "Select a checklist",
+}: Props) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Checklists: checklists } = useContext(ProjectContext);
+  const isControlled = onValueChange !== undefined;
 
-  const handleValueChange = (newType: Task["Type"]) => {
-    setTask({ ...task, Checklist: Number.parseInt(newType) });
-    onChange({ ...task, Checklist: Number.parseInt(newType) });
+  const handleValueChange = (newId: string) => {
+    const parsed = Number.parseInt(newId);
+    if (isControlled) {
+      onValueChange(parsed);
+      return;
+    }
+    setTask({ ...task, Checklist: parsed });
+    onChange({ ...task, Checklist: parsed });
   };
+
+  const controlledValue =
+    isControlled && value !== undefined ? value.toString() : "";
 
   return (
     <Select
-      defaultValue={task.Checklist.toString()}
+      value={isControlled ? controlledValue : undefined}
+      defaultValue={isControlled ? undefined : task.Checklist.toString()}
       onValueChange={handleValueChange}
     >
       <SelectTrigger id="checklist" className="w-full">
         <div className="flex gap-2">
           <LandPlotIcon />
-          <SelectValue placeholder="Select a checklist" />
+          <SelectValue placeholder={placeholder} />
         </div>
       </SelectTrigger>
       <SelectContent>

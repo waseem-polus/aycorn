@@ -4,16 +4,23 @@ import { ItemGroup } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDropZone } from "@/hooks/useDropZone";
 import type { Task } from "@/types/types";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, type SyntheticEvent } from "react";
 import { KanbanItem } from "./kanban-item";
 import { cva } from "class-variance-authority";
+
+type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 
 export function KanbanColumn({
   status,
   description,
+  getItemProps,
 }: {
   status: Task["Status"];
   description: string;
+  getItemProps?: (
+    id: string,
+    opts?: { listeners?: DragListeners },
+  ) => Record<string, unknown>;
 }) {
   const { setNodeRef, isOver } = useDropZone(status);
 
@@ -72,7 +79,11 @@ export function KanbanColumn({
         ref={setNodeRef}
       >
         {filteredTasks.map((task) => (
-          <KanbanItem key={task.ID} task={task} />
+          <KanbanItem
+            key={task.ID}
+            task={task}
+            getItemProps={getItemProps}
+          />
         ))}
       </ItemGroup>
     </div>

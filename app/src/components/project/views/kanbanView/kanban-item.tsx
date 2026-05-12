@@ -14,13 +14,30 @@ import { CalendarIcon, LandPlot, User } from "lucide-react";
 import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
+import { cn } from "@/lib/utils";
 
-export function KanbanItem({ task }: { task: ChecklistTask }) {
+type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
+
+export function KanbanItem({
+  task,
+  getItemProps,
+}: {
+  task: ChecklistTask;
+  getItemProps?: (
+    id: string,
+    opts?: { listeners?: DragListeners },
+  ) => Record<string, unknown>;
+}) {
   const { setNodeRef, style, listeners, attributes } = useDraggableItem(
     task.ID.toString(),
     { task },
   );
   const { toFormatted } = useDateFormat();
+
+  const itemProps = getItemProps?.(task.ID.toString(), {
+    listeners: listeners as DragListeners | undefined,
+  });
+  const itemClassName = (itemProps?.className as string | undefined) ?? "";
 
   return (
     <TaskProvider defaultState={task} key={task.ID}>
@@ -32,9 +49,13 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
           <a
             ref={setNodeRef}
             style={style}
-            {...listeners}
             {...attributes}
-            className="overflow-clip"
+            {...itemProps}
+            data-task-card=""
+            className={cn(
+              "overflow-clip data-selected:ring-2 data-selected:ring-primary",
+              itemClassName,
+            )}
           >
             <ItemHeader className="flex justify-between">
               <TaskPriorityIcon variant={task.Priority} />

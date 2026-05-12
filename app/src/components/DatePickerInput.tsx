@@ -14,22 +14,32 @@ import { useDateFormat } from "@/hooks/useDateFormatter";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { isSameDay } from "date-fns";
 
+type Props = {
+  onChange?: (task: Task) => void;
+  start?: string | null;
+  end?: string | null;
+  onRangeChange?: (start: string | null, end: string | null) => void;
+  placeholder?: string;
+};
+
 export function DatePickerInput({
   onChange = () => {},
-}: {
-  onChange?: (task: Task) => void;
-}) {
+  start,
+  end,
+  onRangeChange,
+  placeholder = "Select a date",
+}: Props) {
   const { state: task, setState: setTask } = useContext(TaskContext);
+  const isControlled = onRangeChange !== undefined;
+
+  const plannedStart = isControlled ? start ?? null : task.TimePlannedStart;
+  const plannedEnd = isControlled ? end ?? null : task.TimePlannedEnd;
 
   const [open, setOpen] = useState(false);
 
   const [date, setDate] = useState<DateRange | undefined>({
-    from:
-      task.TimePlannedStart !== null
-        ? new Date(task.TimePlannedStart)
-        : undefined,
-    to:
-      task.TimePlannedEnd !== null ? new Date(task.TimePlannedEnd) : undefined,
+    from: plannedStart !== null ? new Date(plannedStart) : undefined,
+    to: plannedEnd !== null ? new Date(plannedEnd) : undefined,
   });
   const [month, setMonth] = useState<Date | undefined>(undefined);
 
@@ -49,36 +59,39 @@ export function DatePickerInput({
     return date.toISOString();
   };
 
-  const handleTimeChange = (type: "start" | "end", time: string) => {
-    const currentStart = task.TimePlannedStart;
-    const currentEnd = task.TimePlannedEnd;
-
-    const newStart =
-      type === "start" ? setTimeOnDate(currentStart, time) : currentStart;
-    const newEnd =
-      type === "end" ? setTimeOnDate(currentEnd, time) : currentEnd;
-
+  const emit = (newStart: string | null, newEnd: string | null) => {
+    if (isControlled) {
+      onRangeChange(newStart, newEnd);
+      return;
+    }
     setTask({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
     onChange({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
   };
 
+  const handleTimeChange = (type: "start" | "end", time: string) => {
+    const newStart =
+      type === "start" ? setTimeOnDate(plannedStart, time) : plannedStart;
+    const newEnd =
+      type === "end" ? setTimeOnDate(plannedEnd, time) : plannedEnd;
+    emit(newStart, newEnd);
+  };
+
   const selectedDate = () => {
-    if (task.TimePlannedStart === null) {
+    if (plannedStart === null) {
       return (
-        <span className="font-normal text-neutral-400">Select a date</span>
+        <span className="font-normal text-neutral-400">{placeholder}</span>
       );
     }
 
     const hasEndDate =
-      task.TimePlannedEnd !== null &&
-      !isSameDay(task.TimePlannedStart, task.TimePlannedEnd);
+      plannedEnd !== null && !isSameDay(plannedStart, plannedEnd);
 
     return (
       <span className="flex align-middle font-normal">
-        {toFormatted(task.TimePlannedStart)}
+        {toFormatted(plannedStart)}
 
         {hasEndDate && " → "}
-        {hasEndDate && toFormatted(task.TimePlannedEnd)}
+        {hasEndDate && toFormatted(plannedEnd)}
       </span>
     );
   };
@@ -111,8 +124,8 @@ export function DatePickerInput({
             onMonthChange={setMonth}
             onSelect={(date) => {
               setDate(date);
-              const existingTimeStart = getTimeFromISO(task.TimePlannedStart);
-              const existingTimeEnd = getTimeFromISO(task.TimePlannedEnd);
+              const existingTimeStart = getTimeFromISO(plannedStart);
+              const existingTimeEnd = getTimeFromISO(plannedEnd);
 
               const newStart = date?.from
                 ? setTimeOnDate(date.from.toISOString(), existingTimeStart)
@@ -121,16 +134,7 @@ export function DatePickerInput({
                 ? setTimeOnDate(date.to.toISOString(), existingTimeEnd)
                 : null;
 
-              setTask({
-                ...task,
-                TimePlannedStart: newStart,
-                TimePlannedEnd: newEnd,
-              });
-              onChange({
-                ...task,
-                TimePlannedStart: newStart,
-                TimePlannedEnd: newEnd,
-              });
+              emit(newStart, newEnd);
             }}
           />
           <InputGroup>
@@ -141,7 +145,7 @@ export function DatePickerInput({
               className="w-full"
               id="timeStart"
               type="time"
-              value={getTimeFromISO(task.TimePlannedStart)}
+              value={getTimeFromISO(plannedStart)}
               onChange={(e) => handleTimeChange("start", e.target.value)}
             />
           </InputGroup>
@@ -154,7 +158,7 @@ export function DatePickerInput({
               className="w-full"
               id="timeEnd"
               type="time"
-              value={getTimeFromISO(task.TimePlannedEnd)}
+              value={getTimeFromISO(plannedEnd)}
               onChange={(e) => handleTimeChange("end", e.target.value)}
             />
           </InputGroup>

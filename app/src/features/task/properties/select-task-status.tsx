@@ -10,21 +10,39 @@ import TaskStatusIcon from "./icons/TaskStatusIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 
+type Props = {
+  onChange?: (task: Task) => void;
+  value?: Task["Status"];
+  onValueChange?: (value: Task["Status"]) => void;
+  placeholder?: string;
+};
+
 export function SelectTaskStatus({
   onChange = () => {},
-}: {
-  onChange?: (task: Task) => void;
-}) {
+  value,
+  onValueChange,
+  placeholder = "Select a status",
+}: Props) {
   const { state, setState } = useContext(TaskContext);
+  const isControlled = onValueChange !== undefined;
+
   const handleValueChange = (newStatus: Task["Status"]) => {
+    if (isControlled) {
+      onValueChange(newStatus);
+      return;
+    }
     setState({ ...state, Status: newStatus });
     onChange({ ...state, Status: newStatus });
   };
 
   return (
-    <Select defaultValue={state.Status} onValueChange={handleValueChange}>
+    <Select
+      value={isControlled ? value ?? "" : undefined}
+      defaultValue={isControlled ? undefined : state.Status}
+      onValueChange={handleValueChange}
+    >
       <SelectTrigger id="status" className="w-full">
-        <SelectValue placeholder="Select a status" />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="Open">

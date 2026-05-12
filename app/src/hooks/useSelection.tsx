@@ -1,5 +1,7 @@
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -18,10 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 
 type UseSelectionParams = {
-  onDragWithSelection?: (
-    selectedIds: Set<string>,
-    dropTarget: Over | null,
-  ) => void;
   clearOnDrop?: boolean;
 };
 
@@ -36,7 +34,6 @@ const hasModifier = (e: { ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boole
   !!(e.ctrlKey || e.metaKey || e.shiftKey);
 
 export const useSelection = ({
-  onDragWithSelection,
   clearOnDrop = true,
 }: UseSelectionParams = {}) => {
   const [selectedIds, setSelectedIdsState] = useState<Set<string>>(
@@ -133,7 +130,12 @@ export const useSelection = ({
     const handler = (e: PointerEvent) => {
       if (!(e.target instanceof Element)) return;
       if (hasModifier(e)) return;
-      if (e.target.closest(".selectable")) return;
+      if (
+        e.target.closest(
+          ".selectable, [data-keep-selection], [data-radix-popper-content-wrapper], [role='dialog'], [role='alertdialog']",
+        )
+      )
+        return;
       if (selectedIdsRef.current.size === 0) return;
       clearSelection();
     };
@@ -192,17 +194,20 @@ export const useSelection = ({
   );
 
   const wrapDragEnd = useCallback(
-    (consumer: (e: DragEndEvent) => void) => (e: DragEndEvent) => {
+    (
+      consumer: (e: DragEndEvent) => void,
+      bulkHandler?: (selectedIds: Set<string>, dropTarget: Over | null) => void,
+    ) => (e: DragEndEvent) => {
       const activeId = String(e.active.id);
       const current = selectedIdsRef.current;
       if (current.size > 1 && current.has(activeId)) {
-        onDragWithSelection?.(new Set(current), e.over);
+        bulkHandler?.(new Set(current), e.over);
         if (clearOnDrop) clearSelection();
         return;
       }
       consumer(e);
     },
-    [onDragWithSelection, clearOnDrop, clearSelection],
+    [clearOnDrop, clearSelection],
   );
 
   return {
@@ -215,4 +220,18 @@ export const useSelection = ({
     wrapDragStart,
     wrapDragEnd,
   };
+};
+
+export type SelectionAPI = ReturnType<typeof useSelection>;
+
+export const SelectionContext = createContext<SelectionAPI | null>(null);
+
+export const useSharedSelection = (): SelectionAPI => {
+  const ctx = useContext(SelectionContext);
+  if (!ctx) {
+    throw new Error(
+      "useSharedSelection must be used inside a SelectionContext.Provider",
+    );
+  }
+  return ctx;
 };
