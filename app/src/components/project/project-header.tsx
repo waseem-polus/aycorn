@@ -1,6 +1,12 @@
 import { useContext, useState } from "react";
+import { format, formatDistanceToNow } from "date-fns";
 import { Pin, PinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectMutation } from "@/queries/useProjectMutation";
 import { ProjectDropdownMenu } from "./pageHeader/project-dropdown-menu";
@@ -17,6 +23,22 @@ export function ProjectHeader() {
 
   return (
     <>
+      {Project.TimeModified && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-sm text-foreground">
+              Modified{" "}
+              {formatDistanceToNow(new Date(Project.TimeModified), {
+                addSuffix: true,
+              })}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {format(new Date(Project.TimeModified), "MMM d, yyyy (h:mm a)")}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
       <Button variant="ghost" size="icon-sm" onClick={togglePin}>
         {Project.Pinned ? <PinOff /> : <Pin />}
       </Button>

@@ -14,6 +14,7 @@ export const defaultTaskContextValue: TaskContextType = {
     Checklist: 0,
     TimeCompleted: null,
     TimeCreated: new Date().toISOString(),
+    TimeModified: new Date().toISOString(),
     TimePlannedStart: null,
     TimePlannedEnd: null,
     Assignee: "",

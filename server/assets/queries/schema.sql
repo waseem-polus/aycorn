@@ -81,6 +81,24 @@ BEGIN
     UPDATE task SET timeModified = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
+CREATE TRIGGER cascadeTaskUpdateToParents
+AFTER UPDATE ON task
+FOR EACH ROW
+BEGIN
+    UPDATE checklist SET timeModified = CURRENT_TIMESTAMP
+      WHERE id = NEW.checklist;
+    UPDATE project SET timeModified = CURRENT_TIMESTAMP
+      WHERE id = (SELECT project FROM checklist WHERE id = NEW.checklist);
+END;
+
+CREATE TRIGGER cascadeChecklistUpdateToProject
+AFTER UPDATE ON checklist
+FOR EACH ROW
+BEGIN
+    UPDATE project SET timeModified = CURRENT_TIMESTAMP
+      WHERE id = NEW.project;
+END;
+
 CREATE TRIGGER checkTimePlannedEnd_Insert
 BEFORE INSERT ON task
 WHEN NEW.timePlannedEnd IS NOT NULL

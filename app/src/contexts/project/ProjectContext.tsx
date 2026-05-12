@@ -35,6 +35,7 @@ export const defaultProjectContextValue: ProjectContextType = {
     Name: "",
     Pinned: false,
     TimeCreated: "",
+    TimeModified: "",
   },
 
   SetTasks: () => {},

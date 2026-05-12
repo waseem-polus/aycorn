@@ -43,6 +43,7 @@ const COLUMN_WIDTHS: Record<string, string | undefined> = {
   Name: undefined,
   Pinned: "15%",
   TimeCreated: "15%",
+  TimeModified: "15%",
   actions: "60px",
 };
 const NAME_MIN_WIDTH = "30%";
@@ -57,91 +58,111 @@ export function ProjectsDataTable({
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const columns: ColumnDef<Project>[] = [
-      {
-        id: "select",
-        header: ({ table }) => (
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <div onClick={(e) => e.stopPropagation()}>
           <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label="Select all"
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
           />
-        ),
-        cell: ({ row }) => (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
-            />
-          </div>
-        ),
-        enableSorting: false,
+        </div>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: "Name",
+      header: ({ column }) => <SortableHeader label="Name" column={column} />,
+      cell: ({ row }) => (
+        <ProjectNameCell
+          project={row.original}
+          isEditing={editingId === row.original.ID}
+          onStartEdit={() => setEditingId(row.original.ID)}
+          onStopEdit={() => setEditingId(null)}
+        />
+      ),
+    },
+    {
+      accessorKey: "Pinned",
+      header: ({ column }) => <SortableHeader label="Pinned" column={column} />,
+      cell: ({ row }) => (
+        <span className="flex align-middle justify-start pl-2">
+          {row.original.Pinned ? (
+            <Pin className="stroke-red-400 size-4 shrink-0" />
+          ) : null}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "TimeCreated",
+      header: ({ column }) => (
+        <SortableHeader label="Created" column={column} />
+      ),
+      cell: ({ row }) => {
+        const date = new Date(row.original.TimeCreated);
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-muted-foreground">
+                {formatDistanceToNow(date, { addSuffix: true })}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {format(date, "MMM d, yyyy (h:mm a)")}
+            </TooltipContent>
+          </Tooltip>
+        );
       },
-      {
-        accessorKey: "Name",
-        header: ({ column }) => <SortableHeader label="Name" column={column} />,
-        cell: ({ row }) => (
-          <ProjectNameCell
-            project={row.original}
-            isEditing={editingId === row.original.ID}
-            onStartEdit={() => setEditingId(row.original.ID)}
-            onStopEdit={() => setEditingId(null)}
-          />
-        ),
+      sortingFn: (a, b) =>
+        new Date(a.original.TimeCreated).getTime() -
+        new Date(b.original.TimeCreated).getTime(),
+    },
+    {
+      accessorKey: "TimeModified",
+      header: ({ column }) => (
+        <SortableHeader label="Modified" column={column} />
+      ),
+      cell: ({ row }) => {
+        const date = new Date(row.original.TimeModified);
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-muted-foreground">
+                {formatDistanceToNow(date, { addSuffix: true })}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {format(date, "MMM d, yyyy (h:mm a)")}
+            </TooltipContent>
+          </Tooltip>
+        );
       },
-      {
-        accessorKey: "Pinned",
-        header: ({ column }) => (
-          <SortableHeader label="Pinned" column={column} />
-        ),
-        cell: ({ row }) => (
-          <span className="flex align-middle justify-start pl-2">
-            {row.original.Pinned ? (
-              <Pin className="stroke-red-400 size-4 shrink-0" />
-            ) : null}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "TimeCreated",
-        header: ({ column }) => (
-          <SortableHeader label="Created" column={column} />
-        ),
-        cell: ({ row }) => {
-          const date = new Date(row.original.TimeCreated);
-          return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-muted-foreground">
-                  {formatDistanceToNow(date, { addSuffix: true })}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                {format(date, "MMM d, yyyy (h:mm a)")}
-              </TooltipContent>
-            </Tooltip>
-          );
-        },
-        sortingFn: (a, b) =>
-          new Date(a.original.TimeCreated).getTime() -
-          new Date(b.original.TimeCreated).getTime(),
-      },
-      {
-        id: "actions",
-        cell: ({ row }) => (
-          <ProjectRowActions
-            project={row.original}
-            onRename={() => setEditingId(row.original.ID)}
-          />
-        ),
-        enableSorting: false,
-      },
-    ];
+      sortingFn: (a, b) =>
+        new Date(a.original.TimeModified).getTime() -
+        new Date(b.original.TimeModified).getTime(),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <ProjectRowActions
+          project={row.original}
+          onRename={() => setEditingId(row.original.ID)}
+        />
+      ),
+      enableSorting: false,
+    },
+  ];
 
   const table = useReactTable({
     data,

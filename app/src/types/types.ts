@@ -13,12 +13,14 @@ export type Project = {
   Name: string;
   Pinned: boolean;
   TimeCreated: string;
+  TimeModified: string;
 };
 
 export type Checklist = {
   ID: number;
   Name: string;
   TimeCreated: string;
+  TimeModified: string;
   IsDefault: boolean;
 };
 
@@ -34,6 +36,7 @@ export type Task = {
   Body: Value;
   Checklist: number;
   TimeCreated: string;
+  TimeModified: string;
   TimePlannedStart: string | null;
   TimePlannedEnd: string | null;
   TimeCompleted: string | null;
