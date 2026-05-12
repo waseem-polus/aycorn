@@ -61,6 +61,7 @@ server/
 - **Client state** lives in React Contexts. Don't introduce Zustand, Redux, or other state libraries.
 - **Server state** is fetched via TanStack Query. Queries are grouped into hooks by feature (e.g., `useTaskQueries`, `useProjectQueries`).
 - **Always wait for server confirmation** before updating UI — no optimistic updates.
+- **TanStack queries and mutations must live in a dedicated hook file** under `queries/` (or the feature's `queries/` folder). Never write `useQuery` / `useMutation` inline in a component. Components consume the hook; the hook owns the URL, the cache key, and the invalidations. This keeps fetch logic out of the render tree and makes it reusable across components.
 
 ---
 

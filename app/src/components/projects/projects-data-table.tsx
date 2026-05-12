@@ -28,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Project } from "@/types/types";
+import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-toolbar";
 import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
@@ -164,6 +165,10 @@ export function ProjectsDataTable({
     });
   };
 
+  const selectedProjects = table
+    .getFilteredSelectedRowModel()
+    .rows.map((r) => r.original);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="rounded-md border">
@@ -256,6 +261,11 @@ export function ProjectsDataTable({
           </div>
         </div>
       </div>
+
+      <BulkActionsToolbar
+        selectedProjects={selectedProjects}
+        onClear={() => table.resetRowSelection()}
+      />
     </div>
   );
 }

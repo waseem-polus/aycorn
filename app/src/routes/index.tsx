@@ -10,7 +10,7 @@ import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
-import { useProjectsMutation } from "@/queries/useProjectsMutation";
+import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
 import { ProjectsDataTable } from "@/components/projects/projects-data-table";
 
 export const Route = createFileRoute("/")({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
   const { data: projects, isFetching } = useAllProjectsQuery();
-  const { createProject } = useProjectsMutation();
+  const { createProject } = useAllProjectsMutation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
