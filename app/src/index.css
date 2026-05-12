@@ -133,4 +133,11 @@
     @apply text-neutral-500 opacity-90;
     pointer-events: none;
   }
+
+  .selection-area {
+    background: color-mix(in oklch, var(--primary) 15%, transparent);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-xs);
+    pointer-events: none;
+  }
 }
