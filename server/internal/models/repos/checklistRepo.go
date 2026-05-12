@@ -16,6 +16,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 			c.name,
 			c.project,
 			c.timeCreated,
+			c.timeModified,
 			c.isDefault,
 			COUNT(t.id),
 			SUM(CASE WHEN t.status = "Done" THEN 1 ELSE 0 END),
@@ -49,6 +50,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 			&c.Name,
 			&c.Project,
 			&c.TimeCreated,
+			&c.TimeModified,
 			&c.IsDefault,
 			&c.TotalCount,
 			&c.DoneCount,
@@ -72,7 +74,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 }
 
 func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
-	query := "SELECT id, name, project, timeCreated, isDefault FROM checklist WHERE id = ?;"
+	query := "SELECT id, name, project, timeCreated, timeModified, isDefault FROM checklist WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -81,7 +83,7 @@ func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
 	rows.Next()
 
 	checklist := models.Checklist{}
-	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated, &checklist.IsDefault)
+	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated, &checklist.TimeModified, &checklist.IsDefault)
 	if err != nil {
 		return nil, err
 	}

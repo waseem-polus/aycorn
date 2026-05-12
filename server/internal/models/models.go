@@ -3,18 +3,20 @@ package models
 import "time"
 
 type Project struct {
-	ID          int
-	Name        string
-	Pinned      bool
-	TimeCreated *time.Time
+	ID           int
+	Name         string
+	Pinned       bool
+	TimeCreated  *time.Time
+	TimeModified *time.Time
 }
 
 type Checklist struct {
-	ID          int
-	Name        string
-	Project     int
-	TimeCreated *time.Time
-	IsDefault   bool
+	ID           int
+	Name         string
+	Project      int
+	TimeCreated  *time.Time
+	TimeModified *time.Time
+	IsDefault    bool
 }
 
 type ChecklistDetails struct {
@@ -30,6 +32,7 @@ type Task struct {
 	Name             string
 	Body             string
 	TimeCreated      *time.Time
+	TimeModified     *time.Time
 	TimePlannedStart *time.Time
 	TimePlannedEnd   *time.Time
 	TimeCompleted    *time.Time
