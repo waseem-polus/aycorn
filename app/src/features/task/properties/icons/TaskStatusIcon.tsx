@@ -12,21 +12,29 @@ export default function TaskStatusIcon({
 }: {
   variant: Task["Status"];
 }) {
-  let icon = <CircleDashed className="size-4" />;
+  let icon = <CircleDashed className="size-4 dark:stroke-neutral-500" />;
   switch (variant) {
     case "Open":
       break;
     case "Todo":
-      icon = <Circle className="size-4 stroke-orange-400" />;
+      icon = (
+        <Circle className="size-4 stroke-orange-400 dark:stroke-orange-700" />
+      );
       break;
     case "Doing":
-      icon = <CircleDot className="size-4 stroke-green-500" />;
+      icon = (
+        <CircleDot className="size-4 stroke-green-500 dark:stroke-green-600" />
+      );
       break;
     case "Blocked":
-      icon = <CircleMinus className="size-4 stroke-red-700" />;
+      icon = (
+        <CircleMinus className="size-4 stroke-red-700 dark:stroke-red-600" />
+      );
       break;
     case "Done":
-      icon = <CircleCheck className="size-4 stroke-purple-600" />;
+      icon = (
+        <CircleCheck className="size-4 stroke-purple-600 dark:stroke-purple-500" />
+      );
       break;
   }
 

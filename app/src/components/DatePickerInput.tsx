@@ -79,7 +79,7 @@ export function DatePickerInput({
   const selectedDate = () => {
     if (plannedStart === null) {
       return (
-        <span className="font-normal text-neutral-400">{placeholder}</span>
+        <span className="font-normal text-muted-foreground">{placeholder}</span>
       );
     }
 

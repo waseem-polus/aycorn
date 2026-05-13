@@ -41,7 +41,7 @@ export function TaskAssignee({
           id="assignee"
           value={localValue}
           placeholder={placeholder}
-          className="placeholder:text-neutral-400"
+          className="placeholder:text-muted-foreground"
           onChange={(e) => setLocalValue(e.target.value)}
           onBlur={(e) => {
             if (e.target.value !== (value ?? "")) {
@@ -62,7 +62,7 @@ export function TaskAssignee({
         id="assignee"
         value={task.Assignee}
         placeholder={placeholder}
-        className="placeholder:text-neutral-400"
+        className="placeholder:text-muted-foreground"
         onChange={(e) => {
           setTask({
             ...task,

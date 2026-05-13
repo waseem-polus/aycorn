@@ -40,9 +40,7 @@ export default function FilterEvents() {
               {taskType}
               <span>
                 {selectedTypes.includes(taskType) && (
-                  <span className="text-blue-500">
-                    <CheckIcon className="size-4" />
-                  </span>
+                  <CheckIcon className="size-4" />
                 )}
               </span>
             </span>

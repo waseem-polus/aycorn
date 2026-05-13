@@ -68,7 +68,7 @@ export function ListViewTaskName() {
   }
 
   return (
-    <ItemTitle className={isEmpty ? "text-neutral-400" : ""}>
+    <ItemTitle className={isEmpty ? "text-muted-foreground" : ""}>
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
           <span>{displayName}</span>

@@ -60,7 +60,7 @@ function RouteComponent() {
                   </InputGroupAddon>
                 </InputGroup>
                 <Button
-                  className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
+                  className="hover:cursor-pointer"
                   onClick={() =>
                     createProject.mutate(undefined, {
                       onSuccess: (res) =>

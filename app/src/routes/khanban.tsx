@@ -10,7 +10,7 @@ function RouteComponent() {
     <Page>
       <PageHeader breadcrumb={["Khanban"]} />
       <PageContent>
-        <h1>Khanban Board</h1>
+        <h1 className="text-primary">Khanban Board</h1>
       </PageContent>
     </Page>
   );

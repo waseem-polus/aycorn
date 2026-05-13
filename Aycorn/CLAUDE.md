@@ -153,3 +153,4 @@ When writing code for this project:
 - **Flag shared abstractions** when a loading state, hook, or utility is being duplicated and a shared version would be worth extracting.
 - **Flag migration schema implications** whenever a feature touches `status` or `type` fields on tasks.
 - **Flag keyboard interaction gaps** if a feature is being implemented without keyboard support.
+- **Flag hardcoded colors** whenever you see a fixed Tailwind color (e.g. `neutral-700`, `emerald-500`, `gray-100`) used for text, background, or border. These break dark mode. Replace them with semantic tokens from `index.css` — e.g. `text-foreground`, `bg-background`, `bg-primary`, `text-muted-foreground`, `border-border`. Check the full token list in `app/src/index.css`.

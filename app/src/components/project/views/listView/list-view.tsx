@@ -79,7 +79,7 @@ export function ListView({
                                   className={
                                     task.Assignee !== ""
                                       ? ""
-                                      : "text-neutral-500"
+                                      : "text-muted-foreground"
                                   }
                                 >
                                   <User className="size-2" />
@@ -96,7 +96,7 @@ export function ListView({
                                   className={
                                     task.TimePlannedStart !== null
                                       ? ""
-                                      : "text-neutral-500"
+                                      : "text-muted-foreground"
                                   }
                                 >
                                   <CalendarIcon className="size-2" />

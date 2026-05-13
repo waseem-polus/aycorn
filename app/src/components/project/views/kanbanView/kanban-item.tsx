@@ -44,7 +44,7 @@ export function KanbanItem({
       <TaskEditorDrawer>
         <Item
           asChild
-          className="border border-neutral-200 bg-background rounded-lg w-full box-border"
+          className="border border-border bg-background rounded-lg w-full box-border"
         >
           <a
             ref={setNodeRef}
@@ -68,7 +68,9 @@ export function KanbanItem({
               {task.Name !== "" ? (
                 <ItemTitle>{task.Name}</ItemTitle>
               ) : (
-                <ItemTitle className="text-neutral-400">New Task</ItemTitle>
+                <ItemTitle className="text-muted-foreground">
+                  New Task
+                </ItemTitle>
               )}
             </ItemContent>
 
@@ -77,7 +79,9 @@ export function KanbanItem({
                 <TaskTypeBadge variant={task.Type} />
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={task.Assignee !== "" ? "" : "text-neutral-500"}
+                  className={
+                    task.Assignee !== "" ? "" : "text-muted-foreground"
+                  }
                 >
                   <User className="size-2" />
                   {task.Assignee === "" ? "Not Assigned" : task.Assignee}
@@ -87,7 +91,9 @@ export function KanbanItem({
                     task.TimePlannedStart !== null ? "secondary" : "outline"
                   }
                   className={
-                    task.TimePlannedStart !== null ? "" : "text-neutral-500"
+                    task.TimePlannedStart !== null
+                      ? ""
+                      : "text-muted-foreground"
                   }
                 >
                   <CalendarIcon className="size-2" />

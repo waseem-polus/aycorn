@@ -26,7 +26,7 @@ export function ProjectHeader() {
       {Project.TimeModified && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="text-sm text-foreground">
+            <span className="text-sm text-muted-foreground">
               Modified{" "}
               {formatDistanceToNow(new Date(Project.TimeModified), {
                 addSuffix: true,
@@ -39,7 +39,12 @@ export function ProjectHeader() {
         </Tooltip>
       )}
 
-      <Button variant="ghost" size="icon-sm" onClick={togglePin}>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="text-muted-foreground"
+        onClick={togglePin}
+      >
         {Project.Pinned ? <PinOff /> : <Pin />}
       </Button>
 

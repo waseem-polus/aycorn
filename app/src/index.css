@@ -43,6 +43,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-brand: var(--brand);
   --color-highlight: var(--highlight);
+  --color-success: var(--success);
 }
 
 :root {
@@ -80,6 +81,7 @@
   --sidebar-ring: oklch(0.708 0 0);
   --highlight: oklch(0.852 0.199 91.936);
   --brand: oklch(0.623 0.214 259.815);
+  --success: oklch(0.723 0.219 149.579);
 }
 
 .dark {
@@ -116,6 +118,7 @@
   --sidebar-ring: oklch(0.556 0 0);
   --highlight: oklch(0.852 0.199 91.936);
   --brand: oklch(0.707 0.165 254.624);
+  --success: oklch(0.792 0.209 151.711);
 }
 
 @layer base {
@@ -130,7 +133,7 @@
 @layer components {
   .ce-placeholder:empty:before {
     content: attr(data-placeholder);
-    @apply text-neutral-500 opacity-90;
+    @apply text-muted-foreground opacity-90;
     pointer-events: none;
   }
 

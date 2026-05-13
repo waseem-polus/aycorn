@@ -53,10 +53,7 @@ export function ProjectNameCell({
 
   if (isEditing) {
     return (
-      <div
-        className="min-w-0"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
         <EditableHeader
           ref={editableRef}
           value={project.Name}
@@ -74,7 +71,7 @@ export function ProjectNameCell({
         <HoverCardTrigger asChild>
           <span
             className={`truncate group-hover:underline ${
-              isEmpty ? "text-neutral-400" : ""
+              isEmpty ? "text-muted-foreground" : "text-primary"
             }`}
           >
             {displayName}

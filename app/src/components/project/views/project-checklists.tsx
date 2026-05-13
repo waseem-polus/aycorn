@@ -5,7 +5,7 @@ import ChecklistSideDrawer from "@/components/checklists/sidedrawer/ChecklistsSi
 export function ProjectChecklists() {
   return (
     <ChecklistSideDrawer>
-      <Button variant="outline">
+      <Button variant="outline" className="text-primary">
         <LandPlot />
         Checklists
       </Button>
