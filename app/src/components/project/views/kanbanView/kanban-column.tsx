@@ -81,7 +81,7 @@ export function KanbanColumn({
   return (
     <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
       <div className="p-2">
-        <span className="flex items-center gap-2 text-primary">
+        <span className="flex items-center gap-2 text-foreground">
           <TaskStatusIcon variant={status} />
           {status}
           <Badge variant="outline" className="size-5">

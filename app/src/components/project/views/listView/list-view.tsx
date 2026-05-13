@@ -57,7 +57,7 @@ export function ListView({
                           {...itemProps}
                           data-task-card=""
                           className={cn(
-                            "data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary data-selected:ring-inset",
+                            "data-selected:bg-accent/20 data-selected:ring-2 data-selected:ring-primary data-selected:ring-inset",
                             itemClassName,
                           )}
                         >
@@ -79,7 +79,7 @@ export function ListView({
                                   className={
                                     task.Assignee !== ""
                                       ? ""
-                                      : "text-muted-foreground"
+                                      : "bg-background text-muted-foreground"
                                   }
                                 >
                                   <User className="size-2" />
@@ -96,7 +96,7 @@ export function ListView({
                                   className={
                                     task.TimePlannedStart !== null
                                       ? ""
-                                      : "text-muted-foreground"
+                                      : "bg-background text-muted-foreground"
                                   }
                                 >
                                   <CalendarIcon className="size-2" />
@@ -113,7 +113,10 @@ export function ListView({
                           <ItemActions>
                             <span className="w-full flex justify-end gap-2">
                               <TaskTypeBadge variant={task.Type} />
-                              <Badge variant="outline">
+                              <Badge
+                                variant="outline"
+                                className="bg-background"
+                              >
                                 <LandPlot className="size-2" />
                                 {task.ChecklistName !== ""
                                   ? task.ChecklistName

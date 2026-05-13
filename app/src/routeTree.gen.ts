@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsageRouteImport } from './routes/usage'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as KhanbanRouteImport } from './routes/khanban'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
@@ -24,6 +25,11 @@ const UsageRoute = UsageRouteImport.update({
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
   path: '/upcoming',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KhanbanRoute = KhanbanRouteImport.update({
@@ -51,6 +57,7 @@ const ProjectChecklistsProjectIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/khanban': typeof KhanbanRoute
+  '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/khanban': typeof KhanbanRoute
+  '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/khanban': typeof KhanbanRoute
+  '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/khanban'
+    | '/settings'
     | '/upcoming'
     | '/usage'
     | '/project/$projectId'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/khanban'
+    | '/settings'
     | '/upcoming'
     | '/usage'
     | '/project/$projectId'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/khanban'
+    | '/settings'
     | '/upcoming'
     | '/usage'
     | '/project/$projectId'
@@ -103,6 +115,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   KhanbanRoute: typeof KhanbanRoute
+  SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
   UsageRoute: typeof UsageRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
@@ -123,6 +136,13 @@ declare module '@tanstack/react-router' {
       path: '/upcoming'
       fullPath: '/upcoming'
       preLoaderRoute: typeof UpcomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/khanban': {
@@ -159,6 +179,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   KhanbanRoute: KhanbanRoute,
+  SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
   UsageRoute: UsageRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,

@@ -53,7 +53,7 @@ export function KanbanItem({
             {...itemProps}
             data-task-card=""
             className={cn(
-              "overflow-clip data-selected:ring-2 data-selected:ring-primary",
+              "overflow-clip data-selected:bg-accent/20 data-selected:ring-2 dark:data-selected:bg-accent/50 data-selected:ring-primary",
               itemClassName,
             )}
           >

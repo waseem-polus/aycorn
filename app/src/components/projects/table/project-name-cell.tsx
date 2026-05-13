@@ -71,7 +71,7 @@ export function ProjectNameCell({
         <HoverCardTrigger asChild>
           <span
             className={`truncate group-hover:underline ${
-              isEmpty ? "text-muted-foreground" : "text-primary"
+              isEmpty ? "text-muted-foreground" : "text-foreground"
             }`}
           >
             {displayName}
