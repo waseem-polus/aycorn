@@ -3,11 +3,10 @@ import { Card } from "@/components/ui/card";
 import type { Stage, StageType } from "@/types/types";
 import { STAGE_TYPES } from "@/types/types";
 import {
-  STAGE_TYPE_COLORS,
   STAGE_TYPE_RULES,
   type StageTypeRule,
 } from "@/features/workflows/shared/stage-type-rules";
-import { StageColorSquare } from "@/features/workflows/details/stage-color-square";
+import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 
 export function StageTypeSummary({ stages }: { stages: Stage[] }) {
   const counts = useMemo(() => {
@@ -48,13 +47,8 @@ function StageTypeSummaryItem({
   rule: StageTypeRule;
 }) {
   return (
-    <Card className="flex flex-col gap-1 rounded-lg py-3 px-3 shadow-none">
-      <div className="flex items-center gap-1.5">
-        <StageColorSquare color={STAGE_TYPE_COLORS[type]} className="size-2.5" />
-        <span className="text-xs font-medium capitalize text-muted-foreground">
-          {type}
-        </span>
-      </div>
+    <Card className="flex flex-col gap-1 rounded-lg py-3 px-3 shadow-none items-start">
+      <StageTypeBadge type={type} />
       <span
         className={
           count === 0

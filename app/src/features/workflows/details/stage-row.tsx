@@ -123,14 +123,16 @@ export function StageRow({
         />
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 w-24 shrink-0">
         {/* TODO: wire up color picker */}
         <StageColorSquare color={stage.Color} />
         <span className="text-sm text-muted-foreground">color</span>
       </div>
 
-      {/* TODO: wire up stage-type dropdown with validation */}
-      <StageTypeBadge type={stage.Type} />
+      <div className="w-20 shrink-0">
+        {/* TODO: wire up stage-type dropdown with validation */}
+        <StageTypeBadge type={stage.Type} />
+      </div>
 
       <StageRowMenu
         onRename={() => setIsEditingName(true)}
