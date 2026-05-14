@@ -64,3 +64,62 @@ func (s *StageService) DeleteStage(id int) (bool, error) {
 func (s *StageService) ReorderStages(workflowId int, orderedStageIds []int) error {
 	return s.StageRepo.Reorder(workflowId, orderedStageIds)
 }
+
+func (s *StageService) BulkSetType(ids []int, stageType string) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	if _, ok := creatableStageTypes[stageType]; !ok {
+		return models.BulkResult{Failed: len(ids)}, ErrInvalidStageType
+	}
+	affected, err := s.StageRepo.UpdateTypeMany(ids, stageType)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *StageService) BulkSetColor(ids []int, color string) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.StageRepo.UpdateColorMany(ids, color)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *StageService) BulkSetIcon(ids []int, icon string) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.StageRepo.UpdateIconMany(ids, icon)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *StageService) BulkMoveStages(workflowId int, ids []int, afterId *int) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	moved, err := s.StageRepo.BulkMove(workflowId, ids, afterId)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: moved,
+		Skipped: len(ids) - moved,
+	}, nil
+}

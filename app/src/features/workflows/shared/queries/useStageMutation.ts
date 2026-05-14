@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/main";
-import type { Stage, StageType } from "@/types/types";
+import type { BulkResult, Stage, StageType } from "@/types/types";
 
 export function useStageMutation(workflowId: number) {
   const invalidate = () => {
@@ -81,5 +81,89 @@ export function useStageMutation(workflowId: number) {
     onSuccess: invalidate,
   });
 
-  return { createStage, updateStage, deleteStage, reorderStages };
+  const bulkSetType = useMutation({
+    mutationFn: async ({
+      ids,
+      type,
+    }: {
+      ids: number[];
+      type: Exclude<StageType, "open">;
+    }) => {
+      const res = await fetch(`http://localhost:8000/api/stage/bulk/type`, {
+        method: "PUT",
+        body: JSON.stringify({ ids, type }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update stage types");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: invalidate,
+  });
+
+  const bulkSetColor = useMutation({
+    mutationFn: async ({ ids, color }: { ids: number[]; color: string }) => {
+      const res = await fetch(`http://localhost:8000/api/stage/bulk/color`, {
+        method: "PUT",
+        body: JSON.stringify({ ids, color }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update stage colors");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: invalidate,
+  });
+
+  const bulkSetIcon = useMutation({
+    mutationFn: async ({ ids, icon }: { ids: number[]; icon: string }) => {
+      const res = await fetch(`http://localhost:8000/api/stage/bulk/icon`, {
+        method: "PUT",
+        body: JSON.stringify({ ids, icon }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update stage icons");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: invalidate,
+  });
+
+  const bulkMoveStages = useMutation({
+    mutationFn: async ({
+      ids,
+      afterId,
+    }: {
+      ids: number[];
+      afterId: number | null;
+    }) => {
+      const res = await fetch(
+        `http://localhost:8000/api/workflow/${workflowId}/stages/move`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ ids, afterId }),
+        },
+      );
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to move stages");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: invalidate,
+  });
+
+  return {
+    createStage,
+    updateStage,
+    deleteStage,
+    reorderStages,
+    bulkSetType,
+    bulkSetColor,
+    bulkSetIcon,
+    bulkMoveStages,
+  };
 }

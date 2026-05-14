@@ -275,6 +275,52 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
+func (repo *TaskRepo) UpdateManyFields(ids []int, fields map[string]any) (int, error) {
+	if len(ids) == 0 || len(fields) == 0 {
+		return 0, nil
+	}
+
+	setParts := []string{}
+	setArgs := []any{}
+	for col, val := range fields {
+		setParts = append(setParts, col+" = ?")
+		setArgs = append(setArgs, val)
+	}
+
+	placeholders, idArgs := intIdPlaceholders(ids)
+	query := "UPDATE task SET " + strings.Join(setParts, ", ") +
+		" WHERE id IN (" + placeholders + ");"
+
+	args := append(setArgs, idArgs...)
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *TaskRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "DELETE FROM task WHERE id IN (" + placeholders + ");"
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
 func (repo *TaskRepo) DeleteTasksInProject(projectId int) (bool, error) {
 	query := `
 		DELETE FROM task WHERE checklist IN (

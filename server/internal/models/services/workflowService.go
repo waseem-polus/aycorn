@@ -116,3 +116,102 @@ func (s *WorkflowService) DeleteWorkflow(id int) (bool, error) {
 
 	return s.WorkflowRepo.Delete(id)
 }
+
+func (s *WorkflowService) BulkDeleteWorkflows(ids []int) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+
+	deletable := []int{}
+	skipped := 0
+	for _, id := range ids {
+		count, err := s.ProjectRepo.CountByWorkflow(id)
+		if err != nil {
+			return models.BulkResult{Failed: len(ids) - len(deletable) - skipped}, err
+		}
+		if count > 0 {
+			skipped++
+			continue
+		}
+		deletable = append(deletable, id)
+	}
+
+	if len(deletable) == 0 {
+		return models.BulkResult{Skipped: skipped}, nil
+	}
+
+	affected, err := s.WorkflowRepo.DeleteMany(deletable)
+	if err != nil {
+		return models.BulkResult{Skipped: skipped, Failed: len(deletable)}, err
+	}
+
+	return models.BulkResult{
+		Success: affected,
+		Skipped: skipped + (len(deletable) - affected),
+	}, nil
+}
+
+type BulkDuplicateResult struct {
+	models.BulkResult
+	NewIDs []int `json:"newIds"`
+}
+
+func (s *WorkflowService) BulkDuplicateWorkflows(ids []int) (BulkDuplicateResult, error) {
+	if len(ids) == 0 {
+		return BulkDuplicateResult{NewIDs: []int{}}, nil
+	}
+
+	newIDs := []int{}
+	failed := 0
+
+	for _, id := range ids {
+		source, err := s.WorkflowRepo.FindOne(id)
+		if err != nil {
+			failed++
+			continue
+		}
+
+		stages, err := s.StageRepo.ByWorkflow(id, 0)
+		if err != nil {
+			failed++
+			continue
+		}
+
+		newID, err := s.WorkflowRepo.Create(source.Name+" (copy)", source.Description)
+		if err != nil {
+			failed++
+			continue
+		}
+
+		stageErr := false
+		for _, st := range stages {
+			_, err := s.StageRepo.Create(&models.Stage{
+				Workflow:    int(newID),
+				Name:        st.Name,
+				Description: st.Description,
+				Color:       st.Color,
+				Icon:        st.Icon,
+				Position:    st.Position,
+				Type:        st.Type,
+			})
+			if err != nil {
+				stageErr = true
+				break
+			}
+		}
+		if stageErr {
+			failed++
+			continue
+		}
+
+		newIDs = append(newIDs, int(newID))
+	}
+
+	return BulkDuplicateResult{
+		BulkResult: models.BulkResult{
+			Success: len(newIDs),
+			Failed:  failed,
+		},
+		NewIDs: newIDs,
+	}, nil
+}

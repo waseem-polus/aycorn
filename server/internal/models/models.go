@@ -68,3 +68,9 @@ type Stage struct {
 	TimeCreated  *time.Time
 	TimeModified *time.Time
 }
+
+type BulkResult struct {
+	Success int `json:"success"`
+	Failed  int `json:"failed"`
+	Skipped int `json:"skipped"`
+}

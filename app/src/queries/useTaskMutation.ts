@@ -1,5 +1,5 @@
 import { queryClient } from "@/main";
-import type { Task } from "@/types/types";
+import type { BulkResult, Task } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 
 const getSaveTaskQuery = (isNewTask: boolean) => {
@@ -49,32 +49,36 @@ export function useTaskMutation(projectId: number) {
           ([key, value]) => t[key as keyof Task] !== value,
         ),
       );
-      await Promise.all(
-        targets.map((t) =>
-          fetch("http://localhost:8000/api/task", {
-            method: "PUT",
-            body: JSON.stringify({
-              ...t,
-              ...changes,
-              Body: JSON.stringify(t.Body),
-            }),
-          }),
-        ),
-      );
-      return targets.length;
+      if (targets.length === 0) {
+        return { success: 0, failed: 0, skipped: 0 } as BulkResult;
+      }
+      const res = await fetch(`http://localhost:8000/api/task/bulk`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ids: targets.map((t) => t.ID),
+          changes,
+        }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update tasks");
+      }
+      return (await res.json()) as BulkResult;
     },
     onSuccess: () => invalidateQueries(projectId),
   });
 
   const bulkDelete = useMutation({
     mutationFn: async (taskIds: number[]) => {
-      await Promise.all(
-        taskIds.map((id) =>
-          fetch(`http://localhost:8000/api/task/${id}`, {
-            method: "DELETE",
-          }),
-        ),
-      );
+      const res = await fetch(`http://localhost:8000/api/task/bulk/delete`, {
+        method: "POST",
+        body: JSON.stringify(taskIds),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to delete tasks");
+      }
+      return (await res.json()) as BulkResult;
     },
     onSuccess: () => invalidateQueries(projectId),
   });

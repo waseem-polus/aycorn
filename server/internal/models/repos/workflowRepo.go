@@ -119,3 +119,21 @@ func (repo *WorkflowRepo) Delete(id int) (bool, error) {
 
 	return affected > 0, nil
 }
+
+func (repo *WorkflowRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "DELETE FROM workflow WHERE id IN (" + placeholders + ");"
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}

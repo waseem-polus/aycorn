@@ -12,6 +12,7 @@ import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
 import { DeleteStageDialog } from "@/features/workflows/details/delete-stage-dialog";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
+import { useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function StageRow({
@@ -22,6 +23,7 @@ export function StageRow({
   workflowId: number;
 }) {
   const { updateStage } = useStageMutation(workflowId);
+  const { getItemProps } = useSharedSelection();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -36,6 +38,15 @@ export function StageRow({
     transition,
     isDragging,
   } = useSortable({ id: stage.ID });
+
+  const itemProps = getItemProps(String(stage.ID));
+  const itemOnClick = (
+    itemProps as { onClick?: (e: React.MouseEvent) => void }
+  ).onClick;
+  const itemClassName = (itemProps.className as string | undefined) ?? "";
+  const itemSelected = (
+    itemProps as { "data-selected"?: "" | undefined }
+  )["data-selected"];
 
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -84,13 +95,20 @@ export function StageRow({
     <Card
       ref={setNodeRef}
       style={style}
+      data-id={String(stage.ID)}
+      data-selected={itemSelected}
+      data-task-card=""
+      onClick={itemOnClick}
       className={cn(
-        "relative flex-row items-center gap-3 rounded-lg px-3 py-3 shadow-none",
+        "relative flex-row items-center gap-3 rounded-lg px-3 py-3 shadow-none data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary/40",
         isDragging && "opacity-50 z-10",
+        "selectable",
+        itemClassName,
       )}
     >
       <button
         type="button"
+        data-drag-handle=""
         aria-label="Drag to reorder"
         className="cursor-grab text-muted-foreground hover:text-foreground touch-none"
         {...attributes}

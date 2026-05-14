@@ -122,6 +122,150 @@ func (app *app) deleteStage(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func (app *app) bulkSetStageType(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	defer r.Body.Close()
+
+	body := struct {
+		IDs  []int  `json:"ids"`
+		Type string `json:"type"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	result, err := app.stageService.BulkSetType(body.IDs, body.Type)
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidStageType) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
+func (app *app) bulkSetStageColor(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	defer r.Body.Close()
+
+	body := struct {
+		IDs   []int  `json:"ids"`
+		Color string `json:"color"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	result, err := app.stageService.BulkSetColor(body.IDs, body.Color)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
+func (app *app) bulkSetStageIcon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	defer r.Body.Close()
+
+	body := struct {
+		IDs  []int  `json:"ids"`
+		Icon string `json:"icon"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	result, err := app.stageService.BulkSetIcon(body.IDs, body.Icon)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
+func (app *app) bulkMoveStages(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	defer r.Body.Close()
+
+	workflowId, err := strconv.Atoi(r.PathValue("workflowId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	body := struct {
+		IDs     []int `json:"ids"`
+		AfterID *int  `json:"afterId"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	result, err := app.stageService.BulkMoveStages(workflowId, body.IDs, body.AfterID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) putWorkflowStagesOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)

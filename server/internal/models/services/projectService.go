@@ -99,6 +99,34 @@ func (s *ProjectService) CreateProject() (int64, error) {
 	return id, nil
 }
 
+func (s *ProjectService) BulkSetPinned(ids []int, pinned bool) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.ProjectRepo.UpdateManyPinned(ids, pinned)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *ProjectService) BulkDeleteProjects(ids []int) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.ProjectRepo.DeleteMany(ids)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
 func (s *ProjectService) DeleteProject(projectId int) (bool, error) {
 	tasksSuccess, err := s.TaskRepo.DeleteTasksInProject(projectId)
 	if err != nil {

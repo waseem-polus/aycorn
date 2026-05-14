@@ -1,6 +1,6 @@
 import { queryClient } from "@/main";
 import { useMutation } from "@tanstack/react-query";
-import type { Project } from "@/types/types";
+import type { BulkResult } from "@/types/types";
 
 export function useAllProjectsMutation() {
   const invalidate = () => {
@@ -22,33 +22,36 @@ export function useAllProjectsMutation() {
 
   const bulkSetPinned = useMutation({
     mutationFn: async ({
-      projects,
+      ids,
       pinned,
     }: {
-      projects: Project[];
+      ids: number[];
       pinned: boolean;
     }) => {
-      await Promise.all(
-        projects.map((p) =>
-          fetch(`http://localhost:8000/api/project/${p.ID}`, {
-            method: "PUT",
-            body: JSON.stringify({ ...p, Pinned: pinned }),
-          }),
-        ),
-      );
+      const res = await fetch(`http://localhost:8000/api/project/bulk/pinned`, {
+        method: "PUT",
+        body: JSON.stringify({ ids, pinned }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update projects");
+      }
+      return (await res.json()) as BulkResult;
     },
     onSuccess: invalidate,
   });
 
   const bulkDelete = useMutation({
-    mutationFn: async (projectIds: number[]) => {
-      await Promise.all(
-        projectIds.map((id) =>
-          fetch(`http://localhost:8000/api/project/${id}`, {
-            method: "DELETE",
-          }),
-        ),
-      );
+    mutationFn: async (ids: number[]) => {
+      const res = await fetch(`http://localhost:8000/api/project/bulk/delete`, {
+        method: "POST",
+        body: JSON.stringify(ids),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to delete projects");
+      }
+      return (await res.json()) as BulkResult;
     },
     onSuccess: invalidate,
   });

@@ -66,11 +66,13 @@ export function BulkActionsToolbar({
     bulkUpdate.mutate(
       { tasks: selectedTasks, changes },
       {
-        onSuccess: (updatedCount) => {
-          if (updatedCount === 0) {
+        onSuccess: (result) => {
+          if (result.success === 0) {
             toast(`No tasks needed updating.`);
           } else {
-            toast(`Updated ${label} on ${pluralize(updatedCount, "task")}.`);
+            toast(
+              `Updated ${label} on ${pluralize(result.success, "task")}.`,
+            );
           }
         },
         onError: () => toast.error(`Failed updating ${label}.`),

@@ -14,13 +14,22 @@ import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-ch
 import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
 import { WorkflowCardMenu } from "@/features/workflows/list/workflow-card-menu";
 import { DeleteWorkflowDialog } from "@/features/workflows/list/delete-workflow-dialog";
+import { useSharedSelection } from "@/hooks/useSelection";
+import { cn } from "@/lib/utils";
 
 export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   const navigate = useNavigate();
   const { updateWorkflow } = useWorkflowMutation(workflow.ID);
+  const { getItemProps } = useSharedSelection();
   const [isEditing, setIsEditing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const editableRef = useRef<HTMLHeadingElement>(null);
+
+  const itemProps = getItemProps(String(workflow.ID));
+  const itemOnClick = (
+    itemProps as { onClick?: (e: React.MouseEvent) => void }
+  ).onClick;
+  const itemClassName = (itemProps.className as string | undefined) ?? "";
 
   const stageCount = workflow.Stages?.length ?? 0;
   const projectLabel =
@@ -57,8 +66,15 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   return (
     <>
       <Card
-        className="relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer"
-        onClick={() => {
+        {...itemProps}
+        data-task-card=""
+        className={cn(
+          "relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary/40",
+          itemClassName,
+        )}
+        onClick={(e) => {
+          itemOnClick?.(e);
+          if (e.defaultPrevented) return;
           if (!isEditing) {
             navigate({
               to: "/workflow/$workflowId",

@@ -56,8 +56,10 @@ export function KanbanView({
       bulkUpdate.mutate(
         { tasks: movingTasks, changes: { Stage: newStage } },
         {
-          onSuccess: (count) =>
-            toast(`Moved ${count} task${count !== 1 ? "s" : ""} to ${stageName}.`),
+          onSuccess: (result) =>
+            toast(
+              `Moved ${result.success} task${result.success !== 1 ? "s" : ""} to ${stageName}.`,
+            ),
           onError: () => toast.error("Failed moving tasks."),
         },
       );

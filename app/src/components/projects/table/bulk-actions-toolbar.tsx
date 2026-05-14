@@ -35,7 +35,7 @@ export function BulkActionsToolbar({
 
   const handleSetPinned = (pinned: boolean) =>
     bulkSetPinned.mutate(
-      { projects: selectedProjects, pinned },
+      { ids: selectedProjects.map((p) => p.ID), pinned },
       {
         onSuccess: onClear,
         onError: () => toast("Failed updating projects."),
@@ -46,8 +46,12 @@ export function BulkActionsToolbar({
     bulkDelete.mutate(
       selectedProjects.map((p) => p.ID),
       {
-        onSuccess: () => {
-          toast(`Deleted ${count} project${count !== 1 ? "s" : ""}.`);
+        onSuccess: (result) => {
+          const parts = [
+            `Deleted ${result.success} project${result.success !== 1 ? "s" : ""}.`,
+          ];
+          if (result.failed > 0) parts.push(`${result.failed} failed.`);
+          toast(parts.join(" "));
           setDeleteOpen(false);
           onClear();
         },

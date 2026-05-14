@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/main";
-import type { Workflow } from "@/types/types";
+import type { BulkDuplicateResult, BulkResult, Workflow } from "@/types/types";
 
 export function useWorkflowMutation(workflowId?: number) {
   const createWorkflow = useMutation({
@@ -54,5 +54,51 @@ export function useWorkflowMutation(workflowId?: number) {
     },
   });
 
-  return { createWorkflow, updateWorkflow, deleteWorkflow };
+  const bulkDeleteWorkflows = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const res = await fetch(
+        `http://localhost:8000/api/workflow/bulk/delete`,
+        {
+          method: "POST",
+          body: JSON.stringify(ids),
+        },
+      );
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to delete workflows");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
+    },
+  });
+
+  const bulkDuplicateWorkflows = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const res = await fetch(
+        `http://localhost:8000/api/workflow/bulk/duplicate`,
+        {
+          method: "POST",
+          body: JSON.stringify(ids),
+        },
+      );
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to duplicate workflows");
+      }
+      return (await res.json()) as BulkDuplicateResult;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
+    },
+  });
+
+  return {
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    bulkDeleteWorkflows,
+    bulkDuplicateWorkflows,
+  };
 }

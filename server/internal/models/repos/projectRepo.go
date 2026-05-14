@@ -2,6 +2,7 @@ package repos
 
 import (
 	"database/sql"
+	"strings"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
@@ -141,6 +142,80 @@ func (repo *ProjectRepo) DeleteProject(projectId int) (bool, error) {
 	}
 
 	return affected > 0, nil
+}
+
+func intIdPlaceholders(ids []int) (string, []any) {
+	placeholders := strings.TrimRight(strings.Repeat("?,", len(ids)), ",")
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		args[i] = id
+	}
+	return placeholders, args
+}
+
+func (repo *ProjectRepo) UpdateManyPinned(ids []int, pinned bool) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "UPDATE project SET pinned = ? WHERE id IN (" + placeholders + ");"
+	args = append([]any{pinned}, args...)
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *ProjectRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	placeholders, args := intIdPlaceholders(ids)
+
+	if _, err := tx.Exec(
+		"DELETE FROM task WHERE checklist IN (SELECT id FROM checklist WHERE project IN ("+placeholders+"));",
+		args...,
+	); err != nil {
+		return 0, err
+	}
+
+	if _, err := tx.Exec(
+		"DELETE FROM checklist WHERE project IN ("+placeholders+");",
+		args...,
+	); err != nil {
+		return 0, err
+	}
+
+	res, err := tx.Exec(
+		"DELETE FROM project WHERE id IN ("+placeholders+");",
+		args...,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
 }
 
 func (repo *ProjectRepo) CountByWorkflow(workflowId int) (int, error) {

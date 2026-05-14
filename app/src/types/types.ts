@@ -93,3 +93,13 @@ export type TaskFilter = {
   Type: Task["Type"][];
   Stage: Stage["ID"][];
 };
+
+export type BulkResult = {
+  success: number;
+  failed: number;
+  skipped: number;
+};
+
+export type BulkDuplicateResult = BulkResult & {
+  newIds: number[];
+};

@@ -154,6 +154,172 @@ func (repo *StageRepo) MaxPosition(workflowId int) (int, error) {
 	return max, nil
 }
 
+func (repo *StageRepo) UpdateTypeMany(ids []int, stageType string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "UPDATE stage SET type = ? WHERE id IN (" + placeholders + ") AND type <> 'open';"
+	args = append([]any{stageType}, args...)
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *StageRepo) UpdateColorMany(ids []int, color string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "UPDATE stage SET color = ? WHERE id IN (" + placeholders + ");"
+	args = append([]any{color}, args...)
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *StageRepo) UpdateIconMany(ids []int, icon string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "UPDATE stage SET icon = ? WHERE id IN (" + placeholders + ");"
+	args = append([]any{icon}, args...)
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *StageRepo) BulkMove(workflowId int, ids []int, afterId *int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	rows, err := tx.Query("SELECT id FROM stage WHERE workflow = ? ORDER BY position;", workflowId)
+	if err != nil {
+		return 0, err
+	}
+	current := []int{}
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		current = append(current, id)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+
+	selected := make(map[int]struct{}, len(ids))
+	for _, id := range ids {
+		selected[id] = struct{}{}
+	}
+
+	block := []int{}
+	remaining := []int{}
+	for _, id := range current {
+		if _, ok := selected[id]; ok {
+			block = append(block, id)
+		} else {
+			remaining = append(remaining, id)
+		}
+	}
+
+	insertIdx := 0
+	if afterId != nil {
+		anchor := -1
+		for i, id := range current {
+			if id == *afterId {
+				anchor = i
+				break
+			}
+		}
+		if anchor == -1 {
+			insertIdx = 0
+		} else {
+			anchorId := *afterId
+			if _, isSelected := selected[anchorId]; isSelected {
+				for i := anchor - 1; i >= 0; i-- {
+					if _, sel := selected[current[i]]; !sel {
+						anchorId = current[i]
+						break
+					}
+				}
+				if _, stillSelected := selected[anchorId]; stillSelected {
+					insertIdx = 0
+				} else {
+					for i, id := range remaining {
+						if id == anchorId {
+							insertIdx = i + 1
+							break
+						}
+					}
+				}
+			} else {
+				for i, id := range remaining {
+					if id == anchorId {
+						insertIdx = i + 1
+						break
+					}
+				}
+			}
+		}
+	}
+
+	final := make([]int, 0, len(current))
+	final = append(final, remaining[:insertIdx]...)
+	final = append(final, block...)
+	final = append(final, remaining[insertIdx:]...)
+
+	stmt, err := tx.Prepare("UPDATE stage SET position = ? WHERE id = ? AND workflow = ?;")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	for i, id := range final {
+		if _, err := stmt.Exec(i+1, id, workflowId); err != nil {
+			return 0, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return len(block), nil
+}
+
 func (repo *StageRepo) Reorder(workflowId int, orderedStageIds []int) error {
 	tx, err := repo.DB.Begin()
 	if err != nil {
