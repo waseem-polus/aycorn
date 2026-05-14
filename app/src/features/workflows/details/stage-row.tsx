@@ -22,9 +22,11 @@ export function StageRow({
   workflowId: number;
 }) {
   const { updateStage } = useStageMutation(workflowId);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const editableRef = useRef<HTMLHeadingElement>(null);
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLHeadingElement>(null);
 
   const {
     attributes,
@@ -41,22 +43,42 @@ export function StageRow({
   };
 
   useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
+    if (isEditingName && nameRef.current) {
+      nameRef.current.focus();
       const range = document.createRange();
-      range.selectNodeContents(editableRef.current);
+      range.selectNodeContents(nameRef.current);
       const sel = window.getSelection();
       sel?.removeAllRanges();
       sel?.addRange(range);
     }
-  }, [isEditing]);
+  }, [isEditingName]);
+
+  useEffect(() => {
+    if (isEditingDescription && descriptionRef.current) {
+      descriptionRef.current.focus();
+      const range = document.createRange();
+      range.selectNodeContents(descriptionRef.current);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }, [isEditingDescription]);
 
   const handleSaveName = (newName: string) => {
-    setIsEditing(false);
+    setIsEditingName(false);
     if (newName !== stage.Name) {
       updateStage.mutate({ ...stage, Name: newName });
     }
   };
+
+  const handleSaveDescription = (newDescription: string) => {
+    setIsEditingDescription(false);
+    if (newDescription !== stage.Description) {
+      updateStage.mutate({ ...stage, Description: newDescription });
+    }
+  };
+
+  const isUntitled = stage.Name === "";
 
   return (
     <Card
@@ -78,32 +100,27 @@ export function StageRow({
       </button>
 
       {/* TODO: wire up icon picker */}
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Change stage icon"
-      >
+      <Button variant="ghost" size="icon-sm" aria-label="Change stage icon">
         <StageIcon stage={stage} />
       </Button>
 
       <div className="flex flex-col min-w-0 flex-1">
-        {isEditing ? (
-          <EditableHeader
-            ref={editableRef}
-            value={stage.Name}
-            setValue={handleSaveName}
-            onBlur={() => setIsEditing(false)}
-            placeholder="Untitled stage"
-            className="text-sm font-medium p-0 min-h-0"
-          />
-        ) : (
-          <span className="text-sm font-medium truncate">{stage.Name}</span>
-        )}
-        {stage.Description && (
-          <span className="text-xs text-muted-foreground truncate">
-            {stage.Description}
-          </span>
-        )}
+        <EditableHeader
+          ref={nameRef}
+          value={stage.Name}
+          setValue={handleSaveName}
+          onBlur={() => setIsEditingName(false)}
+          placeholder="Untitled Stage"
+          className="text-sm font-medium p-0 min-h-0"
+        />
+        <EditableHeader
+          ref={descriptionRef}
+          value={stage.Description}
+          setValue={handleSaveDescription}
+          onBlur={() => setIsEditingDescription(false)}
+          placeholder="Add stage description..."
+          className="text-xs font-normal text-muted-foreground p-0 min-h-0"
+        />
       </div>
 
       <div className="flex items-center gap-1.5">
@@ -116,7 +133,8 @@ export function StageRow({
       <StageTypeBadge type={stage.Type} />
 
       <StageRowMenu
-        onRename={() => setIsEditing(true)}
+        onRename={() => setIsEditingName(true)}
+        onEditDescription={() => setIsEditingDescription(true)}
         onDelete={() => setDeleteOpen(true)}
       />
 

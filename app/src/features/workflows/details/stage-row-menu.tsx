@@ -10,10 +10,15 @@ import {
 
 type StageRowMenuProps = {
   onRename: () => void;
+  onEditDescription: () => void;
   onDelete: () => void;
 };
 
-export function StageRowMenu({ onRename, onDelete }: StageRowMenuProps) {
+export function StageRowMenu({
+  onRename,
+  onEditDescription,
+  onDelete,
+}: StageRowMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,6 +31,9 @@ export function StageRowMenu({ onRename, onDelete }: StageRowMenuProps) {
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={onEditDescription}>
+          Edit description
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={onDelete}>
           Delete

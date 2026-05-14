@@ -14,10 +14,25 @@ import {
 } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import type { Stage } from "@/types/types";
+import type { Stage, StageType } from "@/types/types";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StageRow } from "@/features/workflows/details/stage-row";
+import { StageColorSquare } from "@/features/workflows/details/stage-color-square";
+import { STAGE_TYPE_COLORS } from "@/features/workflows/shared/stage-type-rules";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
+
+const ADDABLE_STAGE_TYPES: Exclude<StageType, "open">[] = [
+  "todo",
+  "doing",
+  "done",
+  "blocked",
+];
 
 export function StageList({
   stages,
@@ -26,7 +41,7 @@ export function StageList({
   stages: Stage[];
   workflowId: number;
 }) {
-  const { reorderStages } = useStageMutation(workflowId);
+  const { createStage, reorderStages } = useStageMutation(workflowId);
   const [items, setItems] = useState(stages);
 
   useEffect(() => {
@@ -61,15 +76,39 @@ export function StageList({
     );
   };
 
+  const handleAdd = (type: Exclude<StageType, "open">) => {
+    createStage.mutate(type, {
+      onError: (err) => toast(err.message || "Failed to add stage."),
+    });
+  };
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium">Stages</h2>
-        {/* TODO: wire up add stage mutation */}
-        <Button variant="outline" size="sm">
-          <Plus />
-          Add stage
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={createStage.isPending}
+            >
+              <Plus />
+              Add stage
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {ADDABLE_STAGE_TYPES.map((type) => (
+              <DropdownMenuItem key={type} onClick={() => handleAdd(type)}>
+                <StageColorSquare
+                  color={STAGE_TYPE_COLORS[type]}
+                  className="size-3"
+                />
+                <span className="capitalize">{type}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <DndContext

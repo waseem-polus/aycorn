@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/main";
-import type { Stage } from "@/types/types";
+import type { Stage, StageType } from "@/types/types";
 
 export function useStageMutation(workflowId: number) {
   const invalidate = () => {
@@ -9,6 +9,24 @@ export function useStageMutation(workflowId: number) {
     });
     queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
   };
+
+  const createStage = useMutation({
+    mutationFn: async (type?: Exclude<StageType, "open">) => {
+      const res = await fetch(
+        `http://localhost:8000/api/workflow/${workflowId}/stage`,
+        {
+          method: "POST",
+          body: JSON.stringify(type ? { type } : {}),
+        },
+      );
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to add stage");
+      }
+      return res.json() as Promise<Stage>;
+    },
+    onSuccess: invalidate,
+  });
 
   const updateStage = useMutation({
     mutationFn: async (stage: Stage) => {
@@ -63,5 +81,5 @@ export function useStageMutation(workflowId: number) {
     onSuccess: invalidate,
   });
 
-  return { updateStage, deleteStage, reorderStages };
+  return { createStage, updateStage, deleteStage, reorderStages };
 }

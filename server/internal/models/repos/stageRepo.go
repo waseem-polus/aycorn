@@ -145,6 +145,15 @@ func (repo *StageRepo) Delete(id int) (bool, error) {
 	return affected > 0, nil
 }
 
+func (repo *StageRepo) MaxPosition(workflowId int) (int, error) {
+	query := "SELECT COALESCE(MAX(position), 0) FROM stage WHERE workflow = ?;"
+	var max int
+	if err := repo.DB.QueryRow(query, workflowId).Scan(&max); err != nil {
+		return 0, err
+	}
+	return max, nil
+}
+
 func (repo *StageRepo) Reorder(workflowId int, orderedStageIds []int) error {
 	tx, err := repo.DB.Begin()
 	if err != nil {

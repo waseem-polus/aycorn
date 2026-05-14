@@ -26,7 +26,8 @@ export function DeleteWorkflowDialog({
   onDeleted,
 }: DeleteWorkflowDialogProps) {
   const { deleteWorkflow } = useWorkflowMutation(workflow.ID);
-  const displayName = workflow.Name !== "" ? workflow.Name : "Untitled workflow";
+  const displayName =
+    workflow.Name !== "" ? workflow.Name : "Untitled Workflow";
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

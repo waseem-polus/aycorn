@@ -71,7 +71,7 @@ export function WorkflowPageHeader({
           ref={editableRef}
           value={workflow.Name}
           setValue={handleSaveName}
-          placeholder="Untitled workflow"
+          placeholder="Untitled Workflow"
         />
 
         <DropdownMenu>

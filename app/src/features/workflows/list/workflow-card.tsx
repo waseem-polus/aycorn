@@ -80,13 +80,13 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
                   value={workflow.Name}
                   setValue={handleSaveName}
                   onBlur={() => setIsEditing(false)}
-                  placeholder="Untitled workflow"
+                  placeholder="Untitled Workflow"
                   className="text-base font-medium p-0 min-h-0"
                 />
               </div>
             ) : workflow.Name === "" ? (
               <span className="text-base truncate text-muted-foreground">
-                Unnamed Workflow
+                Untitled Workflow
               </span>
             ) : (
               <span className="text-base truncate">{workflow.Name}</span>
