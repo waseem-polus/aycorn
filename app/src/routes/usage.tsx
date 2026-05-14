@@ -11,9 +11,9 @@ export const Route = createFileRoute("/usage")({
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={[]} />
-      <SectionCards />
+      <PageHeader breadcrumb={["Usage"]} />
       <PageContent fullWidth>
+        <SectionCards />
         <div className="lg:px-6">
           <ChartAreaInteractive />
         </div>

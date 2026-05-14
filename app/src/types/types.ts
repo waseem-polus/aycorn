@@ -25,6 +25,11 @@ export type Workflow = {
   TimeModified: string;
 };
 
+export type WorkflowSummary = Workflow & {
+  ProjectCount: number;
+  Stages: Stage[];
+};
+
 export type Stage = {
   ID: number;
   Workflow: number;
