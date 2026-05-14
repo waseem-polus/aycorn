@@ -12,6 +12,7 @@ type ProjectService struct {
 	TaskRepo      *repos.TaskRepo
 	ChecklistRepo *repos.ChecklistRepo
 	WorkflowRepo  *repos.WorkflowRepo
+	StageRepo     *repos.StageRepo
 }
 
 type projectDetails struct {
@@ -33,7 +34,7 @@ func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.Tas
 		return nil, err
 	}
 
-	stages, err := s.WorkflowRepo.StagesByWorkflow(project.Workflow, 0)
+	stages, err := s.StageRepo.ByWorkflow(project.Workflow, 0)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ import (
 type WorkflowService struct {
 	WorkflowRepo *repos.WorkflowRepo
 	ProjectRepo  *repos.ProjectRepo
+	StageRepo    *repos.StageRepo
 }
 
 type WorkflowSummary struct {
@@ -37,7 +38,7 @@ func (s *WorkflowService) GetAllWorkflows() ([]WorkflowSummary, error) {
 			return nil, err
 		}
 
-		stages, err := s.WorkflowRepo.StagesByWorkflow(w.ID, listStagePreviewLimit)
+		stages, err := s.StageRepo.ByWorkflow(w.ID, listStagePreviewLimit)
 		if err != nil {
 			return nil, err
 		}
@@ -52,6 +53,29 @@ func (s *WorkflowService) GetAllWorkflows() ([]WorkflowSummary, error) {
 	return summaries, nil
 }
 
+func (s *WorkflowService) GetWorkflowDetails(id int) (*WorkflowSummary, error) {
+	workflow, err := s.WorkflowRepo.FindOne(id)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := s.ProjectRepo.CountByWorkflow(id)
+	if err != nil {
+		return nil, err
+	}
+
+	stages, err := s.StageRepo.ByWorkflow(id, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	return &WorkflowSummary{
+		Workflow:     *workflow,
+		ProjectCount: count,
+		Stages:       stages,
+	}, nil
+}
+
 func (s *WorkflowService) CreateWorkflow() (int64, error) {
 	id, err := s.WorkflowRepo.Create("", "")
 	if err != nil {
@@ -60,7 +84,7 @@ func (s *WorkflowService) CreateWorkflow() (int64, error) {
 
 	for i, stageType := range defaultWorkflowStageTypes {
 		defaults := repos.StageDefaults[stageType]
-		_, err := s.WorkflowRepo.CreateStage(&models.Stage{
+		_, err := s.StageRepo.Create(&models.Stage{
 			Workflow:    int(id),
 			Name:        defaults.Name,
 			Description: defaults.Description,

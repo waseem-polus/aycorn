@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
+import { toast } from "sonner";
 import type { WorkflowSummary } from "@/types/types";
 import {
   InputGroup,
@@ -12,6 +14,7 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import { WorkflowCard } from "@/features/workflows/list/workflow-card";
+import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
 
 type FilterTab = "all" | "in-use" | "unused";
 
@@ -24,6 +27,21 @@ export function WorkflowsGrid({
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<FilterTab>("all");
+  const navigate = useNavigate();
+  const { createWorkflow } = useWorkflowMutation();
+
+  const handleCreate = () => {
+    createWorkflow.mutate(undefined, {
+      onSuccess: (newId) => {
+        navigate({
+          to: "/workflow/$workflowId",
+          params: { workflowId: String(newId) },
+          search: { new: true },
+        });
+      },
+      onError: () => toast.error("Failed to create workflow."),
+    });
+  };
 
   const filtered = useMemo(() => {
     return workflows.filter((w) =>
@@ -65,8 +83,7 @@ export function WorkflowsGrid({
           <ToggleGroupItem value="unused">Unused</ToggleGroupItem>
         </ToggleGroup>
 
-        {/* TODO: wire up create workflow mutation */}
-        <Button>
+        <Button onClick={handleCreate} disabled={createWorkflow.isPending}>
           <Plus />
           New Workflow
         </Button>

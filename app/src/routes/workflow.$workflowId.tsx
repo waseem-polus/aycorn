@@ -4,39 +4,36 @@ import {
   PageContent,
   PageHeader,
 } from "@/components/page/Page";
-import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
+import { useWorkflowDetailsQuery } from "@/features/workflows/shared/queries/useWorkflowDetailsQuery";
 import { WorkflowPageHeader } from "@/features/workflows/details/workflow-page-header";
-import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
+import { StageTypeSummary } from "@/features/workflows/details/stage-type-summary";
+import { StageList } from "@/features/workflows/details/stage-list";
 
 export const Route = createFileRoute("/workflow/$workflowId")({
   component: RouteComponent,
+  validateSearch: (search: Record<string, unknown>): { new?: boolean } => {
+    const isNew = search.new === true || search.new === "true";
+    return isNew ? { new: true } : {};
+  },
 });
 
 function RouteComponent() {
   const { workflowId } = Route.useParams();
-  const { data, isFetching } = useAllWorkflowsQuery();
-
+  const { new: isNew } = Route.useSearch();
   const id = Number.parseInt(workflowId, 10);
-  const workflow = data?.find((w) => w.ID === id);
+  const { data: workflow, isFetching } = useWorkflowDetailsQuery(id);
 
   return (
     <Page>
       <PageHeader breadcrumb={["Workflows", workflow?.Name ?? ""]} />
       <PageContent>
         {workflow ? (
-          <div className="flex flex-col gap-4">
-            <WorkflowPageHeader workflow={workflow} />
+          <div className="flex flex-col gap-6">
+            <WorkflowPageHeader workflow={workflow} autoFocusName={isNew} />
 
-            <section className="flex flex-col gap-2">
-              <h2 className="text-sm font-medium text-muted-foreground">
-                Stages
-              </h2>
-              <div className="flex flex-wrap gap-1.5">
-                {workflow.Stages?.map((stage) => (
-                  <WorkflowStageChip key={stage.ID} stage={stage} />
-                ))}
-              </div>
-            </section>
+            <StageTypeSummary stages={workflow.Stages ?? []} />
+
+            <StageList stages={workflow.Stages ?? []} workflowId={id} />
           </div>
         ) : (
           <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">

@@ -32,6 +32,34 @@ func (app *app) getAllWorkflows(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func (app *app) getWorkflow(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	workflowId, err := strconv.Atoi(r.PathValue("workflowId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	details, err := app.workflowService.GetWorkflowDetails(workflowId)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(details)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) postWorkflow(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)

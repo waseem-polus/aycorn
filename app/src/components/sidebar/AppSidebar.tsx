@@ -28,7 +28,7 @@ const data = {
     },
     {
       title: "Workflows",
-      url: "workflows",
+      url: "/workflows",
       icon: WorkflowIcon,
     },
     {

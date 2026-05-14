@@ -14,11 +14,13 @@ type app struct {
 	projectRepo   *repos.ProjectRepo
 	checklistRepo *repos.ChecklistRepo
 	workflowRepo  *repos.WorkflowRepo
+	stageRepo     *repos.StageRepo
 
 	projectService   *services.ProjectService
 	checklistService *services.ChecklistService
 	taskService      *services.TaskService
 	workflowService  *services.WorkflowService
+	stageService     *services.StageService
 }
 
 func main() {
@@ -39,12 +41,16 @@ func main() {
 	workflowRepo := &repos.WorkflowRepo{
 		DB: db,
 	}
+	stageRepo := &repos.StageRepo{
+		DB: db,
+	}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
 		TaskRepo:      taskRepo,
 		ChecklistRepo: checklistRepo,
 		WorkflowRepo:  workflowRepo,
+		StageRepo:     stageRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
@@ -58,17 +64,23 @@ func main() {
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,
+		StageRepo:    stageRepo,
+	}
+	stageService := &services.StageService{
+		StageRepo: stageRepo,
 	}
 
 	app := app{
 		projectRepo:   projectRepo,
 		checklistRepo: checklistRepo,
 		workflowRepo:  workflowRepo,
+		stageRepo:     stageRepo,
 
 		projectService:   projectService,
 		checklistService: checklistService,
 		taskService:      taskService,
 		workflowService:  workflowService,
+		stageService:     stageService,
 	}
 
 	port := ":8000"

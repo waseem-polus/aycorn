@@ -2,7 +2,23 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/main";
 import type { Workflow } from "@/types/types";
 
-export function useWorkflowMutation(workflowId: number) {
+export function useWorkflowMutation(workflowId?: number) {
+  const createWorkflow = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("http://localhost:8000/api/workflow", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to create workflow");
+      }
+      return res.json() as Promise<number>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
+    },
+  });
+
   const updateWorkflow = useMutation({
     mutationFn: async (workflow: Workflow) => {
       const res = await fetch(
@@ -38,5 +54,5 @@ export function useWorkflowMutation(workflowId: number) {
     },
   });
 
-  return { updateWorkflow, deleteWorkflow };
+  return { createWorkflow, updateWorkflow, deleteWorkflow };
 }

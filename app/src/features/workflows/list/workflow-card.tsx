@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { WorkflowSummary } from "@/types/types";
 import { EditableHeader } from "@/components/EditableHeader";
 import {
@@ -55,60 +55,71 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   };
 
   return (
-    <Card
-      className="relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer"
-      onClick={() => {
-        if (!isEditing) {
-          navigate({
-            to: "/workflow/$workflowId",
-            params: { workflowId: String(workflow.ID) },
-          });
-        }
-      }}
-    >
-      <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
-        <CardTitle className="font-medium min-w-0">
-          {isEditing ? (
-            <div
-              className="pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-            >
-              <EditableHeader
-                ref={editableRef}
-                value={workflow.Name}
-                setValue={handleSaveName}
-                onBlur={() => setIsEditing(false)}
-                placeholder="Untitled workflow"
-                className="text-base font-medium p-0 min-h-0"
-              />
-            </div>
-          ) : (
-            <span className="text-base truncate">{workflow.Name}</span>
+    <>
+      <Card
+        className="relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer"
+        onClick={() => {
+          if (!isEditing) {
+            navigate({
+              to: "/workflow/$workflowId",
+              params: { workflowId: String(workflow.ID) },
+            });
+          }
+        }}
+      >
+        <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
+          <CardTitle className="font-medium min-w-0">
+            {isEditing ? (
+              <div
+                className="pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <EditableHeader
+                  ref={editableRef}
+                  value={workflow.Name}
+                  setValue={handleSaveName}
+                  onBlur={() => setIsEditing(false)}
+                  placeholder="Untitled workflow"
+                  className="text-base font-medium p-0 min-h-0"
+                />
+              </div>
+            ) : workflow.Name === "" ? (
+              <span className="text-base truncate text-muted-foreground">
+                Unnamed Workflow
+              </span>
+            ) : (
+              <span className="text-base truncate">{workflow.Name}</span>
+            )}
+          </CardTitle>
+          {workflow.Description !== "" && (
+            <CardDescription className="text-xs truncate">
+              {workflow.Description}
+            </CardDescription>
           )}
-        </CardTitle>
-        <CardDescription className="text-xs">
-          {stageCount} stages · {projectLabel}
-        </CardDescription>
-        <CardAction className="pointer-events-auto">
-          <WorkflowCardMenu
-            onRename={() => setTimeout(() => setIsEditing(true), 100)}
-            onDelete={() => setDeleteOpen(true)}
-          />
-        </CardAction>
-      </CardHeader>
+          <CardDescription className="text-xs">
+            {stageCount} stages · {projectLabel}
+          </CardDescription>
+          <CardAction className="pointer-events-auto">
+            <WorkflowCardMenu
+              onRename={() => setTimeout(() => setIsEditing(true), 100)}
+              onDelete={() => setDeleteOpen(true)}
+            />
+          </CardAction>
+        </CardHeader>
 
-      <CardContent className="relative flex flex-wrap gap-1.5 px-4 pointer-events-none">
-        {workflow.Stages?.map((stage) => (
-          <WorkflowStageChip key={stage.ID} stage={stage} />
-        ))}
-      </CardContent>
+        <CardContent className="relative flex flex-wrap gap-1.5 px-4 pointer-events-none">
+          {workflow.Stages?.map((stage) => (
+            <WorkflowStageChip key={stage.ID} stage={stage} />
+          ))}
+        </CardContent>
+      </Card>
 
       <DeleteWorkflowDialog
         workflow={workflow}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />
-    </Card>
+    </>
   );
 }
