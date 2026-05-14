@@ -13,14 +13,16 @@ import (
 type app struct {
 	projectRepo   *repos.ProjectRepo
 	checklistRepo *repos.ChecklistRepo
+	workflowRepo  *repos.WorkflowRepo
 
 	projectService   *services.ProjectService
 	checklistService *services.ChecklistService
 	taskService      *services.TaskService
+	workflowService  *services.WorkflowService
 }
 
 func main() {
-	db, err := sql.Open("sqlite3", "./app.db")
+	db, err := sql.Open("sqlite3", "./app.db?_foreign_keys=on")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,11 +36,15 @@ func main() {
 	taskRepo := &repos.TaskRepo{
 		DB: db,
 	}
+	workflowRepo := &repos.WorkflowRepo{
+		DB: db,
+	}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
 		TaskRepo:      taskRepo,
 		ChecklistRepo: checklistRepo,
+		WorkflowRepo:  workflowRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
@@ -49,13 +55,20 @@ func main() {
 		TaskRepo: taskRepo,
 	}
 
+	workflowService := &services.WorkflowService{
+		WorkflowRepo: workflowRepo,
+		ProjectRepo:  projectRepo,
+	}
+
 	app := app{
 		projectRepo:   projectRepo,
 		checklistRepo: checklistRepo,
+		workflowRepo:  workflowRepo,
 
 		projectService:   projectService,
 		checklistService: checklistService,
 		taskService:      taskService,
+		workflowService:  workflowService,
 	}
 
 	port := ":8000"

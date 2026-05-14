@@ -1,7 +1,19 @@
-INSERT INTO project (id, name, pinned, timeCreated) VALUES
-(1, 'Website Redesign', 1, '2025-01-05 09:00:00'),
-(2, 'Mobile App', 1, '2025-01-10 10:30:00'),
-(3, 'Internal Tools', 0, '2025-02-01 14:15:00');
+INSERT INTO workflow (id, name, description, timeCreated) VALUES
+(1, 'Software', 'Default software development workflow', '2025-01-01 00:00:00');
+
+
+INSERT INTO stage (id, workflow, name, color, icon, position, type) VALUES
+(1, 1, 'Open',    'gray',   'circle',         1, 'open'),
+(2, 1, 'Todo',    'blue',   'circle-dashed',  2, 'todo'),
+(3, 1, 'Doing',   'yellow', 'circle-half',    3, 'doing'),
+(4, 1, 'Done',    'green',  'circle-check',   4, 'done'),
+(5, 1, 'Blocked', 'red',    'circle-x',       5, 'blocked');
+
+
+INSERT INTO project (id, name, pinned, workflow, timeCreated) VALUES
+(1, 'Website Redesign', 1, 1, '2025-01-05 09:00:00'),
+(2, 'Mobile App',       1, 1, '2025-01-10 10:30:00'),
+(3, 'Internal Tools',   0, 1, '2025-02-01 14:15:00');
 
 
 INSERT INTO checklist (id, project, name, isDefault, timeCreated) VALUES
@@ -12,40 +24,19 @@ INSERT INTO checklist (id, project, name, isDefault, timeCreated) VALUES
 (5, 3, 'Maintenance', 1, '2025-02-01 15:00:00');
 
 
-INSERT INTO task ( id, checklist, name, body, timeCreated, timeCompleted, timePlannedStart, timePlannedEnd, assignee, priority, type, status ) VALUES
+INSERT INTO task ( id, checklist, stage, name, body, timeCreated, timeCompleted, timePlannedStart, timePlannedEnd, assignee, priority, type ) VALUES
 -- Website Redesign / Planning
-(1, 1, 'Gather requirements', '[]', '2025-01-05 09:30:00', '2025-01-06 10:00:00', '2025-01-06 09:00:00', '2025-01-06 10:00:00', 'Alice', 'High', 'Reminder', 'Done'),
-(2, 1, 'Create wireframes', '[]', '2025-01-06 10:30:00', NULL, '2025-01-08 12:00:00', '2025-01-08 14:00:00', 'Bob', 'Medium', 'Dev', 'Doing'),
+(1, 1, 4, 'Gather requirements', '[]', '2025-01-05 09:30:00', '2025-01-06 10:00:00', '2025-01-06 09:00:00', '2025-01-06 10:00:00', 'Alice', 'High', 'Reminder'),
+(2, 1, 3, 'Create wireframes', '[]', '2025-01-06 10:30:00', NULL, '2025-01-08 12:00:00', '2025-01-08 14:00:00', 'Bob', 'Medium', 'Dev'),
 -- Website Redesign / Implementation
-(3, 2, 'Build landing page', '[]', '2025-01-07 09:00:00', NULL, '2025-01-12 17:00:00', '2025-01-12 18:00:00', 'Charlie', 'High', 'Dev', 'Todo'),
-(4, 2, 'CSS styling pass', '[]', '2025-01-08 13:00:00', NULL, NULL, NULL, 'Alice', 'Low', 'Dev', 'Open'),
+(3, 2, 2, 'Build landing page', '[]', '2025-01-07 09:00:00', NULL, '2025-01-12 17:00:00', '2025-01-12 18:00:00', 'Charlie', 'High', 'Dev'),
+(4, 2, 1, 'CSS styling pass', '[]', '2025-01-08 13:00:00', NULL, NULL, NULL, 'Alice', 'Low', 'Dev'),
 -- Mobile App / MVP Tasks
-(5, 3, 'Implement login flow', '[]', '2025-01-10 11:30:00', NULL, '2025-01-18 18:00:00', '2025-01-18 19:00:00', 'Diana', 'Urgent', 'Dev', 'Doing'),
-(6, 3, 'Local storage setup', '[]', '2025-01-11 09:45:00', NULL, NULL, NULL, 'Evan', 'Medium', 'Dev', 'Blocked'),
+(5, 3, 3, 'Implement login flow', '[]', '2025-01-10 11:30:00', NULL, '2025-01-18 18:00:00', '2025-01-18 19:00:00', 'Diana', 'Urgent', 'Dev'),
+(6, 3, 5, 'Local storage setup', '[]', '2025-01-11 09:45:00', NULL, NULL, NULL, 'Evan', 'Medium', 'Dev'),
 -- Mobile App / QA & Release
-(7, 4, 'Write test cases', '[]', '2025-01-15 17:00:00', NULL, '2025-01-20 10:00:00', '2025-01-20 12:00:00', 'Frank', 'High', 'Test', 'Todo'),
-(8, 4, 'App Store submission', '[]', '2025-01-18 14:00:00', NULL, NULL, NULL, 'Diana', 'Urgent', 'Reminder', 'Open'),
+(7, 4, 2, 'Write test cases', '[]', '2025-01-15 17:00:00', NULL, '2025-01-20 10:00:00', '2025-01-20 12:00:00', 'Frank', 'High', 'Test'),
+(8, 4, 1, 'App Store submission', '[]', '2025-01-18 14:00:00', NULL, NULL, NULL, 'Diana', 'Urgent', 'Reminder'),
 -- Internal Tools / Maintenance
-(9, 5, 'Database backup audit', '[]', '2025-02-01 15:30:00', '2025-02-02 09:00:00', '2025-02-02 08:00:00', '2025-02-02 09:00:00', 'Grace', 'Medium', 'Test', 'Done'),
-(10, 5, 'Refactor legacy scripts', '[]', '2025-02-03 10:00:00', NULL, NULL, NULL, 'Henry', 'Low', 'Dev', 'Todo');
-
-
-
-
-
-
-SELECT c.id,
-	c.name,
-	c.project,
-	c.timeCreated,
-	c.isDefault,
-	COUNT(t.id) totalTasks,
-	SUM(CASE WHEN t.status = "Done" THEN 1 ELSE 0 END) doneTasks,
-	SUM(CASE WHEN t.status != "Open"    THEN 1 ELSE 0 END) notOpen,
-	SUM(CASE WHEN t.status != "Blocked" THEN 1 ELSE 0 END) notBlocked,
-	SUM(CASE WHEN t.status != "Todo"    THEN 1 ELSE 0 END) notTodo,
-	SUM(CASE WHEN t.status != "Done"    THEN 1 ELSE 0 END) notDone
-FROM checklist c
-	LEFT JOIN task t ON t.checklist = c.id
-GROUP BY c.id
-ORDER BY c.id;
+(9, 5, 4, 'Database backup audit', '[]', '2025-02-01 15:30:00', '2025-02-02 09:00:00', '2025-02-02 08:00:00', '2025-02-02 09:00:00', 'Grace', 'Medium', 'Test'),
+(10, 5, 2, 'Refactor legacy scripts', '[]', '2025-02-03 10:00:00', NULL, NULL, NULL, 'Henry', 'Low', 'Dev');

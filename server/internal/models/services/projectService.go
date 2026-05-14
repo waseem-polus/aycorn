@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/waseem-polus/aycorn/server/internal/models"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 )
@@ -9,16 +11,29 @@ type ProjectService struct {
 	ProjectRepo   *repos.ProjectRepo
 	TaskRepo      *repos.TaskRepo
 	ChecklistRepo *repos.ChecklistRepo
+	WorkflowRepo  *repos.WorkflowRepo
 }
 
 type projectDetails struct {
 	Project    *models.Project
+	Workflow   *models.Workflow
+	Stages     []models.Stage
 	Checklists []models.ChecklistDetails
 	Tasks      []models.ChecklistTask
 }
 
 func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.TaskFilters) (*projectDetails, error) {
 	project, err := s.ProjectRepo.FindOne(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	workflow, err := s.WorkflowRepo.FindOne(project.Workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	stages, err := s.WorkflowRepo.StagesByWorkflow(project.Workflow, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +50,8 @@ func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.Tas
 
 	return &projectDetails{
 		Project:    project,
+		Workflow:   workflow,
+		Stages:     stages,
 		Tasks:      tasks,
 		Checklists: checklists,
 	}, nil
@@ -68,7 +85,12 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 }
 
 func (s *ProjectService) CreateProject() (int64, error) {
-	id, err := s.ProjectRepo.CreateProject()
+	workflow, err := s.WorkflowRepo.FirstWorkflow()
+	if err != nil {
+		return 0, errors.New("no workflow available to assign to project: " + err.Error())
+	}
+
+	id, err := s.ProjectRepo.CreateProject(workflow.ID)
 	if err != nil {
 		return 0, err
 	}

@@ -15,7 +15,7 @@ type TaskFilters struct {
 	SearchQuery    string
 	ChecklistQuery []string
 	TypeQuery      []string
-	StatusQuery    []string
+	StageQuery     []string
 	PriorityQuery  []string
 	AssigneeQuery  []string
 }
@@ -35,7 +35,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		    t.assignee,
 		    t.priority,
 			t.type,
-			t.status
+			t.stage
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
 		WHERE c.project = ?
@@ -61,9 +61,9 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		}
 	}
 
-	if len(taskFilters.StatusQuery) > 0 {
-		query += " AND t.status IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StatusQuery)), ",") + ")"
-		for _, v := range taskFilters.StatusQuery {
+	if len(taskFilters.StageQuery) > 0 {
+		query += " AND t.stage IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StageQuery)), ",") + ")"
+		for _, v := range taskFilters.StageQuery {
 			args = append(args, v)
 		}
 	}
@@ -108,7 +108,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			&ct.Assignee,
 			&ct.Priority,
 			&ct.Type,
-			&ct.Status,
+			&ct.Stage,
 		)
 		if err != nil {
 			return nil, err
@@ -129,7 +129,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
 	query := `
-		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, status)
+		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, stage)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id;
 	`
@@ -143,7 +143,7 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, e
 		newTask.Assignee,
 		newTask.Priority,
 		newTask.Type,
-		newTask.Status,
+		newTask.Stage,
 	)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 			assignee = ?,
 			priority = ?,
 			type = ?,
-			status = ?
+			stage = ?
 		WHERE id = ?;
 	`
 
@@ -189,7 +189,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Assignee,
 		task.Priority,
 		task.Type,
-		task.Status,
+		task.Stage,
 		task.ID,
 	)
 	if err != nil {
@@ -218,7 +218,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 			t.assignee,
 			t.priority,
 			t.type,
-			t.status,
+			t.stage,
 			t.checklist
 		FROM task t
 		WHERE t.id = ?;
@@ -247,7 +247,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		&task.Assignee,
 		&task.Priority,
 		&task.Type,
-		&task.Status,
+		&task.Stage,
 		&task.Checklist,
 	)
 	if err != nil {

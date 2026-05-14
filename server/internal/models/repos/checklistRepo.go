@@ -19,17 +19,18 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 			c.timeModified,
 			c.isDefault,
 			COUNT(t.id),
-			SUM(CASE WHEN t.status = "Done" THEN 1 ELSE 0 END),
+			SUM(CASE WHEN s.type = 'done' THEN 1 ELSE 0 END),
 			CASE
-		        WHEN COUNT(t.id) = 0 THEN "Open"
-		        WHEN SUM(CASE WHEN t.status != "Open"    THEN 1 ELSE 0 END) = 0 THEN "Open"
-		        WHEN SUM(CASE WHEN t.status != "Blocked" THEN 1 ELSE 0 END) = 0 THEN "Blocked"
-		        WHEN SUM(CASE WHEN t.status != "Todo"    THEN 1 ELSE 0 END) = 0 THEN "Todo"
-		        WHEN SUM(CASE WHEN t.status != "Done"    THEN 1 ELSE 0 END) = 0 THEN "Done"
-		        ELSE "Doing"
+		        WHEN COUNT(t.id) = 0 THEN 'open'
+		        WHEN SUM(CASE WHEN s.type != 'open'    THEN 1 ELSE 0 END) = 0 THEN 'open'
+		        WHEN SUM(CASE WHEN s.type != 'blocked' THEN 1 ELSE 0 END) = 0 THEN 'blocked'
+		        WHEN SUM(CASE WHEN s.type != 'todo'    THEN 1 ELSE 0 END) = 0 THEN 'todo'
+		        WHEN SUM(CASE WHEN s.type != 'done'    THEN 1 ELSE 0 END) = 0 THEN 'done'
+		        ELSE 'doing'
 			END
 		FROM checklist c
 			LEFT JOIN task t ON t.checklist = c.id
+			LEFT JOIN stage s ON s.id = t.stage
 		WHERE c.project = ?
 		GROUP BY c.id
 		ORDER BY c.id;

@@ -31,5 +31,10 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
 	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)
 
+	mux.HandleFunc("GET /api/workflow", app.getAllWorkflows)
+	mux.HandleFunc("POST /api/workflow", app.postWorkflow)
+	mux.HandleFunc("PUT /api/workflow/{workflowId}", app.putWorkflow)
+	mux.HandleFunc("DELETE /api/workflow/{workflowId}", app.deleteWorkflow)
+
 	return mux
 }

@@ -97,7 +97,7 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 		SearchQuery:    q.Get("search"),
 		ChecklistQuery: getQuerySlice(q, "checklist"),
 		TypeQuery:      getQuerySlice(q, "type"),
-		StatusQuery:    getQuerySlice(q, "status"),
+		StageQuery:     getQuerySlice(q, "stage"),
 		PriorityQuery:  getQuerySlice(q, "priority"),
 		AssigneeQuery:  getQuerySlice(q, "assignee"),
 	}
