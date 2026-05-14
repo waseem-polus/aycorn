@@ -4,7 +4,7 @@ import {
   DrawerFooter,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { SelectTaskStatus } from "@/features/task/properties/select-task-status";
+import { SelectTaskStage } from "@/features/stage/select-task-stage";
 import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { DatePickerInput } from "@/components/DatePickerInput";
@@ -83,8 +83,8 @@ export default function TaskEditorDrawer({
               <TaskAssignee onChange={handleTaskChanges} />
             </TaskProperty>
 
-            <TaskProperty label="Status" htmlFor="status">
-              <SelectTaskStatus onChange={handleTaskChanges} />
+            <TaskProperty label="Stage" htmlFor="stage">
+              <SelectTaskStage onChange={handleTaskChanges} />
             </TaskProperty>
 
             <TaskProperty label="Type" htmlFor="type">

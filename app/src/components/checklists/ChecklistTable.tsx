@@ -10,9 +10,9 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Progress } from "../ui/progress";
-import type { Checklist, Task } from "@/types/types";
+import type { Checklist, StageType } from "@/types/types";
 import React from "react";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
@@ -20,7 +20,7 @@ import { Ellipsis } from "lucide-react";
 type ChecklistTableItem = Checklist & {
   CompletedCount: number;
   TaskCount: number;
-  Status: Task["Status"];
+  Status: StageType;
   Default?: boolean;
 };
 
@@ -32,7 +32,7 @@ export function ChecklistsTable() {
       TimeCreated: "Dec 13, 2020",
       CompletedCount: 1,
       TaskCount: 3,
-      Status: "Blocked",
+      Status: "blocked",
       IsDefault: false,
     },
     {
@@ -41,7 +41,7 @@ export function ChecklistsTable() {
       TimeCreated: "Dec 14, 2020",
       CompletedCount: 9,
       TaskCount: 10,
-      Status: "Doing",
+      Status: "doing",
       IsDefault: true,
     },
     {
@@ -50,7 +50,7 @@ export function ChecklistsTable() {
       TimeCreated: "Dec 10, 2020",
       CompletedCount: 0,
       TaskCount: 4,
-      Status: "Todo",
+      Status: "todo",
       IsDefault: false,
     },
     {
@@ -59,7 +59,7 @@ export function ChecklistsTable() {
       TimeCreated: "Dec 10, 2020",
       CompletedCount: 4,
       TaskCount: 4,
-      Status: "Done",
+      Status: "done",
       IsDefault: false,
     },
   ];
@@ -72,7 +72,7 @@ export function ChecklistsTable() {
             <Item asChild>
               <a>
                 <ItemMedia className="flex flex-col justify-center h-full">
-                  <TaskStatusIcon variant={checklist.Status} />
+                  <ChecklistStatusIcon variant={checklist.Status} />
                 </ItemMedia>
                 <ItemContent>
                   <span className="inline-flex gap-2">

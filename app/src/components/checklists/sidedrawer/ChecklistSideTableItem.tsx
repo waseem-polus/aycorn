@@ -7,7 +7,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Goal, Pencil, Trash2 } from "lucide-react";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
@@ -40,7 +40,7 @@ export function ChecklistSideTableItem({
   const displayName =
     checklist.Name === "" ? "New Checklist" : checklist.Name;
   const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
-    "line-through font-normal": checklist.Status === "Done",
+    "line-through font-normal": checklist.Status === "done",
   });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function ChecklistSideTableItem({
     <Item asChild>
       <div className="group">
         <ItemMedia className="flex flex-col justify-center h-full">
-          <TaskStatusIcon variant={checklist.Status} />
+          <ChecklistStatusIcon variant={checklist.Status} />
         </ItemMedia>
         <ItemContent>
           <span className="inline-flex gap-2 items-center">
@@ -86,7 +86,7 @@ export function ChecklistSideTableItem({
             )}
             <ItemTitle
               className={
-                checklist.Status === "Done"
+                checklist.Status === "done"
                   ? "line-through font-normal"
                   : "font-medium"
               }

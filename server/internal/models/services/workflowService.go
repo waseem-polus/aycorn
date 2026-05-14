@@ -61,12 +61,13 @@ func (s *WorkflowService) CreateWorkflow() (int64, error) {
 	for i, stageType := range defaultWorkflowStageTypes {
 		defaults := repos.StageDefaults[stageType]
 		_, err := s.WorkflowRepo.CreateStage(&models.Stage{
-			Workflow: int(id),
-			Name:     defaults.Name,
-			Color:    defaults.Color,
-			Icon:     defaults.Icon,
-			Position: i + 1,
-			Type:     defaults.Type,
+			Workflow:    int(id),
+			Name:        defaults.Name,
+			Description: defaults.Description,
+			Color:       defaults.Color,
+			Icon:        defaults.Icon,
+			Position:    i + 1,
+			Type:        defaults.Type,
 		})
 		if err != nil {
 			return 0, err

@@ -7,7 +7,7 @@ import {
 import { KanbanColumn } from "@/components/project/views/kanbanView/kanban-column";
 import { ViewHeader } from "@/components/project/views/view-header";
 import { useContext, useState } from "react";
-import type { ChecklistTask, Status, Task } from "@/types/types";
+import type { ChecklistTask, Task } from "@/types/types";
 import { KanbanItem } from "./kanban-item";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -20,7 +20,7 @@ export function KanbanView({
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { Project, Tasks } = useContext(ProjectContext);
+  const { Project, Tasks, Stages } = useContext(ProjectContext);
   const { update, bulkUpdate } = useTaskMutation(Project.ID);
 
   const [draggedTask, setDraggedTask] = useState<ChecklistTask | null>(null);
@@ -29,10 +29,16 @@ export function KanbanView({
 
   const handleDragEnd = wrapDragEnd(
     (e: DragEndEvent) => {
-      if (draggedTask && e.over?.id && e.over.id !== draggedTask.Status) {
+      const overId = e.over?.id;
+      if (overId === undefined) {
+        setDraggedTask(null);
+        return;
+      }
+      const newStage = Number(overId);
+      if (draggedTask && newStage !== draggedTask.Stage) {
         update.mutate({
           ...draggedTask,
-          Status: e.over.id as Status,
+          Stage: newStage,
         } as Task);
       }
       setDraggedTask(null);
@@ -40,16 +46,18 @@ export function KanbanView({
     (ids, over) => {
       setDraggedTask(null);
       if (!over) return;
-      const newStatus = over.id as Status;
+      const newStage = Number(over.id);
       const movingTasks = Tasks.filter(
-        (t) => ids.has(t.ID.toString()) && t.Status !== newStatus,
+        (t) => ids.has(t.ID.toString()) && t.Stage !== newStage,
       );
       if (movingTasks.length === 0) return;
+      const stageName =
+        Stages.find((s) => s.ID === newStage)?.Name ?? "stage";
       bulkUpdate.mutate(
-        { tasks: movingTasks, changes: { Status: newStatus } },
+        { tasks: movingTasks, changes: { Stage: newStage } },
         {
           onSuccess: (count) =>
-            toast(`Moved ${count} task${count !== 1 ? "s" : ""} to ${newStatus}.`),
+            toast(`Moved ${count} task${count !== 1 ? "s" : ""} to ${stageName}.`),
           onError: () => toast.error("Failed moving tasks."),
         },
       );
@@ -85,31 +93,13 @@ export function KanbanView({
         onDragCancel={handleDragCancel}
       >
         <div className="flex gap-2 h-full min-h-0">
-          <KanbanColumn
-            status="Blocked"
-            description="Tasks cannot be started"
-            getItemProps={getItemProps}
-          />
-          <KanbanColumn
-            status="Open"
-            description="Tasks are being planned"
-            getItemProps={getItemProps}
-          />
-          <KanbanColumn
-            status="Todo"
-            description="Tasks are ready to start"
-            getItemProps={getItemProps}
-          />
-          <KanbanColumn
-            status="Doing"
-            description="Tasks are being worked on"
-            getItemProps={getItemProps}
-          />
-          <KanbanColumn
-            status="Done"
-            description="Tasks are completed"
-            getItemProps={getItemProps}
-          />
+          {Stages.map((stage) => (
+            <KanbanColumn
+              key={stage.ID}
+              stage={stage}
+              getItemProps={getItemProps}
+            />
+          ))}
         </div>
 
         <DragOverlay dropAnimation={null}>

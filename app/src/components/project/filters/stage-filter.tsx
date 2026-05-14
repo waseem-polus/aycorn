@@ -9,40 +9,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ChevronDown } from "lucide-react";
-import { STATUSES } from "@/types/types";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import { StageIcon } from "@/features/stage/stage-visual";
 
-export function StatusFilter() {
-  const { SetFilter, Filter } = useContext(ProjectContext);
+export function StageFilter() {
+  const { SetFilter, Filter, Stages } = useContext(ProjectContext);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
-          Status
+          Stage
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {STATUSES.map((status) => (
+        {Stages.map((stage) => (
           <DropdownMenuCheckboxItem
-            checked={Filter.Status.includes(status)}
+            key={stage.ID}
+            checked={Filter.Stage.includes(stage.ID)}
             onCheckedChange={(checked) => {
               if (checked) {
                 SetFilter({
                   ...Filter,
-                  Status: [...Filter.Status, status],
+                  Stage: [...Filter.Stage, stage.ID],
                 });
               } else {
                 SetFilter({
                   ...Filter,
-                  Status: Filter.Status.filter((s) => s !== status),
+                  Stage: Filter.Stage.filter((id) => id !== stage.ID),
                 });
               }
             }}
           >
-            <TaskStatusIcon variant={status} />
-            {status}
+            <StageIcon stage={stage} />
+            {stage.Name}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

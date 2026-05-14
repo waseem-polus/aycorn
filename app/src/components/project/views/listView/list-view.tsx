@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import React, { useContext } from "react";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import { StageIcon } from "@/features/stage/stage-visual";
 import TaskTypeBadge from "@/features/task/properties/task-type-badge";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
@@ -33,7 +33,11 @@ export function ListView({
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { Tasks } = useContext(ProjectContext);
+  const { Tasks, Stages } = useContext(ProjectContext);
+  const stagesById = React.useMemo(
+    () => new Map(Stages.map((s) => [s.ID, s])),
+    [Stages],
+  );
   const { toFormatted } = useDateFormat();
   const { getItemProps } = useSharedSelection();
 
@@ -62,7 +66,7 @@ export function ListView({
                           )}
                         >
                           <ItemMedia className="flex flex-col">
-                            <TaskStatusIcon variant={task.Status} />
+                            <StageIcon stage={stagesById.get(task.Stage)} />
                             <TaskPriorityIcon variant={task.Priority} />
                           </ItemMedia>
                           <ItemContent>

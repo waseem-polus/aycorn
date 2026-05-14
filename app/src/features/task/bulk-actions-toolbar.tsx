@@ -22,7 +22,7 @@ import {
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
-import { SelectTaskStatus } from "@/features/task/properties/select-task-status";
+import { SelectTaskStage } from "@/features/stage/select-task-stage";
 import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
@@ -91,7 +91,7 @@ export function BulkActionsToolbar({
       },
     );
 
-  const sharedStatus = sharedValue(selectedTasks, "Status");
+  const sharedStage = sharedValue(selectedTasks, "Stage");
   const sharedType = sharedValue(selectedTasks, "Type");
   const sharedPriority = sharedValue(selectedTasks, "Priority");
   const sharedChecklist = sharedValue(selectedTasks, "Checklist");
@@ -129,10 +129,10 @@ export function BulkActionsToolbar({
 
       <div className="flex items-center gap-2 shrink-0">
         <div className="w-32">
-          <SelectTaskStatus
-            value={sharedStatus}
-            onValueChange={(v) => applyChange({ Status: v }, "status")}
-            placeholder={sharedStatus === undefined ? "Mixed" : "Status"}
+          <SelectTaskStage
+            value={sharedStage}
+            onValueChange={(v) => applyChange({ Stage: v }, "stage")}
+            placeholder={sharedStage === undefined ? "Mixed" : "Stage"}
           />
         </div>
         <div className="w-32">

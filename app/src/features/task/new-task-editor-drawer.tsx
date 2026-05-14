@@ -16,7 +16,7 @@ export function NewTaskEditorDrawer({
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
-  const { Project, Checklists } = useContext(ProjectContext);
+  const { Project, Checklists, Stages } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
 
   const handleAddTask = useCallback(
@@ -25,6 +25,10 @@ export function NewTaskEditorDrawer({
         {
           ...task,
           Checklist: Checklists[0]?.ID,
+          Stage:
+            task.Stage !== 0
+              ? task.Stage
+              : Stages.find((s) => s.Type === "open")?.ID ?? Stages[0]?.ID ?? 0,
         },
         {
           onSuccess: (newTask: Task) => {
@@ -32,7 +36,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, task, Checklists, setTask],
+    [create, task, Checklists, Stages, setTask],
   );
 
   return (

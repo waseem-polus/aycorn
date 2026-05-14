@@ -1,7 +1,7 @@
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 import { ChecklistFilter } from "@/components/project/filters/checklist-filter";
-import { StatusFilter } from "@/components/project/filters/status-filter";
+import { StageFilter } from "@/components/project/filters/stage-filter";
 import { PriorityFilter } from "@/components/project/filters/priority-filter";
 import { TypeFilter } from "@/components/project/filters/task-type-filter";
 import { Settings } from "@/features/calendar/settings/settings";
@@ -31,7 +31,7 @@ export function CalendarViewHeader({
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-2">
           <ChecklistFilter />
-          <StatusFilter />
+          <StageFilter />
           <PriorityFilter />
           <TypeFilter />
         </div>

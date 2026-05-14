@@ -2,12 +2,12 @@ INSERT INTO workflow (id, name, description, timeCreated) VALUES
 (1, 'Software', 'Default software development workflow', '2025-01-01 00:00:00');
 
 
-INSERT INTO stage (id, workflow, name, color, icon, position, type) VALUES
-(1, 1, 'Open',    'gray',   'circle',         1, 'open'),
-(2, 1, 'Todo',    'blue',   'circle-dashed',  2, 'todo'),
-(3, 1, 'Doing',   'yellow', 'circle-half',    3, 'doing'),
-(4, 1, 'Done',    'green',  'circle-check',   4, 'done'),
-(5, 1, 'Blocked', 'red',    'circle-x',       5, 'blocked');
+INSERT INTO stage (id, workflow, name, description, color, icon, position, type) VALUES
+(1, 1, 'Open',    'Tasks are being planned',   'gray',   'circle-dashed', 1, 'open'),
+(2, 1, 'Todo',    'Tasks are ready to start',  'orange', 'circle',        2, 'todo'),
+(3, 1, 'Doing',   'Tasks are being worked on', 'green',  'circle-dot',    3, 'doing'),
+(4, 1, 'Done',    'Tasks are completed',       'purple', 'circle-check',  4, 'done'),
+(5, 1, 'Blocked', 'Tasks cannot be started',   'red',    'circle-minus',  5, 'blocked');
 
 
 INSERT INTO project (id, name, pinned, workflow, timeCreated) VALUES

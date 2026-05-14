@@ -1,6 +1,6 @@
 import { ListView } from "@/components/project/views/listView/list-view";
 import { EditableProjectName } from "@/components/project/editable-project-name";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -30,8 +30,16 @@ export function ProjectDetails({
   projectId: number;
 }) {
   const [newTaskOpen, setNewTaskOpen] = useState(false);
-  const { SetProject, SetChecklists, SetTasks, Filter, Tasks } =
-    useContext(ProjectContext);
+  const {
+    SetProject,
+    SetWorkflow,
+    SetStages,
+    SetChecklists,
+    SetTasks,
+    SetFilter,
+    Filter,
+    Tasks,
+  } = useContext(ProjectContext);
   const selection = useSelection();
   const selectedTasks = useMemo(
     () => Tasks.filter((t) => selection.selectedIds.has(t.ID.toString())),
@@ -42,14 +50,26 @@ export function ProjectDetails({
     Filter,
     !newTaskOpen,
   );
+  const filterInitializedForProject = useRef<number | null>(null);
 
   useEffect(() => {
     if (data && !isPending && !isFetching) {
       SetTasks(data.Tasks);
       SetChecklists(data.Checklists);
       SetProject(data.Project);
+      SetWorkflow(data.Workflow);
+      SetStages(data.Stages);
+
+      if (filterInitializedForProject.current !== projectId) {
+        filterInitializedForProject.current = projectId;
+        SetFilter({
+          ...Filter,
+          Stage: data.Stages.filter((s) => s.Type !== "done").map((s) => s.ID),
+        });
+      }
     }
-  }, [data, isFetching, isPending, SetProject, SetChecklists, SetTasks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isFetching, isPending, projectId]);
 
   useEffect(() => {
     refetch();

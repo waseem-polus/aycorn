@@ -1,97 +1,56 @@
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import { StageIcon, stageTintClass } from "@/features/stage/stage-visual";
 import { Badge } from "@/components/ui/badge";
 import { ItemGroup } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDropZone } from "@/hooks/useDropZone";
-import type { Task } from "@/types/types";
+import type { Stage } from "@/types/types";
 import { useContext, useMemo, type SyntheticEvent } from "react";
 import { KanbanItem } from "./kanban-item";
-import { cva } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 
 export function KanbanColumn({
-  status,
-  description,
+  stage,
   getItemProps,
 }: {
-  status: Task["Status"];
-  description: string;
+  stage: Stage;
   getItemProps?: (
     id: string,
     opts?: { listeners?: DragListeners },
   ) => Record<string, unknown>;
 }) {
-  const { setNodeRef, isOver } = useDropZone(status);
+  const { setNodeRef, isOver } = useDropZone(stage.ID);
 
   const { Tasks } = useContext(ProjectContext);
   const filteredTasks = useMemo(
-    () =>
-      Tasks.filter((task) => {
-        return task.Status === status;
-      }),
-    [Tasks, status],
+    () => Tasks.filter((task) => task.Stage === stage.ID),
+    [Tasks, stage.ID],
   );
 
-  const kanbanColClass = cva(
-    [
-      "h-full overflow-y-scroll w-full min-w-0 overflow-x-visible flex flex-col gap-2 p-2 rounded-xl",
-    ],
-    {
-      variants: {
-        activeDropZone: {
-          true: "", // color applied via compoundVariants
-          false: "",
-        },
-        type: {
-          Blocked: "",
-          Open: "",
-          Todo: "",
-          Doing: "",
-          Done: "",
-        },
-      },
-      compoundVariants: [
-        {
-          activeDropZone: true,
-          type: "Blocked",
-          class: "bg-red-50 dark:bg-red-950/40",
-        },
-        { activeDropZone: true, type: "Open", class: "bg-accent" },
-        {
-          activeDropZone: true,
-          type: "Todo",
-          class: "bg-orange-50 dark:bg-orange-950/40",
-        },
-        {
-          activeDropZone: true,
-          type: "Doing",
-          class: "bg-green-50 dark:bg-green-950/40",
-        },
-        {
-          activeDropZone: true,
-          type: "Done",
-          class: "bg-purple-50 dark:bg-purple-950/30",
-        },
-      ],
-      defaultVariants: { activeDropZone: false, type: "Open" },
-    },
-  );
+  const tint = stageTintClass(stage.Color);
 
   return (
     <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
       <div className="p-2">
         <span className="flex items-center gap-2 text-foreground">
-          <TaskStatusIcon variant={status} />
-          {status}
+          <StageIcon stage={stage} />
+          {stage.Name}
           <Badge variant="outline" className="size-5">
             {filteredTasks.length}
           </Badge>
         </span>
-        <span className="text-muted-foreground text-sm">{description}</span>
+        {stage.Description && (
+          <span className="text-muted-foreground text-sm">
+            {stage.Description}
+          </span>
+        )}
       </div>
       <ItemGroup
-        className={kanbanColClass({ activeDropZone: isOver, type: status })}
+        className={cn(
+          "h-full overflow-y-scroll w-full min-w-0 overflow-x-visible flex flex-col gap-2 p-2 rounded-xl",
+          isOver && tint,
+        )}
         ref={setNodeRef}
       >
         {filteredTasks.map((task) => (

@@ -11,18 +11,19 @@ type WorkflowRepo struct {
 }
 
 type StageDefault struct {
-	Name  string
-	Color string
-	Icon  string
-	Type  string
+	Name        string
+	Description string
+	Color       string
+	Icon        string
+	Type        string
 }
 
 var StageDefaults = map[string]StageDefault{
-	"open":    {Name: "Open", Color: "gray", Icon: "circle", Type: "open"},
-	"todo":    {Name: "Todo", Color: "blue", Icon: "circle-dashed", Type: "todo"},
-	"doing":   {Name: "Doing", Color: "yellow", Icon: "circle-half", Type: "doing"},
-	"done":    {Name: "Done", Color: "green", Icon: "circle-check", Type: "done"},
-	"blocked": {Name: "Blocked", Color: "red", Icon: "circle-x", Type: "blocked"},
+	"blocked": {Name: "Blocked", Description: "Tasks cannot be started", Color: "red", Icon: "circle-minus", Type: "blocked"},
+	"open":    {Name: "Open", Description: "Tasks are being planned", Color: "gray", Icon: "circle-dashed", Type: "open"},
+	"todo":    {Name: "Todo", Description: "Tasks are ready to start", Color: "orange", Icon: "circle", Type: "todo"},
+	"doing":   {Name: "Doing", Description: "Tasks are being worked on", Color: "green", Icon: "circle-dot", Type: "doing"},
+	"done":    {Name: "Done", Description: "Tasks are completed", Color: "purple", Icon: "circle-check", Type: "done"},
 }
 
 const workflowColumns = "id, name, COALESCE(description, ''), timeCreated, timeModified"
