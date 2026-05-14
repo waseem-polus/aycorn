@@ -32,8 +32,8 @@ export function DatePickerInput({
   const { state: task, setState: setTask } = useContext(TaskContext);
   const isControlled = onRangeChange !== undefined;
 
-  const plannedStart = isControlled ? start ?? null : task.TimePlannedStart;
-  const plannedEnd = isControlled ? end ?? null : task.TimePlannedEnd;
+  const plannedStart = isControlled ? (start ?? null) : task.TimePlannedStart;
+  const plannedEnd = isControlled ? (end ?? null) : task.TimePlannedEnd;
 
   const [open, setOpen] = useState(false);
 
@@ -103,7 +103,7 @@ export function DatePickerInput({
           <Button
             id="date-picker"
             variant="outline"
-            className="flex grow justify-start placeholder:"
+            className="flex grow justify-start"
           >
             <CalendarIcon className="size-3.5" />
             {selectedDate()}

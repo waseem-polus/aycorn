@@ -6,18 +6,18 @@ import {
 } from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/upcoming")({
+export const Route = createFileRoute("/workflows")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={["Upcoming"]} />
+      <PageHeader breadcrumb={["Workflows"]} />
       <PageContent>
         <PageTitle
-          title="Upcoming"
-          description="View upcoming deadlines at a glance."
+          title="Workflows"
+          description="Reusable stage sequences. Assign one to any project."
         />
 
         <section className="flex flex-col gap-3">

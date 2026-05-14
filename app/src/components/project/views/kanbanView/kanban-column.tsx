@@ -57,7 +57,7 @@ export function KanbanColumn({
           type: "Blocked",
           class: "bg-red-50 dark:bg-red-950/40",
         },
-        { activeDropZone: true, type: "Open", class: "bg-primary/10" },
+        { activeDropZone: true, type: "Open", class: "bg-accent" },
         {
           activeDropZone: true,
           type: "Todo",

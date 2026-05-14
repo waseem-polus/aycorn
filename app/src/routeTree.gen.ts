@@ -9,14 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkflowsRouteImport } from './routes/workflows'
 import { Route as UsageRouteImport } from './routes/usage'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as KhanbanRouteImport } from './routes/khanban'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
 import { Route as ProjectChecklistsProjectIdRouteImport } from './routes/project/checklists.$projectId'
 
+const WorkflowsRoute = WorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsageRoute = UsageRouteImport.update({
   id: '/usage',
   path: '/usage',
@@ -30,11 +35,6 @@ const UpcomingRoute = UpcomingRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KhanbanRoute = KhanbanRouteImport.update({
-  id: '/khanban',
-  path: '/khanban',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -56,29 +56,29 @@ const ProjectChecklistsProjectIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/khanban': typeof KhanbanRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
+  '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/khanban': typeof KhanbanRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
+  '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/khanban': typeof KhanbanRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
+  '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
 }
@@ -86,44 +86,51 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/khanban'
     | '/settings'
     | '/upcoming'
     | '/usage'
+    | '/workflows'
     | '/project/$projectId'
     | '/project/checklists/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/khanban'
     | '/settings'
     | '/upcoming'
     | '/usage'
+    | '/workflows'
     | '/project/$projectId'
     | '/project/checklists/$projectId'
   id:
     | '__root__'
     | '/'
-    | '/khanban'
     | '/settings'
     | '/upcoming'
     | '/usage'
+    | '/workflows'
     | '/project/$projectId'
     | '/project/checklists/$projectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  KhanbanRoute: typeof KhanbanRoute
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
   UsageRoute: typeof UsageRoute
+  WorkflowsRoute: typeof WorkflowsRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
   ProjectChecklistsProjectIdRoute: typeof ProjectChecklistsProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workflows': {
+      id: '/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof WorkflowsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/usage': {
       id: '/usage'
       path: '/usage'
@@ -143,13 +150,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/khanban': {
-      id: '/khanban'
-      path: '/khanban'
-      fullPath: '/khanban'
-      preLoaderRoute: typeof KhanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -178,10 +178,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  KhanbanRoute: KhanbanRoute,
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
   UsageRoute: UsageRoute,
+  WorkflowsRoute: WorkflowsRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
   ProjectChecklistsProjectIdRoute: ProjectChecklistsProjectIdRoute,
 }

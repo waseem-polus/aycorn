@@ -1,4 +1,9 @@
-import { Page, PageContent, PageHeader } from "@/components/page/Page";
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  PageTitle,
+} from "@/components/page/Page";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
@@ -42,7 +47,10 @@ function RouteComponent() {
       <PageContent>
         <SelectionContext.Provider value={selection}>
           <SelectionArea className="flex flex-col gap-4 h-full">
-            <h1 className="text-2xl p-1">Projects</h1>
+            <PageTitle
+              title="Projects"
+              description="Projects descriptions, go here and go brr."
+            />
 
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
