@@ -11,6 +11,7 @@ import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SelectionContext, useSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
@@ -84,13 +85,17 @@ export function PageHeader({
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink asChild>
+                <Link to="/">Home</Link>
+              </BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumb.map((crumb: string) => (
               <React.Fragment key={crumb}>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/">{crumb}</BreadcrumbLink>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">{crumb}</Link>
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
               </React.Fragment>
             ))}
