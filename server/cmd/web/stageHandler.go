@@ -178,6 +178,11 @@ func (app *app) bulkSetStageColor(w http.ResponseWriter, r *http.Request) {
 
 	result, err := app.stageService.BulkSetColor(body.IDs, body.Color)
 	if err != nil {
+		if errors.Is(err, services.ErrInvalidStageColor) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return

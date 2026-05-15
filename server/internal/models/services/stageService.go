@@ -13,6 +13,8 @@ type StageService struct {
 
 var ErrInvalidStageType = errors.New("stage type must be one of: todo, doing, done, blocked")
 
+var ErrInvalidStageColor = errors.New("stage color is not in the allowed palette")
+
 var creatableStageTypes = map[string]struct{}{
 	"todo":    {},
 	"doing":   {},
@@ -54,6 +56,9 @@ func (s *StageService) CreateStage(workflowId int, stageType string) (*models.St
 }
 
 func (s *StageService) UpdateStage(stage *models.Stage) (bool, error) {
+	if !models.IsValidStageColor(stage.Color) {
+		return false, ErrInvalidStageColor
+	}
 	return s.StageRepo.Update(stage)
 }
 
@@ -85,6 +90,9 @@ func (s *StageService) BulkSetType(ids []int, stageType string) (models.BulkResu
 func (s *StageService) BulkSetColor(ids []int, color string) (models.BulkResult, error) {
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
+	}
+	if !models.IsValidStageColor(color) {
+		return models.BulkResult{Failed: len(ids)}, ErrInvalidStageColor
 	}
 	affected, err := s.StageRepo.UpdateColorMany(ids, color)
 	if err != nil {

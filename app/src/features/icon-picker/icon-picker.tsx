@@ -15,16 +15,23 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { loadIcons, type IconCache } from "@/features/icon-picker/icon-loader";
 import { COLS, IconGrid } from "@/features/icon-picker/icon-grid";
+import { cn } from "@/lib/utils";
 
 type IconPickerProps = {
   value: string;
   onSelect: (iconName: string) => void;
   color?: string;
+  iconClassName?: string;
 };
 
 const FALLBACK_ICON = "circle-dashed";
 
-export function IconPicker({ value, onSelect, color }: IconPickerProps) {
+export function IconPicker({
+  value,
+  onSelect,
+  color,
+  iconClassName,
+}: IconPickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cache, setCache] = useState<IconCache | null>(null);
@@ -108,7 +115,7 @@ export function IconPicker({ value, onSelect, color }: IconPickerProps) {
             >
               <DynamicIcon
                 name={(value || FALLBACK_ICON) as IconName}
-                className="size-4"
+                className={cn("size-4", iconClassName)}
                 style={color ? { color } : undefined}
                 fallback={() => <span className="size-4" />}
               />

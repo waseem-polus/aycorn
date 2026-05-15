@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { toast } from "sonner";
 import type { Stage } from "@/types/types";
 import { Card } from "@/components/ui/card";
 import { EditableHeader } from "@/components/EditableHeader";
 import { IconPicker } from "@/features/icon-picker/icon-picker";
-import { StageColorSquare } from "@/features/workflows/details/stage-color-square";
+import { ColorPicker } from "@/features/color-picker/color-picker";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
 import { DeleteStageDialog } from "@/features/workflows/details/delete-stage-dialog";
@@ -73,17 +75,23 @@ export function StageRow({
     }
   }, [isEditingDescription]);
 
+  const saveStage = (patch: Partial<Stage>) =>
+    updateStage.mutate(
+      { ...stage, ...patch },
+      { onError: (err) => toast(err.message || "Failed to update stage.") },
+    );
+
   const handleSaveName = (newName: string) => {
     setIsEditingName(false);
     if (newName !== stage.Name) {
-      updateStage.mutate({ ...stage, Name: newName });
+      saveStage({ Name: newName });
     }
   };
 
   const handleSaveDescription = (newDescription: string) => {
     setIsEditingDescription(false);
     if (newDescription !== stage.Description) {
-      updateStage.mutate({ ...stage, Description: newDescription });
+      saveStage({ Description: newDescription });
     }
   };
 
@@ -115,9 +123,8 @@ export function StageRow({
 
       <IconPicker
         value={stage.Icon}
-        onSelect={(name) =>
-          name !== stage.Icon && updateStage.mutate({ ...stage, Icon: name })
-        }
+        iconClassName={stageStrokeClass(stage.Color)}
+        onSelect={(name) => name !== stage.Icon && saveStage({ Icon: name })}
       />
 
       <div className="flex flex-col min-w-0 flex-1">
@@ -139,10 +146,11 @@ export function StageRow({
         />
       </div>
 
-      <div className="flex items-center gap-1.5 w-24 shrink-0">
-        {/* TODO: wire up color picker */}
-        <StageColorSquare color={stage.Color} />
-        <span className="text-sm text-muted-foreground">color</span>
+      <div className="flex items-center w-24 shrink-0">
+        <ColorPicker
+          value={stage.Color}
+          onSelect={(c) => c !== stage.Color && saveStage({ Color: c })}
+        />
       </div>
 
       <div className="w-20 shrink-0">
