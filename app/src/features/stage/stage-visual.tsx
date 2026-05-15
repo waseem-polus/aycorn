@@ -1,23 +1,6 @@
 import type { Stage } from "@/types/types";
-import {
-  Circle,
-  CircleCheck,
-  CircleDashed,
-  CircleDot,
-  CircleMinus,
-  CircleX,
-  type LucideIcon,
-} from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
-
-const iconByName: Record<string, LucideIcon> = {
-  circle: Circle,
-  "circle-dashed": CircleDashed,
-  "circle-dot": CircleDot,
-  "circle-check": CircleCheck,
-  "circle-minus": CircleMinus,
-  "circle-x": CircleX,
-};
 
 const strokeByColor: Record<string, string> = {
   gray: "stroke-neutral-500 dark:stroke-neutral-500",
@@ -54,7 +37,12 @@ export function StageIcon({
   stage: Stage | undefined;
   className?: string;
 }) {
-  const Icon = stage ? iconByName[stage.Icon] ?? CircleDashed : CircleDashed;
   const stroke = stage ? stageStrokeClass(stage.Color) : "stroke-neutral-500";
-  return <Icon className={cn("size-4", stroke, className)} />;
+  return (
+    <DynamicIcon
+      name={(stage?.Icon || "circle-dashed") as IconName}
+      className={cn("size-4", stroke, className)}
+      fallback={() => <span className="size-4" />}
+    />
+  );
 }

@@ -4,9 +4,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { Stage } from "@/types/types";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { EditableHeader } from "@/components/EditableHeader";
-import { StageIcon } from "@/features/stage/stage-visual";
+import { IconPicker } from "@/features/icon-picker/icon-picker";
 import { StageColorSquare } from "@/features/workflows/details/stage-color-square";
 import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
@@ -114,10 +113,12 @@ export function StageRow({
         <GripVertical className="size-4" />
       </button>
 
-      {/* TODO: wire up icon picker */}
-      <Button variant="ghost" size="icon-sm" aria-label="Change stage icon">
-        <StageIcon stage={stage} />
-      </Button>
+      <IconPicker
+        value={stage.Icon}
+        onSelect={(name) =>
+          name !== stage.Icon && updateStage.mutate({ ...stage, Icon: name })
+        }
+      />
 
       <div className="flex flex-col min-w-0 flex-1">
         <EditableHeader
