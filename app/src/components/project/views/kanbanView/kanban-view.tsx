@@ -51,8 +51,7 @@ export function KanbanView({
         (t) => ids.has(t.ID.toString()) && t.Stage !== newStage,
       );
       if (movingTasks.length === 0) return;
-      const stageName =
-        Stages.find((s) => s.ID === newStage)?.Name ?? "stage";
+      const stageName = Stages.find((s) => s.ID === newStage)?.Name ?? "stage";
       bulkUpdate.mutate(
         { tasks: movingTasks, changes: { Stage: newStage } },
         {

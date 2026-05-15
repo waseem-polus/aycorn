@@ -34,7 +34,7 @@ import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-too
 import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
-import { useSharedSelection } from "@/hooks/useSelection";
+import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 interface ProjectsDataTableProps {
@@ -259,6 +259,7 @@ export function ProjectsDataTable({
                     }}
                     className={cn(
                       "group cursor-pointer",
+                      selectedItemClasses({ ring: false }),
                       itemClassName,
                     )}
                   >

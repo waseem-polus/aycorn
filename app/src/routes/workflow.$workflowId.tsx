@@ -9,7 +9,6 @@ import { WorkflowPageHeader } from "@/features/workflows/details/workflow-page-h
 import { StageTypeSummary } from "@/features/workflows/details/stage-type-summary";
 import { StageList } from "@/features/workflows/details/stage-list";
 import { StagesBulkActionsToolbar } from "@/features/workflows/details/stages-bulk-actions-toolbar";
-import { SelectionContext, useSelection } from "@/hooks/useSelection";
 
 export const Route = createFileRoute("/workflow/$workflowId")({
   component: RouteComponent,
@@ -24,35 +23,29 @@ function RouteComponent() {
   const { new: isNew } = Route.useSearch();
   const id = Number.parseInt(workflowId, 10);
   const { data: workflow, isFetching } = useWorkflowDetailsQuery(id);
-  const selection = useSelection({ clearOnDrop: false });
-  const { SelectionArea } = selection;
 
   return (
     <Page>
       <PageHeader breadcrumb={["Workflows", workflow?.Name ?? ""]} />
       <PageContent>
-        <SelectionContext.Provider value={selection}>
-          <SelectionArea className="flex flex-col gap-6 flex-1 min-h-0">
-            {workflow ? (
-              <>
-                <WorkflowPageHeader workflow={workflow} autoFocusName={isNew} />
+        {workflow ? (
+          <div className="flex flex-col gap-6 flex-1 min-h-0">
+            <WorkflowPageHeader workflow={workflow} autoFocusName={isNew} />
 
-                <StageTypeSummary stages={workflow.Stages ?? []} />
+            <StageTypeSummary stages={workflow.Stages ?? []} />
 
-                <StageList stages={workflow.Stages ?? []} workflowId={id} />
+            <StageList stages={workflow.Stages ?? []} workflowId={id} />
 
-                <StagesBulkActionsToolbar
-                  stages={workflow.Stages ?? []}
-                  workflowId={id}
-                />
-              </>
-            ) : (
-              <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">
-                {isFetching ? "Loading workflow..." : "Workflow not found."}
-              </div>
-            )}
-          </SelectionArea>
-        </SelectionContext.Provider>
+            <StagesBulkActionsToolbar
+              stages={workflow.Stages ?? []}
+              workflowId={id}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">
+            {isFetching ? "Loading workflow..." : "Workflow not found."}
+          </div>
+        )}
       </PageContent>
     </Page>
   );

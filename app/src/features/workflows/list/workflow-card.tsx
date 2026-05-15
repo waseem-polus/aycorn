@@ -14,7 +14,7 @@ import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-ch
 import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
 import { WorkflowCardMenu } from "@/features/workflows/list/workflow-card-menu";
 import { DeleteWorkflowDialog } from "@/features/workflows/list/delete-workflow-dialog";
-import { useSharedSelection } from "@/hooks/useSelection";
+import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
@@ -69,7 +69,8 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
         {...itemProps}
         data-task-card=""
         className={cn(
-          "relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary/40",
+          "relative gap-3 rounded-lg py-4 shadow-none hover:bg-accent/30 cursor-pointer",
+          selectedItemClasses(),
           itemClassName,
         )}
         onClick={(e) => {

@@ -145,6 +145,23 @@ func (repo *StageRepo) Delete(id int) (bool, error) {
 	return affected > 0, nil
 }
 
+func (repo *StageRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "DELETE FROM stage WHERE id IN (" + placeholders + ") AND type <> 'open';"
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
 func (repo *StageRepo) MaxPosition(workflowId int) (int, error) {
 	query := "SELECT COALESCE(MAX(position), 0) FROM stage WHERE workflow = ?;"
 	var max int
@@ -211,7 +228,7 @@ func (repo *StageRepo) UpdateIconMany(ids []int, icon string) (int, error) {
 	return int(affected), nil
 }
 
-func (repo *StageRepo) BulkMove(workflowId int, ids []int, afterId *int) (int, error) {
+func (repo *StageRepo) BulkMove(workflowId int, ids []int, beforeId *int) (int, error) {
 	if len(ids) == 0 {
 		return 0, nil
 	}
@@ -255,40 +272,34 @@ func (repo *StageRepo) BulkMove(workflowId int, ids []int, afterId *int) (int, e
 		}
 	}
 
-	insertIdx := 0
-	if afterId != nil {
-		anchor := -1
+	// Compute insertion index in `remaining`. Block lands BEFORE the anchor.
+	// - beforeId == nil → append to end
+	// - beforeId == X (not selected) → insert before X
+	// - beforeId == X (selected) → walk DOWNWARD through contiguous selected to find next non-selected anchor; insert before it. If none, append to end.
+	insertIdx := len(remaining)
+	if beforeId != nil {
+		anchorPos := -1
 		for i, id := range current {
-			if id == *afterId {
-				anchor = i
+			if id == *beforeId {
+				anchorPos = i
 				break
 			}
 		}
-		if anchor == -1 {
-			insertIdx = 0
-		} else {
-			anchorId := *afterId
+		if anchorPos != -1 {
+			anchorId := *beforeId
 			if _, isSelected := selected[anchorId]; isSelected {
-				for i := anchor - 1; i >= 0; i-- {
+				anchorId = 0
+				for i := anchorPos + 1; i < len(current); i++ {
 					if _, sel := selected[current[i]]; !sel {
 						anchorId = current[i]
 						break
 					}
 				}
-				if _, stillSelected := selected[anchorId]; stillSelected {
-					insertIdx = 0
-				} else {
-					for i, id := range remaining {
-						if id == anchorId {
-							insertIdx = i + 1
-							break
-						}
-					}
-				}
-			} else {
+			}
+			if anchorId != 0 {
 				for i, id := range remaining {
 					if id == anchorId {
-						insertIdx = i + 1
+						insertIdx = i
 						break
 					}
 				}

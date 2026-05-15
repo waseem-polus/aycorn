@@ -19,6 +19,12 @@ import {
 } from "@viselect/react";
 import { cn } from "@/lib/utils";
 
+export const selectedItemClasses = ({ ring = true }: { ring?: boolean } = {}) =>
+  cn(
+    "data-selected:bg-accent",
+    ring && "data-selected:ring-2 data-selected:ring-primary",
+  );
+
 type UseSelectionParams = {
   clearOnDrop?: boolean;
 };

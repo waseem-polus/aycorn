@@ -50,6 +50,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/stage/bulk/type", app.bulkSetStageType)
 	mux.HandleFunc("PUT /api/stage/bulk/color", app.bulkSetStageColor)
 	mux.HandleFunc("PUT /api/stage/bulk/icon", app.bulkSetStageIcon)
+	mux.HandleFunc("POST /api/stage/bulk/delete", app.bulkDeleteStages)
 	mux.HandleFunc("PUT /api/stage/{stageId}", app.putStage)
 	mux.HandleFunc("DELETE /api/stage/{stageId}", app.deleteStage)
 

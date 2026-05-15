@@ -110,11 +110,25 @@ func (s *StageService) BulkSetIcon(ids []int, icon string) (models.BulkResult, e
 	}, nil
 }
 
-func (s *StageService) BulkMoveStages(workflowId int, ids []int, afterId *int) (models.BulkResult, error) {
+func (s *StageService) BulkDelete(ids []int) (models.BulkResult, error) {
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
-	moved, err := s.StageRepo.BulkMove(workflowId, ids, afterId)
+	affected, err := s.StageRepo.DeleteMany(ids)
+	if err != nil {
+		return models.BulkResult{Failed: len(ids)}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *StageService) BulkMoveStages(workflowId int, ids []int, beforeId *int) (models.BulkResult, error) {
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	moved, err := s.StageRepo.BulkMove(workflowId, ids, beforeId)
 	if err != nil {
 		return models.BulkResult{Failed: len(ids)}, err
 	}

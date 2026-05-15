@@ -12,7 +12,7 @@ import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
 import { DeleteStageDialog } from "@/features/workflows/details/delete-stage-dialog";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
-import { useSharedSelection } from "@/hooks/useSelection";
+import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function StageRow({
@@ -40,13 +40,12 @@ export function StageRow({
   } = useSortable({ id: stage.ID });
 
   const itemProps = getItemProps(String(stage.ID));
-  const itemOnClick = (
-    itemProps as { onClick?: (e: React.MouseEvent) => void }
-  ).onClick;
+  const itemOnClick = (itemProps as { onClick?: (e: React.MouseEvent) => void })
+    .onClick;
   const itemClassName = (itemProps.className as string | undefined) ?? "";
-  const itemSelected = (
-    itemProps as { "data-selected"?: "" | undefined }
-  )["data-selected"];
+  const itemSelected = (itemProps as { "data-selected"?: "" | undefined })[
+    "data-selected"
+  ];
 
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -89,8 +88,6 @@ export function StageRow({
     }
   };
 
-  const isUntitled = stage.Name === "";
-
   return (
     <Card
       ref={setNodeRef}
@@ -100,9 +97,9 @@ export function StageRow({
       data-task-card=""
       onClick={itemOnClick}
       className={cn(
-        "relative flex-row items-center gap-3 rounded-lg px-3 py-3 shadow-none data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary/40",
+        "relative flex-row items-center gap-3 rounded-lg px-3 py-3 shadow-none selectable",
+        selectedItemClasses(),
         isDragging && "opacity-50 z-10",
-        "selectable",
         itemClassName,
       )}
     >

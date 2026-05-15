@@ -14,6 +14,7 @@ import { CalendarIcon, LandPlot, User } from "lucide-react";
 import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
+import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
@@ -53,7 +54,8 @@ export function KanbanItem({
             {...itemProps}
             data-task-card=""
             className={cn(
-              "overflow-clip data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary",
+              "overflow-clip",
+              selectedItemClasses(),
               itemClassName,
             )}
           >

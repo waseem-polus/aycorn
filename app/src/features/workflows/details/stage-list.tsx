@@ -88,24 +88,28 @@ export function StageList({
       const remaining = items.filter((s) => !selectedSet.has(s.ID));
       if (block.length === 0) return;
 
-      let insertIdx = 0;
-      const anchorIndex = items.findIndex((s) => s.ID === overId);
-      if (anchorIndex !== -1) {
-        let anchorId: number | null = overId;
+      // Compute beforeId — the non-selected stage the block should land in
+      // front of. If the drop target is itself selected, walk downward through
+      // contiguous selected stages to find the next non-selected anchor.
+      const anchorIdx = items.findIndex((s) => s.ID === overId);
+      let beforeId: number | null = null;
+      if (anchorIdx !== -1) {
         if (selectedSet.has(overId)) {
-          anchorId = null;
-          for (let i = anchorIndex - 1; i >= 0; i--) {
+          for (let i = anchorIdx + 1; i < items.length; i++) {
             if (!selectedSet.has(items[i].ID)) {
-              anchorId = items[i].ID;
+              beforeId = items[i].ID;
               break;
             }
           }
-        }
-        if (anchorId !== null) {
-          const idx = remaining.findIndex((s) => s.ID === anchorId);
-          insertIdx = idx === -1 ? 0 : idx + 1;
+        } else {
+          beforeId = overId;
         }
       }
+
+      const insertIdx =
+        beforeId === null
+          ? remaining.length
+          : remaining.findIndex((s) => s.ID === beforeId);
 
       const next = [
         ...remaining.slice(0, insertIdx),
@@ -114,11 +118,8 @@ export function StageList({
       ];
       setItems(next);
 
-      const afterId =
-        insertIdx === 0 ? null : remaining[insertIdx - 1]?.ID ?? null;
-
       bulkMoveStages.mutate(
-        { ids: block.map((s) => s.ID), afterId },
+        { ids: block.map((s) => s.ID), beforeId },
         {
           onError: (err) => {
             setItems(stages);
@@ -170,13 +171,9 @@ export function StageList({
           items={items.map((s) => s.ID)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden pr-1">
+          <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1">
             {items.map((stage) => (
-              <StageRow
-                key={stage.ID}
-                stage={stage}
-                workflowId={workflowId}
-              />
+              <StageRow key={stage.ID} stage={stage} workflowId={workflowId} />
             ))}
           </div>
         </SortableContext>

@@ -25,7 +25,7 @@ import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon"
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { ViewHeader } from "../view-header";
-import { useSharedSelection } from "@/hooks/useSelection";
+import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function ListView({
@@ -46,7 +46,7 @@ export function ListView({
       <ViewHeader setTaskDrawerOpen={setTaskDrawerOpen} />
 
       <div className="h-full min-h-0 overflow-auto">
-        <ItemGroup className="h-fit box-border rounded-md overflow-visible">
+        <ItemGroup className="h-fit box-border rounded-md overflow-visible p-1">
           {Tasks.length > 0 ? (
             Tasks.map((task, i) => {
               const itemProps = getItemProps(task.ID.toString());
@@ -59,11 +59,7 @@ export function ListView({
                       <Item asChild>
                         <a
                           {...itemProps}
-                          data-task-card=""
-                          className={cn(
-                            "data-selected:bg-accent/20 data-selected:ring-2 data-selected:ring-primary data-selected:ring-inset",
-                            itemClassName,
-                          )}
+                          className={cn(itemClassName, selectedItemClasses())}
                         >
                           <ItemMedia className="flex flex-col">
                             <StageIcon stage={stagesById.get(task.Stage)} />

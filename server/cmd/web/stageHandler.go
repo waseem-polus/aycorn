@@ -226,6 +226,36 @@ func (app *app) bulkSetStageIcon(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func (app *app) bulkDeleteStages(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	defer r.Body.Close()
+
+	ids := []int{}
+	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	result, err := app.stageService.BulkDelete(ids)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) bulkMoveStages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)
@@ -240,8 +270,8 @@ func (app *app) bulkMoveStages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body := struct {
-		IDs     []int `json:"ids"`
-		AfterID *int  `json:"afterId"`
+		IDs      []int `json:"ids"`
+		BeforeID *int  `json:"beforeId"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -249,7 +279,7 @@ func (app *app) bulkMoveStages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := app.stageService.BulkMoveStages(workflowId, body.IDs, body.AfterID)
+	result, err := app.stageService.BulkMoveStages(workflowId, body.IDs, body.BeforeID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())

@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { SelectionContext, useSelection } from "@/hooks/useSelection";
+import { cn } from "@/lib/utils";
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
@@ -26,16 +28,24 @@ export function PageContent({
   children: React.ReactNode;
   fullWidth?: boolean;
 }) {
+  const selection = useSelection();
+  const { SelectionArea } = selection;
+
   return (
-    <div className="flex flex-1 flex-col grow overflow-hidden">
-      <div className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
-        <div
-          className={`flex flex-col gap-4 p-6 md:gap-6 h-full w-full overflow-hidden ${fullWidth ? "" : "max-w-7xl"}`}
-        >
-          {children}
-        </div>
+    <SelectionContext.Provider value={selection}>
+      <div id="wasm" className="flex flex-1 flex-col grow overflow-hidden">
+        <SelectionArea className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
+          <div
+            className={cn(
+              "flex flex-col gap-4 p-6 md:gap-6 h-full w-full overflow-hidden",
+              fullWidth ? "" : "max-w-7xl",
+            )}
+          >
+            {children}
+          </div>
+        </SelectionArea>
       </div>
-    </div>
+    </SelectionContext.Provider>
   );
 }
 
