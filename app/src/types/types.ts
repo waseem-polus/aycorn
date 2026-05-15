@@ -13,6 +13,7 @@ export type Project = {
   Name: string;
   Pinned: boolean;
   Workflow: number;
+  WorkflowName: string;
   TimeCreated: string;
   TimeModified: string;
 };

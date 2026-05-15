@@ -11,16 +11,19 @@ type ProjectRepo struct {
 	DB *sql.DB
 }
 
-const projectColumns = "id, name, pinned, workflow, timeCreated, timeModified"
+const projectSelect = `
+SELECT p.id, p.name, p.pinned, p.workflow, w.name, p.timeCreated, p.timeModified
+FROM project p
+JOIN workflow w ON p.workflow = w.id`
 
 func scanProject(scanner interface {
 	Scan(...any) error
 }, p *models.Project) error {
-	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Workflow, &p.TimeCreated, &p.TimeModified)
+	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
 }
 
 func (repo *ProjectRepo) All() ([]models.Project, error) {
-	query := "SELECT " + projectColumns + " FROM project ORDER BY id DESC;"
+	query := projectSelect + " ORDER BY p.id DESC;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -50,7 +53,7 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
-	query := "SELECT " + projectColumns + " FROM project WHERE id = ?;"
+	query := projectSelect + " WHERE p.id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -70,7 +73,7 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
-	query := "SELECT " + projectColumns + " FROM project WHERE pinned = TRUE;"
+	query := projectSelect + " WHERE p.pinned = TRUE;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err

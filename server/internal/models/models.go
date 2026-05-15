@@ -7,6 +7,7 @@ type Project struct {
 	Name         string
 	Pinned       bool
 	Workflow     int
+	WorkflowName string
 	TimeCreated  *time.Time
 	TimeModified *time.Time
 }

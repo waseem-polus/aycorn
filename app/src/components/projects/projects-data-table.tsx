@@ -34,6 +34,7 @@ import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-too
 import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
+import { WorkflowCell } from "@/components/projects/table/workflow-cell";
 import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,7 @@ const COLUMN_WIDTHS: Record<string, string | undefined> = {
   select: "32px",
   Name: undefined,
   Pinned: "15%",
+  Workflow: "20%",
   TimeCreated: "15%",
   TimeModified: "15%",
   actions: "60px",
@@ -119,6 +121,17 @@ export function ProjectsDataTable({
             <Pin className="stroke-red-400 size-4 shrink-0" />
           ) : null}
         </span>
+      ),
+    },
+    {
+      accessorKey: "WorkflowName",
+      id: "Workflow",
+      header: ({ column }) => <SortableHeader label="Workflow" column={column} />,
+      cell: ({ row }) => (
+        <WorkflowCell
+          workflowId={row.original.Workflow}
+          workflowName={row.original.WorkflowName}
+        />
       ),
     },
     {

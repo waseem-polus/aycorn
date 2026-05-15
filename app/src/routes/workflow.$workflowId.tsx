@@ -1,9 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Page,
-  PageContent,
-  PageHeader,
-} from "@/components/page/Page";
+import { Page, PageContent, PageHeader } from "@/components/page/Page";
 import { useWorkflowDetailsQuery } from "@/features/workflows/shared/queries/useWorkflowDetailsQuery";
 import { WorkflowPageHeader } from "@/features/workflows/details/workflow-page-header";
 import { StageTypeSummary } from "@/features/workflows/details/stage-type-summary";
@@ -31,11 +27,9 @@ function RouteComponent() {
         {workflow ? (
           <div className="flex flex-col gap-6 flex-1 min-h-0">
             <WorkflowPageHeader workflow={workflow} autoFocusName={isNew} />
-
-            <StageTypeSummary stages={workflow.Stages ?? []} />
-
+            <StageTypeSummary stages={workflow.Stages ?? []} />{" "}
+            {/* TODO: Replace this with a kanban preview */}
             <StageList stages={workflow.Stages ?? []} workflowId={id} />
-
             <StagesBulkActionsToolbar
               stages={workflow.Stages ?? []}
               workflowId={id}
