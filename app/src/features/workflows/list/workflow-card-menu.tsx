@@ -10,11 +10,13 @@ import {
 
 type WorkflowCardMenuProps = {
   onRename: () => void;
+  onEditDescription: () => void;
   onDelete: () => void;
 };
 
 export function WorkflowCardMenu({
   onRename,
+  onEditDescription,
   onDelete,
 }: WorkflowCardMenuProps) {
   return (
@@ -38,6 +40,9 @@ export function WorkflowCardMenu({
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={onEditDescription}>
+          Edit description
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={onDelete}>
           Delete

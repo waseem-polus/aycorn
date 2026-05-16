@@ -22,8 +22,10 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   const { updateWorkflow } = useWorkflowMutation(workflow.ID);
   const { getItemProps } = useSharedSelection();
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const editableRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLHeadingElement>(null);
 
   const itemProps = getItemProps(String(workflow.ID));
   const itemOnClick = (
@@ -50,6 +52,17 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
     }
   }, [isEditing]);
 
+  useEffect(() => {
+    if (isEditingDescription && descriptionRef.current) {
+      descriptionRef.current.focus();
+      const range = document.createRange();
+      range.selectNodeContents(descriptionRef.current);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }, [isEditingDescription]);
+
   const handleSaveName = (newName: string) => {
     setIsEditing(false);
     if (newName !== workflow.Name) {
@@ -57,6 +70,19 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
         ID: workflow.ID,
         Name: newName,
         Description: workflow.Description,
+        TimeCreated: workflow.TimeCreated,
+        TimeModified: workflow.TimeModified,
+      });
+    }
+  };
+
+  const handleSaveDescription = (newDescription: string) => {
+    setIsEditingDescription(false);
+    if (newDescription !== workflow.Description) {
+      updateWorkflow.mutate({
+        ID: workflow.ID,
+        Name: workflow.Name,
+        Description: newDescription,
         TimeCreated: workflow.TimeCreated,
         TimeModified: workflow.TimeModified,
       });
@@ -109,10 +135,27 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
               <span className="text-base truncate">{workflow.Name}</span>
             )}
           </CardTitle>
-          {workflow.Description !== "" && (
-            <CardDescription className="text-xs truncate">
-              {workflow.Description}
-            </CardDescription>
+          {isEditingDescription ? (
+            <div
+              className="pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <EditableHeader
+                ref={descriptionRef}
+                value={workflow.Description}
+                setValue={handleSaveDescription}
+                onBlur={() => setIsEditingDescription(false)}
+                placeholder="Add description..."
+                className="text-xs font-normal text-muted-foreground p-0 min-h-0"
+              />
+            </div>
+          ) : (
+            workflow.Description !== "" && (
+              <CardDescription className="text-xs truncate">
+                {workflow.Description}
+              </CardDescription>
+            )
           )}
           <CardDescription className="text-xs">
             {stageCount} stages · {projectLabel}
@@ -120,6 +163,9 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
           <CardAction className="pointer-events-auto">
             <WorkflowCardMenu
               onRename={() => setTimeout(() => setIsEditing(true), 100)}
+              onEditDescription={() =>
+                setTimeout(() => setIsEditingDescription(true), 100)
+              }
               onDelete={() => setDeleteOpen(true)}
             />
           </CardAction>
