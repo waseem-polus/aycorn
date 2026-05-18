@@ -10,7 +10,9 @@ type StageRepo struct {
 	DB *sql.DB
 }
 
-const stageColumns = "id, workflow, name, COALESCE(description, ''), color, icon, position, type, timeCreated, timeModified"
+const stageColumns = "s.id, s.workflow, s.name, COALESCE(s.description, ''), s.color, s.icon, s.position, s.type, COUNT(t.id), s.timeCreated, s.timeModified"
+
+const stageFromJoin = "FROM stage s LEFT JOIN task t ON t.stage = s.id"
 
 func scanStage(scanner interface {
 	Scan(...any) error
@@ -24,13 +26,14 @@ func scanStage(scanner interface {
 		&s.Icon,
 		&s.Position,
 		&s.Type,
+		&s.TaskCount,
 		&s.TimeCreated,
 		&s.TimeModified,
 	)
 }
 
 func (repo *StageRepo) ByWorkflow(workflowId int, limit int) ([]models.Stage, error) {
-	query := "SELECT " + stageColumns + " FROM stage WHERE workflow = ? ORDER BY position"
+	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.workflow = ? GROUP BY s.id ORDER BY s.position"
 	args := []any{workflowId}
 	if limit > 0 {
 		query += " LIMIT ?"
@@ -57,7 +60,7 @@ func (repo *StageRepo) ByWorkflow(workflowId int, limit int) ([]models.Stage, er
 }
 
 func (repo *StageRepo) FindOne(id int) (*models.Stage, error) {
-	query := "SELECT " + stageColumns + " FROM stage WHERE id = ?;"
+	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.id = ? GROUP BY s.id;"
 	row := repo.DB.QueryRow(query, id)
 
 	s := models.Stage{}
@@ -69,7 +72,7 @@ func (repo *StageRepo) FindOne(id int) (*models.Stage, error) {
 }
 
 func (repo *StageRepo) FirstByType(workflowId int, stageType string) (*models.Stage, error) {
-	query := "SELECT " + stageColumns + " FROM stage WHERE workflow = ? AND type = ? ORDER BY position LIMIT 1;"
+	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.workflow = ? AND s.type = ? GROUP BY s.id ORDER BY s.position LIMIT 1;"
 	row := repo.DB.QueryRow(query, workflowId, stageType)
 
 	s := models.Stage{}
@@ -145,18 +148,72 @@ func (repo *StageRepo) Delete(id int) (bool, error) {
 	return affected > 0, nil
 }
 
-func (repo *StageRepo) DeleteMany(ids []int) (int, error) {
+func (repo *StageRepo) FindManyByIds(ids []int) ([]models.Stage, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.id IN (" + placeholders + ") GROUP BY s.id;"
+	rows, err := repo.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stages := []models.Stage{}
+	for rows.Next() {
+		s := models.Stage{}
+		if err := scanStage(rows, &s); err != nil {
+			return nil, err
+		}
+		stages = append(stages, s)
+	}
+	return stages, rows.Err()
+}
+
+func moveTasksBulkInTx(tx interface {
+	Prepare(string) (*sql.Stmt, error)
+}, mappings map[int]int) error {
+	stmt, err := tx.Prepare("UPDATE task SET stage = ? WHERE stage = ?;")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for fromId, toId := range mappings {
+		if _, err := stmt.Exec(toId, fromId); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (repo *StageRepo) DeleteManyWithTaskMove(ids []int, mappings map[int]int) (int, error) {
 	if len(ids) == 0 {
 		return 0, nil
 	}
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	if err := moveTasksBulkInTx(tx, mappings); err != nil {
+		return 0, err
+	}
+
 	placeholders, args := intIdPlaceholders(ids)
 	query := "DELETE FROM stage WHERE id IN (" + placeholders + ") AND type <> 'open';"
-	res, err := repo.DB.Exec(query, args...)
+	res, err := tx.Exec(query, args...)
 	if err != nil {
 		return 0, err
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
 	return int(affected), nil

@@ -12,16 +12,18 @@ import { ColorPicker } from "@/features/color-picker/color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
-import { DeleteStageDialog } from "@/features/workflows/details/delete-stage-dialog";
+import { DeleteStagesDialog } from "@/features/workflows/details/delete-stages-dialog";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
 import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function StageRow({
   stage,
+  stages,
   workflowId,
 }: {
   stage: Stage;
+  stages: Stage[];
   workflowId: number;
 }) {
   const { updateStage } = useStageMutation(workflowId);
@@ -141,13 +143,15 @@ export function StageRow({
       </div>
 
       <StageRowMenu
+        isOpen={stage.Type === "open"}
         onRename={() => setIsEditingName(true)}
         onEditDescription={() => setIsEditingDescription(true)}
         onDelete={() => setDeleteOpen(true)}
       />
 
-      <DeleteStageDialog
-        stage={stage}
+      <DeleteStagesDialog
+        stages={stages}
+        stagesToDelete={[stage]}
         workflowId={workflowId}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

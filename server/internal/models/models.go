@@ -66,6 +66,7 @@ type Stage struct {
 	Icon         string
 	Position     int
 	Type         string
+	TaskCount    int
 	TimeCreated  *time.Time
 	TimeModified *time.Time
 }

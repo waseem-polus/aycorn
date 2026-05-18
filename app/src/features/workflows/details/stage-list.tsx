@@ -173,7 +173,7 @@ export function StageList({
         >
           <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1">
             {items.map((stage) => (
-              <StageRow key={stage.ID} stage={stage} workflowId={workflowId} />
+              <StageRow key={stage.ID} stage={stage} stages={items} workflowId={workflowId} />
             ))}
           </div>
         </SortableContext>

@@ -138,7 +138,7 @@ export const useSelection = ({
       if (hasModifier(e)) return;
       if (
         e.target.closest(
-          ".selectable, [data-keep-selection], [data-radix-popper-content-wrapper], [role='dialog'], [role='alertdialog']",
+          ".selectable, [data-keep-selection], [data-radix-popper-content-wrapper], [role='dialog'], [role='alertdialog'], [data-slot='dialog-overlay'], [data-slot='alert-dialog-overlay']",
         )
       )
         return;

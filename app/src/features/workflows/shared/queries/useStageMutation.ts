@@ -46,23 +46,6 @@ export function useStageMutation(workflowId: number) {
     onSuccess: invalidate,
   });
 
-  const deleteStage = useMutation({
-    mutationFn: async (stageId: number) => {
-      const res = await fetch(
-        `http://localhost:8000/api/stage/${stageId}`,
-        {
-          method: "DELETE",
-        },
-      );
-      if (!res.ok) {
-        const message = await res.text();
-        throw new Error(message || "Failed to delete stage");
-      }
-      return res.json();
-    },
-    onSuccess: invalidate,
-  });
-
   const reorderStages = useMutation({
     mutationFn: async (orderedStageIds: number[]) => {
       const res = await fetch(
@@ -157,10 +140,16 @@ export function useStageMutation(workflowId: number) {
   });
 
   const bulkDeleteStages = useMutation({
-    mutationFn: async (ids: number[]) => {
+    mutationFn: async ({
+      ids,
+      taskMappings,
+    }: {
+      ids: number[];
+      taskMappings?: Record<number, number>;
+    }) => {
       const res = await fetch(`http://localhost:8000/api/stage/bulk/delete`, {
         method: "POST",
-        body: JSON.stringify(ids),
+        body: JSON.stringify({ ids, taskMappings }),
       });
       if (!res.ok) {
         const message = await res.text();
@@ -174,7 +163,6 @@ export function useStageMutation(workflowId: number) {
   return {
     createStage,
     updateStage,
-    deleteStage,
     reorderStages,
     bulkSetType,
     bulkSetColor,

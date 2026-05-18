@@ -7,14 +7,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type StageRowMenuProps = {
+  isOpen: boolean;
   onRename: () => void;
   onEditDescription: () => void;
   onDelete: () => void;
 };
 
 export function StageRowMenu({
+  isOpen,
   onRename,
   onEditDescription,
   onDelete,
@@ -35,9 +42,22 @@ export function StageRowMenu({
           Edit description
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={onDelete}>
-          Delete
-        </DropdownMenuItem>
+        {isOpen ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <DropdownMenuItem variant="destructive" disabled>
+                  Delete
+                </DropdownMenuItem>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>The open stage can&apos;t be deleted.</TooltipContent>
+          </Tooltip>
+        ) : (
+          <DropdownMenuItem variant="destructive" onClick={onDelete}>
+            Delete
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

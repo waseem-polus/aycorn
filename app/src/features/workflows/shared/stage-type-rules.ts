@@ -9,8 +9,8 @@ export type StageTypeRule = {
 export const STAGE_TYPE_RULES: Record<StageType, StageTypeRule> = {
   open: { label: "exactly 1", min: 1, max: 1 },
   todo: { label: "optional", min: 0, max: Infinity },
-  doing: { label: "≥1 required", min: 1, max: Infinity },
-  done: { label: "≥1 required", min: 1, max: Infinity },
+  doing: { label: "optional", min: 0, max: Infinity },
+  done: { label: "optional", min: 0, max: Infinity },
   blocked: { label: "optional", min: 0, max: Infinity },
 };
 

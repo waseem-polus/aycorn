@@ -105,16 +105,41 @@ func (app *app) deleteStage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, err := app.stageService.DeleteStage(stageId)
+	defer r.Body.Close()
+	body := struct {
+		MoveTasksTo *int `json:"moveTasksTo"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil && !errors.Is(err, io.EOF) {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err.Error())
+		return
+	}
+
+	success, err := app.stageService.DeleteStage(stageId, body.MoveTasksTo)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		if errors.Is(err, services.ErrCannotDeleteOpenStage) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
+		if errors.Is(err, services.ErrStageHasTasks) {
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			log.Println(err.Error())
+			return
+		}
+		if errors.Is(err, services.ErrInvalidMoveDestination) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return
 	}
 
 	res, err := json.Marshal(success)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return
 	}
@@ -237,15 +262,40 @@ func (app *app) bulkDeleteStages(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	ids := []int{}
-	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+	body := struct {
+		IDs          []int          `json:"ids"`
+		TaskMappings map[string]int `json:"taskMappings"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println(err.Error())
 		return
 	}
 
-	result, err := app.stageService.BulkDelete(ids)
+	// Convert string-keyed taskMappings (JSON keys must be strings) to int keys.
+	taskMappings := map[int]int{}
+	for k, v := range body.TaskMappings {
+		id, err := strconv.Atoi(k)
+		if err != nil {
+			http.Error(w, "invalid taskMappings key: "+k, http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
+		taskMappings[id] = v
+	}
+
+	result, err := app.stageService.BulkDelete(body.IDs, taskMappings)
 	if err != nil {
+		if errors.Is(err, services.ErrStageHasTasks) {
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			log.Println(err.Error())
+			return
+		}
+		if errors.Is(err, services.ErrInvalidMoveDestination) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err.Error())
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return

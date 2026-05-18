@@ -40,6 +40,7 @@ export type Stage = {
   Icon: string;
   Position: number;
   Type: StageType;
+  TaskCount: number;
   TimeCreated: string;
   TimeModified: string;
 };
