@@ -1,5 +1,5 @@
 import { ListView } from "@/components/project/views/listView/list-view";
-import { EditableProjectName } from "@/components/project/editable-project-name";
+import { ProjectContentHeader } from "@/components/project/project-content-header";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
@@ -76,9 +76,7 @@ export function ProjectDetails({
 
   return (
     <div className="flex flex-col gap-4 grow min-h-0 overflow-visible">
-      <div className="flex justify-between align-top overflow-visible">
-        <EditableProjectName />
-      </div>
+      <ProjectContentHeader />
 
       <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
         <CalendarProvider
