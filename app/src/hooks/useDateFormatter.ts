@@ -12,6 +12,16 @@ export function useDateFormat() {
     });
   };
 
+  const toFormattedTime = (source: Date | string | null): string => {
+    if (source === null) return "";
+    const date = typeof source === "string" ? new Date(source) : source;
+    if (date.getHours() === 0 && date.getMinutes() === 0) return "";
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
   const toISO = (source: Date | string | null): string => {
     if (source === null) {
       return "";
@@ -21,5 +31,5 @@ export function useDateFormat() {
     return date.toISOString();
   };
 
-  return { toFormatted, toISO };
+  return { toFormatted, toFormattedTime, toISO };
 }

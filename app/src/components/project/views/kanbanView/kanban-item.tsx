@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "@/features/task/properties/task-type-badge";
+import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import {
   Item,
@@ -10,9 +11,8 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { CalendarIcon, LandPlot, User } from "lucide-react";
+import { LandPlot, User } from "lucide-react";
 import type { ChecklistTask } from "@/types/types";
-import { useDateFormat } from "@/hooks/useDateFormatter";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,6 @@ export function KanbanItem({
     task.ID.toString(),
     { task },
   );
-  const { toFormatted } = useDateFormat();
 
   const itemProps = getItemProps?.(task.ID.toString(), {
     listeners: listeners as DragListeners | undefined,
@@ -88,24 +87,10 @@ export function KanbanItem({
                   <User className="size-2" />
                   {task.Assignee === "" ? "Not Assigned" : task.Assignee}
                 </Badge>
-                <Badge
-                  variant={
-                    task.TimePlannedStart !== null ? "secondary" : "outline"
-                  }
-                  className={
-                    task.TimePlannedStart !== null
-                      ? ""
-                      : "text-muted-foreground"
-                  }
-                >
-                  <CalendarIcon className="size-2" />
-                  {task.TimePlannedStart !== null
-                    ? toFormatted(task.TimePlannedStart)
-                    : "Not Scheduled"}
-
-                  {task.TimePlannedEnd !== null &&
-                    " → " + toFormatted(task.TimePlannedEnd)}
-                </Badge>
+                <TaskPlannedDates
+                  start={task.TimePlannedStart}
+                  end={task.TimePlannedEnd}
+                />
               </span>
             </ItemFooter>
           </a>

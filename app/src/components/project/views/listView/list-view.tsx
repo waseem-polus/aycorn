@@ -10,20 +10,15 @@ import {
   ItemSeparator,
 } from "@/components/ui/item";
 import { ListViewTaskName } from "./list-view/list-view-task-name";
-import {
-  Calendar as CalendarIcon,
-  ChevronRightIcon,
-  LandPlot,
-  User,
-} from "lucide-react";
+import { ChevronRightIcon, LandPlot, User } from "lucide-react";
 import React, { useContext } from "react";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import { StageIcon } from "@/features/stage/stage-visual";
 import TaskTypeBadge from "@/features/task/properties/task-type-badge";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
+import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useDateFormat } from "@/hooks/useDateFormatter";
 import { ViewHeader } from "../view-header";
 import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
@@ -38,7 +33,6 @@ export function ListView({
     () => new Map(Stages.map((s) => [s.ID, s])),
     [Stages],
   );
-  const { toFormatted } = useDateFormat();
   const { getItemProps } = useSharedSelection();
 
   return (
@@ -87,26 +81,10 @@ export function ListView({
                                     ? "Not Assigned"
                                     : task.Assignee}
                                 </Badge>
-                                <Badge
-                                  variant={
-                                    task.TimePlannedStart !== null
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  className={
-                                    task.TimePlannedStart !== null
-                                      ? ""
-                                      : "bg-background text-muted-foreground"
-                                  }
-                                >
-                                  <CalendarIcon className="size-2" />
-                                  {task.TimePlannedStart !== null
-                                    ? toFormatted(task.TimePlannedStart)
-                                    : "Not Scheduled"}
-
-                                  {task.TimePlannedEnd !== null &&
-                                    " → " + toFormatted(task.TimePlannedEnd)}
-                                </Badge>
+                                <TaskPlannedDates
+                                  start={task.TimePlannedStart}
+                                  end={task.TimePlannedEnd}
+                                />
                               </span>
                             </ItemDescription>
                           </ItemContent>
