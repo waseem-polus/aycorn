@@ -1,14 +1,16 @@
 import { useContext, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
-import { Pin, PinOff } from "lucide-react";
+import { Pin, PinOff, SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectMutation } from "@/queries/useProjectMutation";
 import { EditableProjectName } from "@/components/project/editable-project-name";
 import { ProjectDropdownMenu } from "@/components/project/pageHeader/project-dropdown-menu";
 import { DeleteProjectDialog } from "@/components/project/pageHeader/delete-project-dialog";
+import { useNavigate } from "@tanstack/react-router";
 
 export function ProjectContentHeader() {
+  const navigate = useNavigate();
   const { Project } = useContext(ProjectContext);
   const { updateProject } = useProjectMutation(Project.ID);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -30,6 +32,20 @@ export function ProjectContentHeader() {
           onClick={togglePin}
         >
           {Project.Pinned ? <PinOff /> : <Pin />}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          onClick={() =>
+            navigate({
+              to: "/project/settings/$projectId",
+              params: { projectId: Project.ID.toString() },
+            })
+          }
+        >
+          <SettingsIcon />
         </Button>
 
         <ProjectDropdownMenu
