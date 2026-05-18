@@ -23,7 +23,8 @@ import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 
@@ -43,16 +44,7 @@ export function ChecklistSideTableItem({
     "line-through font-normal": checklist.Status === "done",
   });
 
-  useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(editableRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditing]);
+  useFocusAndSelect(editableRef, isEditing);
 
   const handleSave = (newName: string) => {
     setIsEditing(false);

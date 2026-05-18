@@ -44,7 +44,7 @@ function RouteComponent() {
       <PageContent>
         <PageTitle
           title="Projects"
-          description="Projects descriptions, go here and go brr."
+          description="Manage and organize all your active projects."
         />
 
         <div className="flex flex-col gap-4">

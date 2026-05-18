@@ -1,4 +1,5 @@
 import { useContext, useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { Pin, PinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -12,6 +13,7 @@ export function ProjectContentHeader() {
   const { updateProject } = useProjectMutation(Project.ID);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const editableRef = useRef<HTMLHeadingElement>(null);
+  const focusAndSelect = useFocusAndSelect(editableRef);
 
   const togglePin = () =>
     updateProject.mutate({ ...Project, Pinned: !Project.Pinned });
@@ -32,18 +34,7 @@ export function ProjectContentHeader() {
 
         <ProjectDropdownMenu
           pinned={Project.Pinned}
-          onRenameClick={() => {
-            setTimeout(() => {
-              const el = editableRef.current;
-              if (!el) return;
-              el.focus();
-              const range = document.createRange();
-              range.selectNodeContents(el);
-              const sel = window.getSelection();
-              sel?.removeAllRanges();
-              sel?.addRange(range);
-            }, 0);
-          }}
+          onRenameClick={() => setTimeout(focusAndSelect, 0)}
           onPinClick={togglePin}
           onDeleteClick={() => setIsDeleteDialogOpen(true)}
         />

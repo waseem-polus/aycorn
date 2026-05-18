@@ -10,6 +10,7 @@ import { StageIcon } from "./stage-visual";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { Layers2 } from "lucide-react";
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -46,10 +47,19 @@ export function SelectTaskStage({
       ? String(state.Stage)
       : "";
 
+  console.log(value);
+
   return (
     <Select value={currentValue} onValueChange={handleValueChange}>
       <SelectTrigger id="stage" className="w-full">
-        <SelectValue placeholder={placeholder} />
+        <SelectValue
+          placeholder={
+            <>
+              <Layers2 />
+              {placeholder}
+            </>
+          }
+        />
       </SelectTrigger>
       <SelectContent>
         {Stages.map((stage) => (

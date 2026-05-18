@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { useNavigate } from "@tanstack/react-router";
 import type { WorkflowSummary } from "@/types/types";
 import { EditableHeader } from "@/components/EditableHeader";
@@ -41,27 +42,8 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
         ? "1 project"
         : `${workflow.ProjectCount} projects`;
 
-  useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(editableRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditing]);
-
-  useEffect(() => {
-    if (isEditingDescription && descriptionRef.current) {
-      descriptionRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(descriptionRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditingDescription]);
+  useFocusAndSelect(editableRef, isEditing);
+  useFocusAndSelect(descriptionRef, isEditingDescription);
 
   const handleSaveName = (newName: string) => {
     setIsEditing(false);

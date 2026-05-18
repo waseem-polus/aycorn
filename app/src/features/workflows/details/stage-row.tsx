@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
@@ -53,27 +54,8 @@ export function StageRow({
     transition,
   };
 
-  useEffect(() => {
-    if (isEditingName && nameRef.current) {
-      nameRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(nameRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditingName]);
-
-  useEffect(() => {
-    if (isEditingDescription && descriptionRef.current) {
-      descriptionRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(descriptionRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditingDescription]);
+  useFocusAndSelect(nameRef, isEditingName);
+  useFocusAndSelect(descriptionRef, isEditingDescription);
 
   const saveStage = (patch: Partial<Stage>) =>
     updateStage.mutate(

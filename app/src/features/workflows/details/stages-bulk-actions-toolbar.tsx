@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { AlertTriangle, ChevronDown, Palette, Shapes } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronDown,
+  Palette,
+  Shapes,
+  TagIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { Stage, StageType } from "@/types/types";
 import { Button } from "@/components/ui/button";
@@ -97,16 +103,17 @@ export function StagesBulkActionsToolbar({
       delete={{
         onConfirm: handleDelete,
         title: `Delete ${count} stage${count !== 1 ? "s" : ""}?`,
-        description: openCount > 0
-          ? `Open stages can't be deleted and will be skipped. This action cannot be undone.`
-          : "This action cannot be undone.",
+        description:
+          openCount > 0
+            ? `Open stages can't be deleted and will be skipped. This action cannot be undone.`
+            : "This action cannot be undone.",
         busy: bulkDeleteStages.isPending,
       }}
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <span tabIndex={0}>
-            <Button variant="ghost" size="sm" disabled>
+          <span tabIndex={0} className="w-32">
+            <Button variant="outline" className="w-full" disabled>
               <Shapes />
               Icon
             </Button>
@@ -117,8 +124,8 @@ export function StagesBulkActionsToolbar({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <span tabIndex={0}>
-            <Button variant="ghost" size="sm" disabled>
+          <span tabIndex={0} className="w-32">
+            <Button variant="outline" className="w-full" disabled>
               <Palette />
               Color
             </Button>
@@ -129,16 +136,17 @@ export function StagesBulkActionsToolbar({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" disabled={busy}>
-            {sharedType ? (
-              <StageTypeBadge type={sharedType} />
-            ) : (
-              <span className="text-xs text-muted-foreground italic">
-                Mixed Type
-              </span>
-            )}
-            <ChevronDown className="ml-1 opacity-60" />
-          </Button>
+          <span className="w-32">
+            <Button variant="outline" className="w-full" disabled={busy}>
+              <TagIcon />
+              {sharedType ? (
+                <StageTypeBadge type={sharedType} />
+              ) : (
+                <span className="text-muted-foreground">Mixed</span>
+              )}
+              <ChevronDown className="ml-1 opacity-60" />
+            </Button>
+          </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center">
           {openCount > 0 && (

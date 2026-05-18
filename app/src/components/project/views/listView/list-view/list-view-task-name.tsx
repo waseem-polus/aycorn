@@ -1,4 +1,5 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,16 +27,7 @@ export function ListViewTaskName() {
       ? `${fullName.slice(0, MAX_DISPLAY_LENGTH)}...`
       : fullName;
 
-  useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(editableRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditing]);
+  useFocusAndSelect(editableRef, isEditing);
 
   if (isEditing) {
     return (
