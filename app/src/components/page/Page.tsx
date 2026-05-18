@@ -5,6 +5,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import React from "react";
@@ -67,11 +68,15 @@ export function PageTitle({
   );
 }
 
+export type Crumb =
+  | string
+  | { label: string; to?: string; params?: Record<string, string> };
+
 export function PageHeader({
   breadcrumb = [],
   children = <></>,
 }: {
-  breadcrumb: string[];
+  breadcrumb: Crumb[];
   children?: React.ReactNode;
 }) {
   return (
@@ -89,16 +94,34 @@ export function PageHeader({
                 <Link to="/">Home</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            {breadcrumb.map((crumb: string) => (
-              <React.Fragment key={crumb}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">{crumb}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </React.Fragment>
-            ))}
+            {breadcrumb.map((crumb) => {
+              const item =
+                typeof crumb === "string" ? { label: crumb } : crumb;
+              const isLink = typeof crumb === "string" || item.to !== undefined;
+              return (
+                <React.Fragment key={item.label}>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    {isLink ? (
+                      <BreadcrumbLink asChild>
+                        <Link
+                          to={
+                            (typeof crumb === "string"
+                              ? "/"
+                              : item.to) as string
+                          }
+                          params={item.params}
+                        >
+                          {item.label}
+                        </Link>
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                </React.Fragment>
+              );
+            })}
           </BreadcrumbList>
         </Breadcrumb>
         <div className="ml-auto flex items-center gap-2">{children}</div>

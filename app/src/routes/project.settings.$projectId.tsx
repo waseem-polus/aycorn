@@ -7,6 +7,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyPanel } from "@/features/settings/empty-panel";
+import { useProjectWorkflowSettingsQuery } from "@/features/settings/project-workflow/queries/useProjectWorkflowSettingsQuery";
+import { ProjectWorkflowTab } from "@/features/settings/project-workflow/project-workflow-tab";
 import { createFileRoute } from "@tanstack/react-router";
 import { LandPlotIcon, TagIcon, WorkflowIcon } from "lucide-react";
 
@@ -15,9 +17,24 @@ export const Route = createFileRoute("/project/settings/$projectId")({
 });
 
 function RouteComponent() {
+  const { projectId } = Route.useParams();
+  const id = Number.parseInt(projectId, 10);
+  const { data } = useProjectWorkflowSettingsQuery(id);
+  const projectName = data?.Project?.Name ?? "";
+
   return (
     <Page>
-      <PageHeader breadcrumb={["Project", "Settings"]} />
+      <PageHeader
+        breadcrumb={[
+          "Projects",
+          {
+            label: projectName,
+            to: "/project/$projectId",
+            params: { projectId },
+          },
+          { label: "Settings" },
+        ]}
+      />
       <PageContent>
         <PageTitle
           title="Project Settings"
@@ -43,10 +60,7 @@ function RouteComponent() {
           <Separator />
 
           <TabsContent value="workflow">
-            <EmptyPanel
-              title="Workflow"
-              description="Tasks in this project move through the stages defined by this workflow. Switching workflows requires routing every task to a new stage."
-            />
+            <ProjectWorkflowTab projectId={id} />
           </TabsContent>
 
           <TabsContent value="checklists">

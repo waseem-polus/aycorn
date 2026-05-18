@@ -31,6 +31,12 @@ export type WorkflowSummary = Workflow & {
   Stages: Stage[];
 };
 
+export type ProjectWorkflowSettings = {
+  Project: Project;
+  Workflow: Workflow;
+  Stages: Stage[];
+};
+
 export type Stage = {
   ID: number;
   Workflow: number;

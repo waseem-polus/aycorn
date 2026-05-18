@@ -119,6 +119,34 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func (app *app) getProjectWorkflowSettings(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println(r.RequestURI)
+
+	projectId, err := strconv.Atoi(r.PathValue("projectId"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	settings, err := app.projectService.GetProjectWorkflowSettings(projectId)
+	if err != nil {
+		w.Write(nil)
+		log.Println(err.Error())
+		return
+	}
+
+	res, err := json.Marshal(settings)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Println(err.Error())
+		return
+	}
+
+	w.Write(res)
+}
+
 func (app *app) putProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)

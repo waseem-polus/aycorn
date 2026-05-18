@@ -20,6 +20,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/project/bulk/pinned", app.bulkSetProjectsPinned)
 	mux.HandleFunc("POST /api/project/bulk/delete", app.bulkDeleteProjects)
 
+	mux.HandleFunc("GET /api/project/{projectId}/settings/workflow", app.getProjectWorkflowSettings)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 	mux.HandleFunc("DELETE /api/project/{projectId}", app.deleteProject)

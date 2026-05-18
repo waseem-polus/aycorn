@@ -23,6 +23,35 @@ type projectDetails struct {
 	Tasks      []models.ChecklistTask
 }
 
+type projectWorkflowSettings struct {
+	Project  *models.Project
+	Workflow *models.Workflow
+	Stages   []models.Stage
+}
+
+func (s *ProjectService) GetProjectWorkflowSettings(projectId int) (*projectWorkflowSettings, error) {
+	project, err := s.ProjectRepo.FindOne(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	workflow, err := s.WorkflowRepo.FindOne(project.Workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	stages, err := s.StageRepo.ByWorkflow(project.Workflow, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	return &projectWorkflowSettings{
+		Project:  project,
+		Workflow: workflow,
+		Stages:   stages,
+	}, nil
+}
+
 func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.TaskFilters) (*projectDetails, error) {
 	project, err := s.ProjectRepo.FindOne(projectId)
 	if err != nil {
