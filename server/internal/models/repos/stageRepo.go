@@ -59,6 +59,32 @@ func (repo *StageRepo) ByWorkflow(workflowId int, limit int) ([]models.Stage, er
 	return stages, rows.Err()
 }
 
+// ByWorkflowForProject returns the workflow's stages with TaskCount scoped to a
+// single project's tasks (a workflow can be shared by multiple projects).
+func (repo *StageRepo) ByWorkflowForProject(workflowId int, projectId int) ([]models.Stage, error) {
+	query := "SELECT " + stageColumns +
+		" FROM stage s LEFT JOIN task t ON t.stage = s.id" +
+		" AND t.checklist IN (SELECT id FROM checklist WHERE project = ?)" +
+		" WHERE s.workflow = ? GROUP BY s.id ORDER BY s.position;"
+
+	rows, err := repo.DB.Query(query, projectId, workflowId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stages := []models.Stage{}
+	for rows.Next() {
+		s := models.Stage{}
+		if err := scanStage(rows, &s); err != nil {
+			return nil, err
+		}
+		stages = append(stages, s)
+	}
+
+	return stages, rows.Err()
+}
+
 func (repo *StageRepo) FindOne(id int) (*models.Stage, error) {
 	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.id = ? GROUP BY s.id;"
 	row := repo.DB.QueryRow(query, id)

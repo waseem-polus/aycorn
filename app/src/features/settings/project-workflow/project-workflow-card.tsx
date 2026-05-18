@@ -22,8 +22,8 @@ export function ProjectWorkflowCard({
   const taskCount = stages.reduce((sum, stage) => sum + stage.TaskCount, 0);
   const meta = [
     workflow.Description,
-    `${stages.length} stages`,
-    `${taskCount} tasks`,
+    `${stages.length} stage${stages.length !== 1 ? "s" : ""}`,
+    `${taskCount} task${taskCount !== 1 ? "s" : ""}`,
   ]
     .filter(Boolean)
     .join(" · ");

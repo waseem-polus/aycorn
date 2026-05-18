@@ -40,7 +40,7 @@ func (s *ProjectService) GetProjectWorkflowSettings(projectId int) (*projectWork
 		return nil, err
 	}
 
-	stages, err := s.StageRepo.ByWorkflow(project.Workflow, 0)
+	stages, err := s.StageRepo.ByWorkflowForProject(project.Workflow, projectId)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +50,48 @@ func (s *ProjectService) GetProjectWorkflowSettings(projectId int) (*projectWork
 		Workflow: workflow,
 		Stages:   stages,
 	}, nil
+}
+
+var ErrNoOpenStage = errors.New("target workflow has no open stage")
+var ErrInvalidStageMapping = errors.New("stage mapping targets a stage outside the new workflow")
+
+func (s *ProjectService) SwitchProjectWorkflow(projectId int, newWorkflowId int, mappings map[int]int) (models.BulkResult, error) {
+	project, err := s.ProjectRepo.FindOne(projectId)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+
+	if project.Workflow == newWorkflowId {
+		return models.BulkResult{}, nil
+	}
+
+	openStage, err := s.StageRepo.FirstByType(newWorkflowId, "open")
+	if err != nil {
+		return models.BulkResult{}, ErrNoOpenStage
+	}
+
+	newStages, err := s.StageRepo.ByWorkflow(newWorkflowId, 0)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	validTargets := map[int]struct{}{}
+	for _, st := range newStages {
+		validTargets[st.ID] = struct{}{}
+	}
+	for _, toId := range mappings {
+		if _, ok := validTargets[toId]; !ok {
+			return models.BulkResult{}, ErrInvalidStageMapping
+		}
+	}
+
+	moved, err := s.ProjectRepo.SwitchWorkflow(
+		projectId, project.Workflow, newWorkflowId, openStage.ID, mappings,
+	)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+
+	return models.BulkResult{Success: moved}, nil
 }
 
 func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.TaskFilters) (*projectDetails, error) {

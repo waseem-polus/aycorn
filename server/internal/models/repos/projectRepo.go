@@ -221,6 +221,78 @@ func (repo *ProjectRepo) DeleteMany(ids []int) (int, error) {
 	return int(affected), nil
 }
 
+// SwitchWorkflow moves this project's tasks off the old workflow's stages and
+// onto the new workflow, then repoints project.workflow — all in one tx.
+// Tasks whose stage is in `mappings` go to the mapped target; any remaining
+// task still on an old-workflow stage falls back to fallbackStageId (the new
+// workflow's open stage). Returns the number of tasks moved.
+func (repo *ProjectRepo) SwitchWorkflow(
+	projectId int,
+	oldWorkflowId int,
+	newWorkflowId int,
+	fallbackStageId int,
+	mappings map[int]int,
+) (int, error) {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	moved := 0
+
+	mapStmt, err := tx.Prepare(
+		"UPDATE task SET stage = ? WHERE stage = ?" +
+			" AND checklist IN (SELECT id FROM checklist WHERE project = ?);",
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer mapStmt.Close()
+
+	for fromId, toId := range mappings {
+		res, err := mapStmt.Exec(toId, fromId, projectId)
+		if err != nil {
+			return 0, err
+		}
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return 0, err
+		}
+		moved += int(affected)
+	}
+
+	// Catch-all: any task still pointing at an old-workflow stage (unmapped)
+	// goes to the new workflow's open stage.
+	res, err := tx.Exec(
+		"UPDATE task SET stage = ?"+
+			" WHERE checklist IN (SELECT id FROM checklist WHERE project = ?)"+
+			" AND stage IN (SELECT id FROM stage WHERE workflow = ?);",
+		fallbackStageId, projectId, oldWorkflowId,
+	)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	moved += int(affected)
+
+	if _, err := tx.Exec(
+		"UPDATE project SET workflow = ? WHERE id = ?;",
+		newWorkflowId, projectId,
+	); err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return moved, nil
+}
+
 func (repo *ProjectRepo) CountByWorkflow(workflowId int) (int, error) {
 	query := "SELECT COUNT(*) FROM project WHERE workflow = ?;"
 	var count int

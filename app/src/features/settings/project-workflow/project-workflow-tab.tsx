@@ -1,9 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
-import { RefreshCw, SquarePen } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProjectWorkflowSettingsQuery } from "@/features/settings/project-workflow/queries/useProjectWorkflowSettingsQuery";
 import { ProjectWorkflowCard } from "@/features/settings/project-workflow/project-workflow-card";
 import { ProjectWorkflowFooter } from "@/features/settings/project-workflow/project-workflow-footer";
+import { SwitchWorkflowButton } from "@/features/settings/project-workflow/switch-workflow-button";
 
 export function ProjectWorkflowTab({ projectId }: { projectId: number }) {
   const navigate = useNavigate();
@@ -39,10 +40,12 @@ export function ProjectWorkflowTab({ projectId }: { projectId: number }) {
             <SquarePen />
             Edit workflow
           </Button>
-          <Button>
-            <RefreshCw />
-            Switch workflow
-          </Button>
+          <SwitchWorkflowButton
+            projectId={projectId}
+            currentWorkflowId={data.Workflow.ID}
+            currentWorkflowName={data.Workflow.Name}
+            currentStages={data.Stages}
+          />
         </div>
       </div>
 

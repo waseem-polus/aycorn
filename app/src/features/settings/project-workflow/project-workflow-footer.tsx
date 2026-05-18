@@ -8,15 +8,15 @@ import { useProjectWorkflowMutation } from "@/features/settings/project-workflow
 export function ProjectWorkflowFooter({ project }: { project: Project }) {
   const navigate = useNavigate();
   const { createWorkflow } = useWorkflowMutation();
-  const { setWorkflow } = useProjectWorkflowMutation(project.ID);
+  const { switchWorkflow } = useProjectWorkflowMutation(project.ID);
 
-  const busy = createWorkflow.isPending || setWorkflow.isPending;
+  const busy = createWorkflow.isPending || switchWorkflow.isPending;
 
   const handleCreate = () => {
     createWorkflow.mutate(undefined, {
       onSuccess: (newId) => {
-        setWorkflow.mutate(
-          { ...project, Workflow: newId },
+        switchWorkflow.mutate(
+          { workflowId: newId, stageMappings: {} },
           {
             onSuccess: () =>
               navigate({

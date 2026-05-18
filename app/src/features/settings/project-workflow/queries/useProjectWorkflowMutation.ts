@@ -1,17 +1,26 @@
 import { queryClient } from "@/main";
 import { useMutation } from "@tanstack/react-query";
-import type { Project } from "@/types/types";
+import type { BulkResult } from "@/types/types";
+
+export type SwitchWorkflowInput = {
+  workflowId: number;
+  stageMappings: Record<string, number>;
+};
 
 export function useProjectWorkflowMutation(projectId: number) {
-  const setWorkflow = useMutation({
-    mutationFn: async (project: Project) => {
+  const switchWorkflow = useMutation<BulkResult, Error, SwitchWorkflowInput>({
+    mutationFn: async ({ workflowId, stageMappings }) => {
       const res = await fetch(
-        `http://localhost:8000/api/project/${project.ID}`,
+        `http://localhost:8000/api/project/${projectId}/settings/workflow`,
         {
           method: "PUT",
-          body: JSON.stringify(project),
+          body: JSON.stringify({ workflowId, stageMappings }),
         },
       );
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
 
       return res.json();
     },
@@ -24,8 +33,9 @@ export function useProjectWorkflowMutation(projectId: number) {
       });
       queryClient.invalidateQueries({ queryKey: ["pinnedProjects"] });
       queryClient.invalidateQueries({ queryKey: ["allProjects"] });
+      queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
     },
   });
 
-  return { setWorkflow };
+  return { switchWorkflow };
 }
