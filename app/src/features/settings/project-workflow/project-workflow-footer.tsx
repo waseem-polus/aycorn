@@ -15,18 +15,11 @@ export function ProjectWorkflowFooter({ project }: { project: Project }) {
   const handleCreate = () => {
     createWorkflow.mutate(undefined, {
       onSuccess: (newId) => {
-        switchWorkflow.mutate(
-          { workflowId: newId, stageMappings: {} },
-          {
-            onSuccess: () =>
-              navigate({
-                to: "/workflow/$workflowId",
-                params: { workflowId: String(newId) },
-                search: { new: true },
-              }),
-            onError: () => toast.error("Failed to update project workflow."),
-          },
-        );
+        navigate({
+          to: "/workflow/$workflowId",
+          params: { workflowId: String(newId) },
+          search: { new: true },
+        });
       },
       onError: () => toast.error("Failed to create workflow."),
     });
