@@ -242,10 +242,19 @@ func (app *app) postProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.RequestURI)
 
-	id, err := app.projectService.CreateProject()
+	var body struct {
+		WorkflowID int `json:"workflowId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.WorkflowID == 0 {
+		http.Error(w, "workflowId required", http.StatusBadRequest)
+		return
+	}
+
+	id, err := app.projectService.CreateProject(body.WorkflowID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println(err.Error())
+		return
 	}
 
 	res, err := json.Marshal(id)

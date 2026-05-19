@@ -67,19 +67,6 @@ func (repo *WorkflowRepo) FindOne(id int) (*models.Workflow, error) {
 	return &w, nil
 }
 
-func (repo *WorkflowRepo) FirstWorkflow() (*models.Workflow, error) {
-	query := "SELECT " + workflowColumns + " FROM workflow ORDER BY id LIMIT 1;"
-	row := repo.DB.QueryRow(query)
-
-	w := models.Workflow{}
-	err := scanWorkflow(row, &w)
-	if err != nil {
-		return nil, err
-	}
-
-	return &w, nil
-}
-
 func (repo *WorkflowRepo) Create(name, description string) (int64, error) {
 	query := "INSERT INTO workflow (name, description) VALUES (?, ?);"
 	res, err := repo.DB.Exec(query, name, description)

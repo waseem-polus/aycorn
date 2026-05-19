@@ -156,18 +156,8 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 	return success, nil
 }
 
-func (s *ProjectService) CreateProject() (int64, error) {
-	workflow, err := s.WorkflowRepo.FirstWorkflow()
-	if err != nil {
-		return 0, errors.New("no workflow available to assign to project: " + err.Error())
-	}
-
-	id, err := s.ProjectRepo.CreateProject(workflow.ID)
-	if err != nil {
-		return 0, err
-	}
-
-	return id, nil
+func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
+	return s.ProjectRepo.CreateProject(workflowId)
 }
 
 func (s *ProjectService) BulkSetPinned(ids []int, pinned bool) (models.BulkResult, error) {

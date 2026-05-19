@@ -4,19 +4,18 @@ import {
   PageHeader,
   PageTitle,
 } from "@/components/page/Page";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Plus, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
-import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
 import { ProjectsDataTable } from "@/components/projects/projects-data-table";
+import { NewProjectButton } from "@/features/projects/new-project-button";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -24,8 +23,6 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
   const { data: projects, isFetching } = useAllProjectsQuery();
-  const { createProject } = useAllProjectsMutation();
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const filteredProjects = useMemo(() => {
@@ -62,21 +59,7 @@ function RouteComponent() {
                 {filteredProjects.length ?? 0} projects
               </InputGroupAddon>
             </InputGroup>
-            <Button
-              className="hover:cursor-pointer"
-              onClick={() =>
-                createProject.mutate(undefined, {
-                  onSuccess: (res) =>
-                    navigate({
-                      to: "/project/$projectId",
-                      params: { projectId: res },
-                    }),
-                })
-              }
-            >
-              <Plus />
-              New Project
-            </Button>
+            <NewProjectButton />
           </div>
 
           <ProjectsDataTable data={filteredProjects} isFetching={isFetching} />

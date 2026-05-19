@@ -9,15 +9,19 @@ export function useAllProjectsMutation() {
   };
 
   const createProject = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (body: { workflowId: number }) => {
       const res = await fetch(`http://localhost:8000/api/project`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
-      return await res.json();
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to create project");
+      }
+      return (await res.json()) as number;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["allProjects"] });
-    },
+    onSuccess: invalidate,
   });
 
   const bulkSetPinned = useMutation({
