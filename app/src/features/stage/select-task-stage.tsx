@@ -47,8 +47,6 @@ export function SelectTaskStage({
       ? String(state.Stage)
       : "";
 
-  console.log(value);
-
   return (
     <Select value={currentValue} onValueChange={handleValueChange}>
       <SelectTrigger id="stage" className="w-full">

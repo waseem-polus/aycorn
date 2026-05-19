@@ -21,6 +21,8 @@ var ErrStageHasTasks = errors.New("stage has tasks — provide moveTasksTo")
 
 var ErrInvalidMoveDestination = errors.New("move destination must be an existing stage that is not being deleted")
 
+var ErrInvalidStageOrder = errors.New("ordered stage ids must be exactly the stages in this workflow")
+
 var creatableStageTypes = map[string]struct{}{
 	"todo":    {},
 	"doing":   {},
@@ -61,10 +63,23 @@ func (s *StageService) CreateStage(workflowId int, stageType string) (*models.St
 	return s.StageRepo.FindOne(int(id))
 }
 
+// UpdateStage updates the editable fields of a stage. `type` is deliberately
+// NOT mutable here: stage-type transitions are owned by BulkSetType, which is
+// the single place that enforces the "exactly one open stage per workflow"
+// invariant. Letting a raw PUT set an arbitrary/`open` type would either leak
+// a SQLite CHECK/unique-index error to the client or violate that invariant,
+// so we pin the type to the persisted value.
 func (s *StageService) UpdateStage(stage *models.Stage) (bool, error) {
 	if !models.IsValidStageColor(stage.Color) {
 		return false, ErrInvalidStageColor
 	}
+
+	current, err := s.StageRepo.FindOne(stage.ID)
+	if err != nil {
+		return false, err // sql.ErrNoRows -> 404 at the handler
+	}
+	stage.Type = current.Type
+
 	return s.StageRepo.Update(stage)
 }
 
@@ -115,7 +130,7 @@ func (s *StageService) validateMoveDestinations(mappings map[int]int, deleting m
 func (s *StageService) DeleteStage(id int, moveTasksTo *int) (bool, error) {
 	stage, err := s.StageRepo.FindOne(id)
 	if err != nil {
-		return false, err
+		return false, err // sql.ErrNoRows -> 404 at the handler
 	}
 
 	if stage.Type == "open" {
@@ -139,45 +154,71 @@ func (s *StageService) DeleteStage(id int, moveTasksTo *int) (bool, error) {
 }
 
 func (s *StageService) ReorderStages(workflowId int, orderedStageIds []int) error {
+	orderedStageIds = dedupeInts(orderedStageIds)
+
+	current, err := s.StageRepo.ByWorkflow(workflowId, 0)
+	if err != nil {
+		return err
+	}
+
+	// The reorder must be a full permutation of the workflow's stages.
+	// A partial/foreign list would leave position gaps or collisions
+	// (Reorder only rewrites the positions it is given).
+	if len(orderedStageIds) != len(current) {
+		return ErrInvalidStageOrder
+	}
+	currentIds := make(map[int]struct{}, len(current))
+	for _, st := range current {
+		currentIds[st.ID] = struct{}{}
+	}
+	for _, id := range orderedStageIds {
+		if _, ok := currentIds[id]; !ok {
+			return ErrInvalidStageOrder
+		}
+	}
+
 	return s.StageRepo.Reorder(workflowId, orderedStageIds)
 }
 
 func (s *StageService) BulkSetType(ids []int, stageType string) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	if _, ok := creatableStageTypes[stageType]; !ok {
-		return models.BulkResult{Failed: len(ids)}, ErrInvalidStageType
+		return models.BulkResult{}, ErrInvalidStageType
 	}
 
 	stages, err := s.StageRepo.FindManyByIds(ids)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 
-	toUpdate, skipped := partitionByOpen(stages)
+	toUpdate, skippedOpen := partitionByOpen(stages)
+	notFound := len(ids) - len(stages)
 
 	affected, err := s.StageRepo.UpdateTypeMany(toUpdate, stageType)
 	if err != nil {
-		return models.BulkResult{Failed: len(toUpdate)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
-		Skipped: skipped,
-		Failed:  len(ids) - affected - skipped,
+		Skipped: skippedOpen + notFound,
+		Failed:  len(toUpdate) - affected,
 	}, nil
 }
 
 func (s *StageService) BulkSetColor(ids []int, color string) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	if !models.IsValidStageColor(color) {
-		return models.BulkResult{Failed: len(ids)}, ErrInvalidStageColor
+		return models.BulkResult{}, ErrInvalidStageColor
 	}
 	affected, err := s.StageRepo.UpdateColorMany(ids, color)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
@@ -186,12 +227,13 @@ func (s *StageService) BulkSetColor(ids []int, color string) (models.BulkResult,
 }
 
 func (s *StageService) BulkSetIcon(ids []int, icon string) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	affected, err := s.StageRepo.UpdateIconMany(ids, icon)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
@@ -200,16 +242,18 @@ func (s *StageService) BulkSetIcon(ids []int, icon string) (models.BulkResult, e
 }
 
 func (s *StageService) BulkDelete(ids []int, taskMappings map[int]int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 
 	stages, err := s.StageRepo.FindManyByIds(ids)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
+	notFound := len(ids) - len(stages)
 
-	toDelete, skipped := partitionByOpen(stages)
+	toDelete, skippedOpen := partitionByOpen(stages)
 	deleting := make(map[int]struct{}, len(toDelete))
 	for _, id := range toDelete {
 		deleting[id] = struct{}{}
@@ -234,23 +278,24 @@ func (s *StageService) BulkDelete(ids []int, taskMappings map[int]int) (models.B
 
 	affected, err := s.StageRepo.DeleteManyWithTaskMove(toDelete, filteredMappings)
 	if err != nil {
-		return models.BulkResult{Failed: len(toDelete)}, err
+		return models.BulkResult{}, err
 	}
 
 	return models.BulkResult{
 		Success: affected,
-		Skipped: skipped,
-		Failed:  len(ids) - affected - skipped,
+		Skipped: skippedOpen + notFound,
+		Failed:  len(toDelete) - affected,
 	}, nil
 }
 
 func (s *StageService) BulkMoveStages(workflowId int, ids []int, beforeId *int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	moved, err := s.StageRepo.BulkMove(workflowId, ids, beforeId)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: moved,

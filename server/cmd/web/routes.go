@@ -6,7 +6,6 @@ func (app *app) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("OPTIONS /", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, POST, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.WriteHeader(http.StatusNoContent)
@@ -56,5 +55,5 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/stage/{stageId}", app.putStage)
 	mux.HandleFunc("DELETE /api/stage/{stageId}", app.deleteStage)
 
-	return mux
+	return withCommon(mux)
 }

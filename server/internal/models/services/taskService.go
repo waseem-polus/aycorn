@@ -56,6 +56,7 @@ var bulkTaskUpdatableColumns = map[string]string{
 }
 
 func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
@@ -72,21 +73,22 @@ func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.Bulk
 
 	affected, err := s.TaskRepo.UpdateManyFields(ids, filtered)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
-		Skipped: len(ids) - affected,
+		Skipped: len(ids) - affected, // non-existent ids: retrying won't help
 	}, nil
 }
 
 func (s *TaskService) BulkDelete(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	affected, err := s.TaskRepo.DeleteMany(ids)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,

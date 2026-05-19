@@ -1,7 +1,9 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
@@ -125,6 +127,7 @@ func (s *WorkflowService) DeleteWorkflow(id int) (bool, error) {
 }
 
 func (s *WorkflowService) BulkDeleteWorkflows(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
@@ -134,10 +137,10 @@ func (s *WorkflowService) BulkDeleteWorkflows(ids []int) (models.BulkResult, err
 	for _, id := range ids {
 		count, err := s.ProjectRepo.CountByWorkflow(id)
 		if err != nil {
-			return models.BulkResult{Failed: len(ids) - len(deletable) - skipped}, err
+			return models.BulkResult{}, err
 		}
 		if count > 0 {
-			skipped++
+			skipped++ // in use by a project: retrying won't help
 			continue
 		}
 		deletable = append(deletable, id)
@@ -149,11 +152,12 @@ func (s *WorkflowService) BulkDeleteWorkflows(ids []int) (models.BulkResult, err
 
 	affected, err := s.WorkflowRepo.DeleteMany(deletable)
 	if err != nil {
-		return models.BulkResult{Skipped: skipped, Failed: len(deletable)}, err
+		return models.BulkResult{}, err
 	}
 
 	return models.BulkResult{
 		Success: affected,
+		// (len(deletable) - affected) are ids that didn't exist.
 		Skipped: skipped + (len(deletable) - affected),
 	}, nil
 }
@@ -164,49 +168,42 @@ type BulkDuplicateResult struct {
 }
 
 func (s *WorkflowService) BulkDuplicateWorkflows(ids []int) (BulkDuplicateResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return BulkDuplicateResult{NewIDs: []int{}}, nil
 	}
 
 	newIDs := []int{}
+	skipped := 0
 	failed := 0
 
 	for _, id := range ids {
 		source, err := s.WorkflowRepo.FindOne(id)
+		if errors.Is(err, sql.ErrNoRows) {
+			// Source no longer exists — retrying won't help.
+			skipped++
+			continue
+		}
 		if err != nil {
+			log.Printf("BulkDuplicateWorkflows: load workflow %d: %v", id, err)
 			failed++
 			continue
 		}
 
 		stages, err := s.StageRepo.ByWorkflow(id, 0)
 		if err != nil {
+			log.Printf("BulkDuplicateWorkflows: load stages for workflow %d: %v", id, err)
 			failed++
 			continue
 		}
 
-		newID, err := s.WorkflowRepo.Create(source.Name+" (copy)", source.Description)
+		// One transaction per duplicate: workflow + all stages commit
+		// together or not at all (no orphaned partial workflows).
+		newID, err := s.WorkflowRepo.CreateWithStages(
+			source.Name+" (copy)", source.Description, stages,
+		)
 		if err != nil {
-			failed++
-			continue
-		}
-
-		stageErr := false
-		for _, st := range stages {
-			_, err := s.StageRepo.Create(&models.Stage{
-				Workflow:    int(newID),
-				Name:        st.Name,
-				Description: st.Description,
-				Color:       st.Color,
-				Icon:        st.Icon,
-				Position:    st.Position,
-				Type:        st.Type,
-			})
-			if err != nil {
-				stageErr = true
-				break
-			}
-		}
-		if stageErr {
+			log.Printf("BulkDuplicateWorkflows: duplicate workflow %d: %v", id, err)
 			failed++
 			continue
 		}
@@ -217,6 +214,7 @@ func (s *WorkflowService) BulkDuplicateWorkflows(ids []int) (BulkDuplicateResult
 	return BulkDuplicateResult{
 		BulkResult: models.BulkResult{
 			Success: len(newIDs),
+			Skipped: skipped,
 			Failed:  failed,
 		},
 		NewIDs: newIDs,

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
@@ -53,7 +54,7 @@ func (s *ProjectService) GetProjectWorkflowSettings(projectId int) (*projectWork
 }
 
 var ErrNoOpenStage = errors.New("target workflow has no open stage")
-var ErrInvalidStageMapping = errors.New("stage mapping targets a stage outside the new workflow")
+var ErrInvalidStageMapping = errors.New("stage mapping must map a current-workflow stage to a stage in the new workflow")
 
 func (s *ProjectService) SwitchProjectWorkflow(projectId int, newWorkflowId int, mappings map[int]int) (models.BulkResult, error) {
 	project, err := s.ProjectRepo.FindOne(projectId)
@@ -66,8 +67,11 @@ func (s *ProjectService) SwitchProjectWorkflow(projectId int, newWorkflowId int,
 	}
 
 	openStage, err := s.StageRepo.FirstByType(newWorkflowId, "open")
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return models.BulkResult{}, ErrNoOpenStage
+	}
+	if err != nil {
+		return models.BulkResult{}, err // unexpected DB failure -> 500
 	}
 
 	newStages, err := s.StageRepo.ByWorkflow(newWorkflowId, 0)
@@ -78,7 +82,23 @@ func (s *ProjectService) SwitchProjectWorkflow(projectId int, newWorkflowId int,
 	for _, st := range newStages {
 		validTargets[st.ID] = struct{}{}
 	}
-	for _, toId := range mappings {
+
+	oldStages, err := s.StageRepo.ByWorkflow(project.Workflow, 0)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	validSources := map[int]struct{}{}
+	for _, st := range oldStages {
+		validSources[st.ID] = struct{}{}
+	}
+
+	for fromId, toId := range mappings {
+		if fromId == toId {
+			return models.BulkResult{}, ErrInvalidStageMapping
+		}
+		if _, ok := validSources[fromId]; !ok {
+			return models.BulkResult{}, ErrInvalidStageMapping
+		}
 		if _, ok := validTargets[toId]; !ok {
 			return models.BulkResult{}, ErrInvalidStageMapping
 		}
@@ -161,26 +181,28 @@ func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
 }
 
 func (s *ProjectService) BulkSetPinned(ids []int, pinned bool) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	affected, err := s.ProjectRepo.UpdateManyPinned(ids, pinned)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
-		Skipped: len(ids) - affected,
+		Skipped: len(ids) - affected, // non-existent ids: retrying won't help
 	}, nil
 }
 
 func (s *ProjectService) BulkDeleteProjects(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
 	if len(ids) == 0 {
 		return models.BulkResult{}, nil
 	}
 	affected, err := s.ProjectRepo.DeleteMany(ids)
 	if err != nil {
-		return models.BulkResult{Failed: len(ids)}, err
+		return models.BulkResult{}, err
 	}
 	return models.BulkResult{
 		Success: affected,
