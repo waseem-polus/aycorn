@@ -10,22 +10,17 @@ import {
   ItemSeparator,
 } from "@/components/ui/item";
 import { ListViewTaskName } from "./list-view/list-view-task-name";
-import {
-  Calendar as CalendarIcon,
-  ChevronRightIcon,
-  LandPlot,
-  User,
-} from "lucide-react";
+import { ChevronRightIcon, LandPlot, User } from "lucide-react";
 import React, { useContext } from "react";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import { StageIcon } from "@/features/stage/stage-visual";
 import TaskTypeBadge from "@/features/task/properties/task-type-badge";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
+import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useDateFormat } from "@/hooks/useDateFormatter";
 import { ViewHeader } from "../view-header";
-import { useSharedSelection } from "@/hooks/useSelection";
+import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
 export function ListView({
@@ -33,8 +28,11 @@ export function ListView({
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { Tasks } = useContext(ProjectContext);
-  const { toFormatted } = useDateFormat();
+  const { Tasks, Stages } = useContext(ProjectContext);
+  const stagesById = React.useMemo(
+    () => new Map(Stages.map((s) => [s.ID, s])),
+    [Stages],
+  );
   const { getItemProps } = useSharedSelection();
 
   return (
@@ -42,7 +40,7 @@ export function ListView({
       <ViewHeader setTaskDrawerOpen={setTaskDrawerOpen} />
 
       <div className="h-full min-h-0 overflow-auto">
-        <ItemGroup className="h-fit box-border rounded-md overflow-visible">
+        <ItemGroup className="h-fit box-border rounded-md overflow-visible p-1">
           {Tasks.length > 0 ? (
             Tasks.map((task, i) => {
               const itemProps = getItemProps(task.ID.toString());
@@ -55,14 +53,10 @@ export function ListView({
                       <Item asChild>
                         <a
                           {...itemProps}
-                          data-task-card=""
-                          className={cn(
-                            "data-selected:bg-accent/20 data-selected:ring-2 data-selected:ring-primary data-selected:ring-inset",
-                            itemClassName,
-                          )}
+                          className={cn(itemClassName, selectedItemClasses())}
                         >
                           <ItemMedia className="flex flex-col">
-                            <TaskStatusIcon variant={task.Status} />
+                            <StageIcon stage={stagesById.get(task.Stage)} />
                             <TaskPriorityIcon variant={task.Priority} />
                           </ItemMedia>
                           <ItemContent>
@@ -87,26 +81,10 @@ export function ListView({
                                     ? "Not Assigned"
                                     : task.Assignee}
                                 </Badge>
-                                <Badge
-                                  variant={
-                                    task.TimePlannedStart !== null
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  className={
-                                    task.TimePlannedStart !== null
-                                      ? ""
-                                      : "bg-background text-muted-foreground"
-                                  }
-                                >
-                                  <CalendarIcon className="size-2" />
-                                  {task.TimePlannedStart !== null
-                                    ? toFormatted(task.TimePlannedStart)
-                                    : "Not Scheduled"}
-
-                                  {task.TimePlannedEnd !== null &&
-                                    " → " + toFormatted(task.TimePlannedEnd)}
-                                </Badge>
+                                <TaskPlannedDates
+                                  start={task.TimePlannedStart}
+                                  end={task.TimePlannedEnd}
+                                />
                               </span>
                             </ItemDescription>
                           </ItemContent>

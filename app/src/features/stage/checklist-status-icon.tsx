@@ -1,4 +1,4 @@
-import type { Task } from "@/types/types";
+import type { StageType } from "@/types/types";
 import {
   Circle,
   CircleCheck,
@@ -7,36 +7,29 @@ import {
   CircleMinus,
 } from "lucide-react";
 
-export default function TaskStatusIcon({
+export default function ChecklistStatusIcon({
   variant,
 }: {
-  variant: Task["Status"];
+  variant: StageType;
 }) {
-  let icon = <CircleDashed className="size-4 dark:stroke-neutral-500" />;
   switch (variant) {
-    case "Open":
-      break;
-    case "Todo":
-      icon = (
+    case "open":
+      return <CircleDashed className="size-4 dark:stroke-neutral-500" />;
+    case "todo":
+      return (
         <Circle className="size-4 stroke-orange-400 dark:stroke-orange-700" />
       );
-      break;
-    case "Doing":
-      icon = (
+    case "doing":
+      return (
         <CircleDot className="size-4 stroke-green-500 dark:stroke-green-600" />
       );
-      break;
-    case "Blocked":
-      icon = (
+    case "blocked":
+      return (
         <CircleMinus className="size-4 stroke-red-700 dark:stroke-red-600" />
       );
-      break;
-    case "Done":
-      icon = (
+    case "done":
+      return (
         <CircleCheck className="size-4 stroke-purple-600 dark:stroke-purple-500" />
       );
-      break;
   }
-
-  return icon;
 }

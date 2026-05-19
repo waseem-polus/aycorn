@@ -10,12 +10,14 @@ import {
 
 type ProjectDropdownMenuProps = {
   pinned: boolean;
+  onRenameClick: () => void;
   onPinClick: () => void;
   onDeleteClick: () => void;
 };
 
 export function ProjectDropdownMenu({
   pinned,
+  onRenameClick,
   onPinClick,
   onDeleteClick,
 }: ProjectDropdownMenuProps) {
@@ -31,6 +33,7 @@ export function ProjectDropdownMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuItem onSelect={onRenameClick}>Rename</DropdownMenuItem>
         <DropdownMenuItem onSelect={onPinClick}>
           {pinned ? "Unpin" : "Pin"}
         </DropdownMenuItem>

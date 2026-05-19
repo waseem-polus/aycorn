@@ -11,13 +11,18 @@ import {
 import { useProjectMutation } from "@/queries/useProjectMutation";
 import type { Project } from "@/types/types";
 import { ProjectsListDeleteDialog } from "@/components/projects/projects-list-delete-dialog";
+import { useNavigate } from "@tanstack/react-router";
 
 type ProjectRowActionsProps = {
   project: Project;
   onRename: () => void;
 };
 
-export function ProjectRowActions({ project, onRename }: ProjectRowActionsProps) {
+export function ProjectRowActions({
+  project,
+  onRename,
+}: ProjectRowActionsProps) {
+  const navigate = useNavigate();
   const { updateProject } = useProjectMutation(project.ID);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -37,6 +42,16 @@ export function ProjectRowActions({ project, onRename }: ProjectRowActionsProps)
             }
           >
             {project.Pinned ? "Unpin" : "Pin"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              navigate({
+                to: "/project/settings/$projectId",
+                params: { projectId: project.ID.toString() },
+              })
+            }
+          >
+            Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

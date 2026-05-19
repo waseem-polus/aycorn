@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type {
-  Checklist,
-  Project,
+  ChecklistDetails,
   ChecklistTask,
+  Project,
+  Stage,
   TaskFilter,
+  Workflow,
 } from "@/types/types";
 import {
   defaultProjectContextValue,
@@ -20,7 +22,11 @@ export function ProjectProvider({
   children: React.ReactNode;
 }) {
   const [project, setProject] = useState<Project>(defaultState);
-  const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [workflow, setWorkflow] = useState<Workflow>(
+    defaultProjectContextValue.Workflow,
+  );
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [checklists, setChecklists] = useState<ChecklistDetails[]>([]);
   const [tasks, setTasks] = useState<ChecklistTask[]>([]);
   const [filters, setFilters] = useState<TaskFilter>(
     defaultProjectContextValue.Filter,
@@ -33,6 +39,12 @@ export function ProjectProvider({
       value={{
         Project: project,
         SetProject: setProject,
+
+        Workflow: workflow,
+        SetWorkflow: setWorkflow,
+
+        Stages: stages,
+        SetStages: setStages,
 
         Tasks: tasks,
         SetTasks: setTasks,

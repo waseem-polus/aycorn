@@ -1,4 +1,4 @@
-import type { TaskFilter } from "@/types/types";
+import type { ProjectDetails, TaskFilter } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 
 export function useProjectDetailsQuery(
@@ -6,7 +6,9 @@ export function useProjectDetailsQuery(
   filter: TaskFilter,
   enabled: boolean,
 ) {
-  const { isPending, error, data, isFetching, refetch } = useQuery({
+  const { isPending, error, data, isFetching, refetch } = useQuery<
+    ProjectDetails
+  >({
     queryKey: ["projectDetails", projectId],
     enabled: enabled,
     queryFn: async () => {
@@ -19,8 +21,8 @@ export function useProjectDetailsQuery(
       filter.Type.forEach((type) =>
         url.searchParams.append("type", type.toString()),
       );
-      filter.Status.forEach((status) =>
-        url.searchParams.append("status", status.toString()),
+      filter.Stage.forEach((stage) =>
+        url.searchParams.append("stage", stage.toString()),
       );
       filter.Priority.forEach((priority) =>
         url.searchParams.append("priority", priority.toString()),

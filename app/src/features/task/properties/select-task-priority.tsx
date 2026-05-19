@@ -9,6 +9,7 @@ import {
 import TaskPriorityIcon from "./icons/TaskPriorityIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import { GaugeCircle } from "lucide-react";
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -37,12 +38,19 @@ export function SelectTaskPriority({
 
   return (
     <Select
-      value={isControlled ? value ?? "" : undefined}
+      value={isControlled ? (value ?? "") : undefined}
       defaultValue={isControlled ? undefined : state.Priority}
       onValueChange={handleValueChange}
     >
       <SelectTrigger id="priority" className="w-full">
-        <SelectValue placeholder={placeholder} />
+        <SelectValue
+          placeholder={
+            <>
+              <GaugeCircle />
+              {placeholder}
+            </>
+          }
+        />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="Low">

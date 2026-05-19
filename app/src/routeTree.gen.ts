@@ -14,8 +14,9 @@ import { Route as UsageRouteImport } from './routes/usage'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkflowWorkflowIdRouteImport } from './routes/workflow.$workflowId'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
-import { Route as ProjectChecklistsProjectIdRouteImport } from './routes/project/checklists.$projectId'
+import { Route as ProjectSettingsProjectIdRouteImport } from './routes/project.settings.$projectId'
 
 const WorkflowsRoute = WorkflowsRouteImport.update({
   id: '/workflows',
@@ -42,15 +43,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkflowWorkflowIdRoute = WorkflowWorkflowIdRouteImport.update({
+  id: '/workflow/$workflowId',
+  path: '/workflow/$workflowId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectProjectIdRoute = ProjectProjectIdRouteImport.update({
   id: '/project/$projectId',
   path: '/project/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectChecklistsProjectIdRoute =
-  ProjectChecklistsProjectIdRouteImport.update({
-    id: '/project/checklists/$projectId',
-    path: '/project/checklists/$projectId',
+const ProjectSettingsProjectIdRoute =
+  ProjectSettingsProjectIdRouteImport.update({
+    id: '/project/settings/$projectId',
+    path: '/project/settings/$projectId',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -61,7 +67,8 @@ export interface FileRoutesByFullPath {
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
+  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
+  '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,7 +77,8 @@ export interface FileRoutesByTo {
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
+  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
+  '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,7 +88,8 @@ export interface FileRoutesById {
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
+  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
+  '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,7 +100,8 @@ export interface FileRouteTypes {
     | '/usage'
     | '/workflows'
     | '/project/$projectId'
-    | '/project/checklists/$projectId'
+    | '/workflow/$workflowId'
+    | '/project/settings/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,7 +110,8 @@ export interface FileRouteTypes {
     | '/usage'
     | '/workflows'
     | '/project/$projectId'
-    | '/project/checklists/$projectId'
+    | '/workflow/$workflowId'
+    | '/project/settings/$projectId'
   id:
     | '__root__'
     | '/'
@@ -109,7 +120,8 @@ export interface FileRouteTypes {
     | '/usage'
     | '/workflows'
     | '/project/$projectId'
-    | '/project/checklists/$projectId'
+    | '/workflow/$workflowId'
+    | '/project/settings/$projectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,7 +131,8 @@ export interface RootRouteChildren {
   UsageRoute: typeof UsageRoute
   WorkflowsRoute: typeof WorkflowsRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
-  ProjectChecklistsProjectIdRoute: typeof ProjectChecklistsProjectIdRoute
+  WorkflowWorkflowIdRoute: typeof WorkflowWorkflowIdRoute
+  ProjectSettingsProjectIdRoute: typeof ProjectSettingsProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workflow/$workflowId': {
+      id: '/workflow/$workflowId'
+      path: '/workflow/$workflowId'
+      fullPath: '/workflow/$workflowId'
+      preLoaderRoute: typeof WorkflowWorkflowIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project/$projectId': {
       id: '/project/$projectId'
       path: '/project/$projectId'
@@ -166,11 +186,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/project/checklists/$projectId': {
-      id: '/project/checklists/$projectId'
-      path: '/project/checklists/$projectId'
-      fullPath: '/project/checklists/$projectId'
-      preLoaderRoute: typeof ProjectChecklistsProjectIdRouteImport
+    '/project/settings/$projectId': {
+      id: '/project/settings/$projectId'
+      path: '/project/settings/$projectId'
+      fullPath: '/project/settings/$projectId'
+      preLoaderRoute: typeof ProjectSettingsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -183,7 +203,8 @@ const rootRouteChildren: RootRouteChildren = {
   UsageRoute: UsageRoute,
   WorkflowsRoute: WorkflowsRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
-  ProjectChecklistsProjectIdRoute: ProjectChecklistsProjectIdRoute,
+  WorkflowWorkflowIdRoute: WorkflowWorkflowIdRoute,
+  ProjectSettingsProjectIdRoute: ProjectSettingsProjectIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

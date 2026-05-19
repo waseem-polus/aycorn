@@ -19,6 +19,12 @@ import {
 } from "@viselect/react";
 import { cn } from "@/lib/utils";
 
+export const selectedItemClasses = ({ ring = true }: { ring?: boolean } = {}) =>
+  cn(
+    "data-selected:bg-accent",
+    ring && "data-selected:ring-2 data-selected:ring-primary",
+  );
+
 type UseSelectionParams = {
   clearOnDrop?: boolean;
 };
@@ -132,7 +138,7 @@ export const useSelection = ({
       if (hasModifier(e)) return;
       if (
         e.target.closest(
-          ".selectable, [data-keep-selection], [data-radix-popper-content-wrapper], [role='dialog'], [role='alertdialog']",
+          ".selectable, [data-keep-selection], [data-radix-popper-content-wrapper], [role='dialog'], [role='alertdialog'], [data-slot='dialog-overlay'], [data-slot='alert-dialog-overlay']",
         )
       )
         return;

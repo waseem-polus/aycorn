@@ -4,6 +4,7 @@ import {
   PageHeader,
   PageTitle,
 } from "@/components/page/Page";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyPanel } from "@/features/settings/empty-panel";
 import { PreferencesPanel } from "@/features/settings/preferences-panel";
@@ -29,6 +30,8 @@ function RouteComponent() {
             <TabsTrigger value="ai">Aycorn AI</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
+
+          <Separator />
 
           <TabsContent value="preferences" className="pt-4">
             <PreferencesPanel />

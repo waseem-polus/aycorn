@@ -6,6 +6,8 @@ type Project struct {
 	ID           int
 	Name         string
 	Pinned       bool
+	Workflow     int
+	WorkflowName string
 	TimeCreated  *time.Time
 	TimeModified *time.Time
 }
@@ -29,6 +31,7 @@ type ChecklistDetails struct {
 type Task struct {
 	ID               int
 	Checklist        int
+	Stage            int
 	Name             string
 	Body             string
 	TimeCreated      *time.Time
@@ -39,10 +42,37 @@ type Task struct {
 	Assignee         string
 	Priority         string
 	Type             string
-	Status           string
 }
 
 type ChecklistTask struct {
 	Task
 	ChecklistName string
+}
+
+type Workflow struct {
+	ID           int
+	Name         string
+	Description  string
+	TimeCreated  *time.Time
+	TimeModified *time.Time
+}
+
+type Stage struct {
+	ID           int
+	Workflow     int
+	Name         string
+	Description  string
+	Color        string
+	Icon         string
+	Position     int
+	Type         string
+	TaskCount    int
+	TimeCreated  *time.Time
+	TimeModified *time.Time
+}
+
+type BulkResult struct {
+	Success int `json:"success"`
+	Failed  int `json:"failed"`
+	Skipped int `json:"skipped"`
 }

@@ -20,7 +20,7 @@ export const defaultTaskContextValue: TaskContextType = {
     Assignee: "",
     Priority: "Low",
     Type: "Dev",
-    Status: "Open",
+    Stage: 0,
   },
   setState: () => {},
 };

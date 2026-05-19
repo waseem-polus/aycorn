@@ -2,16 +2,52 @@ import type { Value } from "platejs";
 
 export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
 export const TYPES = ["Test", "Dev", "Reminder"] as const;
-export const STATUSES = ["Open", "Todo", "Doing", "Blocked", "Done"] as const;
+export const STAGE_TYPES = ["open", "todo", "doing", "done", "blocked"] as const;
 
-export type Status = (typeof STATUSES)[number];
 export type Type = (typeof TYPES)[number];
 export type Priority = (typeof PRIORITIES)[number];
+export type StageType = (typeof STAGE_TYPES)[number];
 
 export type Project = {
   ID: number;
   Name: string;
   Pinned: boolean;
+  Workflow: number;
+  WorkflowName: string;
+  TimeCreated: string;
+  TimeModified: string;
+};
+
+export type Workflow = {
+  ID: number;
+  Name: string;
+  Description: string;
+  TimeCreated: string;
+  TimeModified: string;
+};
+
+export type WorkflowSummary = Workflow & {
+  ProjectCount: number;
+  StageCount: number;
+  Stages: Stage[];
+};
+
+export type ProjectWorkflowSettings = {
+  Project: Project;
+  Workflow: Workflow;
+  Stages: Stage[];
+};
+
+export type Stage = {
+  ID: number;
+  Workflow: number;
+  Name: string;
+  Description: string;
+  Color: string;
+  Icon: string;
+  Position: number;
+  Type: StageType;
+  TaskCount: number;
   TimeCreated: string;
   TimeModified: string;
 };
@@ -27,7 +63,7 @@ export type Checklist = {
 export type ChecklistDetails = Checklist & {
   DoneCount: number;
   TotalCount: number;
-  Status: Status;
+  Status: StageType;
 };
 
 export type Task = {
@@ -35,6 +71,7 @@ export type Task = {
   Name: string;
   Body: Value;
   Checklist: number;
+  Stage: number;
   TimeCreated: string;
   TimeModified: string;
   TimePlannedStart: string | null;
@@ -43,7 +80,6 @@ export type Task = {
   Assignee: string;
   Priority: Priority;
   Type: Type;
-  Status: Status;
 };
 
 export type ChecklistTask = Task & {
@@ -52,6 +88,8 @@ export type ChecklistTask = Task & {
 
 export type ProjectDetails = {
   Project: Project;
+  Workflow: Workflow;
+  Stages: Stage[];
   Checklists: ChecklistDetails[];
   Tasks: ChecklistTask[];
 };
@@ -62,5 +100,15 @@ export type TaskFilter = {
   Assignee: Task["Assignee"][];
   Priority: Task["Priority"][];
   Type: Task["Type"][];
-  Status: Task["Status"][];
+  Stage: Stage["ID"][];
+};
+
+export type BulkResult = {
+  success: number;
+  failed: number;
+  skipped: number;
+};
+
+export type BulkDuplicateResult = BulkResult & {
+  newIds: number[];
 };

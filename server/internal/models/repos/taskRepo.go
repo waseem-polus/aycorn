@@ -15,7 +15,7 @@ type TaskFilters struct {
 	SearchQuery    string
 	ChecklistQuery []string
 	TypeQuery      []string
-	StatusQuery    []string
+	StageQuery     []string
 	PriorityQuery  []string
 	AssigneeQuery  []string
 }
@@ -35,7 +35,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		    t.assignee,
 		    t.priority,
 			t.type,
-			t.status
+			t.stage
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
 		WHERE c.project = ?
@@ -61,9 +61,9 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		}
 	}
 
-	if len(taskFilters.StatusQuery) > 0 {
-		query += " AND t.status IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StatusQuery)), ",") + ")"
-		for _, v := range taskFilters.StatusQuery {
+	if len(taskFilters.StageQuery) > 0 {
+		query += " AND t.stage IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StageQuery)), ",") + ")"
+		for _, v := range taskFilters.StageQuery {
 			args = append(args, v)
 		}
 	}
@@ -108,7 +108,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			&ct.Assignee,
 			&ct.Priority,
 			&ct.Type,
-			&ct.Status,
+			&ct.Stage,
 		)
 		if err != nil {
 			return nil, err
@@ -129,7 +129,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
 	query := `
-		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, status)
+		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, stage)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id;
 	`
@@ -143,7 +143,7 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, e
 		newTask.Assignee,
 		newTask.Priority,
 		newTask.Type,
-		newTask.Status,
+		newTask.Stage,
 	)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 			assignee = ?,
 			priority = ?,
 			type = ?,
-			status = ?
+			stage = ?
 		WHERE id = ?;
 	`
 
@@ -189,7 +189,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Assignee,
 		task.Priority,
 		task.Type,
-		task.Status,
+		task.Stage,
 		task.ID,
 	)
 	if err != nil {
@@ -218,7 +218,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 			t.assignee,
 			t.priority,
 			t.type,
-			t.status,
+			t.stage,
 			t.checklist
 		FROM task t
 		WHERE t.id = ?;
@@ -247,7 +247,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		&task.Assignee,
 		&task.Priority,
 		&task.Type,
-		&task.Status,
+		&task.Stage,
 		&task.Checklist,
 	)
 	if err != nil {
@@ -273,6 +273,52 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 	}
 
 	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) UpdateManyFields(ids []int, fields map[string]any) (int, error) {
+	if len(ids) == 0 || len(fields) == 0 {
+		return 0, nil
+	}
+
+	setParts := []string{}
+	setArgs := []any{}
+	for col, val := range fields {
+		setParts = append(setParts, col+" = ?")
+		setArgs = append(setArgs, val)
+	}
+
+	placeholders, idArgs := intIdPlaceholders(ids)
+	query := "UPDATE task SET " + strings.Join(setParts, ", ") +
+		" WHERE id IN (" + placeholders + ");"
+
+	args := append(setArgs, idArgs...)
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *TaskRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "DELETE FROM task WHERE id IN (" + placeholders + ");"
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
 }
 
 func (repo *TaskRepo) DeleteTasksInProject(projectId int) (bool, error) {

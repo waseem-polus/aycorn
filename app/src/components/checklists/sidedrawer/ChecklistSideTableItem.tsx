@@ -7,7 +7,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Goal, Pencil, Trash2 } from "lucide-react";
-import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
+import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
@@ -23,7 +23,8 @@ import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 
@@ -40,19 +41,10 @@ export function ChecklistSideTableItem({
   const displayName =
     checklist.Name === "" ? "New Checklist" : checklist.Name;
   const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
-    "line-through font-normal": checklist.Status === "Done",
+    "line-through font-normal": checklist.Status === "done",
   });
 
-  useEffect(() => {
-    if (isEditing && editableRef.current) {
-      editableRef.current.focus();
-      const range = document.createRange();
-      range.selectNodeContents(editableRef.current);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, [isEditing]);
+  useFocusAndSelect(editableRef, isEditing);
 
   const handleSave = (newName: string) => {
     setIsEditing(false);
@@ -70,7 +62,7 @@ export function ChecklistSideTableItem({
     <Item asChild>
       <div className="group">
         <ItemMedia className="flex flex-col justify-center h-full">
-          <TaskStatusIcon variant={checklist.Status} />
+          <ChecklistStatusIcon variant={checklist.Status} />
         </ItemMedia>
         <ItemContent>
           <span className="inline-flex gap-2 items-center">
@@ -86,7 +78,7 @@ export function ChecklistSideTableItem({
             )}
             <ItemTitle
               className={
-                checklist.Status === "Done"
+                checklist.Status === "done"
                   ? "line-through font-normal"
                   : "font-medium"
               }

@@ -44,3 +44,54 @@ func (s *TaskService) DeleteTask(taskId int) (bool, error) {
 
 	return success, nil
 }
+
+var bulkTaskUpdatableColumns = map[string]string{
+	"Stage":            "stage",
+	"Priority":         "priority",
+	"Type":             "type",
+	"Assignee":         "assignee",
+	"Checklist":        "checklist",
+	"TimePlannedStart": "timePlannedStart",
+	"TimePlannedEnd":   "timePlannedEnd",
+}
+
+func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+
+	filtered := map[string]any{}
+	for jsonKey, dbCol := range bulkTaskUpdatableColumns {
+		if v, ok := changes[jsonKey]; ok {
+			filtered[dbCol] = v
+		}
+	}
+	if len(filtered) == 0 {
+		return models.BulkResult{Skipped: len(ids)}, nil
+	}
+
+	affected, err := s.TaskRepo.UpdateManyFields(ids, filtered)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected, // non-existent ids: retrying won't help
+	}, nil
+}
+
+func (s *TaskService) BulkDelete(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.TaskRepo.DeleteMany(ids)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}

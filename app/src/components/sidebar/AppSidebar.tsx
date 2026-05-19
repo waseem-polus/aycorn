@@ -3,7 +3,6 @@ import {
   IconCalendar,
   IconDashboard,
   IconFolder,
-  IconLayoutBoard,
   IconSettings,
 } from "@tabler/icons-react";
 import { NavPinnedProjects } from "@/components/sidebar/NavPinnedProjects";
@@ -28,7 +27,7 @@ const data = {
     },
     {
       title: "Workflows",
-      url: "workflows",
+      url: "/workflows",
       icon: WorkflowIcon,
     },
     {

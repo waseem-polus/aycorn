@@ -5,12 +5,17 @@ import {
   PageTitle,
 } from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
+import { WorkflowsGrid } from "@/features/workflows/list/workflows-grid";
+import { WorkflowsBulkActionsToolbar } from "@/features/workflows/list/workflows-bulk-actions-toolbar";
 
 export const Route = createFileRoute("/workflows")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { data, isFetching } = useAllWorkflowsQuery();
+
   return (
     <Page>
       <PageHeader breadcrumb={["Workflows"]} />
@@ -19,12 +24,8 @@ function RouteComponent() {
           title="Workflows"
           description="Reusable stage sequences. Assign one to any project."
         />
-
-        <section className="flex flex-col gap-3">
-          <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">
-            Nothing here yet.
-          </div>
-        </section>
+        <WorkflowsGrid workflows={data ?? []} isFetching={isFetching} />
+        <WorkflowsBulkActionsToolbar />
       </PageContent>
     </Page>
   );

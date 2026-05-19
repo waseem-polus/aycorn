@@ -1,4 +1,5 @@
-import type { Task, Type, Priority, Status, Value } from "@/types/types";
+import type { Task, Type, Priority } from "@/types/types";
+import type { Value } from "platejs";
 import type { IUser } from "@/features/calendar/interfaces";
 
 export const USERS_MOCK: IUser[] = [
@@ -118,7 +119,7 @@ const events = [
 const assignees = ["Michael Doe", "Alice Johnson", "Robert Smith", "Emily Davis"];
 const types: Type[] = ["Dev", "Reminder", "Test"];
 const priorities: Priority[] = ["Urgent", "High", "Medium", "Low"];
-const statuses: Status[] = ["Open", "Todo", "Doing", "Blocked", "Done"];
+const mockStageIds = [1, 2, 3, 4, 5];
 
 const mockGenerator = (numberOfEvents: number): Task[] => {
   const result: Task[] = [];
@@ -136,16 +137,17 @@ const mockGenerator = (numberOfEvents: number): Task[] => {
   const currentEvent: Task = {
     ID: currentId++,
     Name: events[Math.floor(Math.random() * events.length)],
-    Body: "" as Value,
+    Body: [] as unknown as Value,
     Checklist: 1,
     TimeCreated: currentTime,
+    TimeModified: currentTime,
     TimePlannedStart: new Date(now.getTime() - 30 * 60000).toISOString(),
     TimePlannedEnd: new Date(now.getTime() + 30 * 60000).toISOString(),
     TimeCompleted: null,
     Assignee: assignees[Math.floor(Math.random() * assignees.length)],
     Priority: priorities[Math.floor(Math.random() * priorities.length)],
     Type: currentType,
-    Status: statuses[Math.floor(Math.random() * statuses.length)],
+    Stage: mockStageIds[Math.floor(Math.random() * mockStageIds.length)],
   };
 
   result.push(currentEvent);
@@ -185,16 +187,17 @@ const mockGenerator = (numberOfEvents: number): Task[] => {
     result.push({
       ID: currentId++,
       Name: events[Math.floor(Math.random() * events.length)],
-      Body: "" as Value,
+      Body: [] as unknown as Value,
       Checklist: 1,
       TimeCreated: startDate.toISOString(),
+      TimeModified: startDate.toISOString(),
       TimePlannedStart: startDate.toISOString(),
       TimePlannedEnd: endDate.toISOString(),
       TimeCompleted: Math.random() > 0.7 ? endDate.toISOString() : null,
       Assignee: assignees[Math.floor(Math.random() * assignees.length)],
       Priority: priorities[Math.floor(Math.random() * priorities.length)],
       Type: eventType,
-      Status: statuses[Math.floor(Math.random() * statuses.length)],
+      Stage: mockStageIds[Math.floor(Math.random() * mockStageIds.length)],
     });
   }
 
