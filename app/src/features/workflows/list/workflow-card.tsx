@@ -34,7 +34,7 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   ).onClick;
   const itemClassName = (itemProps.className as string | undefined) ?? "";
 
-  const stageCount = workflow.Stages?.length ?? 0;
+  const hiddenStageCount = workflow.StageCount - (workflow.Stages?.length ?? 0);
   const projectLabel =
     workflow.ProjectCount === 0
       ? "Unused"
@@ -140,7 +140,7 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
             )
           )}
           <CardDescription className="text-xs">
-            {stageCount} stages · {projectLabel}
+            {workflow.StageCount} stages · {projectLabel}
           </CardDescription>
           <CardAction className="pointer-events-auto">
             <WorkflowCardMenu
@@ -157,6 +157,11 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
           {workflow.Stages?.map((stage) => (
             <WorkflowStageChip key={stage.ID} stage={stage} />
           ))}
+          {hiddenStageCount > 0 && (
+            <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+              +{hiddenStageCount} stages
+            </span>
+          )}
         </CardContent>
       </Card>
 

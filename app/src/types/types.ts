@@ -28,6 +28,7 @@ export type Workflow = {
 
 export type WorkflowSummary = Workflow & {
   ProjectCount: number;
+  StageCount: number;
   Stages: Stage[];
 };
 

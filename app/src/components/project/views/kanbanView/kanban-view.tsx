@@ -93,7 +93,7 @@ export function KanbanView({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex gap-2 h-full min-h-0">
+        <div className="flex gap-2 h-full min-h-0 min-w-0 overflow-x-auto">
           {Stages.map((stage) => (
             <KanbanColumn
               key={stage.ID}

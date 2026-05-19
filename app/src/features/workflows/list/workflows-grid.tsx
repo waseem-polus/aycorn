@@ -44,10 +44,13 @@ export function WorkflowsGrid({
   };
 
   const filtered = useMemo(() => {
-    return workflows.filter((w) =>
-      w.Name.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [workflows, search]);
+    return workflows.filter((w) => {
+      if (!w.Name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (tab === "in-use") return w.ProjectCount > 0;
+      if (tab === "unused") return w.ProjectCount === 0;
+      return true;
+    });
+  }, [workflows, search, tab]);
 
   const isLoading = isFetching && workflows.length === 0;
   const hasResults = filtered.length > 0;
@@ -69,7 +72,6 @@ export function WorkflowsGrid({
           </InputGroupAddon>
         </InputGroup>
 
-        {/* TODO: apply In Use / Unused filter via ProjectCount */}
         <ToggleGroup
           type="single"
           variant="outline"

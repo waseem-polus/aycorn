@@ -16,6 +16,7 @@ type WorkflowService struct {
 type WorkflowSummary struct {
 	models.Workflow
 	ProjectCount int
+	StageCount   int
 	Stages       []models.Stage
 }
 
@@ -38,6 +39,11 @@ func (s *WorkflowService) GetAllWorkflows() ([]WorkflowSummary, error) {
 			return nil, err
 		}
 
+		stageCount, err := s.StageRepo.CountByWorkflow(w.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		stages, err := s.StageRepo.ByWorkflow(w.ID, listStagePreviewLimit)
 		if err != nil {
 			return nil, err
@@ -46,6 +52,7 @@ func (s *WorkflowService) GetAllWorkflows() ([]WorkflowSummary, error) {
 		summaries = append(summaries, WorkflowSummary{
 			Workflow:     w,
 			ProjectCount: count,
+			StageCount:   stageCount,
 			Stages:       stages,
 		})
 	}

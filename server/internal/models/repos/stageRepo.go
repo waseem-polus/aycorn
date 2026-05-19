@@ -32,6 +32,12 @@ func scanStage(scanner interface {
 	)
 }
 
+func (repo *StageRepo) CountByWorkflow(workflowId int) (int, error) {
+	var count int
+	err := repo.DB.QueryRow("SELECT COUNT(*) FROM stage WHERE workflow = ?;", workflowId).Scan(&count)
+	return count, err
+}
+
 func (repo *StageRepo) ByWorkflow(workflowId int, limit int) ([]models.Stage, error) {
 	query := "SELECT " + stageColumns + " " + stageFromJoin + " WHERE s.workflow = ? GROUP BY s.id ORDER BY s.position"
 	args := []any{workflowId}
