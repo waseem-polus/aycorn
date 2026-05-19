@@ -3,6 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { ItemGroup } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDropZone } from "@/hooks/useDropZone";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Stage } from "@/types/types";
 import { useContext, useMemo, type SyntheticEvent } from "react";
 import { KanbanItem } from "./kanban-item";
@@ -40,11 +45,16 @@ export function KanbanColumn({
             {filteredTasks.length}
           </Badge>
         </span>
-        {stage.Description && (
-          <span className="text-muted-foreground text-sm">
-            {stage.Description}
-          </span>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-muted-foreground text-sm h-5 block truncate">
+              {stage.Description}
+            </span>
+          </TooltipTrigger>
+          {stage.Description && (
+            <TooltipContent>{stage.Description}</TooltipContent>
+          )}
+        </Tooltip>
       </div>
       <ItemGroup
         className={cn(

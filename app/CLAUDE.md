@@ -47,6 +47,7 @@ src/
 - If **shadcn/ui** has a component for something, use it — don't write a custom component from scratch.
 - **Adding shadcn components** — always use the shadcn CLI (`npx shadcn@latest add <component>`) to install. It writes the component file into `src/components/ui/` and installs the right peer deps. Don't `npm install` the radix package by hand or hand-author the wrapper file.
 - Loading states and empty states are handled per-component. If a shared pattern becomes obvious (e.g., a skeleton wrapper used in 3+ places), flag it as a refactor opportunity but don't abstract prematurely.
+- **Truncated text always gets a tooltip.** Whenever text is truncated (via `truncate` or `line-clamp-*`), wrap it in a `<Tooltip>` that shows the full text. Only render the `<TooltipContent>` when there's actually content to show.
 - **Frontend error handling:** show a toast notification on any failed action. Don't silently swallow errors.
 
 ---

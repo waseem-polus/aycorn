@@ -41,6 +41,7 @@ export const defaultProjectContextValue: ProjectContextType = {
   Project: {
     ID: 0,
     Name: "",
+    WorkflowName: "",
     Pinned: false,
     Workflow: 0,
     TimeCreated: "",
