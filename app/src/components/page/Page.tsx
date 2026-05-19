@@ -94,24 +94,17 @@ export function PageHeader({
                 <Link to="/">Home</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            {breadcrumb.map((crumb) => {
+            {breadcrumb.map((crumb, index) => {
               const item =
                 typeof crumb === "string" ? { label: crumb } : crumb;
-              const isLink = typeof crumb === "string" || item.to !== undefined;
+              const isLast = index === breadcrumb.length - 1;
               return (
                 <React.Fragment key={item.label}>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    {isLink ? (
+                    {!isLast && item.to ? (
                       <BreadcrumbLink asChild>
-                        <Link
-                          to={
-                            (typeof crumb === "string"
-                              ? "/"
-                              : item.to) as string
-                          }
-                          params={item.params}
-                        >
+                        <Link to={item.to as string} params={item.params}>
                           {item.label}
                         </Link>
                       </BreadcrumbLink>

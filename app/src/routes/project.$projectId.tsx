@@ -3,6 +3,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ProjectProvider } from "@/contexts/project/ProjectProvider";
 import { ProjectDetails } from "@/components/project/project";
 import { ProjectHeader } from "@/components/project/project-header";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useContext } from "react";
 
 export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,
@@ -13,6 +15,15 @@ export const Route = createFileRoute("/project/$projectId")({
   },
 });
 
+function ProjectPageHeader() {
+  const { Project } = useContext(ProjectContext);
+  return (
+    <PageHeader breadcrumb={[{ label: "Projects", to: "/" }, Project.Name]}>
+      <ProjectHeader />
+    </PageHeader>
+  );
+}
+
 function RouteComponent() {
   const { projectId } = Route.useParams();
   const { view } = Route.useSearch();
@@ -22,9 +33,7 @@ function RouteComponent() {
   return (
     <ProjectProvider>
       <Page>
-        <PageHeader breadcrumb={["Projects"]}>
-          <ProjectHeader />
-        </PageHeader>
+        <ProjectPageHeader />
         <PageContent>
           <ProjectDetails
             projectId={Number.parseInt(projectId)}

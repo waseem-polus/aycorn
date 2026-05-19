@@ -26,9 +26,9 @@ function RouteComponent() {
     <Page>
       <PageHeader
         breadcrumb={[
-          "Projects",
+          { label: "Projects", to: "/" },
           {
-            label: projectName,
+            label: projectName !== "" ? projectName : "New Project",
             to: "/project/$projectId",
             params: { projectId },
           },

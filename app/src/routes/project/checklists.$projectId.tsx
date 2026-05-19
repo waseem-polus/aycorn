@@ -13,7 +13,7 @@ export const Route = createFileRoute("/project/checklists/$projectId")({
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={["Projects", "Checklists"]} />
+      <PageHeader breadcrumb={[{ label: "Projects", to: "/" }, "Checklists"]} />
       <PageContent>
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl p-1">Checklists</h1>
