@@ -6,7 +6,7 @@
   "tailwind": {
     "config": "",
     "css": "src/index.css",
-    "baseColor": "neutral",
+    "baseColor": "mist",
     "cssVariables": true,
     "prefix": ""
   },
@@ -18,6 +18,9 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
+  "rtl": false,
+  "menuColor": "default",
+  "menuAccent": "bold",
   "registries": {
     "@plate": "https://platejs.org/r/{name}.json"
   }

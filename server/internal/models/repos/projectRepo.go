@@ -11,7 +11,7 @@ type ProjectRepo struct {
 }
 
 func (repo *ProjectRepo) All() ([]models.Project, error) {
-	query := "SELECT id, name, pinned, timeCreated FROM project ORDER BY id DESC;"
+	query := "SELECT id, name, pinned, timeCreated, timeModified FROM project ORDER BY id DESC;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 	for rows.Next() {
 		p := models.Project{}
 
-		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated)
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated, &p.TimeModified)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func (repo *ProjectRepo) All() ([]models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
-	query := "SELECT id, name, pinned, timeCreated FROM project WHERE id = ?;"
+	query := "SELECT id, name, pinned, timeCreated, timeModified FROM project WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 	rows.Next()
 
 	project := models.Project{}
-	err = rows.Scan(&project.ID, &project.Name, &project.Pinned, &project.TimeCreated)
+	err = rows.Scan(&project.ID, &project.Name, &project.Pinned, &project.TimeCreated, &project.TimeModified)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 }
 
 func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
-	query := "SELECT id, name, pinned, timeCreated FROM project WHERE pinned = TRUE;"
+	query := "SELECT id, name, pinned, timeCreated, timeModified FROM project WHERE pinned = TRUE;"
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
 	for rows.Next() {
 		p := models.Project{}
 
-		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated)
+		err := rows.Scan(&p.ID, &p.Name, &p.Pinned, &p.TimeCreated, &p.TimeModified)
 		if err != nil {
 			return nil, err
 		}
@@ -93,6 +93,36 @@ func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
 func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
 	query := "UPDATE project SET name = ?, pinned = ? WHERE id = ?;"
 	res, err := repo.DB.Exec(query, project.Name, project.Pinned, project.ID)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
+}
+
+func (repo *ProjectRepo) CreateProject() (int64, error) {
+	query := "INSERT INTO project (name, pinned) VALUES ('', false);"
+	res, err := repo.DB.Exec(query)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (repo *ProjectRepo) DeleteProject(projectId int) (bool, error) {
+	query := "DELETE FROM project WHERE id = ?;"
+	res, err := repo.DB.Exec(query, projectId)
 	if err != nil {
 		return false, err
 	}

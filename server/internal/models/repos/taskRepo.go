@@ -28,6 +28,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			t.id,
 		    t.name,
 			t.timeCreated,
+			t.timeModified,
 		    t.timePlannedStart,
 		    t.timePlannedEnd,
 		    t.timeCompleted,
@@ -100,6 +101,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			&ct.ID,
 			&ct.Name,
 			&ct.TimeCreated,
+			&ct.TimeModified,
 			&ct.TimePlannedStart,
 			&ct.TimePlannedEnd,
 			&ct.TimeCompleted,
@@ -166,7 +168,6 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 			name = ?,
 			body = ?,
 			checklist = ?,
-			timeCreated = ?,
 			timePlannedStart = ?,
 			timePlannedEnd = ?,
 			timeCompleted = ?,
@@ -182,7 +183,6 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Name,
 		task.Body,
 		task.Checklist,
-		task.TimeCreated,
 		task.TimePlannedStart,
 		task.TimePlannedEnd,
 		task.TimeCompleted,
@@ -211,6 +211,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 			t.name,
 			t.body,
 			t.timeCreated,
+			t.timeModified,
 			t.timePlannedStart,
 			t.timePlannedEnd,
 			t.timeCompleted,
@@ -239,6 +240,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		&task.Name,
 		&task.Body,
 		&task.TimeCreated,
+		&task.TimeModified,
 		&task.TimePlannedStart,
 		&task.TimePlannedEnd,
 		&task.TimeCompleted,
@@ -261,6 +263,26 @@ func (repo *TaskRepo) DeleteTask(taskId int) (bool, error) {
 	query := "DELETE FROM task WHERE id = ?;"
 
 	res, err := repo.DB.Exec(query, taskId)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) DeleteTasksInProject(projectId int) (bool, error) {
+	query := `
+		DELETE FROM task WHERE checklist IN (
+			SELECT id FROM checklist WHERE project = ?
+		);
+    `
+
+	res, err := repo.DB.Exec(query, projectId)
 	if err != nil {
 		return false, err
 	}

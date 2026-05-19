@@ -44,10 +44,7 @@ export function NewTaskEditorDrawer({
         }
       }}
     >
-      <Button
-        className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
-        onClick={handleAddTask}
-      >
+      <Button className="hover:cursor-pointer" onClick={handleAddTask}>
         <Plus />
         New Task
       </Button>

@@ -79,7 +79,7 @@ export function ChecklistsTable() {
                     {checklist.Name !== "" ? (
                       <ItemTitle>{checklist.Name}</ItemTitle>
                     ) : (
-                      <ItemTitle className="text-neutral-400">
+                      <ItemTitle className="text-muted-foreground">
                         New Checklist
                       </ItemTitle>
                     )}

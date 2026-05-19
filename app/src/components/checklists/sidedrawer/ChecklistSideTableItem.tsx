@@ -6,7 +6,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Goal, Trash2 } from "lucide-react";
+import { Goal, Pencil, Trash2 } from "lucide-react";
 import TaskStatusIcon from "@/features/task/properties/icons/TaskStatusIcon";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -14,11 +14,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
-import { useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +34,37 @@ export function ChecklistSideTableItem({
 }) {
   const { Project } = useContext(ProjectContext);
   const { update, deleteChecklist } = useChecklistMutation(Project.ID);
+  const [isEditing, setIsEditing] = useState(false);
+  const editableRef = useRef<HTMLHeadingElement>(null);
+
+  const displayName =
+    checklist.Name === "" ? "New Checklist" : checklist.Name;
+  const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
+    "line-through font-normal": checklist.Status === "Done",
+  });
+
+  useEffect(() => {
+    if (isEditing && editableRef.current) {
+      editableRef.current.focus();
+      const range = document.createRange();
+      range.selectNodeContents(editableRef.current);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }, [isEditing]);
+
+  const handleSave = (newName: string) => {
+    setIsEditing(false);
+    if (newName !== checklist.Name) {
+      update.mutate({ ...checklist, Name: newName });
+    }
+  };
+
+  const handleStartEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+  };
 
   return (
     <Item asChild>
@@ -37,7 +73,7 @@ export function ChecklistSideTableItem({
           <TaskStatusIcon variant={checklist.Status} />
         </ItemMedia>
         <ItemContent>
-          <span className="inline-flex gap-2">
+          <span className="inline-flex gap-2 items-center">
             {checklist.IsDefault && (
               <Tooltip>
                 <TooltipTrigger>
@@ -55,16 +91,39 @@ export function ChecklistSideTableItem({
                   : "font-medium"
               }
             >
-              <EditableHeader
-                value={checklist.Name}
-                setValue={(newName) =>
-                  update.mutate({ ...checklist, Name: newName })
-                }
-                placeholder="New Checklist"
-                className={cn("text-sm p-0 min-h-0 font-medium", {
-                  "line-through font-normal": checklist.Status === "Done",
-                })}
-              />
+              {isEditing ? (
+                <EditableHeader
+                  ref={editableRef}
+                  value={checklist.Name}
+                  setValue={handleSave}
+                  placeholder="New Checklist"
+                  className={titleClassName}
+                />
+              ) : (
+                <HoverCard openDelay={150} closeDelay={100}>
+                  <HoverCardTrigger asChild>
+                    <span className={cn("truncate", titleClassName)}>
+                      {displayName}
+                    </span>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="start"
+                    className="flex w-auto items-center gap-2 py-1.5 px-2"
+                  >
+                    <span className="text-sm">{displayName}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="size-6"
+                      onClick={handleStartEdit}
+                      aria-label="Rename checklist"
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
             </ItemTitle>
           </span>
 

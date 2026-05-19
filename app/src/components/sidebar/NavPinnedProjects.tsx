@@ -39,11 +39,10 @@ export function NavPinnedProjects() {
                   params={{
                     projectId: project.ID.toString(),
                   }}
-                  search={{
-                    name: project.Name,
-                  }}
                 >
-                  <span>{project.Name}</span>
+                  <span>
+                    {project.Name !== "" ? project.Name : "New Project"}
+                  </span>
                 </Link>
               </SidebarMenuButton>
               <DropdownMenu>

@@ -10,21 +10,39 @@ import TaskPriorityIcon from "./icons/TaskPriorityIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 
+type Props = {
+  onChange?: (task: Task) => void;
+  value?: Task["Priority"];
+  onValueChange?: (value: Task["Priority"]) => void;
+  placeholder?: string;
+};
+
 export function SelectTaskPriority({
   onChange = () => {},
-}: {
-  onChange?: (task: Task) => void;
-}) {
+  value,
+  onValueChange,
+  placeholder = "Select a priority",
+}: Props) {
   const { state, setState } = useContext(TaskContext);
+  const isControlled = onValueChange !== undefined;
+
   const handleValueChange = (newPriority: Task["Priority"]) => {
+    if (isControlled) {
+      onValueChange(newPriority);
+      return;
+    }
     setState({ ...state, Priority: newPriority });
     onChange({ ...state, Priority: newPriority });
   };
 
   return (
-    <Select defaultValue={state.Priority} onValueChange={handleValueChange}>
+    <Select
+      value={isControlled ? value ?? "" : undefined}
+      defaultValue={isControlled ? undefined : state.Priority}
+      onValueChange={handleValueChange}
+    >
       <SelectTrigger id="priority" className="w-full">
-        <SelectValue placeholder="Select a priority" />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="Low">

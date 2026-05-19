@@ -22,8 +22,35 @@ export function useProjectMutation(projectId: number) {
       queryClient.invalidateQueries({
         queryKey: ["pinnedProjects"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["allProjects"],
+      });
     },
   });
 
-  return { updateProject };
+  const deleteProject = useMutation({
+    mutationFn: async (projectId: number) => {
+      const res = await fetch(
+        `http://localhost:8000/api/project/${projectId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["projectDetails", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pinnedProjects"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["allProjects"],
+      });
+    },
+  });
+
+  return { updateProject, deleteProject };
 }

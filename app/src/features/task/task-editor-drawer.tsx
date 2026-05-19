@@ -54,6 +54,7 @@ export default function TaskEditorDrawer({
 
   return (
     <Drawer
+      handleOnly
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {

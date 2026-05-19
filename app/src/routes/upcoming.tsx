@@ -1,4 +1,9 @@
-import { Page, PageContent, PageHeader } from "@/components/page/Page";
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  PageTitle,
+} from "@/components/page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/upcoming")({
@@ -8,9 +13,18 @@ export const Route = createFileRoute("/upcoming")({
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={["Upcoming Tasks"]} />
+      <PageHeader breadcrumb={["Upcoming"]} />
       <PageContent>
-        <h1>Upcoming Tasks</h1>
+        <PageTitle
+          title="Upcoming"
+          description="View upcoming deadlines at a glance."
+        />
+
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">
+            Nothing here yet.
+          </div>
+        </section>
       </PageContent>
     </Page>
   );

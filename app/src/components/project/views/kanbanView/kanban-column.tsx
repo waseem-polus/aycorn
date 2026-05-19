@@ -4,16 +4,23 @@ import { ItemGroup } from "@/components/ui/item";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useDropZone } from "@/hooks/useDropZone";
 import type { Task } from "@/types/types";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, type SyntheticEvent } from "react";
 import { KanbanItem } from "./kanban-item";
 import { cva } from "class-variance-authority";
+
+type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 
 export function KanbanColumn({
   status,
   description,
+  getItemProps,
 }: {
   status: Task["Status"];
   description: string;
+  getItemProps?: (
+    id: string,
+    opts?: { listeners?: DragListeners },
+  ) => Record<string, unknown>;
 }) {
   const { setNodeRef, isOver } = useDropZone(status);
 
@@ -45,11 +52,27 @@ export function KanbanColumn({
         },
       },
       compoundVariants: [
-        { activeDropZone: true, type: "Blocked", class: "bg-red-50" },
-        { activeDropZone: true, type: "Open", class: "bg-primary/10" },
-        { activeDropZone: true, type: "Todo", class: "bg-orange-50" },
-        { activeDropZone: true, type: "Doing", class: "bg-green-50" },
-        { activeDropZone: true, type: "Done", class: "bg-purple-50" },
+        {
+          activeDropZone: true,
+          type: "Blocked",
+          class: "bg-red-50 dark:bg-red-950/40",
+        },
+        { activeDropZone: true, type: "Open", class: "bg-accent" },
+        {
+          activeDropZone: true,
+          type: "Todo",
+          class: "bg-orange-50 dark:bg-orange-950/40",
+        },
+        {
+          activeDropZone: true,
+          type: "Doing",
+          class: "bg-green-50 dark:bg-green-950/40",
+        },
+        {
+          activeDropZone: true,
+          type: "Done",
+          class: "bg-purple-50 dark:bg-purple-950/30",
+        },
       ],
       defaultVariants: { activeDropZone: false, type: "Open" },
     },
@@ -58,21 +81,21 @@ export function KanbanColumn({
   return (
     <div className="w-1/5 overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
       <div className="p-2">
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 text-foreground">
           <TaskStatusIcon variant={status} />
           {status}
           <Badge variant="outline" className="size-5">
             {filteredTasks.length}
           </Badge>
         </span>
-        <span className="text-neutral-500 text-sm">{description}</span>
+        <span className="text-muted-foreground text-sm">{description}</span>
       </div>
       <ItemGroup
         className={kanbanColClass({ activeDropZone: isOver, type: status })}
         ref={setNodeRef}
       >
         {filteredTasks.map((task) => (
-          <KanbanItem key={task.ID} task={task} />
+          <KanbanItem key={task.ID} task={task} getItemProps={getItemProps} />
         ))}
       </ItemGroup>
     </div>

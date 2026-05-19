@@ -1,23 +1,23 @@
-import { Page, PageContent, PageHeader } from "@/components/page/Page";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import React, { useMemo, useState } from "react";
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  PageTitle,
+} from "@/components/page/Page";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Pin, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Item,
-  ItemContent,
-  ItemGroup,
-  ItemSeparator,
-  ItemTitle,
-} from "@/components/ui/item";
-import { Empty, EmptyDescription } from "@/components/ui/empty";
 import type { Project } from "@/types/types";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
+import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
+import { ProjectsDataTable } from "@/components/projects/projects-data-table";
+import { SelectionContext, useSelection } from "@/hooks/useSelection";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -25,7 +25,11 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
   const { data: projects, isFetching } = useAllProjectsQuery();
+  const { createProject } = useAllProjectsMutation();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const selection = useSelection();
+  const { SelectionArea } = selection;
 
   const filteredProjects = useMemo(() => {
     if (isFetching || !projects) {
@@ -41,61 +45,52 @@ function RouteComponent() {
     <Page>
       <PageHeader breadcrumb={["Projects"]} />
       <PageContent>
-        <h1 className="text-2xl p-1">Projects</h1>
+        <SelectionContext.Provider value={selection}>
+          <SelectionArea className="flex flex-col gap-4 h-full">
+            <PageTitle
+              title="Projects"
+              description="Projects descriptions, go here and go brr."
+            />
 
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4">
-            <InputGroup>
-              <InputGroupInput
-                placeholder="Filter Projects..."
-                onChange={(e) => setSearch(e.target.value)}
-                value={search}
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <InputGroup>
+                  <InputGroupInput
+                    placeholder="Filter Projects..."
+                    onChange={(e) => setSearch(e.target.value)}
+                    value={search}
+                  />
+                  <InputGroupAddon>
+                    <Search />
+                  </InputGroupAddon>
+                  <InputGroupAddon align="inline-end">
+                    {filteredProjects.length ?? 0} projects
+                  </InputGroupAddon>
+                </InputGroup>
+                <Button
+                  className="hover:cursor-pointer"
+                  onClick={() =>
+                    createProject.mutate(undefined, {
+                      onSuccess: (res) =>
+                        navigate({
+                          to: "/project/$projectId",
+                          params: { projectId: res },
+                        }),
+                    })
+                  }
+                >
+                  <Plus />
+                  New Project
+                </Button>
+              </div>
+
+              <ProjectsDataTable
+                data={filteredProjects}
+                isFetching={isFetching}
               />
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-              <InputGroupAddon align="inline-end">
-                {filteredProjects.length ?? 0} projects
-              </InputGroupAddon>
-            </InputGroup>
-            <Button className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer">
-              <Plus />
-              New Project
-            </Button>
-          </div>
-
-          <div className="rounded-md border">
-            <ItemGroup>
-              {!isFetching && filteredProjects.length > 0 ? (
-                filteredProjects.map((project: Project, i: number) => (
-                  <React.Fragment key={project.ID}>
-                    <Item asChild>
-                      <Link
-                        to="/project/$projectId"
-                        params={{ projectId: `${project.ID}` }}
-                      >
-                        <ItemContent>
-                          <ItemTitle>
-                            {project.Name}
-                            {project.Pinned && (
-                              <Pin className="stroke-red-400 size-4" />
-                            )}
-                          </ItemTitle>
-                        </ItemContent>
-                      </Link>
-                    </Item>
-
-                    {filteredProjects.length - 1 != i && <ItemSeparator />}
-                  </React.Fragment>
-                ))
-              ) : (
-                <Empty>
-                  <EmptyDescription>No Projects Found</EmptyDescription>
-                </Empty>
-              )}
-            </ItemGroup>
-          </div>
-        </div>
+            </div>
+          </SelectionArea>
+        </SelectionContext.Provider>
       </PageContent>
     </Page>
   );

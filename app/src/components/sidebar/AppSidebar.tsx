@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Squirrel } from "lucide-react";
+import { Squirrel, WorkflowIcon } from "lucide-react";
 
 const data = {
   navMain: [
@@ -27,9 +27,9 @@ const data = {
       icon: IconFolder,
     },
     {
-      title: "Kanban",
-      url: "/khanban",
-      icon: IconLayoutBoard,
+      title: "Workflows",
+      url: "workflows",
+      icon: WorkflowIcon,
     },
     {
       title: "Upcoming",

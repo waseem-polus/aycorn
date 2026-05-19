@@ -26,7 +26,7 @@ export function CollapsibleSection({
         <CollapsibleTrigger asChild>
           <Button
             variant="link"
-            className="inline-flex shrink-0 text-xs text-neutral-500 py-1 w-fit justify-center"
+            className="inline-flex shrink-0 text-xs text-muted-foreground py-1 w-fit justify-center"
           >
             {expanded ? <ChevronUp /> : <ChevronDown />}
             Show

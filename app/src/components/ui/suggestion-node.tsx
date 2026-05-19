@@ -15,7 +15,7 @@ import {
 
 const suggestionVariants = cva(
   cn(
-    "bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200",
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200 no-underline transition-colors duration-200",
   ),
   {
     defaultVariants: {
@@ -26,15 +26,15 @@ const suggestionVariants = cva(
     variants: {
       insertActive: {
         false: "",
-        true: "bg-emerald-200/80",
+        true: "bg-emerald-200/80 dark:bg-emerald-800/80",
       },
       remove: {
         false: "",
-        true: "bg-red-100 text-red-700",
+        true: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200",
       },
       removeActive: {
         false: "",
-        true: "bg-red-200/80 no-underline",
+        true: "bg-red-200/80 dark:bg-red-800/80 no-underline",
       },
     },
   },

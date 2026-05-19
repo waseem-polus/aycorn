@@ -30,6 +30,7 @@ export default function TaskSideDrawer({
 
   return (
     <Drawer
+      handleOnly
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {

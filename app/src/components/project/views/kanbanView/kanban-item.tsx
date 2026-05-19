@@ -14,27 +14,48 @@ import { CalendarIcon, LandPlot, User } from "lucide-react";
 import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
+import { cn } from "@/lib/utils";
 
-export function KanbanItem({ task }: { task: ChecklistTask }) {
+type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
+
+export function KanbanItem({
+  task,
+  getItemProps,
+}: {
+  task: ChecklistTask;
+  getItemProps?: (
+    id: string,
+    opts?: { listeners?: DragListeners },
+  ) => Record<string, unknown>;
+}) {
   const { setNodeRef, style, listeners, attributes } = useDraggableItem(
     task.ID.toString(),
     { task },
   );
   const { toFormatted } = useDateFormat();
 
+  const itemProps = getItemProps?.(task.ID.toString(), {
+    listeners: listeners as DragListeners | undefined,
+  });
+  const itemClassName = (itemProps?.className as string | undefined) ?? "";
+
   return (
     <TaskProvider defaultState={task} key={task.ID}>
       <TaskEditorDrawer>
         <Item
           asChild
-          className="border border-neutral-200 bg-background rounded-lg w-full box-border"
+          className="border border-border bg-background rounded-lg w-full box-border"
         >
           <a
             ref={setNodeRef}
             style={style}
-            {...listeners}
             {...attributes}
-            className="overflow-clip"
+            {...itemProps}
+            data-task-card=""
+            className={cn(
+              "overflow-clip data-selected:bg-accent data-selected:ring-2 data-selected:ring-primary",
+              itemClassName,
+            )}
           >
             <ItemHeader className="flex justify-between">
               <TaskPriorityIcon variant={task.Priority} />
@@ -47,7 +68,9 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
               {task.Name !== "" ? (
                 <ItemTitle>{task.Name}</ItemTitle>
               ) : (
-                <ItemTitle className="text-neutral-400">New Task</ItemTitle>
+                <ItemTitle className="text-muted-foreground">
+                  New Task
+                </ItemTitle>
               )}
             </ItemContent>
 
@@ -56,7 +79,9 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
                 <TaskTypeBadge variant={task.Type} />
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={task.Assignee !== "" ? "" : "text-neutral-500"}
+                  className={
+                    task.Assignee !== "" ? "" : "text-muted-foreground"
+                  }
                 >
                   <User className="size-2" />
                   {task.Assignee === "" ? "Not Assigned" : task.Assignee}
@@ -66,7 +91,9 @@ export function KanbanItem({ task }: { task: ChecklistTask }) {
                     task.TimePlannedStart !== null ? "secondary" : "outline"
                   }
                   className={
-                    task.TimePlannedStart !== null ? "" : "text-neutral-500"
+                    task.TimePlannedStart !== null
+                      ? ""
+                      : "text-muted-foreground"
                   }
                 >
                   <CalendarIcon className="size-2" />

@@ -10,21 +10,39 @@ import TaskTypeIcon from "./icons/TaskTypeIcon";
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 
+type Props = {
+  onChange?: (task: Task) => void;
+  value?: Task["Type"];
+  onValueChange?: (value: Task["Type"]) => void;
+  placeholder?: string;
+};
+
 export function SelectTaskType({
   onChange = () => {},
-}: {
-  onChange?: (task: Task) => void;
-}) {
+  value,
+  onValueChange,
+  placeholder = "Select a type",
+}: Props) {
   const { state, setState } = useContext(TaskContext);
+  const isControlled = onValueChange !== undefined;
+
   const handleValueChange = (newType: Task["Type"]) => {
+    if (isControlled) {
+      onValueChange(newType);
+      return;
+    }
     setState({ ...state, Type: newType });
     onChange({ ...state, Type: newType });
   };
 
   return (
-    <Select defaultValue={state.Type} onValueChange={handleValueChange}>
+    <Select
+      value={isControlled ? value ?? "" : undefined}
+      defaultValue={isControlled ? undefined : state.Type}
+      onValueChange={handleValueChange}
+    >
       <SelectTrigger id="type" className="w-full">
-        <SelectValue placeholder="Select a type" />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="Dev">

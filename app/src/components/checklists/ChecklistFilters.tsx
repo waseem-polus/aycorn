@@ -46,7 +46,7 @@ export function ChecklistFilters() {
             },
           })
         }
-        className="bg-emerald-500 hover:bg-emerald-500 hover:cursor-pointer"
+        className="hover:cursor-pointer"
       >
         <Plus />
         New

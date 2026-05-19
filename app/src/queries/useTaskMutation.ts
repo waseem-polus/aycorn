@@ -36,5 +36,48 @@ export function useTaskMutation(projectId: number) {
     onSuccess: () => invalidateQueries(projectId),
   });
 
-  return { update, create, deleteTask };
+  const bulkUpdate = useMutation({
+    mutationFn: async ({
+      tasks,
+      changes,
+    }: {
+      tasks: Task[];
+      changes: Partial<Task>;
+    }) => {
+      const targets = tasks.filter((t) =>
+        Object.entries(changes).some(
+          ([key, value]) => t[key as keyof Task] !== value,
+        ),
+      );
+      await Promise.all(
+        targets.map((t) =>
+          fetch("http://localhost:8000/api/task", {
+            method: "PUT",
+            body: JSON.stringify({
+              ...t,
+              ...changes,
+              Body: JSON.stringify(t.Body),
+            }),
+          }),
+        ),
+      );
+      return targets.length;
+    },
+    onSuccess: () => invalidateQueries(projectId),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async (taskIds: number[]) => {
+      await Promise.all(
+        taskIds.map((id) =>
+          fetch(`http://localhost:8000/api/task/${id}`, {
+            method: "DELETE",
+          }),
+        ),
+      );
+    },
+    onSuccess: () => invalidateQueries(projectId),
+  });
+
+  return { update, create, deleteTask, bulkUpdate, bulkDelete };
 }
