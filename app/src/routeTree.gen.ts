@@ -17,7 +17,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkflowWorkflowIdRouteImport } from './routes/workflow.$workflowId'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
 import { Route as ProjectSettingsProjectIdRouteImport } from './routes/project.settings.$projectId'
-import { Route as ProjectChecklistsProjectIdRouteImport } from './routes/project/checklists.$projectId'
 
 const WorkflowsRoute = WorkflowsRouteImport.update({
   id: '/workflows',
@@ -60,12 +59,6 @@ const ProjectSettingsProjectIdRoute =
     path: '/project/settings/$projectId',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ProjectChecklistsProjectIdRoute =
-  ProjectChecklistsProjectIdRouteImport.update({
-    id: '/project/checklists/$projectId',
-    path: '/project/checklists/$projectId',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,7 +68,6 @@ export interface FileRoutesByFullPath {
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
   '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRoutesByTo {
@@ -86,7 +78,6 @@ export interface FileRoutesByTo {
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
   '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRoutesById {
@@ -98,7 +89,6 @@ export interface FileRoutesById {
   '/workflows': typeof WorkflowsRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/project/checklists/$projectId': typeof ProjectChecklistsProjectIdRoute
   '/project/settings/$projectId': typeof ProjectSettingsProjectIdRoute
 }
 export interface FileRouteTypes {
@@ -111,7 +101,6 @@ export interface FileRouteTypes {
     | '/workflows'
     | '/project/$projectId'
     | '/workflow/$workflowId'
-    | '/project/checklists/$projectId'
     | '/project/settings/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -122,7 +111,6 @@ export interface FileRouteTypes {
     | '/workflows'
     | '/project/$projectId'
     | '/workflow/$workflowId'
-    | '/project/checklists/$projectId'
     | '/project/settings/$projectId'
   id:
     | '__root__'
@@ -133,7 +121,6 @@ export interface FileRouteTypes {
     | '/workflows'
     | '/project/$projectId'
     | '/workflow/$workflowId'
-    | '/project/checklists/$projectId'
     | '/project/settings/$projectId'
   fileRoutesById: FileRoutesById
 }
@@ -145,7 +132,6 @@ export interface RootRouteChildren {
   WorkflowsRoute: typeof WorkflowsRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
   WorkflowWorkflowIdRoute: typeof WorkflowWorkflowIdRoute
-  ProjectChecklistsProjectIdRoute: typeof ProjectChecklistsProjectIdRoute
   ProjectSettingsProjectIdRoute: typeof ProjectSettingsProjectIdRoute
 }
 
@@ -207,13 +193,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectSettingsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/project/checklists/$projectId': {
-      id: '/project/checklists/$projectId'
-      path: '/project/checklists/$projectId'
-      fullPath: '/project/checklists/$projectId'
-      preLoaderRoute: typeof ProjectChecklistsProjectIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -225,7 +204,6 @@ const rootRouteChildren: RootRouteChildren = {
   WorkflowsRoute: WorkflowsRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
   WorkflowWorkflowIdRoute: WorkflowWorkflowIdRoute,
-  ProjectChecklistsProjectIdRoute: ProjectChecklistsProjectIdRoute,
   ProjectSettingsProjectIdRoute: ProjectSettingsProjectIdRoute,
 }
 export const routeTree = rootRouteImport
