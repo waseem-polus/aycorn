@@ -55,5 +55,9 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/stage/{stageId}", app.putStage)
 	mux.HandleFunc("DELETE /api/stage/{stageId}", app.deleteStage)
 
+	if spa := spaHandler(); spa != nil {
+		mux.Handle("GET /", spa)
+	}
+
 	return withCommon(mux)
 }

@@ -16,14 +16,17 @@ Implications an agent must account for:
 
 - **Backend changes do not take effect until the server is restarted.** After editing any Go file, the running process is still the old binary. If you (or the user) have a server running, it must be manually killed and re-run. Verifying a new endpoint against a still-running old process returns `404`/`405` — that's a stale binary, not a routing bug.
 - **`:8000` gets held by stale processes.** A previous `go run` leaves a `cmd/web`-built binary bound to `:8000`; a fresh run then fails to bind but the old one keeps serving old code (and possibly an old `app.db`). When something behaves like old code, check `lsof -nP -i :8000` before debugging further.
-- **The DB is a committed file**, `server/app.db`, regenerated from SQL — there is no migration runner. To reset to a clean seeded state:
+- **`app.db` is not committed to git.** The server auto-creates and migrates it via goose on startup. To reset to a clean state, delete the file and restart:
   ```
   cd server
   rm -f app.db
-  sqlite3 app.db < assets/queries/schema.sql
+  go run ./cmd/web   # goose creates all tables automatically
+  ```
+- **Schema changes go through migration files**, not `schema.sql` directly. See [`server/assets/queries/CLAUDE.md`](../assets/queries/CLAUDE.md) for the full migration workflow.
+- **`placeholder.sql` is seed data** for development. After a DB reset, load it manually if needed:
+  ```
   sqlite3 app.db < assets/queries/placeholder.sql
   ```
-- **`schema.sql` + `placeholder.sql` must stay loadable together.** `placeholder.sql` is real seed data (and its IDs are referenced by hand) — when you change the schema, reseed and confirm both files load with no error before claiming done.
 
 ---
 
@@ -57,7 +60,9 @@ Nullable text columns (e.g. `description`) are therefore wrapped in `COALESCE(co
 
 ## Database (SQLite)
 
-**Source of truth:** `server/assets/queries/schema.sql`. Update that file (and this summary) together when the schema changes.
+**Migrations:** `server/internal/migrations/sql/` — goose applies these on startup. See [`server/assets/queries/CLAUDE.md`](../assets/queries/CLAUDE.md) for how to add migrations.
+
+`server/assets/queries/schema.sql` is a **human-readable reference only** — keep it in sync with migrations when you change the schema, but it is not loaded by the server.
 
 Schema summary:
 

@@ -1,0 +1,5 @@
+app.db
+server/ui/dist/
+aycorn
+server/web
+dist-release/
