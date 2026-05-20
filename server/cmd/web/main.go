@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
+	"github.com/waseem-polus/aycorn/server/internal/migrations"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 	"github.com/waseem-polus/aycorn/server/internal/models/services"
 )
@@ -28,22 +30,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
-	projectRepo := &repos.ProjectRepo{
-		DB: db,
+	goose.SetBaseFS(migrations.Files)
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		log.Fatal(err)
 	}
-	checklistRepo := &repos.ChecklistRepo{
-		DB: db,
+	if err := goose.Up(db, "sql"); err != nil {
+		log.Fatal(err)
 	}
-	taskRepo := &repos.TaskRepo{
-		DB: db,
-	}
-	workflowRepo := &repos.WorkflowRepo{
-		DB: db,
-	}
-	stageRepo := &repos.StageRepo{
-		DB: db,
-	}
+
+	projectRepo := &repos.ProjectRepo{DB: db}
+	checklistRepo := &repos.ChecklistRepo{DB: db}
+	taskRepo := &repos.TaskRepo{DB: db}
+	workflowRepo := &repos.WorkflowRepo{DB: db}
+	stageRepo := &repos.StageRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -56,19 +57,13 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
 	}
-
-	taskService := &services.TaskService{
-		TaskRepo: taskRepo,
-	}
-
+	taskService := &services.TaskService{TaskRepo: taskRepo}
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,
 		StageRepo:    stageRepo,
 	}
-	stageService := &services.StageService{
-		StageRepo: stageRepo,
-	}
+	stageService := &services.StageService{StageRepo: stageRepo}
 
 	app := app{
 		projectRepo:   projectRepo,
@@ -91,5 +86,4 @@ func main() {
 
 	log.Printf("Listening on %s", port)
 	server.ListenAndServe()
-	db.Close()
 }
