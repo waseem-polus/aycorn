@@ -22,4 +22,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // In dev, Vite serves the frontend and proxies /api to the Go backend.
+    // The target port matches the Go server default (8000) or $AYCORN_PORT if set.
+    proxy: {
+      "/api": `http://localhost:${process.env.AYCORN_PORT ?? 8000}`,
+    },
+  },
 });

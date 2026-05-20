@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 const getSaveTaskQuery = (isNewTask: boolean) => {
   const method = isNewTask ? "POST" : "PUT";
   return async (task: Task) => {
-    const res = await fetch("http://localhost:8000/api/task", {
+    const res = await fetch("/api/task", {
       method: method,
       body: JSON.stringify({ ...task, Body: JSON.stringify(task.Body) }),
     });
@@ -28,7 +28,7 @@ export function useTaskMutation(projectId: number) {
   });
   const deleteTask = useMutation({
     mutationFn: async (taskId: number) => {
-      const res = await fetch(`http://localhost:8000/api/task/${taskId}`, {
+      const res = await fetch(`/api/task/${taskId}`, {
         method: "DELETE",
       });
       return await res.json();
@@ -52,7 +52,7 @@ export function useTaskMutation(projectId: number) {
       if (targets.length === 0) {
         return { success: 0, failed: 0, skipped: 0 } as BulkResult;
       }
-      const res = await fetch(`http://localhost:8000/api/task/bulk`, {
+      const res = await fetch(`/api/task/bulk`, {
         method: "PUT",
         body: JSON.stringify({
           ids: targets.map((t) => t.ID),
@@ -70,7 +70,7 @@ export function useTaskMutation(projectId: number) {
 
   const bulkDelete = useMutation({
     mutationFn: async (taskIds: number[]) => {
-      const res = await fetch(`http://localhost:8000/api/task/bulk/delete`, {
+      const res = await fetch(`/api/task/bulk/delete`, {
         method: "POST",
         body: JSON.stringify(taskIds),
       });

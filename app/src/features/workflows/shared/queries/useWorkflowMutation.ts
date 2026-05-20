@@ -5,7 +5,7 @@ import type { BulkDuplicateResult, BulkResult, Workflow } from "@/types/types";
 export function useWorkflowMutation(workflowId?: number) {
   const createWorkflow = useMutation({
     mutationFn: async () => {
-      const res = await fetch("http://localhost:8000/api/workflow", {
+      const res = await fetch("/api/workflow", {
         method: "POST",
       });
       if (!res.ok) {
@@ -22,7 +22,7 @@ export function useWorkflowMutation(workflowId?: number) {
   const updateWorkflow = useMutation({
     mutationFn: async (workflow: Workflow) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/${workflow.ID}`,
+        `/api/workflow/${workflow.ID}`,
         {
           method: "PUT",
           body: JSON.stringify(workflow),
@@ -38,7 +38,7 @@ export function useWorkflowMutation(workflowId?: number) {
   const deleteWorkflow = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/${workflowId}`,
+        `/api/workflow/${workflowId}`,
         {
           method: "DELETE",
         },
@@ -57,7 +57,7 @@ export function useWorkflowMutation(workflowId?: number) {
   const bulkDeleteWorkflows = useMutation({
     mutationFn: async (ids: number[]) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/bulk/delete`,
+        `/api/workflow/bulk/delete`,
         {
           method: "POST",
           body: JSON.stringify(ids),
@@ -77,7 +77,7 @@ export function useWorkflowMutation(workflowId?: number) {
   const bulkDuplicateWorkflows = useMutation({
     mutationFn: async (ids: number[]) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/bulk/duplicate`,
+        `/api/workflow/bulk/duplicate`,
         {
           method: "POST",
           body: JSON.stringify(ids),

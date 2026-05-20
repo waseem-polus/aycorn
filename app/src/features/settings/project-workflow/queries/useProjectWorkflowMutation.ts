@@ -11,7 +11,7 @@ export function useProjectWorkflowMutation(projectId: number) {
   const switchWorkflow = useMutation<BulkResult, Error, SwitchWorkflowInput>({
     mutationFn: async ({ workflowId, stageMappings }) => {
       const res = await fetch(
-        `http://localhost:8000/api/project/${projectId}/settings/workflow`,
+        `/api/project/${projectId}/settings/workflow`,
         {
           method: "PUT",
           body: JSON.stringify({ workflowId, stageMappings }),

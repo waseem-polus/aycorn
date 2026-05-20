@@ -13,7 +13,7 @@ export function useStageMutation(workflowId: number) {
   const createStage = useMutation({
     mutationFn: async (type?: Exclude<StageType, "open">) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/${workflowId}/stage`,
+        `/api/workflow/${workflowId}/stage`,
         {
           method: "POST",
           body: JSON.stringify(type ? { type } : {}),
@@ -31,7 +31,7 @@ export function useStageMutation(workflowId: number) {
   const updateStage = useMutation({
     mutationFn: async (stage: Stage) => {
       const res = await fetch(
-        `http://localhost:8000/api/stage/${stage.ID}`,
+        `/api/stage/${stage.ID}`,
         {
           method: "PUT",
           body: JSON.stringify(stage),
@@ -49,7 +49,7 @@ export function useStageMutation(workflowId: number) {
   const reorderStages = useMutation({
     mutationFn: async (orderedStageIds: number[]) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/${workflowId}/stages/order`,
+        `/api/workflow/${workflowId}/stages/order`,
         {
           method: "PUT",
           body: JSON.stringify(orderedStageIds),
@@ -72,7 +72,7 @@ export function useStageMutation(workflowId: number) {
       ids: number[];
       type: Exclude<StageType, "open">;
     }) => {
-      const res = await fetch(`http://localhost:8000/api/stage/bulk/type`, {
+      const res = await fetch(`/api/stage/bulk/type`, {
         method: "PUT",
         body: JSON.stringify({ ids, type }),
       });
@@ -87,7 +87,7 @@ export function useStageMutation(workflowId: number) {
 
   const bulkSetColor = useMutation({
     mutationFn: async ({ ids, color }: { ids: number[]; color: string }) => {
-      const res = await fetch(`http://localhost:8000/api/stage/bulk/color`, {
+      const res = await fetch(`/api/stage/bulk/color`, {
         method: "PUT",
         body: JSON.stringify({ ids, color }),
       });
@@ -102,7 +102,7 @@ export function useStageMutation(workflowId: number) {
 
   const bulkSetIcon = useMutation({
     mutationFn: async ({ ids, icon }: { ids: number[]; icon: string }) => {
-      const res = await fetch(`http://localhost:8000/api/stage/bulk/icon`, {
+      const res = await fetch(`/api/stage/bulk/icon`, {
         method: "PUT",
         body: JSON.stringify({ ids, icon }),
       });
@@ -124,7 +124,7 @@ export function useStageMutation(workflowId: number) {
       beforeId: number | null;
     }) => {
       const res = await fetch(
-        `http://localhost:8000/api/workflow/${workflowId}/stages/move`,
+        `/api/workflow/${workflowId}/stages/move`,
         {
           method: "PUT",
           body: JSON.stringify({ ids, beforeId }),
@@ -147,7 +147,7 @@ export function useStageMutation(workflowId: number) {
       ids: number[];
       taskMappings?: Record<number, number>;
     }) => {
-      const res = await fetch(`http://localhost:8000/api/stage/bulk/delete`, {
+      const res = await fetch(`/api/stage/bulk/delete`, {
         method: "POST",
         body: JSON.stringify({ ids, taskMappings }),
       });

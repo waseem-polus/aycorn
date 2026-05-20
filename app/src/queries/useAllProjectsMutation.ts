@@ -10,7 +10,7 @@ export function useAllProjectsMutation() {
 
   const createProject = useMutation({
     mutationFn: async (body: { workflowId: number }) => {
-      const res = await fetch(`http://localhost:8000/api/project`, {
+      const res = await fetch(`/api/project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -32,7 +32,7 @@ export function useAllProjectsMutation() {
       ids: number[];
       pinned: boolean;
     }) => {
-      const res = await fetch(`http://localhost:8000/api/project/bulk/pinned`, {
+      const res = await fetch(`/api/project/bulk/pinned`, {
         method: "PUT",
         body: JSON.stringify({ ids, pinned }),
       });
@@ -47,7 +47,7 @@ export function useAllProjectsMutation() {
 
   const bulkDelete = useMutation({
     mutationFn: async (ids: number[]) => {
-      const res = await fetch(`http://localhost:8000/api/project/bulk/delete`, {
+      const res = await fetch(`/api/project/bulk/delete`, {
         method: "POST",
         body: JSON.stringify(ids),
       });

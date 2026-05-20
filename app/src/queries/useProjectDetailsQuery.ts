@@ -12,7 +12,7 @@ export function useProjectDetailsQuery(
     queryKey: ["projectDetails", projectId],
     enabled: enabled,
     queryFn: async () => {
-      const url = new URL(`http://localhost:8000/api/project/${projectId}`);
+      const url = new URL(`/api/project/${projectId}`, window.location.origin);
       url.searchParams.set("search", filter?.Name ?? "");
 
       filter?.Checklist?.forEach((checklist) =>

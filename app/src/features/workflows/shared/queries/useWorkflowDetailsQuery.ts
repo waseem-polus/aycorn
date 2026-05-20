@@ -10,7 +10,7 @@ export function useWorkflowDetailsQuery(
       queryKey: ["workflowDetails", workflowId],
       queryFn: async () => {
         const res = await fetch(
-          `http://localhost:8000/api/workflow/${workflowId}`,
+          `/api/workflow/${workflowId}`,
         );
         return await res.json();
       },

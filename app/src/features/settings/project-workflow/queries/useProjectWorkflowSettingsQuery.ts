@@ -10,7 +10,7 @@ export function useProjectWorkflowSettingsQuery(
       queryKey: ["projectWorkflowSettings", projectId],
       queryFn: async () => {
         const res = await fetch(
-          `http://localhost:8000/api/project/${projectId}/settings/workflow`,
+          `/api/project/${projectId}/settings/workflow`,
         );
         return await res.json();
       },

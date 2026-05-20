@@ -4,7 +4,7 @@ export function usePinnedProjectsQuery() {
   const { isPending, error, data, isFetching, refetch } = useQuery({
     queryKey: ["pinnedProjects"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:8000/api/project/pinned");
+      const res = await fetch("/api/project/pinned");
       return await res.json();
     },
   });
