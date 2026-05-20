@@ -59,6 +59,10 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: go build -ldflags="-s -w" -o ../aycorn-${{ matrix.suffix }}${{ matrix.ext }} ./cmd/web
 
+      - name: Ad-hoc sign (macOS)
+        if: runner.os == 'macOS'
+        run: codesign --force --deep -s - aycorn-${{ matrix.suffix }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: aycorn-${{ matrix.suffix }}
