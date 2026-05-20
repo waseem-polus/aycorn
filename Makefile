@@ -30,6 +30,13 @@ build-server:
 	cd $(SRV_DIR) && go build -o ../$(BINARY) ./cmd/web
 	@echo "Binary ready: ./$(BINARY)"
 
+# Install the binary system-wide so `aycorn` works from anywhere.
+# macOS/Linux: copies to /usr/local/bin (may require sudo).
+# To uninstall: sudo rm /usr/local/bin/aycorn
+install: build
+	sudo cp $(BINARY) /usr/local/bin/$(BINARY)
+	@echo "Installed: $$(which aycorn)"
+
 clean:
 	rm -f $(BINARY)
 	rm -rf $(UI_DIST) $(APP_DIR)/dist dist-release
