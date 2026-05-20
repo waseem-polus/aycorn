@@ -10,11 +10,7 @@ A binary is a ready-to-run program — no compiler, no dependencies, no installa
 
 ### macOS
 
-1. Go to the [Releases page](../../releases/latest) and download the file that matches your Mac:
-   - **Apple Silicon (M1/M2/M3/M4):** `aycorn-darwin-arm64`
-   - **Intel:** `aycorn-darwin-amd64`
-
-   Not sure which you have? Click the Apple menu → **About This Mac**. If it says "Apple M…" you have Apple Silicon. If it says "Intel" you have an Intel Mac.
+1. Go to the [Releases page](../../releases/latest) and download `aycorn-darwin-arm64`.
 
 2. Open Terminal and run the following commands (replace `~/Downloads/aycorn-darwin-arm64` with the actual path to the file you downloaded):
 
