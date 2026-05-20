@@ -3,3 +3,4 @@ server/ui/dist/
 aycorn
 server/web
 dist-release/
+.DS_Store
