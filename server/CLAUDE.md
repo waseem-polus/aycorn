@@ -16,12 +16,13 @@ Implications an agent must account for:
 
 - **Backend changes do not take effect until the server is restarted.** After editing any Go file, the running process is still the old binary. If you (or the user) have a server running, it must be manually killed and re-run. Verifying a new endpoint against a still-running old process returns `404`/`405` — that's a stale binary, not a routing bug.
 - **`:8000` gets held by stale processes.** A previous `go run` leaves a `cmd/web`-built binary bound to `:8000`; a fresh run then fails to bind but the old one keeps serving old code (and possibly an old `app.db`). When something behaves like old code, check `lsof -nP -i :8000` before debugging further.
-- **`app.db` is not committed to git.** The server auto-creates and migrates it via goose on startup. To reset to a clean state, delete the file and restart:
+- **`app.db` is not committed to git.** The server auto-creates and migrates it via goose on startup. Its path is controlled by `$AYCORN_DB`; if unset, the binary uses `<os.UserConfigDir()>/aycorn/app.db` (e.g. `~/Library/Application Support/aycorn/app.db` on macOS). `make dev` sets `AYCORN_DB=./app.db` so the dev DB stays at `server/app.db` and never touches an installed binary's DB. To reset the dev DB to a clean state:
   ```
   cd server
   rm -f app.db
-  go run ./cmd/web   # goose creates all tables automatically
+  AYCORN_DB=./app.db go run ./cmd/web   # goose creates all tables automatically
   ```
+  (or just `make dev`, which sets `AYCORN_DB` for you).
 - **Schema changes go through migration files**, not `schema.sql` directly. See [`server/assets/queries/CLAUDE.md`](../assets/queries/CLAUDE.md) for the full migration workflow.
 - **`placeholder.sql` is seed data** for development. After a DB reset, load it manually if needed:
   ```
