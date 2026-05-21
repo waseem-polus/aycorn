@@ -26,7 +26,7 @@ export function NewProjectButton() {
   const navigate = useNavigate();
 
   const onSuccess = (id: number) =>
-    navigate({ to: "/project/$projectId", params: { projectId: id } });
+    navigate({ to: "/project/$projectId", params: { projectId: String(id) } });
 
   const handleClick = () => {
     if ((workflows ?? []).length === 1) {

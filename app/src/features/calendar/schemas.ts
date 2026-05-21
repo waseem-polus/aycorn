@@ -1,6 +1,11 @@
 import { z } from "zod/v4";
 import { TYPES, PRIORITIES } from "@/types/types";
 
+export type TEventFormData = {
+  startDate: Date;
+  endDate: Date;
+};
+
 export const taskSchema = z.object({
   Name: z.string().min(1, "Name is required"),
   Body: z.string().optional(),

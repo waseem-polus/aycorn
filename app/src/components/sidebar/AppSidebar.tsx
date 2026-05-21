@@ -1,10 +1,4 @@
 import React from "react";
-import {
-  IconCalendar,
-  IconDashboard,
-  IconFolder,
-  IconSettings,
-} from "@tabler/icons-react";
 import { NavPinnedProjects } from "@/components/sidebar/NavPinnedProjects";
 import { NavMain } from "@/components/sidebar/NavMain";
 import { NavSecondary } from "@/components/sidebar/NavSecondary";
@@ -16,14 +10,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Squirrel, WorkflowIcon } from "lucide-react";
+import {
+  CalendarClockIcon,
+  ChartAreaIcon,
+  FolderIcon,
+  SettingsIcon,
+  Squirrel,
+  WorkflowIcon,
+} from "lucide-react";
 
 const data = {
   navMain: [
     {
       title: "Projects",
       url: "/",
-      icon: IconFolder,
+      icon: FolderIcon,
     },
     {
       title: "Workflows",
@@ -33,19 +34,19 @@ const data = {
     {
       title: "Upcoming",
       url: "/upcoming",
-      icon: IconCalendar,
+      icon: CalendarClockIcon,
     },
     {
       title: "Usage",
       url: "/usage",
-      icon: IconDashboard,
+      icon: ChartAreaIcon,
     },
   ],
   navSecondary: [
     {
       title: "Settings",
       url: "/settings",
-      icon: IconSettings,
+      icon: SettingsIcon,
     },
   ],
 };

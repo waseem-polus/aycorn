@@ -9,7 +9,7 @@ const invalidateQueries = (projectId: number) => {
 export function useChecklistMutation(projectId: number) {
   const update = useMutation({
     mutationFn: async (checklist: Checklist) => {
-      const res = await fetch("http://localhost:8000/api/checklist", {
+      const res = await fetch("/api/checklist", {
         method: "PUT",
         body: JSON.stringify(checklist),
       });
@@ -21,7 +21,7 @@ export function useChecklistMutation(projectId: number) {
   const create = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        `http://localhost:8000/api/checklist/${projectId}`,
+        `/api/checklist/${projectId}`,
         {
           method: "POST",
         },
@@ -34,7 +34,7 @@ export function useChecklistMutation(projectId: number) {
   const deleteChecklist = useMutation({
     mutationFn: async (checklistId: number) => {
       const res = await fetch(
-        `http://localhost:8000/api/checklist/${checklistId}`,
+        `/api/checklist/${checklistId}`,
         {
           method: "DELETE",
         },

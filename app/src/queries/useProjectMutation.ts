@@ -6,7 +6,7 @@ export function useProjectMutation(projectId: number) {
   const updateProject = useMutation({
     mutationFn: async (project: Project) => {
       const res = await fetch(
-        `http://localhost:8000/api/project/${project.ID}`,
+        `/api/project/${project.ID}`,
         {
           method: "PUT",
           body: JSON.stringify(project),
@@ -31,7 +31,7 @@ export function useProjectMutation(projectId: number) {
   const deleteProject = useMutation({
     mutationFn: async (projectId: number) => {
       const res = await fetch(
-        `http://localhost:8000/api/project/${projectId}`,
+        `/api/project/${projectId}`,
         {
           method: "DELETE",
         },

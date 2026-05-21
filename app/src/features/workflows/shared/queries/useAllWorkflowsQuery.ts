@@ -7,7 +7,7 @@ export function useAllWorkflowsQuery() {
   >({
     queryKey: ["allWorkflows"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:8000/api/workflow");
+      const res = await fetch("/api/workflow");
       return await res.json();
     },
   });

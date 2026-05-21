@@ -44,7 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { BasicMarksKit } from "@/components/editor/plugins/basic-marks-kit";
+import { BasicMarksKit } from "@/features/editor/plugins/basic-marks-kit";
 import {
   type TDiscussion,
   discussionPlugin,

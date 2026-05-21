@@ -1,5 +1,3 @@
-import { IconDots, IconTrash } from "@tabler/icons-react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +14,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Fullscreen, Link2, PinOffIcon } from "lucide-react";
+import {
+  Fullscreen,
+  Link2,
+  PinOffIcon,
+  EllipsisIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { usePinnedProjectsQuery } from "@/queries/usePinnedProjectsQuery";
 import type { Project } from "@/types/types";
@@ -51,7 +55,7 @@ export function NavPinnedProjects() {
                     showOnHover
                     className="data-[state=open]:bg-accent rounded-sm"
                   >
-                    <IconDots />
+                    <EllipsisIcon />
                     <span className="sr-only">More</span>
                   </SidebarMenuAction>
                 </DropdownMenuTrigger>
@@ -75,7 +79,7 @@ export function NavPinnedProjects() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive">
-                    <IconTrash />
+                    <Trash2Icon />
                     <span>Delete</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -84,7 +88,7 @@ export function NavPinnedProjects() {
           ))}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
-            <IconDots className="text-sidebar-foreground/70" />
+            <EllipsisIcon className="text-sidebar-foreground/70" />
             <span>More</span>
           </SidebarMenuButton>
         </SidebarMenuItem>

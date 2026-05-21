@@ -5,7 +5,7 @@ export function useTaskBodyQuery(taskId: number, enabled: boolean) {
     queryKey: ["taskBody", taskId],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:8000/api/task/body/${taskId}`,
+        `/api/task/body/${taskId}`,
       ).then((res) => res.json());
       return typeof res === "string" ? JSON.parse(res) : res;
     },

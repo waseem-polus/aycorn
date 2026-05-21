@@ -15,9 +15,6 @@ jobs:
           - os: macos-latest
             goarch: arm64
             suffix: darwin-arm64
-          - os: macos-13
-            goarch: amd64
-            suffix: darwin-amd64
           - os: ubuntu-latest
             goarch: amd64
             suffix: linux-amd64
