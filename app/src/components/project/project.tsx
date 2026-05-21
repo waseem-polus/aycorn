@@ -5,12 +5,6 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { KanbanView } from "./views/kanbanView/kanban-view";
-import {
-  IconCalendarMonth,
-  IconCalendarWeek,
-  IconLayoutBoard,
-  IconList,
-} from "@tabler/icons-react";
 import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
@@ -18,6 +12,12 @@ import { CALENDAR_ITEMS_MOCK, USERS_MOCK } from "@/features/calendar/mocks";
 import { WeekView } from "./views/calendarViews/week-view";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
+import {
+  CalendarDaysIcon,
+  CalendarIcon,
+  LayoutDashboardIcon,
+  Rows3Icon,
+} from "lucide-react";
 
 export function ProjectDetails({
   view,
@@ -78,19 +78,19 @@ export function ProjectDetails({
             <Tabs value={view} onValueChange={setView} className="h-full">
               <TabsList>
                 <TabsTrigger value="table">
-                  <IconList />
+                  <Rows3Icon />
                   List
                 </TabsTrigger>
                 <TabsTrigger value="khanban">
-                  <IconLayoutBoard />
+                  <LayoutDashboardIcon />
                   Kanban
                 </TabsTrigger>
                 <TabsTrigger value="month">
-                  <IconCalendarWeek />
+                  <CalendarDaysIcon />
                   Month
                 </TabsTrigger>
                 <TabsTrigger value="week">
-                  <IconCalendarMonth />
+                  <CalendarIcon />
                   Week
                 </TabsTrigger>
               </TabsList>

@@ -1,5 +1,3 @@
-import { IconTrendingUp } from "@tabler/icons-react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -9,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { TrendingUpIcon } from "lucide-react";
 
 export function SectionCards() {
   return (
@@ -21,14 +20,14 @@ export function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
+              <TrendingUpIcon />
               +25%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            New project added this quarter <IconTrendingUp className="size-4" />
+            New project added this quarter <TrendingUpIcon className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Software delivery demand increasing
@@ -44,7 +43,7 @@ export function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
+              <TrendingUpIcon />
               +12%
             </Badge>
           </CardAction>
@@ -52,7 +51,7 @@ export function SectionCards() {
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             Trending up this month
-            <IconTrendingUp className="size-4" />
+            <TrendingUpIcon className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Completed 12 tasks more than last month
@@ -68,14 +67,14 @@ export function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
+              <TrendingUpIcon />
               +33%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Critical workload growing <IconTrendingUp className="size-4" />
+            Critical workload growing <TrendingUpIcon className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Review resource allocation
@@ -91,14 +90,14 @@ export function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
+              <TrendingUpIcon />
               +15%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Better delivery predictability <IconTrendingUp className="size-4" />
+            Better delivery predictability <TrendingUpIcon className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Teams are meeting sprint commitments more consistently
