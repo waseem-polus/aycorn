@@ -22,7 +22,7 @@ dev:
 build: build-app build-server
 
 build-app:
-	cd $(APP_DIR) && npx vite build
+	cd $(APP_DIR) && npm run build
 	mkdir -p $(UI_DIST)
 	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
