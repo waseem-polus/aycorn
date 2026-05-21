@@ -1,6 +1,12 @@
 app.db
 server/ui/dist/
+server/dev.db
 aycorn
 server/web
 dist-release/
 .DS_Store
+
+# Desktop build output
+build/Aycorn.app
+build/AppIcon.iconset
+server/cmd/web/build/
