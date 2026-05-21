@@ -8,7 +8,6 @@ import React, {
   useMemo,
 } from "react";
 import { toast } from "sonner";
-import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import type { Task } from "@/types/types";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useTaskMutation } from "@/queries/useTaskMutation";

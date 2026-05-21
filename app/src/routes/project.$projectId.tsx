@@ -27,7 +27,7 @@ function ProjectPageHeader() {
 function RouteComponent() {
   const { projectId } = Route.useParams();
   const { view } = Route.useSearch();
-  const navigate = useNavigate();
+  const navigate = useNavigate({ from: Route.fullPath });
   const setView = (newView: string) => navigate({ search: { view: newView } });
 
   return (

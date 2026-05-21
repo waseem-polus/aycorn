@@ -1,4 +1,4 @@
-import { type Icon } from "@tabler/icons-react";
+import type React from "react";
 import { Link } from "@tanstack/react-router";
 import {
   SidebarGroup,
@@ -14,7 +14,7 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon?: Icon;
+    icon?: React.ComponentType;
   }[];
 }) {
   return (
