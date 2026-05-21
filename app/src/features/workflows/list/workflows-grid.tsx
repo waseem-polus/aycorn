@@ -53,7 +53,7 @@ export function WorkflowsGrid({
   const hasResults = filtered.length > 0;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 flex-1 min-h-0">
       <div className="flex gap-2 items-center flex-col md:flex-row">
         <InputGroup>
           <InputGroupInput
@@ -99,7 +99,7 @@ export function WorkflowsGrid({
           {search ? "No workflows match your search." : "No workflows yet."}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-0 overflow-y-auto">
           {filtered.map((workflow) => (
             <WorkflowCard key={workflow.ID} workflow={workflow} />
           ))}
