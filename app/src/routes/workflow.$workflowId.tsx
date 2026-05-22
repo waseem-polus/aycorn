@@ -22,13 +22,18 @@ function RouteComponent() {
 
   return (
     <Page>
-      <PageHeader breadcrumb={[{ label: "Workflows", to: "/workflows" }, workflow?.Name ?? ""]} />
+      <PageHeader
+        breadcrumb={[
+          { label: "Workflows", to: "/workflows" },
+          workflow?.Name ?? "Untitled Workflow",
+        ]}
+      />
       <PageContent>
         {workflow ? (
           <div className="flex flex-col gap-6 flex-1 min-h-0">
             <WorkflowPageHeader workflow={workflow} autoFocusName={isNew} />
-            <StageTypeSummary stages={workflow.Stages ?? []} />{" "}
             {/* TODO: Replace this with a kanban preview */}
+            <StageTypeSummary stages={workflow.Stages ?? []} />
             <StageList stages={workflow.Stages ?? []} workflowId={id} />
             <StagesBulkActionsToolbar
               stages={workflow.Stages ?? []}
