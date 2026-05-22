@@ -30,7 +30,7 @@ export default function TaskSideDrawer({
 
   return (
     <Drawer
-      handleOnly
+      handleOnly={!isMobile}
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {
@@ -39,7 +39,7 @@ export default function TaskSideDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="h-full">
         <DrawerHeader>
           <DrawerTitle className="flex gap-1">
             <LandPlot className="size-5" />

@@ -4,11 +4,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export function RelativeTimeWithTooltip({
+  className = "",
   date,
   label,
 }: {
+  className?: string;
   date: string;
   label: string;
 }) {
@@ -17,7 +20,7 @@ export function RelativeTimeWithTooltip({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="text-sm text-muted-foreground">
+        <span className={cn("text-sm text-muted-foreground", className)}>
           {label} {formatDistanceToNow(new Date(date), { addSuffix: true })}
         </span>
       </TooltipTrigger>

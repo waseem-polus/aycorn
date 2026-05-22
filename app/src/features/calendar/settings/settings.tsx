@@ -1,4 +1,4 @@
-import { SettingsIcon } from "lucide-react";
+import { CalendarCogIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,8 +30,8 @@ export function Settings() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <SettingsIcon />
+        <Button variant="outline" size="icon" className="h-6 w-6">
+          <CalendarCogIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
@@ -69,9 +69,7 @@ export function Settings() {
                 }
               >
                 <DropdownMenuRadioItem value="date">Date</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="type">
-                  Type
-                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="type">Type</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuGroup>
           </>

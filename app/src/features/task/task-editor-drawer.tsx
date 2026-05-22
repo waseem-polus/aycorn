@@ -54,7 +54,7 @@ export default function TaskEditorDrawer({
 
   return (
     <Drawer
-      handleOnly
+      handleOnly={!isMobile}
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {
@@ -63,13 +63,13 @@ export default function TaskEditorDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg">
+      <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg h-full">
         <TaskEditorHeader setOpen={setOpen} />
         <EditableTaskName
-          className="mx-6 pb-2 mb-2"
+          className="mx-3 sm:mx-6 pb-2 mb-2"
           onChange={handleTaskChanges}
         />
-        <section className="flex flex-col pt-0 px-8 gap-2 mb-2">
+        <section className="flex flex-col pt-0 px-4 sm:px-8 gap-2 mb-2">
           <TaskProperty label="Checklist" htmlFor="name">
             <SelectChecklist onChange={handleTaskChanges} />
           </TaskProperty>
@@ -113,7 +113,7 @@ export default function TaskEditorDrawer({
           </div>
         )}
 
-        <DrawerFooter className="p-2 border-t">
+        <DrawerFooter className="p-2 border-t hidden sm:flex">
           <span className="flex justify-end text-sm text-muted-foreground">
             {"Created "}
             {toFormatted(task.TimeCreated)} (

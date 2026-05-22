@@ -1,8 +1,15 @@
 import type { Task } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import TaskTypeIcon from "./icons/TaskTypeIcon";
+import { cn } from "@/lib/utils";
 
-export default function TaskTypeBadge({ variant }: { variant: Task["Type"] }) {
+export default function TaskTypeBadge({
+  variant,
+  className = "",
+}: {
+  variant: Task["Type"];
+  className?: string;
+}) {
   let color = "bg-green-100 dark:bg-green-900/40";
   switch (variant) {
     case "Dev":
@@ -16,7 +23,7 @@ export default function TaskTypeBadge({ variant }: { variant: Task["Type"] }) {
   }
 
   return (
-    <Badge variant="secondary" className={color}>
+    <Badge variant="secondary" className={cn(className, color)}>
       <TaskTypeIcon variant={variant} />
       {variant}
     </Badge>

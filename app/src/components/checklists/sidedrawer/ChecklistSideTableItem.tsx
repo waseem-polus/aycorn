@@ -6,7 +6,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Goal, Pencil, Trash2 } from "lucide-react";
+import { Ellipsis, Goal, Pencil } from "lucide-react";
 import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -19,6 +19,13 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
@@ -38,8 +45,7 @@ export function ChecklistSideTableItem({
   const [isEditing, setIsEditing] = useState(false);
   const editableRef = useRef<HTMLHeadingElement>(null);
 
-  const displayName =
-    checklist.Name === "" ? "New Checklist" : checklist.Name;
+  const displayName = checklist.Name === "" ? "New Checklist" : checklist.Name;
   const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
     "line-through font-normal": checklist.Status === "done",
   });
@@ -122,19 +128,43 @@ export function ChecklistSideTableItem({
           <ItemDescription className="pt-2">
             <Progress
               value={(checklist.DoneCount / checklist.TotalCount) * 100}
-              className="w-2xs h-1.5"
+              className="w-full h-1.5"
             />
           </ItemDescription>
         </ItemContent>
         <ItemActions className="flex items-center">
-          <Button
-            onClick={() => deleteChecklist.mutate(checklist.ID)}
-            size="icon-sm"
-            variant="ghost"
-            className="invisible group-hover:visible hover:cursor-pointer"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                className="sm:invisible sm:group-hover:visible data-[state=open]:visible hover:cursor-pointer"
+              >
+                <Ellipsis className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleStartEdit}>
+                Rename
+              </DropdownMenuItem>
+              {!checklist.IsDefault && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    update.mutate({ ...checklist, IsDefault: true })
+                  }
+                >
+                  Make default
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => deleteChecklist.mutate(checklist.ID)}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ItemActions>
       </div>
     </Item>

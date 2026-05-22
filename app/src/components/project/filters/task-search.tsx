@@ -11,7 +11,7 @@ export function TaskSearch() {
   const { Tasks, SetFilter, Filter } = useContext(ProjectContext);
 
   return (
-    <InputGroup>
+    <InputGroup className="flex-1">
       <InputGroupInput
         placeholder="Filter Tasks..."
         onChange={(e) => SetFilter({ ...Filter, Name: e.target.value ?? "" })}

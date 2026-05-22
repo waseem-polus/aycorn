@@ -59,11 +59,16 @@ export function ListView({
                             <StageIcon stage={stagesById.get(task.Stage)} />
                             <TaskPriorityIcon variant={task.Priority} />
                           </ItemMedia>
-                          <ItemContent>
+                          <ItemContent className="flex-1 min-w-0 overflow-visible">
                             <ListViewTaskName />
 
                             <ItemDescription>
-                              <span className="w-full flex gap-2">
+                              <span className="w-full h-full flex flex-wrap gap-2">
+                                <TaskTypeBadge
+                                  className="flex sm:hidden"
+                                  variant={task.Type}
+                                />
+
                                 <Badge
                                   variant={
                                     task.Assignee !== ""
@@ -81,15 +86,27 @@ export function ListView({
                                     ? "Not Assigned"
                                     : task.Assignee}
                                 </Badge>
+
                                 <TaskPlannedDates
+                                  className="hidden sm:flex"
                                   start={task.TimePlannedStart}
                                   end={task.TimePlannedEnd}
                                 />
+
+                                <Badge
+                                  variant="outline"
+                                  className="bg-background flex sm:hidden"
+                                >
+                                  <LandPlot className="size-2" />
+                                  {task.ChecklistName !== ""
+                                    ? task.ChecklistName
+                                    : "New Checklist"}
+                                </Badge>
                               </span>
                             </ItemDescription>
                           </ItemContent>
                           <ItemActions>
-                            <span className="w-full flex justify-end gap-2">
+                            <span className="hidden sm:flex w-full justify-end gap-2">
                               <TaskTypeBadge variant={task.Type} />
                               <Badge
                                 variant="outline"
