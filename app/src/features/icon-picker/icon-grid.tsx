@@ -70,11 +70,14 @@ export function IconGrid({
     <div>
       <div
         ref={parentRef}
-        className="h-[280px] overflow-auto"
+        className="h-[280px] overflow-auto p-1"
         onMouseLeave={() => setHovered(null)}
       >
         <div
-          style={{ height: rowVirtualizer.getTotalSize(), position: "relative" }}
+          style={{
+            height: rowVirtualizer.getTotalSize(),
+            position: "relative",
+          }}
           className="w-full"
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {

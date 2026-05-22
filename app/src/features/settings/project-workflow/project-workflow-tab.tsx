@@ -44,7 +44,7 @@ export function ProjectWorkflowTab({ projectId }: { projectId: number }) {
   );
 
   return (
-    <section className="flex flex-col gap-5 md:gap-3">
+    <section className="flex flex-col gap-5 md:gap-3 h-full">
       <div className="flex items-start justify-between ">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-medium">Project workflow</h2>

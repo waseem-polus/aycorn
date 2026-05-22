@@ -51,6 +51,7 @@ export function ProjectWorkflowCard({
           <p className="text-sm text-muted-foreground">{meta}</p>
         </div>
         <RelativeTimeWithTooltip
+          className="hidden sm:flex"
           date={workflow.TimeModified}
           label="Last modified"
         />

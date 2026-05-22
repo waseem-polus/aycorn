@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Link } from "@tanstack/react-router";
+import { useIsMobile } from "@/hooks/useMobile";
 
 export function NavSecondary({
   items,
@@ -19,13 +20,15 @@ export function NavSecondary({
     icon: React.ComponentType;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const isMobile = useIsMobile();
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild size={isMobile ? "lg" : "default"}>
                 <Link to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>

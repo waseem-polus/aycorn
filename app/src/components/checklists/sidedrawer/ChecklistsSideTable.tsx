@@ -27,6 +27,7 @@ export default function TaskSideDrawer({
 
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [newlyCreatedId, setNewlyCreatedId] = useState<number | null>(null);
 
   return (
     <Drawer
@@ -49,13 +50,17 @@ export default function TaskSideDrawer({
             View and update this project's checklists
           </DrawerDescription>
         </DrawerHeader>
-        <div className="p-4 pt-1 flex flex-col gap-2">
-          <ChecklistFilters />
-          <ItemGroup className="h-full rounded-md border overflow-auto">
+        <div className="p-4 pt-1 flex flex-col gap-2 flex-1 min-h-0">
+          <ChecklistFilters onCreated={setNewlyCreatedId} />
+          <ItemGroup className="flex-1 rounded-md border overflow-auto min-h-0">
             {Checklists.length > 0 ? (
               Checklists.map((checklist, i) => (
                 <React.Fragment key={checklist.ID}>
-                  <ChecklistSideTableItem checklist={checklist} />
+                  <ChecklistSideTableItem
+                    checklist={checklist}
+                    autoFocus={checklist.ID === newlyCreatedId}
+                    onFocusConsumed={() => setNewlyCreatedId(null)}
+                  />
                   {Checklists.length - 1 != i && <ItemSeparator />}
                 </React.Fragment>
               ))

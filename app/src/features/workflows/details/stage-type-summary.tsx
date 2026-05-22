@@ -47,7 +47,7 @@ function StageTypeSummaryItem({
   rule: StageTypeRule;
 }) {
   return (
-    <Card className="flex flex-1 flex-col gap-1 rounded-lg py-3 px-3 shadow-none items-start">
+    <Card className="flex flex-1 bg-background flex-col gap-1 rounded-lg py-3 px-3 shadow-none items-start">
       <StageTypeBadge type={type} />
       <span
         className={

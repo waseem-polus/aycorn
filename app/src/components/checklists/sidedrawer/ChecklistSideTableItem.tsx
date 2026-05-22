@@ -30,27 +30,38 @@ import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 
 export function ChecklistSideTableItem({
   checklist,
+  autoFocus = false,
+  onFocusConsumed,
 }: {
   checklist: ChecklistDetails;
+  autoFocus?: boolean;
+  onFocusConsumed?: () => void;
 }) {
   const { Project } = useContext(ProjectContext);
   const { update, deleteChecklist } = useChecklistMutation(Project.ID);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(autoFocus);
   const editableRef = useRef<HTMLHeadingElement>(null);
 
-  const displayName = checklist.Name === "" ? "New Checklist" : checklist.Name;
+  const displayName =
+    checklist.Name === "" ? "Untitled Checklist" : checklist.Name;
   const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
     "line-through font-normal": checklist.Status === "done",
+    "font-normal text-foreground-muted": checklist.Name === "",
   });
 
   useFocusAndSelect(editableRef, isEditing);
+
+  useEffect(() => {
+    if (autoFocus) onFocusConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = (newName: string) => {
     setIsEditing(false);
@@ -94,7 +105,7 @@ export function ChecklistSideTableItem({
                   ref={editableRef}
                   value={checklist.Name}
                   setValue={handleSave}
-                  placeholder="New Checklist"
+                  placeholder="Untitled Checklist"
                   className={titleClassName}
                 />
               ) : (

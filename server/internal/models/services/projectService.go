@@ -177,7 +177,16 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 }
 
 func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
-	return s.ProjectRepo.CreateProject(workflowId)
+	id, err := s.ProjectRepo.CreateProject(workflowId)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.ChecklistRepo.CreateDefaultChecklist(int(id)); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func (s *ProjectService) BulkSetPinned(ids []int, pinned bool) (models.BulkResult, error) {

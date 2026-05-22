@@ -102,14 +102,14 @@ export function SwitchWorkflowDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-2xl"
+        className="box-border flex-1 sm:max-w-2xl"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-start sm:text-center">
             {currentWorkflowName} → {target.Name}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-start sm:text-center">
             Route the{" "}
             <span className="font-bold">
               {totalTaskCount} task
@@ -162,7 +162,10 @@ export function SwitchWorkflowDialog({
                       {stage.TaskCount} task{stage.TaskCount !== 1 ? "s" : ""}
                     </span>
                   </span>
-                  <StageTypeBadge type={stage.Type} />
+                  <StageTypeBadge
+                    className="hidden sm:flex"
+                    type={stage.Type}
+                  />
                 </div>
 
                 <span className="text-muted-foreground text-xs text-center">

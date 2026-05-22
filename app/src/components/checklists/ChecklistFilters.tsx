@@ -10,7 +10,11 @@ import { Plus, Search } from "lucide-react";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
 import type { Checklist } from "@/types/types";
 
-export function ChecklistFilters() {
+export function ChecklistFilters({
+  onCreated,
+}: {
+  onCreated?: (id: number) => void;
+}) {
   const { Checklists, SetFilter, Filter, Project, SetChecklists } =
     useContext(ProjectContext);
   const { create } = useChecklistMutation(Project.ID);
@@ -43,6 +47,7 @@ export function ChecklistFilters() {
                   ...newChecklist,
                 },
               ]);
+              onCreated?.(newChecklist.ID);
             },
           })
         }
