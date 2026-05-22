@@ -136,7 +136,7 @@ export function ProjectsDataTable({
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-muted-foreground">
+              <span className="block truncate text-muted-foreground">
                 {formatDistanceToNow(date, { addSuffix: true })}
               </span>
             </TooltipTrigger>
@@ -160,7 +160,7 @@ export function ProjectsDataTable({
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-muted-foreground">
+              <span className="block truncate text-muted-foreground">
                 {formatDistanceToNow(date, { addSuffix: true })}
               </span>
             </TooltipTrigger>

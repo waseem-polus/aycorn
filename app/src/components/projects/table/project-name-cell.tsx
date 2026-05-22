@@ -54,7 +54,7 @@ export function ProjectNameCell({
   if (isEditing) {
     return (
       <div
-        className="min-w-0 flex gap-2 items-center"
+        className="min-w-0 w-fit flex gap-2 items-center"
         onClick={(e) => e.stopPropagation()}
       >
         <EditableHeader

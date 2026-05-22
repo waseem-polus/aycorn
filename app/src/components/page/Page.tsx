@@ -11,6 +11,7 @@ import {
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SelectionContext, useSelection } from "@/hooks/useSelection";
+import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 
@@ -32,20 +33,31 @@ export function PageContent({
 }) {
   const selection = useSelection();
   const { SelectionArea } = selection;
+  const isMobile = useIsMobile();
+
+  const inner = (
+    <div
+      className={cn(
+        "flex flex-col gap-4 p-3 sm:p-6 md:gap-6 h-full w-full overflow-hidden",
+        fullWidth ? "" : "max-w-7xl",
+      )}
+    >
+      {children}
+    </div>
+  );
 
   return (
     <SelectionContext.Provider value={selection}>
       <div id="wasm" className="flex flex-1 flex-col grow overflow-hidden">
-        <SelectionArea className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
-          <div
-            className={cn(
-              "flex flex-col gap-4 p-6 md:gap-6 h-full w-full overflow-hidden",
-              fullWidth ? "" : "max-w-7xl",
-            )}
-          >
-            {children}
+        {isMobile ? (
+          <div className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
+            {inner}
           </div>
-        </SelectionArea>
+        ) : (
+          <SelectionArea className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
+            {inner}
+          </SelectionArea>
+        )}
       </div>
     </SelectionContext.Provider>
   );
@@ -95,8 +107,7 @@ export function PageHeader({
               </BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumb.map((crumb, index) => {
-              const item =
-                typeof crumb === "string" ? { label: crumb } : crumb;
+              const item = typeof crumb === "string" ? { label: crumb } : crumb;
               const isLast = index === breadcrumb.length - 1;
               return (
                 <React.Fragment key={item.label}>
