@@ -24,9 +24,28 @@ export function ProjectWorkflowTab({ projectId }: { projectId: number }) {
       params: { workflowId: String(data.Workflow.ID) },
     });
 
+  const workflowButton = (
+    <>
+      <Button
+        className="flex-1 sm:flex-none"
+        variant="outline"
+        onClick={goToWorkflow}
+      >
+        <SquarePen />
+        Edit workflow
+      </Button>
+      <SwitchWorkflowButton
+        projectId={projectId}
+        currentWorkflowId={data.Workflow.ID}
+        currentWorkflowName={data.Workflow.Name}
+        currentStages={data.Stages}
+      />
+    </>
+  );
+
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-4">
+    <section className="flex flex-col gap-5 md:gap-3">
+      <div className="flex items-start justify-between ">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-medium">Project workflow</h2>
           <p className="max-w-prose text-sm text-muted-foreground">
@@ -35,21 +54,15 @@ export function ProjectWorkflowTab({ projectId }: { projectId: number }) {
             stage.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button variant="outline" onClick={goToWorkflow}>
-            <SquarePen />
-            Edit workflow
-          </Button>
-          <SwitchWorkflowButton
-            projectId={projectId}
-            currentWorkflowId={data.Workflow.ID}
-            currentWorkflowName={data.Workflow.Name}
-            currentStages={data.Stages}
-          />
+        <div className="shrink-0 items-center gap-2 hidden md:flex">
+          {workflowButton}
         </div>
       </div>
 
       <ProjectWorkflowCard workflow={data.Workflow} stages={data.Stages} />
+      <div className="flex justify-end gap-2 w-full md:hidden">
+        {workflowButton}
+      </div>
       <ProjectWorkflowFooter project={data.Project} />
     </section>
   );

@@ -63,7 +63,10 @@ export function SwitchWorkflowButton({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button disabled={switchWorkflow.isPending}>
+          <Button
+            className="flex-1 sm:flex-none"
+            disabled={switchWorkflow.isPending}
+          >
             <RefreshCw />
             Switch workflow
           </Button>

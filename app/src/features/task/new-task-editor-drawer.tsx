@@ -28,7 +28,9 @@ export function NewTaskEditorDrawer({
           Stage:
             task.Stage !== 0
               ? task.Stage
-              : Stages.find((s) => s.Type === "open")?.ID ?? Stages[0]?.ID ?? 0,
+              : (Stages.find((s) => s.Type === "open")?.ID ??
+                Stages[0]?.ID ??
+                0),
         },
         {
           onSuccess: (newTask: Task) => {

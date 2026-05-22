@@ -26,22 +26,24 @@ export function ProjectWorkflowFooter({ project }: { project: Project }) {
   };
 
   return (
-    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <Info className="size-4 shrink-0" />
-      Need a different shape?{" "}
-      <Link to="/workflows" className="text-primary hover:underline">
-        Browse all workflows
-      </Link>{" "}
-      or{" "}
-      <button
-        type="button"
-        onClick={handleCreate}
-        disabled={busy}
-        className="text-primary hover:underline disabled:opacity-50"
-      >
-        create a new one
-      </button>
-      .
+      <span>
+        Need a different shape?{" "}
+        <Link to="/workflows" className="text-primary hover:underline">
+          Browse all workflows
+        </Link>{" "}
+        or{" "}
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={busy}
+          className="text-primary hover:underline disabled:opacity-50"
+        >
+          create a new one
+        </button>
+        .
+      </span>
     </p>
   );
 }

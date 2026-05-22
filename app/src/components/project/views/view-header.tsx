@@ -6,13 +6,6 @@ import { PriorityFilter } from "@/components/project/filters/priority-filter";
 import { TypeFilter } from "@/components/project/filters/task-type-filter";
 import { TaskSearch } from "@/components/project/filters/task-search";
 import { ProjectChecklists } from "@/components/project/views/project-checklists";
-import { Button } from "@/components/ui/button";
-import { TagIcon } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function ViewHeader({
   setTaskDrawerOpen,
@@ -23,22 +16,13 @@ export function ViewHeader({
     <>
       <div className="flex gap-2">
         <TaskSearch />
-        <Tooltip>
-          <TooltipTrigger>
-            <Button variant="outline" disabled>
-              <TagIcon />
-              Tags
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Coming soon</TooltipContent>
-        </Tooltip>
         <ProjectChecklists />
         <TaskProvider>
           <NewTaskEditorDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
         </TaskProvider>
       </div>
 
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row flex-wrap gap-2">
         <ChecklistFilter />
         <StageFilter />
         <PriorityFilter />

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, PinIcon } from "lucide-react";
 import { EditableHeader } from "@/components/EditableHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,10 @@ export function ProjectNameCell({
 
   if (isEditing) {
     return (
-      <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="min-w-0 flex gap-2 items-center"
+        onClick={(e) => e.stopPropagation()}
+      >
         <EditableHeader
           ref={editableRef}
           value={project.Name}
@@ -61,6 +64,9 @@ export function ProjectNameCell({
           placeholder="New Project"
           className="text-sm p-0 min-h-0 font-normal"
         />
+        {project.Pinned && (
+          <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0" />
+        )}
       </div>
     );
   }
@@ -70,11 +76,14 @@ export function ProjectNameCell({
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
           <span
-            className={`truncate group-hover:underline ${
+            className={`truncate group-hover:underline flex gap-2 items-center ${
               isEmpty ? "text-muted-foreground" : "text-foreground"
             }`}
           >
             {displayName}
+            {project.Pinned && (
+              <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0" />
+            )}
           </span>
         </HoverCardTrigger>
         <HoverCardContent
