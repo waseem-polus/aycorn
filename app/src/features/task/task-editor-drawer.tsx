@@ -71,13 +71,13 @@ export default function TaskEditorDrawer({
       <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
         <TaskEditorHeader setOpen={setOpen} />
         <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
-          <div className="flex items-start gap-1 mx-3 sm:mx-6">
+          <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
             <EditableTaskName onChange={handleTaskChanges} />
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 self-start mt-6"
+                className="shrink-0 self-start"
               >
                 <ChevronDown
                   className={cn(
@@ -90,8 +90,6 @@ export default function TaskEditorDrawer({
           </div>
           {!propertiesOpen && (
             <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
-              {/*<TaskPriorityIcon variant={task.Priority} />
-              <TaskTypeBadge variant={task.Type} />*/}
               <Badge
                 variant={task.Assignee !== "" ? "secondary" : "outline"}
                 className={task.Assignee !== "" ? "" : "text-muted-foreground"}
@@ -99,17 +97,13 @@ export default function TaskEditorDrawer({
                 <User className="size-2" />
                 {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
               </Badge>
-              {/*<Badge variant="outline">
-                <LandPlot className="size-2" />
-                {task.ChecklistName}
-              </Badge>*/}
               <TaskPlannedDates
                 start={task.TimePlannedStart}
                 end={task.TimePlannedEnd}
               />
             </div>
           )}
-          <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+          <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mt-2">
             <section className="flex flex-col pt-0 px-4 sm:px-8 gap-2 mb-2">
               <TaskProperty label="Checklist" htmlFor="name">
                 <SelectChecklist onChange={handleTaskChanges} />

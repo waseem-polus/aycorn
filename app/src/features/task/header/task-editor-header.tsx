@@ -37,7 +37,7 @@ export function TaskEditorHeader({
   const isMobile = useIsMobile();
 
   return (
-    <DrawerHeader className="p-2 border-b">
+    <DrawerHeader className="p-2 sm:border-b">
       <div className="flex justify-between">
         <div className="flex">
           <DrawerClose asChild>
