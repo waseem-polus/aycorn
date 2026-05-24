@@ -32,7 +32,7 @@ export function ProjectRowActions({
       onClick={(e) => e.stopPropagation()}
     >
       {project.Pinned && (
-        <PinIcon className="stroke-red-400 size-4 sm:size-4 shrink-0" />
+        <PinIcon className="stroke-red-400 size-4 sm:size-4 shrink-0 sm:hidden" />
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
