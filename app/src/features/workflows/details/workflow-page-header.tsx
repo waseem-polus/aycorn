@@ -43,11 +43,8 @@ export function WorkflowPageHeader({
   const handleSaveName = (newName: string) => {
     if (newName !== workflow.Name) {
       updateWorkflow.mutate({
-        ID: workflow.ID,
+        ...workflow,
         Name: newName,
-        Description: workflow.Description,
-        TimeCreated: workflow.TimeCreated,
-        TimeModified: workflow.TimeModified,
       });
     }
   };
@@ -55,11 +52,8 @@ export function WorkflowPageHeader({
   const handleSaveDescription = (newDescription: string) => {
     if (newDescription !== workflow.Description) {
       updateWorkflow.mutate({
-        ID: workflow.ID,
-        Name: workflow.Name,
+        ...workflow,
         Description: newDescription,
-        TimeCreated: workflow.TimeCreated,
-        TimeModified: workflow.TimeModified,
       });
     }
   };

@@ -25,11 +25,9 @@ import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, LandPlot, User } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
-import TaskTypeBadge from "@/features/task/properties/task-type-badge";
-import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 
 export default function TaskEditorDrawer({
   children,
