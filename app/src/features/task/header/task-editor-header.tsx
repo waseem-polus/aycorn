@@ -1,3 +1,4 @@
+import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip";
 import { Button } from "@/components/ui/button";
 import { DrawerClose, DrawerHeader } from "@/components/ui/drawer";
 import {
@@ -10,8 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import { Ellipsis, Maximize2 } from "lucide-react";
+import { ChevronsRightIcon, Ellipsis, Maximize2 } from "lucide-react";
 import { useContext } from "react";
 import { toast } from "sonner";
 
@@ -24,17 +26,33 @@ export function TaskEditorHeader({
   const { Project } = useContext(ProjectContext);
   const { deleteTask } = useTaskMutation(Project.ID);
 
+  const isMobile = useIsMobile();
+
   return (
     <DrawerHeader className="p-2 border-b">
-      <div className="flex justify-end">
+      <div className="flex justify-between">
         <div className="flex">
+          <DrawerClose asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
+            >
+              <ChevronsRightIcon className={isMobile ? "rotate-90" : ""} />
+            </Button>
+          </DrawerClose>
+
           <Button
             variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground"
+            size="icon-sm"
+            className="text-muted-foreground"
           >
             <Maximize2 className="size-3.5" />
           </Button>
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <RelativeTimeWithTooltip date={task.TimeModified} label="Modified" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -47,9 +65,8 @@ export function TaskEditorHeader({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-2">
               <DropdownMenuGroup>
-                <DrawerClose asChild>
-                  <DropdownMenuItem>Close</DropdownMenuItem>
-                </DrawerClose>
+                <DropdownMenuItem>Add Favorite</DropdownMenuItem>
+                <DropdownMenuItem>Duplicate</DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>

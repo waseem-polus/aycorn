@@ -14,9 +14,8 @@ VERSION  := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev
 # binary's DB under ~/Library/Application Support/aycorn (or the OS equivalent).
 dev:
 	@trap 'kill 0' INT; \
-	  cd $(APP_DIR) && npm run dev & \
-	  cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web; \
-	  wait
+    cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web; \
+    wait
 
 # Full release build: React → embed → single Go binary
 build: build-app build-server
@@ -43,16 +42,16 @@ install: build
 
 # Gracefully stop the running aycorn process (no-op if it isn't running).
 # The server handles SIGTERM cleanly — in-flight requests finish before it exits.
-restart:
+stop:
 	-pkill -TERM -x aycorn
-	@echo "Stopped aycorn (if it was running). Start it again with: aycorn"
+	@echo "Stopped aycorn (if it was running). Run 'aycorn' to start again."
 
 # Rebuild, reinstall, and stop the old process. Run after `git pull`.
 # Run 'aycorn' afterwards to start the new version.
 upgrade:
 	$(MAKE) install
-	-pkill -TERM -x aycorn
-	@echo "Upgraded to $$(aycorn --version). Run 'aycorn' to start."
+	@echo "Upgraded to $$(aycorn --version)"
+	$(MAKE) stop
 
 clean:
 	rm -f $(BINARY)

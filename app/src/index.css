@@ -83,6 +83,8 @@
   --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
   --sidebar-border: oklch(0.925 0.005 214.3);
   --sidebar-ring: oklch(0.723 0.014 214.4);
+
+  --header-height: 48px;
 }
 
 .dark {
@@ -127,7 +129,10 @@
     @apply bg-background text-foreground;
     font-family: "Geist", sans-serif;
   }
-  code, kbd, pre, samp {
+  code,
+  kbd,
+  pre,
+  samp {
     font-family: "Geist Mono", monospace;
   }
 }

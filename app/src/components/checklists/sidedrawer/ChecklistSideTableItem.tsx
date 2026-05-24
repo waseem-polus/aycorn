@@ -2,7 +2,6 @@ import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
@@ -136,12 +135,12 @@ export function ChecklistSideTableItem({
             </ItemTitle>
           </span>
 
-          <ItemDescription className="pt-2">
+          <div data-slot="item-description" className="pt-2">
             <Progress
               value={(checklist.DoneCount / checklist.TotalCount) * 100}
               className="w-full h-1.5"
             />
-          </ItemDescription>
+          </div>
         </ItemContent>
         <ItemActions className="flex items-center">
           <DropdownMenu>
