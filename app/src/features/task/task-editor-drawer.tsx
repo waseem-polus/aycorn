@@ -24,8 +24,12 @@ import type { Value } from "platejs";
 import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, LandPlot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
+import TaskTypeBadge from "@/features/task/properties/task-type-badge";
+import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 
 export default function TaskEditorDrawer({
   children,
@@ -84,6 +88,27 @@ export default function TaskEditorDrawer({
               </Button>
             </CollapsibleTrigger>
           </div>
+          {!propertiesOpen && (
+            <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
+              {/*<TaskPriorityIcon variant={task.Priority} />
+              <TaskTypeBadge variant={task.Type} />*/}
+              <Badge
+                variant={task.Assignee !== "" ? "secondary" : "outline"}
+                className={task.Assignee !== "" ? "" : "text-muted-foreground"}
+              >
+                <User className="size-2" />
+                {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
+              </Badge>
+              {/*<Badge variant="outline">
+                <LandPlot className="size-2" />
+                {task.ChecklistName}
+              </Badge>*/}
+              <TaskPlannedDates
+                start={task.TimePlannedStart}
+                end={task.TimePlannedEnd}
+              />
+            </div>
+          )}
           <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
             <section className="flex flex-col pt-0 px-4 sm:px-8 gap-2 mb-2">
               <TaskProperty label="Checklist" htmlFor="name">

@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { formatTime } from "@/features/calendar/helpers";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { getTaskColor, getTaskStartDate } from "@/features/calendar/interfaces";
 import {
   EventBullet,
@@ -22,7 +22,7 @@ import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 
 interface EventListDialogProps {
   date: Date;
-  tasks: Task[];
+  tasks: ChecklistTask[];
   maxVisibleEvents?: number;
   children?: ReactNode;
 }

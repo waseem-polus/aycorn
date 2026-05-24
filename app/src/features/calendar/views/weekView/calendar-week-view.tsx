@@ -13,7 +13,7 @@ import {
   getTaskStartDate,
   getTaskEndDate,
 } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { CalendarTimeline } from "@/features/calendar/views/weekView/calendar-time-line";
 import { RenderGroupedEvents } from "@/features/calendar/views/weekView/render-grouped-events";
 import { WeekViewMultiDayEventsRow } from "@/features/calendar/views/weekView/week-view-multi-day-events-row";
@@ -23,8 +23,8 @@ import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 interface IProps {
-  singleDayEvents: Task[];
-  multiDayEvents: Task[];
+  singleDayEvents: ChecklistTask[];
+  multiDayEvents: ChecklistTask[];
 }
 
 export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {

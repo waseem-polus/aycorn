@@ -13,9 +13,17 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import { ChevronsRightIcon, Ellipsis, Maximize2 } from "lucide-react";
+import {
+  ChevronsRightIcon,
+  Ellipsis,
+  LandPlotIcon,
+  Maximize2,
+} from "lucide-react";
 import { useContext } from "react";
 import { toast } from "sonner";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "../properties/task-type-badge";
+import { Badge } from "@/components/ui/badge";
 
 export function TaskEditorHeader({
   setOpen = () => {},
@@ -52,7 +60,17 @@ export function TaskEditorHeader({
         </div>
 
         <div className="flex gap-2 items-center">
-          <RelativeTimeWithTooltip date={task.TimeModified} label="Modified" />
+          <RelativeTimeWithTooltip
+            date={task.TimeModified}
+            label="Modified"
+            className="invisible sm:visible"
+          />
+          <TaskPriorityIcon variant={task.Priority} />
+          <TaskTypeBadge variant={task.Type} />
+          <Badge variant="outline" className="text-muted-foreground">
+            <LandPlotIcon className="size-2" />
+            {task.ChecklistName}
+          </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

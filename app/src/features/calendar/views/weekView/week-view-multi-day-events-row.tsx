@@ -13,19 +13,19 @@ import {
   getTaskStartDate,
   getTaskEndDate,
 } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { MonthEventBadge } from "@/features/calendar/views/monthView";
 
 interface IProps {
   selectedDate: Date;
-  multiDayEvents: Task[];
+  multiDayEvents: ChecklistTask[];
 }
 
 export function WeekViewMultiDayEventsRow({
   selectedDate,
   multiDayEvents,
 }: IProps) {
-  const weekStart = startOfWeek(selectedDate);
+  const weekStart = useMemo(() => startOfWeek(selectedDate), []);
   const weekEnd = endOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 

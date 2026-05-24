@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { defaultTaskContextValue, TaskContext } from "./TaskContext";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 
 export function TaskProvider({
   defaultState = defaultTaskContextValue.state,
   children,
 }: {
-  defaultState?: Task;
+  defaultState?: ChecklistTask;
   children: React.ReactNode;
 }) {
-  const [task, setTask] = useState<Task>(defaultState);
+  const [task, setTask] = useState<ChecklistTask>(defaultState);
 
   return (
     <TaskContext.Provider value={{ state: task, setState: setTask }}>

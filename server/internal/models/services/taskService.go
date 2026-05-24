@@ -18,7 +18,7 @@ func (s *TaskService) GetTaskBody(taskId int) (string, error) {
 	return taskBody, nil
 }
 
-func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.Task, error) {
+func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.ChecklistTask, error) {
 	newTask, err := s.TaskRepo.CreateTask(task)
 	if err != nil {
 		return nil, err

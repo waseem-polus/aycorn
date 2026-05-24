@@ -10,7 +10,7 @@ import { getMonthCellEvents } from "@/features/calendar/helpers";
 import { useMediaQuery } from "@/features/calendar/hooks";
 import type { ICalendarCell } from "@/features/calendar/interfaces";
 import { getTaskStartDate, getTaskColor } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import {
   EventBullet,
   MonthEventBadge,
@@ -20,7 +20,7 @@ import { TaskProvider } from "@/contexts/task/TaskProvider";
 
 interface IProps {
   cell: ICalendarCell;
-  events: Task[];
+  events: ChecklistTask[];
   eventPositions: Record<string, number>;
   setTaskDrawerOpen: (open: boolean) => void;
 }

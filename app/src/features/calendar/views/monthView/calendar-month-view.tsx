@@ -8,12 +8,12 @@ import {
   getCalendarCells,
 } from "@/features/calendar/helpers";
 
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { DayCell } from "@/features/calendar/views/monthView";
 
 interface IProps {
-  singleDayEvents: Task[];
-  multiDayEvents: Task[];
+  singleDayEvents: ChecklistTask[];
+  multiDayEvents: ChecklistTask[];
   setTaskDrawerOpen: (open: boolean) => void;
 }
 

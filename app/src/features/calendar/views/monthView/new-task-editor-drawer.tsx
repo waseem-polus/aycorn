@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 
 export function NewTaskEditorDrawer({
@@ -32,7 +32,7 @@ export function NewTaskEditorDrawer({
           TimePlannedStart: toISO(date),
         },
         {
-          onSuccess: (newTask: Task) => {
+          onSuccess: (newTask: ChecklistTask) => {
             setTask(newTask);
           },
         },

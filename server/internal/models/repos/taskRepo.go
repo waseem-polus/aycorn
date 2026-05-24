@@ -127,7 +127,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 	return checklistTasks, nil
 }
 
-func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Task, error) {
+func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.ChecklistTask, error) {
 	query := `
 		INSERT INTO task (name, body, checklist, timePlannedStart, timePlannedEnd, assignee, priority, type, stage)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -204,7 +204,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
-func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
+func (repo *TaskRepo) FindOne(taskId int64) (*models.ChecklistTask, error) {
 	query := `
 		SELECT
 			t.id,
@@ -219,8 +219,10 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 			t.priority,
 			t.type,
 			t.stage,
-			t.checklist
+			t.checklist,
+			c.name,
 		FROM task t
+		INNER JOIN checklsit c ON c.id = t.checklist
 		WHERE t.id = ?;
 	`
 	rows, err := repo.DB.Query(query, taskId)
@@ -228,7 +230,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		return nil, err
 	}
 
-	task := models.Task{}
+	task := models.ChecklistTask{}
 	rows.Next()
 	err = rows.Err()
 	if err != nil {
@@ -249,6 +251,7 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.Task, error) {
 		&task.Type,
 		&task.Stage,
 		&task.Checklist,
+		&task.ChecklistName,
 	)
 	if err != nil {
 		return nil, err

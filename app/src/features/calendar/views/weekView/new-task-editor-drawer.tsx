@@ -6,7 +6,7 @@ import { useTaskMutation } from "@/queries/useTaskMutation";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 
 export function NewTaskEditorDrawer({
@@ -38,7 +38,7 @@ export function NewTaskEditorDrawer({
         TimePlannedEnd: toISO(endDateTime),
       },
       {
-        onSuccess: (newTask: Task) => {
+        onSuccess: (newTask: ChecklistTask) => {
           setTask(newTask);
         },
       },
