@@ -25,19 +25,19 @@ export const Route = createFileRoute("/")({
 type PinFilter = "all" | "pinned" | "unpinned";
 
 function RouteComponent() {
-  const { data: projects, isFetching } = useAllProjectsQuery();
+  const { data: projects, isPending } = useAllProjectsQuery();
   const [search, setSearch] = useState("");
   const [pinFilter, setPinFilter] = useState<PinFilter>("all");
 
   const filteredProjects = useMemo(() => {
-    if (isFetching || !projects) return [];
+    if (isPending || !projects) return [];
     return projects.filter((project: Project) => {
       if (!project.Name.toLowerCase().includes(search.toLowerCase())) return false;
       if (pinFilter === "pinned") return project.Pinned;
       if (pinFilter === "unpinned") return !project.Pinned;
       return true;
     });
-  }, [projects, search, pinFilter, isFetching]);
+  }, [projects, search, pinFilter, isPending]);
 
   return (
     <Page>
@@ -80,7 +80,7 @@ function RouteComponent() {
             </div>
           </div>
 
-          <ProjectsDataTable data={filteredProjects} isFetching={isFetching} />
+          <ProjectsDataTable data={filteredProjects} isFetching={isPending} />
         </div>
       </PageContent>
     </Page>
