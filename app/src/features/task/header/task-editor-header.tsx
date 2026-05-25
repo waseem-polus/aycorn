@@ -63,7 +63,7 @@ export function TaskEditorHeader({
           <RelativeTimeWithTooltip
             date={task.TimeModified}
             label="Modified"
-            className="invisible sm:visible"
+            className="hidden sm:flex"
           />
           <TaskPriorityIcon variant={task.Priority} />
           <TaskTypeBadge variant={task.Type} />

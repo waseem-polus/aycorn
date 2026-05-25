@@ -136,10 +136,7 @@ export function PageHeader({
                         return (
                           <DropdownMenuItem key={item.label} asChild>
                             {item.to ? (
-                              <Link
-                                to={item.to as string}
-                                params={item.params}
-                              >
+                              <Link to={item.to as string} params={item.params}>
                                 {item.label}
                               </Link>
                             ) : (

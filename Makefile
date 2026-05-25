@@ -7,12 +7,12 @@ UI_DIST  := $(SRV_DIR)/ui/dist
 # Falls back to "dev" when git isn't available or there are no tags yet.
 VERSION  := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: dev build build-app build-server typecheck install upgrade restart clean
+.PHONY: dev build build-app build-app-dev build-server typecheck install upgrade restart clean
 
-# Development: Vite dev server + Go server (two processes, Ctrl-C kills both)
+# Development: build frontend with dev icon, then start Go server.
 # AYCORN_DB pins the dev DB to server/app.db so it doesn't touch the installed
 # binary's DB under ~/Library/Application Support/aycorn (or the OS equivalent).
-dev:
+dev: build-app-dev
 	@trap 'kill 0' INT; \
     cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web; \
     wait
@@ -22,6 +22,11 @@ build: build-app build-server
 
 build-app:
 	cd $(APP_DIR) && npm run build
+	mkdir -p $(UI_DIST)
+	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
+
+build-app-dev:
+	cd $(APP_DIR) && npx vite build --mode development
 	mkdir -p $(UI_DIST)
 	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 

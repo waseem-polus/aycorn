@@ -63,7 +63,7 @@ export function ListView({
                             <ListViewTaskName />
 
                             <ItemDescription>
-                              <span className="w-full h-full flex flex-wrap gap-2">
+                              <span className="w-full h-fit flex flex-wrap gap-2">
                                 <TaskTypeBadge
                                   className="flex sm:hidden"
                                   variant={task.Type}
@@ -93,6 +93,7 @@ export function ListView({
                                   end={task.TimePlannedEnd}
                                   hasStartTime={task.HasTimePlannedStart}
                                   hasEndTime={task.HasTimePlannedEnd}
+                                  excludeYear
                                 />
 
                                 <Badge
