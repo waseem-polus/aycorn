@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, ClockCheckIcon, ClockIcon } from "lucide-react";
+import { CalendarIcon, ClockIcon } from "lucide-react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
@@ -186,7 +186,7 @@ export function DatePickerInput({
               value={hasStartTime ? getTimeFromISO(plannedStart) : ""}
               onChange={(e) => handleTimeChange("start", e.target.value)}
             />
-            <InputGroupButton>
+            <InputGroupButton className="hover:bg-background">
               <Switch
                 checked={hasStartTime}
                 onCheckedChange={(checked) => {
@@ -195,35 +195,39 @@ export function DatePickerInput({
                     : clearTimeFromISO(plannedStart);
                   emit(newStart, plannedEnd, checked, hasEndTime);
                 }}
+                className="hover:cursor-pointer"
               />
             </InputGroupButton>
           </InputGroup>
 
-          <InputGroup>
-            <InputGroupAddon>
-              <ClockCheckIcon />
-            </InputGroupAddon>
-            <InputGroupInput
-              className="w-full"
-              id="timeEnd"
-              type="time"
-              disabled={!hasEndTime || !date?.to}
-              value={hasEndTime ? getTimeFromISO(plannedEnd) : ""}
-              onChange={(e) => handleTimeChange("end", e.target.value)}
-            />
-            <InputGroupButton>
-              <Switch
-                checked={hasEndTime}
-                disabled={!date?.to}
-                onCheckedChange={(checked) => {
-                  const newEnd = checked
-                    ? plannedEnd
-                    : clearTimeFromISO(plannedEnd);
-                  emit(plannedStart, newEnd, hasStartTime, checked);
-                }}
+          {hasStartTime && (
+            <InputGroup>
+              <InputGroupAddon>
+                <ClockIcon />
+              </InputGroupAddon>
+              <InputGroupInput
+                className="w-full"
+                id="timeEnd"
+                type="time"
+                disabled={!hasEndTime || !date?.to}
+                value={hasEndTime ? getTimeFromISO(plannedEnd) : ""}
+                onChange={(e) => handleTimeChange("end", e.target.value)}
               />
-            </InputGroupButton>
-          </InputGroup>
+              <InputGroupButton className="hover:bg-background">
+                <Switch
+                  checked={hasEndTime}
+                  disabled={!date?.to}
+                  onCheckedChange={(checked) => {
+                    const newEnd = checked
+                      ? plannedEnd
+                      : clearTimeFromISO(plannedEnd);
+                    emit(plannedStart, newEnd, hasStartTime, checked);
+                  }}
+                  className="hover:cursor-pointer"
+                />
+              </InputGroupButton>
+            </InputGroup>
+          )}
         </PopoverContent>
       </Popover>
     </div>
