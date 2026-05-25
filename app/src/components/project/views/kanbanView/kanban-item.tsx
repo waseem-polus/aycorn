@@ -90,6 +90,9 @@ export function KanbanItem({
                 <TaskPlannedDates
                   start={task.TimePlannedStart}
                   end={task.TimePlannedEnd}
+                  hasStartTime={task.HasTimePlannedStart}
+                  hasEndTime={task.HasTimePlannedEnd}
+                  excludeYear
                 />
               </span>
             </ItemFooter>

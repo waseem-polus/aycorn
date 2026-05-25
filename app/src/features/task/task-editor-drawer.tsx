@@ -98,6 +98,9 @@ export default function TaskEditorDrawer({
               <TaskPlannedDates
                 start={task.TimePlannedStart}
                 end={task.TimePlannedEnd}
+                hasStartTime={task.HasTimePlannedStart}
+                hasEndTime={task.HasTimePlannedEnd}
+                excludeYear
               />
             </div>
           )}

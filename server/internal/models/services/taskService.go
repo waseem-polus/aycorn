@@ -51,8 +51,10 @@ var bulkTaskUpdatableColumns = map[string]string{
 	"Type":             "type",
 	"Assignee":         "assignee",
 	"Checklist":        "checklist",
-	"TimePlannedStart": "timePlannedStart",
-	"TimePlannedEnd":   "timePlannedEnd",
+	"TimePlannedStart":    "timePlannedStart",
+	"TimePlannedEnd":      "timePlannedEnd",
+	"HasTimePlannedStart": "hasTimePlannedStart",
+	"HasTimePlannedEnd":   "hasTimePlannedEnd",
 }
 
 func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {

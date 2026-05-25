@@ -91,6 +91,8 @@ export function ListView({
                                   className="hidden sm:flex"
                                   start={task.TimePlannedStart}
                                   end={task.TimePlannedEnd}
+                                  hasStartTime={task.HasTimePlannedStart}
+                                  hasEndTime={task.HasTimePlannedEnd}
                                 />
 
                                 <Badge

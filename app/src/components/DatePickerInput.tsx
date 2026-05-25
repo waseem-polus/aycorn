@@ -11,8 +11,14 @@ import { CalendarIcon, ClockCheckIcon, ClockIcon } from "lucide-react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "./ui/input-group";
 import { isSameDay } from "date-fns";
+import { Switch } from "./ui/switch";
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -34,6 +40,8 @@ export function DatePickerInput({
 
   const plannedStart = isControlled ? (start ?? null) : task.TimePlannedStart;
   const plannedEnd = isControlled ? (end ?? null) : task.TimePlannedEnd;
+  const hasStartTime = isControlled ? false : task.HasTimePlannedStart;
+  const hasEndTime = isControlled ? false : task.HasTimePlannedEnd;
 
   const [open, setOpen] = useState(false);
 
@@ -43,7 +51,7 @@ export function DatePickerInput({
   });
   const [month, setMonth] = useState<Date | undefined>(undefined);
 
-  const { toFormatted } = useDateFormat();
+  const { toFormatted, toFormattedTime } = useDateFormat();
 
   const getTimeFromISO = (iso: string | null) => {
     if (!iso) return "";
@@ -59,13 +67,32 @@ export function DatePickerInput({
     return date.toISOString();
   };
 
-  const emit = (newStart: string | null, newEnd: string | null) => {
+  const clearTimeFromISO = (iso: string | null): string | null => {
+    if (!iso) return iso;
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  };
+
+  const emit = (
+    newStart: string | null,
+    newEnd: string | null,
+    newHasStartTime = hasStartTime,
+    newHasEndTime = hasEndTime,
+  ) => {
     if (isControlled) {
       onRangeChange(newStart, newEnd);
       return;
     }
-    setTask({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
-    onChange({ ...task, TimePlannedStart: newStart, TimePlannedEnd: newEnd });
+    const updated = {
+      ...task,
+      TimePlannedStart: newStart,
+      TimePlannedEnd: newEnd,
+      HasTimePlannedStart: newHasStartTime,
+      HasTimePlannedEnd: newHasEndTime,
+    };
+    setTask(updated);
+    onChange(updated);
   };
 
   const handleTimeChange = (type: "start" | "end", time: string) => {
@@ -86,12 +113,19 @@ export function DatePickerInput({
     const hasEndDate =
       plannedEnd !== null && !isSameDay(plannedStart, plannedEnd);
 
+    const startLabel = hasStartTime
+      ? `${toFormatted(plannedStart)} ${toFormattedTime(plannedStart)}`
+      : toFormatted(plannedStart);
+    const endLabel = hasEndDate
+      ? hasEndTime
+        ? `${toFormatted(plannedEnd)} ${toFormattedTime(plannedEnd)}`
+        : toFormatted(plannedEnd)
+      : null;
+
     return (
       <span className="flex align-middle font-normal">
-        {toFormatted(plannedStart)}
-
-        {hasEndDate && " → "}
-        {hasEndDate && toFormatted(plannedEnd)}
+        {startLabel}
+        {endLabel && ` → ${endLabel}`}
       </span>
     );
   };
@@ -134,7 +168,10 @@ export function DatePickerInput({
                 ? setTimeOnDate(date.to.toISOString(), existingTimeEnd)
                 : null;
 
-              emit(newStart, newEnd);
+              // If end date was cleared, also clear the end-time toggle
+              const newHasEndTime = date?.to ? hasEndTime : false;
+
+              emit(newStart, newEnd, hasStartTime, newHasEndTime);
             }}
           />
           <InputGroup>
@@ -145,9 +182,21 @@ export function DatePickerInput({
               className="w-full"
               id="timeStart"
               type="time"
-              value={getTimeFromISO(plannedStart)}
+              disabled={!hasStartTime}
+              value={hasStartTime ? getTimeFromISO(plannedStart) : ""}
               onChange={(e) => handleTimeChange("start", e.target.value)}
             />
+            <InputGroupButton>
+              <Switch
+                checked={hasStartTime}
+                onCheckedChange={(checked) => {
+                  const newStart = checked
+                    ? plannedStart
+                    : clearTimeFromISO(plannedStart);
+                  emit(newStart, plannedEnd, checked, hasEndTime);
+                }}
+              />
+            </InputGroupButton>
           </InputGroup>
 
           <InputGroup>
@@ -158,9 +207,22 @@ export function DatePickerInput({
               className="w-full"
               id="timeEnd"
               type="time"
-              value={getTimeFromISO(plannedEnd)}
+              disabled={!hasEndTime || !date?.to}
+              value={hasEndTime ? getTimeFromISO(plannedEnd) : ""}
               onChange={(e) => handleTimeChange("end", e.target.value)}
             />
+            <InputGroupButton>
+              <Switch
+                checked={hasEndTime}
+                disabled={!date?.to}
+                onCheckedChange={(checked) => {
+                  const newEnd = checked
+                    ? plannedEnd
+                    : clearTimeFromISO(plannedEnd);
+                  emit(plannedStart, newEnd, hasStartTime, checked);
+                }}
+              />
+            </InputGroupButton>
           </InputGroup>
         </PopoverContent>
       </Popover>

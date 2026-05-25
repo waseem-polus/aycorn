@@ -6,11 +6,21 @@ import { CalendarIcon } from "lucide-react";
 type Props = {
   start: string | null;
   end: string | null;
+  hasStartTime: boolean;
+  hasEndTime: boolean;
+  excludeYear?: boolean;
   className?: string;
 };
 
-export function TaskPlannedDates({ start, end, className = "" }: Props) {
-  const { toFormatted, toFormattedTime } = useDateFormat();
+export function TaskPlannedDates({
+  start,
+  end,
+  hasStartTime,
+  hasEndTime,
+  excludeYear = false,
+  className = "",
+}: Props) {
+  const { toFormatted, toFormattedTime } = useDateFormat(excludeYear);
 
   if (start === null) {
     return (
@@ -24,9 +34,9 @@ export function TaskPlannedDates({ start, end, className = "" }: Props) {
     );
   }
 
-  const formatDateTime = (dateStr: string) => {
-    const time = toFormattedTime(dateStr);
-    return time ? `${toFormatted(dateStr)} ${time}` : toFormatted(dateStr);
+  const formatDateTime = (dateStr: string, showTime: boolean) => {
+    if (!showTime) return toFormatted(dateStr);
+    return `${toFormatted(dateStr)} ${toFormattedTime(dateStr)}`;
   };
 
   const isSameDay =
@@ -35,8 +45,8 @@ export function TaskPlannedDates({ start, end, className = "" }: Props) {
 
   const label =
     end !== null && !isSameDay
-      ? `${formatDateTime(start)} → ${formatDateTime(end)}`
-      : formatDateTime(start);
+      ? `${formatDateTime(start, hasStartTime)} → ${formatDateTime(end, hasEndTime)}`
+      : formatDateTime(start, hasStartTime);
 
   return (
     <Badge variant="secondary" className={className}>

@@ -18,6 +18,8 @@ export const defaultTaskContextValue: TaskContextType = {
     TimeModified: new Date().toISOString(),
     TimePlannedStart: null,
     TimePlannedEnd: null,
+    HasTimePlannedStart: false,
+    HasTimePlannedEnd: false,
     Assignee: "",
     Priority: "Low",
     Type: "Dev",

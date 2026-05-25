@@ -76,6 +76,8 @@ export type Task = {
   TimeModified: string;
   TimePlannedStart: string | null;
   TimePlannedEnd: string | null;
+  HasTimePlannedStart: boolean;
+  HasTimePlannedEnd: boolean;
   TimeCompleted: string | null;
   Assignee: string;
   Priority: Priority;

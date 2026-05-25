@@ -8,7 +8,6 @@ import { KanbanView } from "./views/kanbanView/kanban-view";
 import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
-import { CALENDAR_ITEMS_MOCK, USERS_MOCK } from "@/features/calendar/mocks";
 import { WeekView } from "./views/calendarViews/week-view";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
@@ -69,11 +68,7 @@ export function ProjectDetails({
       <ProjectContentHeader />
 
       <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
-        <CalendarProvider
-          events={CALENDAR_ITEMS_MOCK}
-          users={USERS_MOCK}
-          view="month"
-        >
+        <CalendarProvider events={[]} users={[]} view="month">
           <DndProvider>
             <Tabs value={view} onValueChange={setView} className="h-full">
               <TabsList>
