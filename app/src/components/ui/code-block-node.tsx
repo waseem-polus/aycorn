@@ -60,12 +60,12 @@ export function CodeBlockElement(props: PlateElementProps) {
       {...props}
       as="div"
       className={cn(
-        "my-4 rounded-md bg-muted font-mono text-sm",
+        "group my-4 rounded-md bg-muted font-mono text-sm",
         props.className,
       )}
     >
       <div
-        className="flex items-center justify-end gap-1 px-3 h-8"
+        className="flex items-center justify-end gap-1 px-3 h-8 sm:invisible sm:group-hover:visible"
         contentEditable={false}
       >
         <Select
