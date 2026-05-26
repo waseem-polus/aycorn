@@ -16,6 +16,7 @@ import { AutoformatKit } from "./plugins/autoformat-kit";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
 import type { Value } from "platejs";
+import { MarkdownKit } from "./plugins/markdown-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -42,6 +43,7 @@ export function RichEditor({
       ...DndKit,
       ...ListKit,
       ...AutoformatKit,
+      ...MarkdownKit,
     ],
     value: initialValue,
   });
