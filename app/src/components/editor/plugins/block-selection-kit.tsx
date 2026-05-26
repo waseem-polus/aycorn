@@ -31,11 +31,7 @@ export const BlockSelectionKit = [
       },
     },
     render: {
-      belowRootNodes: (props) => {
-        if (!hasSelectableClass(props)) return null;
-
-        return <BlockSelection {...(props as any)} />;
-      },
+      belowRootNodes: (props) => <BlockSelection {...(props as any)} />,
     },
   })),
 ];

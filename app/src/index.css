@@ -83,6 +83,9 @@
   --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
   --sidebar-border: oklch(0.925 0.005 214.3);
   --sidebar-ring: oklch(0.723 0.014 214.4);
+  --brand: oklch(0.508 0.118 165.612);
+  --highlight: oklch(0.96 0.15 100);
+  --success: oklch(0.596 0.145 163.225);
 
   --header-height: 48px;
 }
@@ -119,6 +122,9 @@
   --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.56 0.021 213.5);
+  --brand: oklch(0.696 0.17 162.48);
+  --highlight: oklch(0.9 0.13 100);
+  --success: oklch(0.696 0.17 162.48);
 }
 
 @layer base {

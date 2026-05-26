@@ -1,5 +1,6 @@
 import type { PlateElementProps } from "platejs/react";
 
+import { useBlockSelectable } from "@platejs/selection/react";
 import { type VariantProps, cva } from "class-variance-authority";
 import { PlateElement } from "platejs/react";
 
@@ -20,11 +21,13 @@ export function HeadingElement({
   variant = "h1",
   ...props
 }: PlateElementProps & VariantProps<typeof headingVariants>) {
+  const { props: selectableProps } = useBlockSelectable();
   return (
     <PlateElement
       as={variant!}
       className={headingVariants({ variant })}
       {...props}
+      {...selectableProps}
     >
       {props.children}
     </PlateElement>
