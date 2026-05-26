@@ -311,7 +311,7 @@ export function ProjectsDataTable({
       <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
         <div>
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected
+          {table.getFilteredRowModel().rows.length} selected
         </div>
         <div className="flex items-center gap-4">
           <span>

@@ -103,7 +103,7 @@ const groups: Group[] = [
       {
         icon: <Code2 />,
         keywords: ["```"],
-        label: "Code Block⚠️",
+        label: "Code Block",
         value: KEYS.codeBlock,
       },
       {
