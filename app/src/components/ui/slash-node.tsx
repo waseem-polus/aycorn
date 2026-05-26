@@ -108,7 +108,7 @@ const groups: Group[] = [
       },
       {
         icon: <Table />,
-        label: "Table⚠️",
+        label: "Table",
         value: KEYS.table,
       },
       {

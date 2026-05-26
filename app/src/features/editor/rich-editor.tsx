@@ -17,6 +17,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
 import type { Value } from "platejs";
 import { CodeBlockKit } from "./plugins/code-block-kit";
+import { TableKit } from "./plugins/table-kit";
 import { MarkdownKit } from "./plugins/markdown-kit";
 import { MathKit } from "./plugins/math-kit";
 
@@ -46,6 +47,7 @@ export function RichEditor({
       ...ListKit,
       ...AutoformatKit,
       ...CodeBlockKit,
+      ...TableKit,
       ...MarkdownKit,
       ...MathKit,
     ],
