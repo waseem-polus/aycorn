@@ -20,6 +20,7 @@ import { CodeBlockKit } from "./plugins/code-block-kit";
 import { TableKit } from "./plugins/table-kit";
 import { MarkdownKit } from "./plugins/markdown-kit";
 import { MathKit } from "./plugins/math-kit";
+import { TocKit } from "@/components/editor/plugins/toc-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -50,6 +51,7 @@ export function RichEditor({
       ...TableKit,
       ...MarkdownKit,
       ...MathKit,
+      ...TocKit,
     ],
     value: initialValue,
   });
