@@ -13,13 +13,17 @@ import {
   ListOrdered,
   PilcrowIcon,
   Quote,
+  RadicalIcon,
   Square,
   Table,
 } from "lucide-react";
 import { type TComboboxInputElement, KEYS } from "platejs";
 import { PlateElement } from "platejs/react";
 
-import { insertBlock } from "@/features/editor/transforms";
+import {
+  insertBlock,
+  insertInlineElement,
+} from "@/features/editor/transforms";
 
 import {
   InlineCombobox,
@@ -120,10 +124,34 @@ const groups: Group[] = [
         label: "Callout",
         value: KEYS.callout,
       },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        keywords: ["latex", "math", "formula"],
+        label: "Equation",
+        value: KEYS.equation,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
         insertBlock(editor, value, { upsert: true });
+      },
+    })),
+  },
+  {
+    group: "Inline",
+    items: [
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        keywords: ["latex", "math", "formula"],
+        label: "Inline Equation",
+        value: KEYS.inlineEquation,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertInlineElement(editor, value);
       },
     })),
   },

@@ -17,6 +17,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
 import type { Value } from "platejs";
 import { MarkdownKit } from "./plugins/markdown-kit";
+import { MathKit } from "./plugins/math-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -44,6 +45,7 @@ export function RichEditor({
       ...ListKit,
       ...AutoformatKit,
       ...MarkdownKit,
+      ...MathKit,
     ],
     value: initialValue,
   });

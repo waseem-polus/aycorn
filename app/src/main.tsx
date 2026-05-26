@@ -3,6 +3,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
 import { routeTree } from "./routeTree.gen.ts";
 import "./index.css";
+import "katex/dist/katex.min.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const router = createRouter({
