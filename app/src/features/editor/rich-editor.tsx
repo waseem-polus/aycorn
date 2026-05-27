@@ -15,6 +15,7 @@ import { ListKit } from "./plugins/list-kit";
 import { AutoformatKit } from "./plugins/autoformat-kit";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/useMobile";
 import type { Value } from "platejs";
 import { CodeBlockKit } from "./plugins/code-block-kit";
 import { TableKit } from "./plugins/table-kit";
@@ -35,6 +36,14 @@ export function RichEditor({
   onDebounceChange?: (value: Value) => void;
   debounceDuration?: number;
 }) {
+  const isMobile = useIsMobile();
+
+  const desktopOnlyPlugins = [
+    ...BlockSelectionKit,
+    ...DndKit,
+    ...FloatingToolbarKit,
+  ];
+
   const editor = usePlateEditor({
     plugins: [
       ...BasicNodesKit,
@@ -43,10 +52,7 @@ export function RichEditor({
       ...IndentKit,
       ...BaseToggleKit,
       ...ToggleKit,
-      ...SlashKit,
       ...EmojiKit,
-      ...FloatingToolbarKit,
-      ...DndKit,
       ...ListKit,
       ...AutoformatKit,
       ...CodeBlockKit,
@@ -54,8 +60,9 @@ export function RichEditor({
       ...MarkdownKit,
       ...MathKit,
       ...TocKit,
-      ...BlockSelectionKit,
       ...CursorOverlayKit,
+      ...SlashKit,
+      ...(isMobile ? [] : desktopOnlyPlugins),
     ],
     value: initialValue,
   });

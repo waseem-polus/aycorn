@@ -62,7 +62,7 @@ export function ListView({
                           <ItemContent className="flex-1 min-w-0 overflow-visible">
                             <ListViewTaskName />
 
-                            <ItemDescription>
+                            <ItemDescription className="line-clamp-none">
                               <span className="w-full h-fit flex flex-wrap gap-2">
                                 <TaskTypeBadge
                                   className="flex sm:hidden"
