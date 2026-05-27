@@ -26,7 +26,7 @@ const headingItemVariants = cva(
 export function TocElement(props: PlateElementProps) {
   const state = useTocElementState();
   const { props: btnProps } = useTocElement(state);
-  const { activeContentId, headingList } = state;
+  const { headingList } = state;
 
   return (
     <PlateElement {...props} className="mb-1 p-0">
@@ -37,13 +37,10 @@ export function TocElement(props: PlateElementProps) {
               key={item.id}
               variant="ghost"
               className={headingItemVariants({
-                active: item.id === activeContentId,
+                active: false,
                 depth: item.depth as 1 | 2 | 3,
               })}
               onClick={(e) => btnProps.onClick(e, item, "smooth")}
-              aria-current={
-                item.id === activeContentId ? "location" : undefined
-              }
             >
               {item.title}
             </Button>
