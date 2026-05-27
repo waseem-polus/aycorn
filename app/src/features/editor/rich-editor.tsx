@@ -22,6 +22,7 @@ import { MarkdownKit } from "./plugins/markdown-kit";
 import { MathKit } from "./plugins/math-kit";
 import { TocKit } from "@/features/editor/plugins/toc-kit";
 import { BlockSelectionKit } from "@/features/editor/plugins/block-selection-kit";
+import { CursorOverlayKit } from "./plugins/cursor-overlay-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -54,6 +55,7 @@ export function RichEditor({
       ...MathKit,
       ...TocKit,
       ...BlockSelectionKit,
+      ...CursorOverlayKit,
     ],
     value: initialValue,
   });
