@@ -82,8 +82,11 @@ export function RichEditor({
 
   return (
     <Plate editor={editor} onChange={handleChange}>
-      <EditorContainer>
-        <Editor placeholder="Type or press '/' for commands..." />
+      <EditorContainer className="h-auto">
+        <Editor
+          placeholder="Type or press '/' for commands..."
+          className="h-auto min-h-64 pb-16"
+        />
       </EditorContainer>
     </Plate>
   );
