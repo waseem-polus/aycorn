@@ -57,6 +57,7 @@ export default function TaskEditorDrawer({
   return (
     <Drawer
       handleOnly={!isMobile}
+      repositionInputs={!isMobile}
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {
@@ -135,12 +136,14 @@ export default function TaskEditorDrawer({
 
         {open &&
         (task.ID === 0 || (data !== undefined && !isFetching && !isPending)) ? (
-          <RichEditor
-            key={`${task.ID}-${open}`}
-            onDebounceChange={handleEditorValueChange}
-            debounceDuration={250}
-            initialValue={data === "" ? [] : data}
-          />
+          <div data-vaul-no-drag className="flex-1 min-h-0 overflow-hidden">
+            <RichEditor
+              key={`${task.ID}-${open}`}
+              onDebounceChange={handleEditorValueChange}
+              debounceDuration={250}
+              initialValue={data === "" ? [] : data}
+            />
+          </div>
         ) : (
           <div className="flex h-full w-full flex-col gap-2 py-4 px-8">
             <Skeleton className="h-4 w-full" />

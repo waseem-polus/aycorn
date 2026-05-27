@@ -42,6 +42,7 @@ export function RichEditor({
     ...BlockSelectionKit,
     ...DndKit,
     ...FloatingToolbarKit,
+    ...CursorOverlayKit,
   ];
 
   const editor = usePlateEditor({
@@ -60,7 +61,6 @@ export function RichEditor({
       ...MarkdownKit,
       ...MathKit,
       ...TocKit,
-      ...CursorOverlayKit,
       ...SlashKit,
       ...(isMobile ? [] : desktopOnlyPlugins),
     ],
