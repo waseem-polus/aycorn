@@ -18,7 +18,6 @@ import {
   ChevronsRightIcon,
   CopyCheckIcon,
   Ellipsis,
-  LandPlotIcon,
   Maximize2,
   PinIcon,
   Trash2Icon,
@@ -28,7 +27,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
-import { Badge } from "@/components/ui/badge";
 
 export function TaskEditorHeader({
   setOpen = () => {},
