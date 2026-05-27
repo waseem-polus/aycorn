@@ -72,11 +72,11 @@ export function ProjectDetails({
           <DndProvider>
             <Tabs value={view} onValueChange={setView} className="h-full">
               <TabsList>
-                <TabsTrigger value="table">
+                <TabsTrigger value="list">
                   <Rows3Icon />
                   List
                 </TabsTrigger>
-                <TabsTrigger value="khanban">
+                <TabsTrigger value="kanban">
                   <LayoutDashboardIcon />
                   Kanban
                 </TabsTrigger>
@@ -91,13 +91,13 @@ export function ProjectDetails({
               </TabsList>
 
               <TabsContent
-                value="table"
+                value="list"
                 className="h-full overflow-visible min-h-0"
               >
                 <ListView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
               <TabsContent
-                value="khanban"
+                value="kanban"
                 className="h-full overflow-visible min-h-0"
               >
                 <KanbanView setTaskDrawerOpen={setNewTaskOpen} />

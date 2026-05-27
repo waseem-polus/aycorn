@@ -10,7 +10,7 @@ export const Route = createFileRoute("/project/$projectId")({
   component: RouteComponent,
   validateSearch: (search: Record<string, unknown>): { view?: string } => {
     return {
-      view: (search.view as string) ?? "table",
+      view: (search.view as string) ?? "list",
     };
   },
 });
