@@ -37,7 +37,7 @@ function RouteComponent() {
         <PageContent>
           <ProjectDetails
             projectId={Number.parseInt(projectId)}
-            view={view ?? "table"}
+            view={view ?? "list"}
             setView={setView}
           />
         </PageContent>

@@ -51,6 +51,11 @@ type ChecklistTask struct {
 	ChecklistName string
 }
 
+type TaskWithProject struct {
+	ChecklistTask
+	ProjectID int
+}
+
 type Workflow struct {
 	ID           int
 	Name         string

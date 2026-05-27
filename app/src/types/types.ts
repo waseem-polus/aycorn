@@ -88,6 +88,10 @@ export type ChecklistTask = Task & {
   ChecklistName: Checklist["Name"];
 };
 
+export type TaskWithProject = ChecklistTask & {
+  ProjectID: number;
+};
+
 export type ProjectDetails = {
   Project: Project;
   Workflow: Workflow;

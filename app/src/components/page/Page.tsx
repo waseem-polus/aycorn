@@ -14,6 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { MoreHorizontal } from "lucide-react";
@@ -113,8 +118,8 @@ export function PageHeader({
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <Breadcrumb>
-          <BreadcrumbList>
+        <Breadcrumb className="flex-1 min-w-0 overflow-hidden max-w-[calc(100vw-var(--sidebar-width)-5rem)]">
+          <BreadcrumbList className="flex-nowrap w-full">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Home</Link>
@@ -156,7 +161,9 @@ export function PageHeader({
               return (
                 <React.Fragment key={item.label}>
                   <BreadcrumbSeparator />
-                  <BreadcrumbItem>
+                  <BreadcrumbItem
+                    className={isLast ? "min-w-0" : "min-w-0 w-fit text-nowrap"}
+                  >
                     {!isLast && item.to ? (
                       <BreadcrumbLink asChild>
                         <Link to={item.to as string} params={item.params}>
@@ -164,7 +171,16 @@ export function PageHeader({
                         </Link>
                       </BreadcrumbLink>
                     ) : (
-                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <BreadcrumbPage className="block truncate">
+                            {item.label}
+                          </BreadcrumbPage>
+                        </TooltipTrigger>
+                        {item.label.length > 0 && (
+                          <TooltipContent>{item.label}</TooltipContent>
+                        )}
+                      </Tooltip>
                     )}
                   </BreadcrumbItem>
                 </React.Fragment>

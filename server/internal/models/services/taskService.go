@@ -9,6 +9,14 @@ type TaskService struct {
 	TaskRepo *repos.TaskRepo
 }
 
+func (s *TaskService) GetTask(taskId int) (*models.TaskWithProject, error) {
+	task, err := s.TaskRepo.FindOneWithProject(taskId)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
 func (s *TaskService) GetTaskBody(taskId int) (string, error) {
 	taskBody, err := s.TaskRepo.GetTaskBody(taskId)
 	if err != nil {

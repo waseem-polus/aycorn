@@ -24,6 +24,7 @@ import { MathKit } from "./plugins/math-kit";
 import { TocKit } from "@/features/editor/plugins/toc-kit";
 import { BlockSelectionKit } from "@/features/editor/plugins/block-selection-kit";
 import { CursorOverlayKit } from "./plugins/cursor-overlay-kit";
+import { cn } from "@/lib/utils";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -31,10 +32,12 @@ export function RichEditor({
   initialValue = DEFAULT_VALUE,
   onDebounceChange,
   debounceDuration = 250,
+  className = "",
 }: {
   initialValue?: Value;
   onDebounceChange?: (value: Value) => void;
   debounceDuration?: number;
+  className?: string;
 }) {
   const isMobile = useIsMobile();
 
@@ -85,7 +88,7 @@ export function RichEditor({
       <EditorContainer className="h-auto">
         <Editor
           placeholder="Type or press '/' for commands..."
-          className="h-auto min-h-64 pb-16"
+          className={cn("h-auto min-h-64 pb-16", className)}
         />
       </EditorContainer>
     </Plate>

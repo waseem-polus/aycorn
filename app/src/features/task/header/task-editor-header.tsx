@@ -23,6 +23,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useContext } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
@@ -36,6 +37,7 @@ export function TaskEditorHeader({
   const { state: task } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
   const { deleteTask } = useTaskMutation(Project.ID);
+  const navigate = useNavigate();
 
   const isMobile = useIsMobile();
 
@@ -57,6 +59,13 @@ export function TaskEditorHeader({
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground"
+            onClick={() => {
+              setOpen(false);
+              navigate({
+                to: "/task/$taskId",
+                params: { taskId: String(task.ID) },
+              });
+            }}
           >
             <Maximize2 className="size-3.5" />
           </Button>

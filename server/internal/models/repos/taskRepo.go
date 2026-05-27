@@ -7,6 +7,7 @@ import (
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
 
+
 type TaskRepo struct {
 	DB *sql.DB
 }
@@ -356,6 +357,70 @@ func (repo *TaskRepo) DeleteTasksInProject(projectId int) (bool, error) {
 	}
 
 	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) FindOneWithProject(taskId int) (*models.TaskWithProject, error) {
+	query := `
+		SELECT
+			t.id,
+			t.name,
+			COALESCE(t.body, '[]'),
+			t.timeCreated,
+			t.timeModified,
+			t.timePlannedStart,
+			t.timePlannedEnd,
+			t.hasTimePlannedStart,
+			t.hasTimePlannedEnd,
+			t.timeCompleted,
+			COALESCE(t.assignee, ''),
+			t.priority,
+			t.type,
+			t.stage,
+			t.checklist,
+			c.name,
+			c.project
+		FROM task t
+		INNER JOIN checklist c ON c.id = t.checklist
+		WHERE t.id = ?;
+	`
+	rows, err := repo.DB.Query(query, taskId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+		return nil, sql.ErrNoRows
+	}
+
+	task := models.TaskWithProject{}
+	err = rows.Scan(
+		&task.ID,
+		&task.Name,
+		&task.Body,
+		&task.TimeCreated,
+		&task.TimeModified,
+		&task.TimePlannedStart,
+		&task.TimePlannedEnd,
+		&task.HasTimePlannedStart,
+		&task.HasTimePlannedEnd,
+		&task.TimeCompleted,
+		&task.Assignee,
+		&task.Priority,
+		&task.Type,
+		&task.Stage,
+		&task.Checklist,
+		&task.ChecklistName,
+		&task.ProjectID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &task, nil
 }
 
 func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {

@@ -92,7 +92,9 @@ export default function TaskEditorDrawer({
               <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={task.Assignee !== "" ? "" : "text-muted-foreground"}
+                  className={
+                    task.Assignee !== "" ? "" : "text-muted-foreground"
+                  }
                 >
                   <User className="size-2" />
                   {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
@@ -106,8 +108,8 @@ export default function TaskEditorDrawer({
                 />
               </div>
             )}
-            <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mt-2">
-              <section className="flex flex-col pt-0 px-4 sm:px-8 gap-2 mb-2">
+            <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
+              <section className="flex flex-col gap-2">
                 <TaskProperty label="Checklist" htmlFor="name">
                   <SelectChecklist onChange={handleTaskChanges} />
                 </TaskProperty>
@@ -136,7 +138,8 @@ export default function TaskEditorDrawer({
           </Collapsible>
 
           {open &&
-          (task.ID === 0 || (data !== undefined && !isFetching && !isPending)) ? (
+          (task.ID === 0 ||
+            (data !== undefined && !isFetching && !isPending)) ? (
             <div data-vaul-no-drag>
               <RichEditor
                 key={`${task.ID}-${open}`}
