@@ -25,7 +25,7 @@ import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 
@@ -90,6 +90,10 @@ export default function TaskEditorDrawer({
             </div>
             {!propertiesOpen && (
               <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
+                <Badge variant="outline">
+                  <LandPlotIcon className="size-2" />
+                  {task.ChecklistName}
+                </Badge>
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
                   className={
@@ -110,28 +114,28 @@ export default function TaskEditorDrawer({
             )}
             <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
               <section className="flex flex-col gap-2">
-                <TaskProperty label="Checklist" htmlFor="name">
-                  <SelectChecklist onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Date" htmlFor="date">
-                  <DatePickerInput onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Assignee" htmlFor="assignee">
-                  <TaskAssignee onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Stage" htmlFor="stage">
-                  <SelectTaskStage onChange={handleTaskChanges} />
+                <TaskProperty label="Priority" htmlFor="priority">
+                  <SelectTaskPriority onChange={handleTaskChanges} />
                 </TaskProperty>
 
                 <TaskProperty label="Type" htmlFor="type">
                   <SelectTaskType onChange={handleTaskChanges} />
                 </TaskProperty>
 
-                <TaskProperty label="Priority" htmlFor="priority">
-                  <SelectTaskPriority onChange={handleTaskChanges} />
+                <TaskProperty label="Stage" htmlFor="stage">
+                  <SelectTaskStage onChange={handleTaskChanges} />
+                </TaskProperty>
+
+                <TaskProperty label="Checklist" htmlFor="checklist">
+                  <SelectChecklist onChange={handleTaskChanges} />
+                </TaskProperty>
+
+                <TaskProperty label="Assignee" htmlFor="assignee">
+                  <TaskAssignee onChange={handleTaskChanges} />
+                </TaskProperty>
+
+                <TaskProperty label="Date" htmlFor="date">
+                  <DatePickerInput onChange={handleTaskChanges} />
                 </TaskProperty>
               </section>
             </CollapsibleContent>

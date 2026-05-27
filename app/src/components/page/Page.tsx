@@ -118,7 +118,7 @@ export function PageHeader({
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <Breadcrumb className="flex-1 min-w-0 overflow-hidden max-w-[calc(100vw-var(--sidebar-width)-5rem)]">
+        <Breadcrumb className="flex-1 min-w-0 overflow-hidden w-fit">
           <BreadcrumbList className="flex-nowrap w-full">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>

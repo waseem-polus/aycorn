@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import {
@@ -35,7 +36,7 @@ export function TaskEditorHeader({
   setOpen: (open: boolean) => void;
 }) {
   const { state: task } = useContext(TaskContext);
-  const { Project } = useContext(ProjectContext);
+  const { Project, Stages } = useContext(ProjectContext);
   const { deleteTask } = useTaskMutation(Project.ID);
   const navigate = useNavigate();
 
@@ -79,10 +80,12 @@ export function TaskEditorHeader({
           />
           <TaskPriorityIcon variant={task.Priority} />
           <TaskTypeBadge variant={task.Type} />
-          <Badge variant="outline" className="text-muted-foreground">
-            <LandPlotIcon className="size-2" />
-            {task.ChecklistName}
-          </Badge>
+          {Stages.find((s) => s.ID === task.Stage) && (
+            <WorkflowStageChip
+              className="rounded-full"
+              stage={Stages.find((s) => s.ID === task.Stage)!}
+            />
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

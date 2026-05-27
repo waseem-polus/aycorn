@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -26,11 +26,20 @@ import { useTaskMutation } from "@/queries/useTaskMutation";
 import { defaultProjectContextValue } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 import type { Value } from "platejs";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "../properties/task-type-badge";
+import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 
 export function TaskPage({ projectId }: { projectId: number }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
-  const { SetProject, SetWorkflow, SetStages, SetChecklists, SetTasks } =
-    useContext(ProjectContext);
+  const {
+    SetProject,
+    SetWorkflow,
+    SetStages,
+    SetChecklists,
+    SetTasks,
+    Stages,
+  } = useContext(ProjectContext);
   const { update } = useTaskMutation(projectId);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
 
@@ -91,6 +100,18 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
         {!propertiesOpen && (
           <div className="flex flex-wrap items-center gap-1.5 pb-2">
+            <TaskPriorityIcon variant={task.Priority} />
+            <TaskTypeBadge variant={task.Type} />
+            {Stages.find((s) => s.ID === task.Stage) && (
+              <WorkflowStageChip
+                className="rounded-full"
+                stage={Stages.find((s) => s.ID === task.Stage)!}
+              />
+            )}
+            <Badge variant="outline">
+              <LandPlotIcon className="size-2" />
+              {task.ChecklistName}
+            </Badge>
             <Badge
               variant={task.Assignee !== "" ? "secondary" : "outline"}
               className={task.Assignee !== "" ? "" : "text-muted-foreground"}
@@ -103,30 +124,29 @@ export function TaskPage({ projectId }: { projectId: number }) {
               end={task.TimePlannedEnd}
               hasStartTime={task.HasTimePlannedStart}
               hasEndTime={task.HasTimePlannedEnd}
-              excludeYear
             />
           </div>
         )}
 
         <CollapsibleContent className="border pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up my-2">
           <section className="flex flex-col gap-2">
-            <TaskProperty label="Checklist" htmlFor="checklist">
-              <SelectChecklist onChange={handleTaskChanges} />
-            </TaskProperty>
-            <TaskProperty label="Date" htmlFor="date">
-              <DatePickerInput onChange={handleTaskChanges} />
-            </TaskProperty>
-            <TaskProperty label="Assignee" htmlFor="assignee">
-              <TaskAssignee onChange={handleTaskChanges} />
-            </TaskProperty>
-            <TaskProperty label="Stage" htmlFor="stage">
-              <SelectTaskStage onChange={handleTaskChanges} />
+            <TaskProperty label="Priority" htmlFor="priority">
+              <SelectTaskPriority onChange={handleTaskChanges} />
             </TaskProperty>
             <TaskProperty label="Type" htmlFor="type">
               <SelectTaskType onChange={handleTaskChanges} />
             </TaskProperty>
-            <TaskProperty label="Priority" htmlFor="priority">
-              <SelectTaskPriority onChange={handleTaskChanges} />
+            <TaskProperty label="Stage" htmlFor="stage">
+              <SelectTaskStage onChange={handleTaskChanges} />
+            </TaskProperty>
+            <TaskProperty label="Checklist" htmlFor="checklist">
+              <SelectChecklist onChange={handleTaskChanges} />
+            </TaskProperty>
+            <TaskProperty label="Assignee" htmlFor="assignee">
+              <TaskAssignee onChange={handleTaskChanges} />
+            </TaskProperty>
+            <TaskProperty label="Date" htmlFor="date">
+              <DatePickerInput onChange={handleTaskChanges} />
             </TaskProperty>
           </section>
         </CollapsibleContent>
