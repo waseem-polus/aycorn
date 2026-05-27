@@ -15,9 +15,12 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import {
   ChevronsRightIcon,
+  CopyCheckIcon,
   Ellipsis,
   LandPlotIcon,
   Maximize2,
+  PinIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { useContext } from "react";
 import { toast } from "sonner";
@@ -83,8 +86,14 @@ export function TaskEditorHeader({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-2">
               <DropdownMenuGroup>
-                <DropdownMenuItem>Add Favorite</DropdownMenuItem>
-                <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <PinIcon className="text-muted-foreground" />
+                  Pin
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CopyCheckIcon className="text-muted-foreground" />
+                  Duplicate
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
@@ -103,7 +112,8 @@ export function TaskEditorHeader({
                     }}
                     variant="destructive"
                   >
-                    Delete Task
+                    <Trash2Icon className="text-muted-foreground" />
+                    Delete
                   </DropdownMenuItem>
                 </DrawerClose>
               </DropdownMenuGroup>

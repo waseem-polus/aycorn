@@ -1,5 +1,5 @@
 import { ListView } from "@/components/project/views/listView/list-view";
-import { ProjectContentHeader } from "@/components/project/project-content-header";
+import { ProjectContentHeader } from "@/components/project/project-details-content-header";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";

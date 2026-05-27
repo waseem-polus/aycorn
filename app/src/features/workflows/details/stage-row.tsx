@@ -142,7 +142,7 @@ export function StageRow({
       </div>
 
       <StageRowMenu
-        isOpen={stage.Type === "open"}
+        isTheOpenStage={stage.Type === "open"}
         onRename={() => setIsEditingName(true)}
         onEditDescription={() => setIsEditingDescription(true)}
         onDelete={() => setDeleteOpen(true)}

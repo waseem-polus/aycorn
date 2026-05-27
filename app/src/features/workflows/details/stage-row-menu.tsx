@@ -1,4 +1,10 @@
-import { MoreHorizontal } from "lucide-react";
+import {
+  MoreHorizontal,
+  RectangleEllipsisIcon,
+  TextCursorInputIcon,
+  Trash2Icon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,14 +20,14 @@ import {
 } from "@/components/ui/tooltip";
 
 type StageRowMenuProps = {
-  isOpen: boolean;
+  isTheOpenStage: boolean;
   onRename: () => void;
   onEditDescription: () => void;
   onDelete: () => void;
 };
 
 export function StageRowMenu({
-  isOpen,
+  isTheOpenStage,
   onRename,
   onEditDescription,
   onDelete,
@@ -37,24 +43,33 @@ export function StageRowMenu({
         align="end"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={onRename}>
+          <TextCursorInputIcon className="text-muted-foreground" />
+          Rename
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onEditDescription}>
+          <RectangleEllipsisIcon className="text-muted-foreground" />
           Edit description
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {isOpen ? (
+        {isTheOpenStage ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <DropdownMenuItem variant="destructive" disabled>
+                <DropdownMenuItem variant="default" disabled>
+                  <Trash2Icon />
                   Delete
                 </DropdownMenuItem>
               </span>
             </TooltipTrigger>
-            <TooltipContent>The open stage can&apos;t be deleted.</TooltipContent>
+            <TooltipContent className="inline-flex gap-1">
+              <TriangleAlertIcon className="size-3.5 text-amber-500" />
+              The open stage can&apos;t be deleted.
+            </TooltipContent>
           </Tooltip>
         ) : (
           <DropdownMenuItem variant="destructive" onClick={onDelete}>
+            <Trash2Icon />
             Delete
           </DropdownMenuItem>
         )}

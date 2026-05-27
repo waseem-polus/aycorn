@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { MoreHorizontal, PinIcon } from "lucide-react";
+import {
+  MoreHorizontal,
+  PinIcon,
+  PinOffIcon,
+  SettingsIcon,
+  TextCursorInputIcon,
+  Trash2Icon,
+  WorkflowIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,12 +49,20 @@ export function ProjectRowActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+          <DropdownMenuItem onClick={onRename}>
+            <TextCursorInputIcon className="text-muted-foreground" />
+            Rename
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
               updateProject.mutate({ ...project, Pinned: !project.Pinned })
             }
           >
+            {project.Pinned ? (
+              <PinOffIcon className="text-muted-foreground" />
+            ) : (
+              <PinIcon className="text-muted-foreground" />
+            )}
             {project.Pinned ? "Unpin" : "Pin"}
           </DropdownMenuItem>
 
@@ -60,6 +76,7 @@ export function ProjectRowActions({
               })
             }
           >
+            <SettingsIcon className="text-muted-foreground" />
             Settings
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -70,6 +87,7 @@ export function ProjectRowActions({
               })
             }
           >
+            <WorkflowIcon className="text-muted-foreground" />
             Workflow
           </DropdownMenuItem>
 
@@ -79,6 +97,7 @@ export function ProjectRowActions({
             variant="destructive"
             onClick={() => setDeleteOpen(true)}
           >
+            <Trash2Icon className="text-muted-foreground" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
