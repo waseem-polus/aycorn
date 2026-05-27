@@ -111,7 +111,7 @@ const groups: Group[] = [
       {
         icon: <Quote />,
         keywords: ["citation", "blockquote", "quote", ">"],
-        label: "Blockquote⚠️",
+        label: "Blockquote",
         value: KEYS.blockquote,
       },
       {
@@ -124,7 +124,7 @@ const groups: Group[] = [
       {
         focusEditor: false,
         icon: <RadicalIcon />,
-        keywords: ["latex", "math", "formula"],
+        keywords: ["latex", "math", "formula", "equation"],
         label: "Equation",
         value: KEYS.equation,
       },
@@ -141,7 +141,7 @@ const groups: Group[] = [
       {
         focusEditor: false,
         icon: <RadicalIcon />,
-        keywords: ["latex", "math", "formula"],
+        keywords: ["latex", "math", "formula", "equation"],
         label: "Inline Equation",
         value: KEYS.inlineEquation,
       },
