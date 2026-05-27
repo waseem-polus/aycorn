@@ -20,8 +20,8 @@ import { CodeBlockKit } from "./plugins/code-block-kit";
 import { TableKit } from "./plugins/table-kit";
 import { MarkdownKit } from "./plugins/markdown-kit";
 import { MathKit } from "./plugins/math-kit";
-import { TocKit } from "@/components/editor/plugins/toc-kit";
-import { BlockSelectionKit } from "@/components/editor/plugins/block-selection-kit";
+import { TocKit } from "@/features/editor/plugins/toc-kit";
+import { BlockSelectionKit } from "@/features/editor/plugins/block-selection-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
