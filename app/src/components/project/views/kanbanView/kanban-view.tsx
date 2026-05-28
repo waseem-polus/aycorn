@@ -11,7 +11,7 @@ import type { ChecklistTask, Task } from "@/types/types";
 import { KanbanItem } from "./kanban-item";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
+import { useSensor, useSensors, PointerSensor, TouchSensor } from "@dnd-kit/core";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { toast } from "sonner";
 
@@ -77,9 +77,14 @@ export function KanbanView({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      // Long press (300ms) on the drag handle to distinguish drag from scroll/tap.
+      // Tolerance is kept at 3px — below the browser's ~4px scroll-commit threshold —
+      // so event.cancelable stays true when drag activates, letting preventDefault work.
+      // Future context menu: detect onDragEnd with over===null + minimal movement.
+      activationConstraint: { delay: 300, tolerance: 3 },
     }),
   );
 
