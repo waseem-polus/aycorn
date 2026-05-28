@@ -1,5 +1,5 @@
 import { queryClient } from "@/main";
-import type { BulkResult, Task } from "@/types/types";
+import type { BulkResult, ProjectDetails, Task } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 
 const getSaveTaskQuery = (isNewTask: boolean) => {
@@ -20,7 +20,21 @@ const invalidateQueries = (projectId: number) => {
 export function useTaskMutation(projectId: number) {
   const update = useMutation({
     mutationFn: getSaveTaskQuery(false),
-    onSuccess: () => invalidateQueries(projectId),
+    onMutate: async (task: Task) => {
+      await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
+      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+        if (!old) return old;
+        return { ...old, Tasks: old.Tasks.map((t) => (t.ID === task.ID ? { ...t, ...task } : t)) };
+      });
+      return { previous };
+    },
+    onError: (_err, _task, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["projectDetails", projectId], context.previous);
+      }
+    },
+    onSettled: () => invalidateQueries(projectId),
   });
   const create = useMutation({
     mutationFn: getSaveTaskQuery(true),
@@ -65,7 +79,22 @@ export function useTaskMutation(projectId: number) {
       }
       return (await res.json()) as BulkResult;
     },
-    onSuccess: () => invalidateQueries(projectId),
+    onMutate: async ({ tasks, changes }: { tasks: Task[]; changes: Partial<Task> }) => {
+      await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
+      const ids = new Set(tasks.map((t) => t.ID));
+      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+        if (!old) return old;
+        return { ...old, Tasks: old.Tasks.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)) };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["projectDetails", projectId], context.previous);
+      }
+    },
+    onSettled: () => invalidateQueries(projectId),
   });
 
   const bulkDelete = useMutation({
