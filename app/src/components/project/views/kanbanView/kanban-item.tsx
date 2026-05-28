@@ -22,12 +22,14 @@ type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 export function KanbanItem({
   task,
   getItemProps,
+  animClass,
 }: {
   task: ChecklistTask;
   getItemProps?: (
     id: string,
     opts?: { listeners?: DragListeners },
   ) => Record<string, unknown>;
+  animClass?: string;
 }) {
   const { setNodeRef, style, listeners, attributes } = useDraggableItem(
     task.ID.toString(),
@@ -63,6 +65,7 @@ export function KanbanItem({
               "overflow-clip select-none",
               selectedItemClasses(),
               itemClassName,
+              animClass,
             )}
           >
             <ItemHeader className="flex justify-between items-center gap-1">

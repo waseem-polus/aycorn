@@ -8,7 +8,7 @@ export function useDraggableItem(id: string, data?: Record<string, unknown>) {
   });
 
   const style: CSSProperties = {
-    opacity: isDragging ? "0.3" : "1",
+    opacity: isDragging ? "0.3" : undefined,
     pointerEvents: isDragging ? "none" : "auto",
     cursor: isDragging ? "grabbing" : "grab",
   };
