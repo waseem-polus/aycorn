@@ -9,7 +9,7 @@ export const extractPlainText = (nodes: Descendant[]): string =>
         texExpression?: string;
         children: Descendant[];
       };
-      if (el.type === "equation") return `\n${el.texExpression ?? ""}\n`;
+      if (el.type === "equation") return `\n${el.texExpression ?? ""}`;
       if (el.type === "inline_equation") return `${el.texExpression ?? ""}`;
       return extractPlainText(el.children);
     })
