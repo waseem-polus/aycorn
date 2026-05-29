@@ -20,7 +20,7 @@ import { RichEditor } from "@/features/editor/rich-editor";
 import { TaskEditorHeader } from "@/features/task/header/task-editor-header";
 import { TaskProperty } from "@/features/task/properties/task-property";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
-import type { Descendant, Value } from "platejs";
+import type { Value } from "platejs";
 import type { PlateEditor } from "platejs/react";
 import { serializeMd } from "@platejs/markdown";
 import { toast } from "sonner";
@@ -31,21 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
-
-const extractPlainText = (nodes: Descendant[]): string =>
-  nodes
-    .map((node) => {
-      if ("text" in node) return node.text;
-      const el = node as {
-        type: string;
-        texExpression?: string;
-        children: Descendant[];
-      };
-      if (el.type === "equation") return `\n${el.texExpression ?? ""}\n`;
-      if (el.type === "inline_equation") return `${el.texExpression ?? ""}`;
-      return extractPlainText(el.children);
-    })
-    .join("");
+import { extractPlainText } from "@/features/task/task-utils";
 
 export default function TaskEditorDrawer({
   children,

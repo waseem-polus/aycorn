@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -7,7 +7,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown, LandPlotIcon, User } from "lucide-react";
+import {
+  ChevronDown,
+  ClipboardIcon,
+  CopyCheckIcon,
+  EllipsisIcon,
+  LandPlotIcon,
+  PinIcon,
+  Trash2Icon,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -26,6 +35,21 @@ import { useTaskMutation } from "@/queries/useTaskMutation";
 import { defaultProjectContextValue } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 import type { Value } from "platejs";
+import type { PlateEditor } from "platejs/react";
+import { serializeMd } from "@platejs/markdown";
+import { toast } from "sonner";
+import { extractPlainText } from "@/features/task/task-utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
@@ -40,8 +64,10 @@ export function TaskPage({ projectId }: { projectId: number }) {
     SetTasks,
     Stages,
   } = useContext(ProjectContext);
-  const { update } = useTaskMutation(projectId);
+  const { update, deleteTask } = useTaskMutation(projectId);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
+  const editorRef = useRef<PlateEditor | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
 
   const { isPending, isFetching, data } = useProjectDetailsQuery(
     projectId,
@@ -70,6 +96,36 @@ export function TaskPage({ projectId }: { projectId: number }) {
     handleTaskChanges(updated);
   };
 
+  const handleCopyAsMarkdown = () => {
+    if (!editorRef.current) return;
+    try {
+      const bodyMd = serializeMd(editorRef.current);
+      const content = task.Name ? `# ${task.Name}\n\n${bodyMd}` : bodyMd;
+      navigator.clipboard.writeText(content);
+      toast("Copied as markdown");
+    } catch {
+      toast.error("Failed to copy as markdown");
+    }
+  };
+
+  const handleCopyAsPlainText = () => {
+    const bodyText = extractPlainText(task.Body);
+    const content = task.Name ? `${task.Name}\n\n${bodyText}` : bodyText;
+    navigator.clipboard.writeText(content);
+    toast("Copied as plain text");
+  };
+
+  const handleDelete = () => {
+    const taskName = task.Name === "" ? "New Task" : task.Name;
+    deleteTask.mutate(task.ID, {
+      onSuccess: () => {
+        toast(`Deleted '${taskName}'`);
+        window.history.back();
+      },
+      onError: () => toast.error(`Failed deleting '${taskName}'`),
+    });
+  };
+
   if (isPending) {
     return (
       <div className="flex flex-col gap-4 p-3 sm:p-6 max-w-4xl w-full">
@@ -96,6 +152,53 @@ export function TaskPage({ projectId }: { projectId: number }) {
               />
             </Button>
           </CollapsibleTrigger>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="shrink-0 self-start data-[state=open]:bg-muted text-muted-foreground"
+              >
+                <EllipsisIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <PinIcon className="text-muted-foreground" />
+                  Pin
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CopyCheckIcon className="text-muted-foreground" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <ClipboardIcon className="text-muted-foreground" />
+                    Copy as
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      disabled={!editorReady}
+                      onClick={handleCopyAsMarkdown}
+                    >
+                      Markdown
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyAsPlainText}>
+                      Plain text
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={handleDelete} variant="destructive">
+                  <Trash2Icon className="text-muted-foreground" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {!propertiesOpen && (
@@ -155,6 +258,10 @@ export function TaskPage({ projectId }: { projectId: number }) {
       <RichEditor
         key={task.ID}
         onDebounceChange={handleEditorValueChange}
+        onEditorReady={(editor) => {
+          editorRef.current = editor;
+          setEditorReady(true);
+        }}
         debounceDuration={250}
         initialValue={task.Body && task.Body.length > 0 ? task.Body : []}
         className="px-2"
