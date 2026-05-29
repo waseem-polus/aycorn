@@ -8,7 +8,7 @@ import { SelectTaskStage } from "@/features/stage/select-task-stage";
 import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { DatePickerInput } from "@/components/DatePickerInput";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
@@ -20,7 +20,10 @@ import { RichEditor } from "@/features/editor/rich-editor";
 import { TaskEditorHeader } from "@/features/task/header/task-editor-header";
 import { TaskProperty } from "@/features/task/properties/task-property";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
-import type { Value } from "platejs";
+import type { Descendant, Value } from "platejs";
+import type { PlateEditor } from "platejs/react";
+import { serializeMd } from "@platejs/markdown";
+import { toast } from "sonner";
 import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,21 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
+
+const extractPlainText = (nodes: Descendant[]): string =>
+  nodes
+    .map((node) => {
+      if ("text" in node) return node.text;
+      const el = node as {
+        type: string;
+        texExpression?: string;
+        children: Descendant[];
+      };
+      if (el.type === "equation") return `\n${el.texExpression ?? ""}\n`;
+      if (el.type === "inline_equation") return `${el.texExpression ?? ""}`;
+      return extractPlainText(el.children);
+    })
+    .join("");
 
 export default function TaskEditorDrawer({
   children,
@@ -39,6 +57,8 @@ export default function TaskEditorDrawer({
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
+  const editorRef = useRef<PlateEditor | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
 
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
@@ -46,6 +66,25 @@ export default function TaskEditorDrawer({
 
   const handleTaskChanges = (updatedTask: Task) => {
     update.mutate(updatedTask);
+  };
+
+  const handleCopyAsMarkdown = () => {
+    if (!editorRef.current) return;
+    try {
+      const bodyMd = serializeMd(editorRef.current);
+      const content = task.Name ? `# ${task.Name}\n\n${bodyMd}` : bodyMd;
+      navigator.clipboard.writeText(content);
+      toast("Copied as markdown");
+    } catch {
+      toast.error("Failed to copy as markdown");
+    }
+  };
+
+  const handleCopyAsPlainText = () => {
+    const bodyText = extractPlainText(task.Body);
+    const content = task.Name ? `${task.Name}\n\n${bodyText}` : bodyText;
+    navigator.clipboard.writeText(content);
+    toast("Copied as plain text");
   };
 
   const { isPending, isFetching, data } = useTaskBodyQuery(task.ID, open);
@@ -64,11 +103,20 @@ export default function TaskEditorDrawer({
         setOpen(open);
         onOpenChange(open);
         setPropertiesOpen(!isMobile || task.ID === 0);
+        if (!open) {
+          editorRef.current = null;
+          setEditorReady(false);
+        }
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
-        <TaskEditorHeader setOpen={setOpen} />
+        <TaskEditorHeader
+          setOpen={setOpen}
+          onCopyAsMarkdown={handleCopyAsMarkdown}
+          onCopyAsPlainText={handleCopyAsPlainText}
+          isEditorReady={editorReady}
+        />
         <div className="flex-1 min-h-0 overflow-y-auto">
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
@@ -148,6 +196,10 @@ export default function TaskEditorDrawer({
               <RichEditor
                 key={`${task.ID}-${open}`}
                 onDebounceChange={handleEditorValueChange}
+                onEditorReady={(editor) => {
+                  editorRef.current = editor;
+                  setEditorReady(true);
+                }}
                 debounceDuration={250}
                 initialValue={data === "" ? [] : data}
               />

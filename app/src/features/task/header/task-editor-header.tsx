@@ -7,6 +7,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -16,6 +19,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import {
   ChevronsRightIcon,
+  ClipboardIcon,
   CopyCheckIcon,
   Ellipsis,
   Maximize2,
@@ -30,8 +34,14 @@ import TaskTypeBadge from "../properties/task-type-badge";
 
 export function TaskEditorHeader({
   setOpen = () => {},
+  onCopyAsMarkdown,
+  onCopyAsPlainText,
+  isEditorReady = false,
 }: {
   setOpen: (open: boolean) => void;
+  onCopyAsMarkdown?: () => void;
+  onCopyAsPlainText?: () => void;
+  isEditorReady?: boolean;
 }) {
   const { state: task } = useContext(TaskContext);
   const { Project, Stages } = useContext(ProjectContext);
@@ -104,6 +114,23 @@ export function TaskEditorHeader({
                   <CopyCheckIcon className="text-muted-foreground" />
                   Duplicate
                 </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <ClipboardIcon className="text-muted-foreground" />
+                    Copy as
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      disabled={!isEditorReady}
+                      onClick={onCopyAsMarkdown}
+                    >
+                      Markdown
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onCopyAsPlainText}>
+                      Plain text
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
