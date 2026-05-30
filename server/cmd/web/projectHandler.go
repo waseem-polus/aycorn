@@ -57,7 +57,7 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 	taskFilters := &repos.TaskFilters{
 		SearchQuery:    q.Get("search"),
 		ChecklistQuery: getQuerySlice(q, "checklist"),
-		TypeQuery:      getQuerySlice(q, "type"),
+		TypeIDQuery:    getQuerySliceInt(q, "typeId"),
 		StageQuery:     getQuerySlice(q, "stage"),
 		PriorityQuery:  getQuerySlice(q, "priority"),
 		AssigneeQuery:  getQuerySlice(q, "assignee"),

@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { TYPES, PRIORITIES } from "@/types/types";
+import { PRIORITIES } from "@/types/types";
 
 export type TEventFormData = {
   startDate: Date;
@@ -12,7 +12,7 @@ export const taskSchema = z.object({
   TimePlannedStart: z.date().nullable(),
   TimePlannedEnd: z.date().nullable(),
   Assignee: z.string().min(1, "Assignee is required"),
-  Type: z.enum(TYPES),
+  Type: z.object({ ID: z.number() }).passthrough(),
   Priority: z.enum(PRIORITIES),
   Stage: z.number(),
   Checklist: z.number().default(1),

@@ -83,16 +83,18 @@ func findAvailablePort(startPort int) (net.Listener, int, error) {
 }
 
 type app struct {
-	projectRepo   *repos.ProjectRepo
-	checklistRepo *repos.ChecklistRepo
-	workflowRepo  *repos.WorkflowRepo
-	stageRepo     *repos.StageRepo
+	projectRepo      *repos.ProjectRepo
+	checklistRepo    *repos.ChecklistRepo
+	workflowRepo     *repos.WorkflowRepo
+	stageRepo        *repos.StageRepo
+	taskTypeRepo     *repos.TaskTypeRepo
 
 	projectService   *services.ProjectService
 	checklistService *services.ChecklistService
 	taskService      *services.TaskService
 	workflowService  *services.WorkflowService
 	stageService     *services.StageService
+	taskTypeService  *services.TaskTypeService
 }
 
 func main() {
@@ -125,6 +127,7 @@ func main() {
 	taskRepo := &repos.TaskRepo{DB: db}
 	workflowRepo := &repos.WorkflowRepo{DB: db}
 	stageRepo := &repos.StageRepo{DB: db}
+	taskTypeRepo := &repos.TaskTypeRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -132,30 +135,34 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		WorkflowRepo:  workflowRepo,
 		StageRepo:     stageRepo,
+		TaskTypeRepo:  taskTypeRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
 	}
-	taskService := &services.TaskService{TaskRepo: taskRepo}
+	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo}
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,
 		StageRepo:    stageRepo,
 	}
 	stageService := &services.StageService{StageRepo: stageRepo}
+	taskTypeService := &services.TaskTypeService{TaskTypeRepo: taskTypeRepo}
 
 	app := app{
 		projectRepo:   projectRepo,
 		checklistRepo: checklistRepo,
 		workflowRepo:  workflowRepo,
 		stageRepo:     stageRepo,
+		taskTypeRepo:  taskTypeRepo,
 
 		projectService:   projectService,
 		checklistService: checklistService,
 		taskService:      taskService,
 		workflowService:  workflowService,
 		stageService:     stageService,
+		taskTypeService:  taskTypeService,
 	}
 
 	ln, port, err := findAvailablePort(resolvePort())

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowsRouteImport } from './routes/workflows'
 import { Route as UsageRouteImport } from './routes/usage'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
+import { Route as TaskTypesRouteImport } from './routes/task-types'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkflowWorkflowIdRouteImport } from './routes/workflow.$workflowId'
@@ -32,6 +33,11 @@ const UsageRoute = UsageRouteImport.update({
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
   path: '/upcoming',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TaskTypesRoute = TaskTypesRouteImport.update({
+  id: '/task-types',
+  path: '/task-types',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -69,6 +75,7 @@ const ProjectSettingsProjectIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
   '/workflows': typeof WorkflowsRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/settings'
+    | '/task-types'
     | '/upcoming'
     | '/usage'
     | '/workflows'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/settings'
+    | '/task-types'
     | '/upcoming'
     | '/usage'
     | '/workflows'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/settings'
+    | '/task-types'
     | '/upcoming'
     | '/usage'
     | '/workflows'
@@ -139,6 +151,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRoute: typeof SettingsRoute
+  TaskTypesRoute: typeof TaskTypesRoute
   UpcomingRoute: typeof UpcomingRoute
   UsageRoute: typeof UsageRoute
   WorkflowsRoute: typeof WorkflowsRoute
@@ -169,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/upcoming'
       fullPath: '/upcoming'
       preLoaderRoute: typeof UpcomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/task-types': {
+      id: '/task-types'
+      path: '/task-types'
+      fullPath: '/task-types'
+      preLoaderRoute: typeof TaskTypesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -219,6 +239,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRoute: SettingsRoute,
+  TaskTypesRoute: TaskTypesRoute,
   UpcomingRoute: UpcomingRoute,
   UsageRoute: UsageRoute,
   WorkflowsRoute: WorkflowsRoute,

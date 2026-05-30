@@ -66,7 +66,7 @@ export function ListView({
                               <span className="w-full h-fit flex flex-wrap gap-2">
                                 <TaskTypeBadge
                                   className="flex sm:hidden"
-                                  variant={task.Type}
+                                  type={task.Type}
                                 />
 
                                 <Badge
@@ -110,7 +110,7 @@ export function ListView({
                           </ItemContent>
                           <ItemActions>
                             <span className="hidden sm:flex w-full justify-end gap-2">
-                              <TaskTypeBadge variant={task.Type} />
+                              <TaskTypeBadge type={task.Type} />
                               <Badge
                                 variant="outline"
                                 className="bg-background"

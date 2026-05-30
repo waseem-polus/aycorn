@@ -1,5 +1,5 @@
 import type { TEventColor } from "@/features/calendar/types";
-import type { Task, Type } from "@/types/types";
+import type { Task } from "@/types/types";
 
 export interface IUser {
   id: string;
@@ -13,21 +13,30 @@ export interface ICalendarCell {
   date: Date;
 }
 
-export function getColorForTaskType(type: Type): TEventColor {
-  switch (type) {
-    case "Dev":
-      return "green";
-    case "Reminder":
-      return "orange";
-    case "Test":
-      return "blue";
-    default:
-      return "blue";
-  }
-}
+const COLOR_MAP: Record<string, TEventColor> = {
+  green: "green",
+  emerald: "green",
+  teal: "green",
+  lime: "green",
+  orange: "orange",
+  amber: "orange",
+  yellow: "orange",
+  blue: "blue",
+  sky: "blue",
+  cyan: "blue",
+  indigo: "blue",
+  red: "red",
+  rose: "red",
+  pink: "red",
+  purple: "purple",
+  violet: "purple",
+  fuchsia: "purple",
+  gray: "gray",
+  slate: "gray",
+};
 
 export function getTaskColor(task: Task): TEventColor {
-  return getColorForTaskType(task.Type);
+  return COLOR_MAP[task.Type?.Color] ?? "blue";
 }
 
 export function getTaskStartDate(task: Task): string {

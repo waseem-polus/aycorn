@@ -1,0 +1,156 @@
+import { useRef, useState } from "react";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
+import type { TaskTypeGlobal } from "@/types/types";
+import { EditableHeader } from "@/components/EditableHeader";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CopyCheckIcon, FoldersIcon } from "lucide-react";
+import { IconPicker } from "@/features/icon-picker/icon-picker";
+import { ColorPicker } from "@/features/color-picker/color-picker";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
+import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
+import { TaskTypeCardMenu } from "@/features/task-types/task-type-card-menu";
+import { DeleteTaskTypeDialog } from "@/features/task-types/delete-task-type-dialog";
+import { toast } from "sonner";
+
+export function TaskTypeCard({ type }: { type: TaskTypeGlobal }) {
+  const { updateTaskType } = useTaskTypeMutation();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLHeadingElement>(null);
+
+  useFocusAndSelect(nameRef, isEditingName);
+  useFocusAndSelect(descriptionRef, isEditingDescription);
+
+  const save = (patch: Partial<typeof type>) => {
+    updateTaskType.mutate(
+      { ...type, ...patch },
+      { onError: () => toast.error("Failed to update type.") },
+    );
+  };
+
+  const handleSaveName = (newName: string) => {
+    setIsEditingName(false);
+    if (newName !== type.Name) save({ Name: newName });
+  };
+
+  const handleSaveDescription = (newDescription: string) => {
+    setIsEditingDescription(false);
+    if (newDescription !== type.Description)
+      save({ Description: newDescription });
+  };
+
+  const projectLabel =
+    type.ProjectCount === 0
+      ? "0 projects"
+      : type.ProjectCount === 1
+        ? "1 project"
+        : `${type.ProjectCount} projects`;
+
+  const taskLabel = type.TaskCount === 1 ? "1 task" : `${type.TaskCount} tasks`;
+
+  return (
+    <>
+      <Card className="relative gap-3 rounded-lg py-4 shadow-none">
+        <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
+          <CardTitle className="font-medium min-w-0 flex items-center gap-2">
+            <div className="pointer-events-auto flex items-center gap-1 shrink-0">
+              <ColorPicker
+                value={type.Color}
+                onSelect={(color) => save({ Color: color })}
+              />
+              <IconPicker
+                value={type.Icon}
+                onSelect={(icon) => save({ Icon: icon })}
+                iconClassName={stageStrokeClass(type.Color)}
+              />
+            </div>
+
+            {isEditingName ? (
+              <div
+                className="pointer-events-auto flex-1 min-w-0"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <EditableHeader
+                  ref={nameRef}
+                  value={type.Name}
+                  setValue={handleSaveName}
+                  onBlur={() => setIsEditingName(false)}
+                  placeholder="Untitled Type"
+                  className="text-base font-medium p-0 min-h-0"
+                />
+              </div>
+            ) : type.Name === "" ? (
+              <span className="text-base truncate text-muted-foreground">
+                Untitled Type
+              </span>
+            ) : (
+              <span className="text-base truncate">{type.Name}</span>
+            )}
+          </CardTitle>
+
+          {isEditingDescription ? (
+            <div
+              className="pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <EditableHeader
+                ref={descriptionRef}
+                value={type.Description}
+                setValue={handleSaveDescription}
+                onBlur={() => setIsEditingDescription(false)}
+                placeholder="Add description..."
+                className="text-xs font-normal text-muted-foreground p-0 min-h-0"
+              />
+            </div>
+          ) : (
+            type.Description !== "" && (
+              <CardDescription className="text-xs truncate">
+                {type.Description}
+              </CardDescription>
+            )
+          )}
+
+          <CardAction className="pointer-events-auto">
+            <TaskTypeCardMenu
+              isDefault={type.IsDefault}
+              onRename={() => setTimeout(() => setIsEditingName(true), 100)}
+              onEditDescription={() =>
+                setTimeout(() => setIsEditingDescription(true), 100)
+              }
+              onDelete={() => setDeleteOpen(true)}
+            />
+          </CardAction>
+        </CardHeader>
+
+        <CardContent className="flex flex-wrap items-center gap-1.5 px-4 pointer-events-none">
+          <Badge variant="outline" className="text-xs">
+            <FoldersIcon className="size-3" />
+            {projectLabel}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            <CopyCheckIcon className="size-3" />
+            {taskLabel}
+          </Badge>
+        </CardContent>
+      </Card>
+
+      <DeleteTaskTypeDialog
+        type={type}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
+    </>
+  );
+}

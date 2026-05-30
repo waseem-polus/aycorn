@@ -16,6 +16,7 @@ import {
   FolderIcon,
   SettingsIcon,
   Squirrel,
+  TagsIcon,
   WorkflowIcon,
 } from "lucide-react";
 
@@ -30,6 +31,11 @@ const data = {
       title: "Workflows",
       url: "/workflows",
       icon: WorkflowIcon,
+    },
+    {
+      title: "Task Types",
+      url: "/task-types",
+      icon: TagsIcon,
     },
     {
       title: "Upcoming",

@@ -28,22 +28,42 @@ type ChecklistDetails struct {
 	Status     string
 }
 
+type TaskType struct {
+	ID          int    `json:"ID"`
+	Name        string `json:"Name"`
+	Description string `json:"Description"`
+	Icon        string `json:"Icon"`
+	Color       string `json:"Color"`
+	IsDefault   bool   `json:"IsDefault"`
+}
+
+type TaskTypeGlobal struct {
+	TaskType
+	ProjectCount int `json:"ProjectCount"`
+	TaskCount    int `json:"TaskCount"`
+}
+
+type ProjectTaskTypeSettings struct {
+	AllTypes       []TaskType `json:"AllTypes"`
+	EnabledTypeIDs []int      `json:"EnabledTypeIDs"`
+}
+
 type Task struct {
-	ID               int
-	Checklist        int
-	Stage            int
-	Name             string
-	Body             string
-	TimeCreated      *time.Time
-	TimeModified     *time.Time
-	TimePlannedStart   *time.Time
-	TimePlannedEnd     *time.Time
+	ID                  int
+	Checklist           int
+	Stage               int
+	Name                string
+	Body                string
+	TimeCreated         *time.Time
+	TimeModified        *time.Time
+	TimePlannedStart    *time.Time
+	TimePlannedEnd      *time.Time
 	HasTimePlannedStart bool
 	HasTimePlannedEnd   bool
-	TimeCompleted      *time.Time
-	Assignee         string
-	Priority         string
-	Type             string
+	TimeCompleted       *time.Time
+	Assignee            string
+	Priority            string
+	Type                TaskType
 }
 
 type ChecklistTask struct {

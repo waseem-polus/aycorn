@@ -1,12 +1,29 @@
 import type { Value } from "platejs";
 
 export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
-export const TYPES = ["Test", "Dev", "Reminder"] as const;
 export const STAGE_TYPES = ["open", "todo", "doing", "done", "blocked"] as const;
 
-export type Type = (typeof TYPES)[number];
 export type Priority = (typeof PRIORITIES)[number];
 export type StageType = (typeof STAGE_TYPES)[number];
+
+export type TaskType = {
+  ID: number;
+  Name: string;
+  Description: string;
+  Icon: string;
+  Color: string;
+  IsDefault: boolean;
+};
+
+export type TaskTypeGlobal = TaskType & {
+  ProjectCount: number;
+  TaskCount: number;
+};
+
+export type ProjectTaskTypeSettings = {
+  AllTypes: TaskType[];
+  EnabledTypeIDs: number[];
+};
 
 export type Project = {
   ID: number;
@@ -81,7 +98,7 @@ export type Task = {
   TimeCompleted: string | null;
   Assignee: string;
   Priority: Priority;
-  Type: Type;
+  Type: TaskType;
 };
 
 export type ChecklistTask = Task & {
@@ -105,7 +122,7 @@ export type TaskFilter = {
   Checklist: Task["Checklist"][];
   Assignee: Task["Assignee"][];
   Priority: Task["Priority"][];
-  Type: Task["Type"][];
+  Type: number[];
   Stage: Stage["ID"][];
 };
 

@@ -72,7 +72,11 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
     );
 
   const sharedStage = sharedValue(selectedTasks, "Stage");
-  const sharedType = sharedValue(selectedTasks, "Type");
+  const firstTypeId = selectedTasks[0]?.Type?.ID;
+  const sharedType =
+    selectedTasks.length > 0 && selectedTasks.every((t) => t.Type?.ID === firstTypeId)
+      ? selectedTasks[0].Type
+      : undefined;
   const sharedPriority = sharedValue(selectedTasks, "Priority");
   const sharedChecklist = sharedValue(selectedTasks, "Checklist");
   const sharedAssignee = sharedValue(selectedTasks, "Assignee");
@@ -138,7 +142,7 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
           />
           <SelectTaskType
             value={sharedType}
-            onValueChange={(v) => applyChange({ Type: v }, "type")}
+            onValueChange={(v) => applyChange({ Type: v.ID } as unknown as Partial<Task>, "type")}
             placeholder={sharedType === undefined ? "Mixed" : "Type"}
           />
           <SelectChecklist

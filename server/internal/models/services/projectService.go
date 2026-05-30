@@ -14,6 +14,7 @@ type ProjectService struct {
 	ChecklistRepo *repos.ChecklistRepo
 	WorkflowRepo  *repos.WorkflowRepo
 	StageRepo     *repos.StageRepo
+	TaskTypeRepo  *repos.TaskTypeRepo
 }
 
 type projectDetails struct {
@@ -184,6 +185,12 @@ func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
 
 	if err := s.ChecklistRepo.CreateDefaultChecklist(int(id)); err != nil {
 		return 0, err
+	}
+
+	if s.TaskTypeRepo != nil {
+		if err := s.TaskTypeRepo.AddDefaultTypeToProject(int(id)); err != nil {
+			return 0, err
+		}
 	}
 
 	return id, nil

@@ -73,6 +73,7 @@ export function ProjectRowActions({
               navigate({
                 to: "/project/settings/$projectId",
                 params: { projectId: project.ID.toString() },
+                search: { tab: "workflow" },
               })
             }
           >

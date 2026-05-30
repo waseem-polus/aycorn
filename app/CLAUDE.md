@@ -36,7 +36,9 @@ src/
 
 - **Client state** lives in React Contexts. Don't introduce Zustand, Redux, or other state libraries.
 - **Server state** is fetched via TanStack Query. Queries are grouped into hooks by feature (e.g., `useTaskQueries`, `useProjectQueries`).
-- **Always wait for server confirmation** before updating UI — no optimistic updates. **One carve-out:** drag-reorder / drag-move (dnd-kit). Reordering must feel instant, so update local order on drop, fire the mutation, and **revert to server state on error**. This applies to single and bulk drag (see `stage-list.tsx`). Nothing else gets optimistic treatment.
+- **Always wait for server confirmation** before updating UI — no optimistic updates. **Two carve-outs:**
+  1. drag-reorder / drag-move (dnd-kit): Reordering must feel instant, so update local order on drop, fire the mutation, and **revert to server state on error**. This applies to single and bulk drag (see `stage-list.tsx`).
+  2. Toggle switches for boolean/membership state (e.g., enabling/disabling a task type per project): The animation is what makes toggles feel responsive, so update local state immediately and revert on error.
 - **TanStack queries and mutations must live in a dedicated hook file** under `queries/` (or the feature's `queries/` folder). Never write `useQuery` / `useMutation` inline in a component. Components consume the hook; the hook owns the URL, the cache key, and the invalidations. This keeps fetch logic out of the render tree and makes it reusable across components.
 
 ---
@@ -73,3 +75,11 @@ Fix: render the dialog/menu as a **sibling** of the clickable container, not a d
   - Small things → write it yourself.
   - Bigger things (calendar, rich text, etc.) → prefer a shadcn-style owned copy in the codebase over a runtime library dependency.
   - Last resort → a library (used for things like DnD that are complex and edge-case-heavy).
+
+---
+
+## Feature Notes
+
+### Task Types (`features/task-types/`)
+
+The global task types page (`/task-types`) and the project task types settings tab both render a card grid. **Future planned feature:** task types will gain a `category` field so cards can be grouped by category. The DB schema and UI do not have this yet — don't implement it, but be aware the card grid layout was chosen to accommodate it.

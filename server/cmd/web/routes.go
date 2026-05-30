@@ -21,6 +21,9 @@ func (app *app) routes() http.Handler {
 
 	mux.HandleFunc("GET /api/project/{projectId}/settings/workflow", app.getProjectWorkflowSettings)
 	mux.HandleFunc("PUT /api/project/{projectId}/settings/workflow", app.switchProjectWorkflow)
+	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types", app.getProjectTaskTypeSettings)
+	mux.HandleFunc("PUT /api/project/{projectId}/settings/task-types", app.putProjectTaskTypes)
+	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types/enabled", app.getProjectTaskTypes)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 	mux.HandleFunc("DELETE /api/project/{projectId}", app.deleteProject)
@@ -37,6 +40,11 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("POST /api/checklist/{projectId}", app.postChecklist)
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
 	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)
+
+	mux.HandleFunc("GET /api/task-type", app.getAllTaskTypes)
+	mux.HandleFunc("POST /api/task-type", app.postTaskType)
+	mux.HandleFunc("PUT /api/task-type/{id}", app.putTaskType)
+	mux.HandleFunc("DELETE /api/task-type/{id}", app.deleteTaskType)
 
 	mux.HandleFunc("GET /api/workflow", app.getAllWorkflows)
 	mux.HandleFunc("POST /api/workflow/bulk/delete", app.bulkDeleteWorkflows)
