@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyCheckIcon, FoldersIcon } from "lucide-react";
-import { IconPicker } from "@/features/icon-picker/icon-picker";
-import { ColorPicker } from "@/features/color-picker/color-picker";
+import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
 import { TaskTypeCardMenu } from "@/features/task-types/task-type-card-menu";
@@ -64,13 +63,11 @@ export function TaskTypeCard({ type }: { type: TaskTypeGlobal }) {
         <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
           <CardTitle className="font-medium min-w-0 flex items-center gap-2">
             <div className="pointer-events-auto flex items-center gap-1 shrink-0">
-              <ColorPicker
-                value={type.Color}
-                onSelect={(color) => save({ Color: color })}
-              />
-              <IconPicker
-                value={type.Icon}
-                onSelect={(icon) => save({ Icon: icon })}
+              <IconColorPicker
+                iconValue={type.Icon}
+                colorValue={type.Color}
+                onIconSelect={(icon) => save({ Icon: icon })}
+                onColorSelect={(color) => save({ Color: color })}
                 iconClassName={stageStrokeClass(type.Color)}
               />
             </div>
