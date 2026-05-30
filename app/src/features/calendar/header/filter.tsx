@@ -28,29 +28,31 @@ export default function FilterEvents() {
         </Toggle>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        {taskTypes.map((taskType) => (
-          <DropdownMenuItem
-            key={taskType.ID}
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              filterEventsBySelectedTypes(taskType.ID);
-            }}
-          >
-            <div
-              className={cn(
-                "size-3.5 rounded-full shrink-0",
-                stageSwatchClass(taskType.Color),
-              )}
-            />
-            <span className="flex justify-center items-center gap-2">
-              {taskType.Name}
-              {selectedTypes.includes(taskType.ID) && (
-                <CheckIcon className="size-4" />
-              )}
-            </span>
-          </DropdownMenuItem>
-        ))}
+        <div className="max-h-50 overflow-y-auto">
+          {taskTypes.map((taskType) => (
+            <DropdownMenuItem
+              key={taskType.ID}
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                filterEventsBySelectedTypes(taskType.ID);
+              }}
+            >
+              <div
+                className={cn(
+                  "size-3.5 rounded-full shrink-0",
+                  stageSwatchClass(taskType.Color),
+                )}
+              />
+              <span className="flex justify-center items-center gap-2">
+                {taskType.Name}
+                {selectedTypes.includes(taskType.ID) && (
+                  <CheckIcon className="size-4" />
+                )}
+              </span>
+            </DropdownMenuItem>
+          ))}
+        </div>
         <Separator className="my-2" />
         <DropdownMenuItem
           disabled={selectedTypes.length === 0}

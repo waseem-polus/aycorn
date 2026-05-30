@@ -24,7 +24,7 @@ export function TypeFilter() {
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className="max-h-50 overflow-y-auto">
         {types.map((type) => (
           <DropdownMenuCheckboxItem
             key={type.ID}
