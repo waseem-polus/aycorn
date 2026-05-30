@@ -1,8 +1,4 @@
+import type { StageColor } from "@/features/stage/stage-palette";
+
 export type TCalendarView = "day" | "week" | "month" | "year" | "agenda";
-export type TEventColor =
-	| "blue"
-	| "green"
-	| "red"
-	| "yellow"
-	| "purple"
-	| "orange";
+export type TEventColor = StageColor;

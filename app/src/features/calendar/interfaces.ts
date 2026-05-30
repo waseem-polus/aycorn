@@ -1,4 +1,5 @@
 import type { TEventColor } from "@/features/calendar/types";
+import { STAGE_COLORS } from "@/features/stage/stage-palette";
 import type { Task } from "@/types/types";
 
 export interface IUser {
@@ -13,30 +14,11 @@ export interface ICalendarCell {
   date: Date;
 }
 
-const COLOR_MAP: Record<string, TEventColor> = {
-  green: "green",
-  emerald: "green",
-  teal: "green",
-  lime: "green",
-  orange: "orange",
-  amber: "orange",
-  yellow: "orange",
-  blue: "blue",
-  sky: "blue",
-  cyan: "blue",
-  indigo: "blue",
-  red: "red",
-  rose: "red",
-  pink: "red",
-  purple: "purple",
-  violet: "purple",
-  fuchsia: "purple",
-  gray: "gray",
-  slate: "gray",
-};
+const VALID_COLORS = new Set<string>(STAGE_COLORS);
 
 export function getTaskColor(task: Task): TEventColor {
-  return COLOR_MAP[task.Type?.Color] ?? "blue";
+  const color = task.Type?.Color;
+  return (VALID_COLORS.has(color) ? color : "gray") as TEventColor;
 }
 
 export function getTaskStartDate(task: Task): string {
