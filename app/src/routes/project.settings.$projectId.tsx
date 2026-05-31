@@ -12,6 +12,7 @@ import { ProjectWorkflowTab } from "@/features/settings/project-workflow/project
 import { ProjectTaskTypesTab } from "@/features/settings/project-task-types/project-task-types-tab";
 import { createFileRoute } from "@tanstack/react-router";
 import { LandPlotIcon, TagsIcon, WorkflowIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/project/settings/$projectId")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -52,13 +53,13 @@ function RouteComponent() {
               <WorkflowIcon />
               Workflow
             </TabsTrigger>
-            <TabsTrigger value="checklists">
-              <LandPlotIcon />
-              Checklists
-            </TabsTrigger>
             <TabsTrigger value="task-types">
               <TagsIcon />
               Task Types
+            </TabsTrigger>
+            <TabsTrigger value="checklists">
+              <LandPlotIcon />
+              Checklists
             </TabsTrigger>
           </TabsList>
 
@@ -68,15 +69,15 @@ function RouteComponent() {
             <ProjectWorkflowTab projectId={id} />
           </TabsContent>
 
+          <TabsContent value="task-types">
+            <ProjectTaskTypesTab projectId={id} />
+          </TabsContent>
+
           <TabsContent value="checklists">
             <EmptyPanel
               title="Checklists"
               description="Group tasks by phase, sprint, or area. The default checklist is picked automatically when a teammate creates a new task without choosing one."
             />
-          </TabsContent>
-
-          <TabsContent value="task-types">
-            <ProjectTaskTypesTab projectId={id} />
           </TabsContent>
         </Tabs>
       </PageContent>

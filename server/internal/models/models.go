@@ -43,9 +43,14 @@ type TaskTypeGlobal struct {
 	TaskCount    int `json:"TaskCount"`
 }
 
+type TaskTypeWithCount struct {
+	TaskType
+	TaskCount int `json:"TaskCount"`
+}
+
 type ProjectTaskTypeSettings struct {
-	AllTypes       []TaskType `json:"AllTypes"`
-	EnabledTypeIDs []int      `json:"EnabledTypeIDs"`
+	AllTypes       []TaskTypeWithCount `json:"AllTypes"`
+	EnabledTypeIDs []int               `json:"EnabledTypeIDs"`
 }
 
 type Task struct {

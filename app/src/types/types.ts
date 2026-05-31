@@ -20,8 +20,12 @@ export type TaskTypeGlobal = TaskType & {
   TaskCount: number;
 };
 
+export type TaskTypeWithCount = TaskType & {
+  TaskCount: number;
+};
+
 export type ProjectTaskTypeSettings = {
-  AllTypes: TaskType[];
+  AllTypes: TaskTypeWithCount[];
   EnabledTypeIDs: number[];
 };
 

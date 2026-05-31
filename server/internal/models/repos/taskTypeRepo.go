@@ -65,6 +65,34 @@ func (repo *TaskTypeRepo) AllWithCounts() ([]models.TaskTypeGlobal, error) {
 	return types, rows.Err()
 }
 
+func (repo *TaskTypeRepo) AllWithProjectTaskCounts(projectId int) ([]models.TaskTypeWithCount, error) {
+	query := `
+		SELECT
+			` + taskTypeColumns + `,
+			(SELECT COUNT(*) FROM task t INNER JOIN checklist c ON c.id = t.checklist WHERE t.type = tt.id AND c.project = ?) AS taskCount
+		FROM task_type tt
+		ORDER BY tt.isDefault DESC, tt.id ASC;
+	`
+	rows, err := repo.DB.Query(query, projectId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	types := []models.TaskTypeWithCount{}
+	for rows.Next() {
+		tc := models.TaskTypeWithCount{}
+		if err := rows.Scan(
+			&tc.ID, &tc.Name, &tc.Description, &tc.Icon, &tc.Color, &tc.IsDefault,
+			&tc.TaskCount,
+		); err != nil {
+			return nil, err
+		}
+		types = append(types, tc)
+	}
+	return types, rows.Err()
+}
+
 func (repo *TaskTypeRepo) EnabledForProject(projectId int) ([]models.TaskType, error) {
 	query := `
 		SELECT ` + taskTypeColumns + `

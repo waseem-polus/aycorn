@@ -23,7 +23,7 @@ func (s *TaskTypeService) GetEnabledForProject(projectId int) ([]models.TaskType
 }
 
 func (s *TaskTypeService) GetProjectSettings(projectId int) (*models.ProjectTaskTypeSettings, error) {
-	allTypes, err := s.TaskTypeRepo.All()
+	allTypes, err := s.TaskTypeRepo.AllWithProjectTaskCounts(projectId)
 	if err != nil {
 		return nil, err
 	}

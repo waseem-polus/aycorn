@@ -18,7 +18,7 @@ import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { useProjectTaskTypeSettingsQuery } from "@/features/settings/project-task-types/queries/useProjectTaskTypeSettingsQuery";
 import { useProjectTaskTypesMutation } from "@/features/settings/project-task-types/queries/useProjectTaskTypesMutation";
 import { toast } from "sonner";
-import type { TaskType } from "@/types/types";
+import type { TaskTypeWithCount } from "@/types/types";
 import { cn } from "@/lib/utils";
 
 // Enabled section: new cards slide up from below (they came from Available, which is below)
@@ -42,8 +42,8 @@ const availableVariants = {
 };
 
 type TaskTypeCardProps = {
-  type: TaskType;
-  onToggle: (type: TaskType, checked: boolean) => void;
+  type: TaskTypeWithCount;
+  onToggle: (type: TaskTypeWithCount, checked: boolean) => void;
 };
 
 const TaskTypeCard = ({ type, onToggle }: TaskTypeCardProps) => (
@@ -73,12 +73,15 @@ const TaskTypeCard = ({ type, onToggle }: TaskTypeCardProps) => (
           />
         )}
       </CardTitle>
+      <CardDescription className="text-xs text-muted-foreground">
+        {type.TaskCount === 1 ? "1 task" : `${type.TaskCount} tasks`}
+        {type.IsDefault && " · Always enabled"}
+      </CardDescription>
       {type.Description && (
         <Tooltip>
           <TooltipTrigger asChild>
             <CardDescription className="text-xs truncate">
               {type.Description}
-              {type.IsDefault && " · Always enabled"}
             </CardDescription>
           </TooltipTrigger>
           <TooltipContent>{type.Description}</TooltipContent>
@@ -119,7 +122,7 @@ const AvailableTaskTypeCard = ({ type, onToggle }: TaskTypeCardProps) => (
       {type.Description && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <CardDescription className="text-xs truncate">
+            <CardDescription className="text-xs truncate text-muted-foreground">
               {type.Description}
             </CardDescription>
           </TooltipTrigger>
@@ -147,7 +150,7 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
 
   const enabledIds = localEnabledIds ?? data.EnabledTypeIDs;
 
-  const handleToggle = (type: TaskType, checked: boolean) => {
+  const handleToggle = (type: TaskTypeWithCount, checked: boolean) => {
     const next = checked
       ? [...enabledIds, type.ID]
       : enabledIds.filter((id) => id !== type.ID);
@@ -178,7 +181,12 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-medium">Enabled</h3>
+        <h3 className="text-sm font-medium">
+          Enabled{" "}
+          <span className="text-muted-foreground font-normal">
+            ({enabledTypes.length})
+          </span>
+        </h3>
         {enabledTypes.length === 0 ? (
           <div className="flex items-center justify-center rounded-lg border border-dashed py-8 text-sm text-muted-foreground">
             No types are enabled yet.
@@ -197,7 +205,10 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-medium text-muted-foreground">Available</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">
+          Available{" "}
+          <span className="font-normal">({availableTypes.length})</span>
+        </h3>
         {availableTypes.length === 0 ? (
           <div className="flex items-center justify-center rounded-lg border border-dashed py-8 text-sm text-muted-foreground">
             All types are enabled.
