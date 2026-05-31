@@ -24,6 +24,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types", app.getProjectTaskTypeSettings)
 	mux.HandleFunc("PUT /api/project/{projectId}/settings/task-types", app.putProjectTaskTypes)
 	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types/enabled", app.getProjectTaskTypes)
+	mux.HandleFunc("POST /api/project/{projectId}/settings/task-types/bulk/enable-category", app.postEnableTaskTypeCategory)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 	mux.HandleFunc("DELETE /api/project/{projectId}", app.deleteProject)
@@ -45,6 +46,12 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("POST /api/task-type", app.postTaskType)
 	mux.HandleFunc("PUT /api/task-type/{id}", app.putTaskType)
 	mux.HandleFunc("DELETE /api/task-type/{id}", app.deleteTaskType)
+
+	mux.HandleFunc("GET /api/task-type-category", app.getAllTaskTypeCategories)
+	mux.HandleFunc("POST /api/task-type-category", app.postTaskTypeCategory)
+	mux.HandleFunc("PUT /api/task-type-category/reorder", app.putTaskTypeCategoryReorder)
+	mux.HandleFunc("PUT /api/task-type-category/{id}", app.putTaskTypeCategory)
+	mux.HandleFunc("DELETE /api/task-type-category/{id}", app.deleteTaskTypeCategory)
 
 	mux.HandleFunc("GET /api/workflow", app.getAllWorkflows)
 	mux.HandleFunc("POST /api/workflow/bulk/delete", app.bulkDeleteWorkflows)

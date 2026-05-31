@@ -11,10 +11,10 @@ type TaskTypeRepo struct {
 	DB *sql.DB
 }
 
-const taskTypeColumns = "id, name, COALESCE(description, ''), icon, color, isDefault"
+const taskTypeColumns = "id, name, COALESCE(description, ''), icon, color, isDefault, category"
 
 func scanTaskType(scanner interface{ Scan(...any) error }, tt *models.TaskType) error {
-	return scanner.Scan(&tt.ID, &tt.Name, &tt.Description, &tt.Icon, &tt.Color, &tt.IsDefault)
+	return scanner.Scan(&tt.ID, &tt.Name, &tt.Description, &tt.Icon, &tt.Color, &tt.IsDefault, &tt.Category)
 }
 
 func (repo *TaskTypeRepo) All() ([]models.TaskType, error) {
@@ -55,7 +55,7 @@ func (repo *TaskTypeRepo) AllWithCounts() ([]models.TaskTypeGlobal, error) {
 	for rows.Next() {
 		g := models.TaskTypeGlobal{}
 		if err := rows.Scan(
-			&g.ID, &g.Name, &g.Description, &g.Icon, &g.Color, &g.IsDefault,
+			&g.ID, &g.Name, &g.Description, &g.Icon, &g.Color, &g.IsDefault, &g.Category,
 			&g.ProjectCount, &g.TaskCount,
 		); err != nil {
 			return nil, err
@@ -83,7 +83,7 @@ func (repo *TaskTypeRepo) AllWithProjectTaskCounts(projectId int) ([]models.Task
 	for rows.Next() {
 		tc := models.TaskTypeWithCount{}
 		if err := rows.Scan(
-			&tc.ID, &tc.Name, &tc.Description, &tc.Icon, &tc.Color, &tc.IsDefault,
+			&tc.ID, &tc.Name, &tc.Description, &tc.Icon, &tc.Color, &tc.IsDefault, &tc.Category,
 			&tc.TaskCount,
 		); err != nil {
 			return nil, err
@@ -155,12 +155,12 @@ func (repo *TaskTypeRepo) DefaultTypeID() (int, error) {
 
 func (repo *TaskTypeRepo) Create(tt *models.TaskType) (*models.TaskType, error) {
 	query := `
-		INSERT INTO task_type (name, description, icon, color)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO task_type (name, description, icon, color, category)
+		VALUES (?, ?, ?, ?, ?)
 		RETURNING id;
 	`
 	var id int
-	err := repo.DB.QueryRow(query, tt.Name, tt.Description, tt.Icon, tt.Color).Scan(&id)
+	err := repo.DB.QueryRow(query, tt.Name, tt.Description, tt.Icon, tt.Color, tt.Category).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -169,10 +169,10 @@ func (repo *TaskTypeRepo) Create(tt *models.TaskType) (*models.TaskType, error) 
 
 func (repo *TaskTypeRepo) Update(tt *models.TaskType) (bool, error) {
 	query := `
-		UPDATE task_type SET name = ?, description = ?, icon = ?, color = ?
+		UPDATE task_type SET name = ?, description = ?, icon = ?, color = ?, category = ?
 		WHERE id = ?;
 	`
-	res, err := repo.DB.Exec(query, tt.Name, tt.Description, tt.Icon, tt.Color, tt.ID)
+	res, err := repo.DB.Exec(query, tt.Name, tt.Description, tt.Icon, tt.Color, tt.Category, tt.ID)
 	if err != nil {
 		return false, err
 	}
@@ -220,6 +220,24 @@ func (repo *TaskTypeRepo) SetEnabledForProject(projectId int, enabledIDs []int) 
 	}
 
 	return tx.Commit()
+}
+
+func (repo *TaskTypeRepo) IDsByCategory(categoryID int) ([]int, error) {
+	rows, err := repo.DB.Query("SELECT id FROM task_type WHERE category = ?;", categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ids := []int{}
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }
 
 func (repo *TaskTypeRepo) AddDefaultTypeToProject(projectId int) error {

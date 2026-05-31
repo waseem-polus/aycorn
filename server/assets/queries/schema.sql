@@ -107,25 +107,67 @@ BEGIN
       AND isDefault = 1;
 END;
 
+-- Added in migration 00003: task types as a first-class table.
+CREATE TABLE task_type_category (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT    NOT NULL DEFAULT '',
+    isDefault    INTEGER NOT NULL DEFAULT 0 CHECK(isDefault IN (0, 1)),
+    sortOrder    INTEGER NOT NULL DEFAULT 0,
+    timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TRIGGER task_type_category_timeModified
+AFTER UPDATE ON task_type_category
+FOR EACH ROW
+BEGIN
+    UPDATE task_type_category SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TABLE task_type (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT    NOT NULL,
+    description  TEXT    NOT NULL DEFAULT '',
+    icon         TEXT    NOT NULL DEFAULT 'square-check',
+    color        TEXT    NOT NULL DEFAULT 'gray',
+    isDefault    INTEGER NOT NULL DEFAULT 0 CHECK(isDefault IN (0, 1)),
+    category     INTEGER REFERENCES task_type_category(id) ON DELETE RESTRICT,
+    timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TRIGGER task_type_timeModified
+AFTER UPDATE ON task_type
+FOR EACH ROW
+BEGIN
+    UPDATE task_type SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TABLE project_task_type (
+    project   INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
+    task_type INTEGER NOT NULL REFERENCES task_type(id) ON DELETE CASCADE,
+    PRIMARY KEY (project, task_type)
+);
+
 CREATE TABLE task (
-    id INTEGER PRIMARY KEY,
-    checklist INTEGER,
-    stage INTEGER NOT NULL,
-    name VARCHAR DEFAULT '',
-    body TEXT DEFAULT '[]',
-    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    timePlannedStart TIMESTAMP DEFAULT NULL,
-    timePlannedEnd   TIMESTAMP DEFAULT NULL,
+    id                  INTEGER PRIMARY KEY,
+    checklist           INTEGER,
+    stage               INTEGER NOT NULL,
+    type                INTEGER NOT NULL REFERENCES task_type(id),
+    name                VARCHAR DEFAULT '',
+    body                TEXT    DEFAULT '[]',
+    timeCreated         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeModified        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timePlannedStart    TIMESTAMP DEFAULT NULL,
+    timePlannedEnd      TIMESTAMP DEFAULT NULL,
     hasTimePlannedStart BOOLEAN NOT NULL DEFAULT 0,
     hasTimePlannedEnd   BOOLEAN NOT NULL DEFAULT 0,
-    timeCompleted TIMESTAMP DEFAULT NULL,
-    assignee VARCHAR,
-    priority TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),
-    type TEXT CHECK(type IN ('Dev', 'Test', 'Reminder')),
+    timeCompleted       TIMESTAMP DEFAULT NULL,
+    assignee            VARCHAR,
+    priority            TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),
 
     FOREIGN KEY (checklist) REFERENCES checklist(id),
-    FOREIGN KEY (stage) REFERENCES stage(id) ON DELETE RESTRICT
+    FOREIGN KEY (stage)     REFERENCES stage(id) ON DELETE RESTRICT
 );
 
 CREATE TRIGGER setTaskTimeModified
@@ -194,26 +236,3 @@ BEGIN
     END
     WHERE id = NEW.id;
 END;
-
--- CREATE TABLE resource (
---     id INTEGER PRIMARY KEY,
---     name VARCHAR,
---     link VARCHAR,
---     type TEXT CHECK(type IN ('jira','documentation','spec','gitlab'))
--- );
-
--- CREATE TABLE taskResource (
---     task INTEGER,
---     resource INTEGER,
---     PRIMARY KEY (task, resource),
---     FOREIGN KEY (task) REFERENCES task(id),
---     FOREIGN KEY (resource) REFERENCES resource(id)
--- );
-
--- CREATE TABLE checklistResource (
---     checklist INTEGER,
---     resource INTEGER,
---     PRIMARY KEY (checklist, resource),
---     FOREIGN KEY (checklist) REFERENCES checklist(id),
---     FOREIGN KEY (resource) REFERENCES resource(id)
--- );

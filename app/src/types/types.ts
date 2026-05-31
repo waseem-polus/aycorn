@@ -6,6 +6,13 @@ export const STAGE_TYPES = ["open", "todo", "doing", "done", "blocked"] as const
 export type Priority = (typeof PRIORITIES)[number];
 export type StageType = (typeof STAGE_TYPES)[number];
 
+export type TaskTypeCategory = {
+  ID: number;
+  Name: string;
+  IsDefault: boolean;
+  SortOrder: number;
+};
+
 export type TaskType = {
   ID: number;
   Name: string;
@@ -13,6 +20,7 @@ export type TaskType = {
   Icon: string;
   Color: string;
   IsDefault: boolean;
+  Category: number;
 };
 
 export type TaskTypeGlobal = TaskType & {
@@ -27,6 +35,7 @@ export type TaskTypeWithCount = TaskType & {
 export type ProjectTaskTypeSettings = {
   AllTypes: TaskTypeWithCount[];
   EnabledTypeIDs: number[];
+  Categories: TaskTypeCategory[];
 };
 
 export type Project = {

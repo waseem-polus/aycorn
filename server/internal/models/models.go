@@ -28,6 +28,13 @@ type ChecklistDetails struct {
 	Status     string
 }
 
+type TaskTypeCategory struct {
+	ID        int    `json:"ID"`
+	Name      string `json:"Name"`
+	IsDefault bool   `json:"IsDefault"`
+	SortOrder int    `json:"SortOrder"`
+}
+
 type TaskType struct {
 	ID          int    `json:"ID"`
 	Name        string `json:"Name"`
@@ -35,6 +42,7 @@ type TaskType struct {
 	Icon        string `json:"Icon"`
 	Color       string `json:"Color"`
 	IsDefault   bool   `json:"IsDefault"`
+	Category    int    `json:"Category"`
 }
 
 type TaskTypeGlobal struct {
@@ -51,6 +59,7 @@ type TaskTypeWithCount struct {
 type ProjectTaskTypeSettings struct {
 	AllTypes       []TaskTypeWithCount `json:"AllTypes"`
 	EnabledTypeIDs []int               `json:"EnabledTypeIDs"`
+	Categories     []TaskTypeCategory  `json:"Categories"`
 }
 
 type Task struct {

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyCheckIcon, FoldersIcon } from "lucide-react";
+import type React from "react";
 import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
@@ -19,7 +20,12 @@ import { TaskTypeCardMenu } from "@/features/task-types/task-type-card-menu";
 import { DeleteTaskTypeDialog } from "@/features/task-types/delete-task-type-dialog";
 import { toast } from "sonner";
 
-export function TaskTypeCard({ type }: { type: TaskTypeGlobal }) {
+type Props = {
+  type: TaskTypeGlobal;
+  dragHandle?: React.ReactNode;
+};
+
+export function TaskTypeCard({ type, dragHandle }: Props) {
   const { updateTaskType } = useTaskTypeMutation();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -59,7 +65,7 @@ export function TaskTypeCard({ type }: { type: TaskTypeGlobal }) {
 
   return (
     <>
-      <Card className="relative gap-3 rounded-lg py-4 shadow-none">
+      <Card className="relative gap-3 rounded-lg py-4 shadow-none h-full">
         <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
           <CardTitle className="font-medium min-w-0 flex items-center gap-2">
             <div className="pointer-events-auto flex items-center gap-1 shrink-0">
@@ -119,7 +125,8 @@ export function TaskTypeCard({ type }: { type: TaskTypeGlobal }) {
             )
           )}
 
-          <CardAction className="pointer-events-auto">
+          <CardAction className="pointer-events-auto flex items-start gap-0.5">
+            {dragHandle}
             <TaskTypeCardMenu
               isDefault={type.IsDefault}
               onRename={() => setTimeout(() => setIsEditingName(true), 100)}

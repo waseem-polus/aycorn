@@ -82,4 +82,4 @@ Fix: render the dialog/menu as a **sibling** of the clickable container, not a d
 
 ### Task Types (`features/task-types/`)
 
-The global task types page (`/task-types`) and the project task types settings tab both render a card grid. **Future planned feature:** task types will gain a `category` field so cards can be grouped by category. The DB schema and UI do not have this yet — don't implement it, but be aware the card grid layout was chosen to accommodate it.
+Task types belong to categories (`TaskTypeCategory`). The global task types page (`/task-types`) renders a collapsible, reorderable category section per category, each containing a card grid. Task type ordering within categories is deferred.
