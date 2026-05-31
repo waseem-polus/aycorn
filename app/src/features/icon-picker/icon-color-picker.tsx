@@ -126,7 +126,9 @@ export function IconColorPicker({
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>{iconValue || "Pick an icon"}</TooltipContent>
+        <TooltipContent>
+          {iconValue ? `${colorValue} ${iconValue}` : "Pick an icon"}
+        </TooltipContent>
       </Tooltip>
       <PopoverContent
         className="w-[312px] p-2"

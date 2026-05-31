@@ -1,4 +1,10 @@
-import { LockIcon, MoreHorizontal, RectangleEllipsisIcon, TextCursorInputIcon, Trash2Icon } from "lucide-react";
+import {
+  LockIcon,
+  MoreHorizontal,
+  RectangleEllipsisIcon,
+  TextCursorInputIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,14 +21,19 @@ type Props = {
   onDelete: () => void;
 };
 
-export function TaskTypeCardMenu({ isDefault, onRename, onEditDescription, onDelete }: Props) {
+export function TaskTypeCardMenu({
+  isDefault,
+  onRename,
+  onEditDescription,
+  onDelete,
+}: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          className="size-7 -mr-1 -mt-1"
+          className="size-7"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();

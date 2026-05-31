@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type React from "react";
 import {
   DndContext,
   DragOverlay,
@@ -45,30 +46,37 @@ const successDropAnimation: DropAnimation = {
 
 const cancelDropAnimation: DropAnimation = { duration: 250, easing: "ease" };
 
+type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
+
 function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `tt-${type.ID}`,
     data: { type: "taskType", taskTypeId: type.ID },
   });
 
+  const { onTouchStart, ...pointerListeners } = (listeners ?? {}) as {
+    onTouchStart?: React.TouchEventHandler;
+  } & DragListeners;
+
   return (
-    <div
-      ref={setNodeRef}
-      className="group h-full"
-      style={{ opacity: isDragging ? 0.4 : 1 }}
+    <TaskTypeCard
+      type={type}
+      dragRef={setNodeRef}
+      dragStyle={{ opacity: isDragging ? 0.4 : 1 }}
+      dragAttributes={attributes as Record<string, unknown>}
+      dragListeners={pointerListeners}
     >
-      <TaskTypeCard type={type}>
-        <div
-          className="cursor-grab touch-none select-none text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-          data-drag-handle=""
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to move to another category"
-        >
-          <GripVertical className="size-4" />
-        </div>
-      </TaskTypeCard>
-    </div>
+      <button
+        type="button"
+        data-drag-handle=""
+        aria-label="Drag to move to another category"
+        onTouchStart={onTouchStart}
+        style={{ touchAction: "none" }}
+        className="hidden pointer-coarse:flex cursor-grab text-muted-foreground p-1 rounded hover:bg-accent"
+      >
+        <GripVertical className="size-4" />
+      </button>
+    </TaskTypeCard>
   );
 }
 
