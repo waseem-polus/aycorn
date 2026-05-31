@@ -22,10 +22,10 @@ import { toast } from "sonner";
 
 type Props = {
   type: TaskTypeGlobal;
-  dragHandle?: React.ReactNode;
+  children?: React.ReactNode;
 };
 
-export function TaskTypeCard({ type, dragHandle }: Props) {
+export function TaskTypeCard({ type, children }: Props) {
   const { updateTaskType } = useTaskTypeMutation();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -126,7 +126,7 @@ export function TaskTypeCard({ type, dragHandle }: Props) {
           )}
 
           <CardAction className="pointer-events-auto flex items-start gap-0.5">
-            {dragHandle}
+            {children}
             <TaskTypeCardMenu
               isDefault={type.IsDefault}
               onRename={() => setTimeout(() => setIsEditingName(true), 100)}

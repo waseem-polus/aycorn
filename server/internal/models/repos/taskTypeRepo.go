@@ -196,14 +196,7 @@ func (repo *TaskTypeRepo) TransferAndDelete(id int, transferToID int) error {
 	return tx.Commit()
 }
 
-func (repo *TaskTypeRepo) SetEnabledForProject(projectId int, enabledIDs []int) error {
-	tx, err := repo.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	// Delete all existing enabled types for this project.
+func (repo *TaskTypeRepo) setEnabledForProjectTx(tx *sql.Tx, projectId int, enabledIDs []int) error {
 	if _, err := tx.Exec("DELETE FROM project_task_type WHERE project = ?;", projectId); err != nil {
 		return err
 	}
@@ -217,6 +210,41 @@ func (repo *TaskTypeRepo) SetEnabledForProject(projectId int, enabledIDs []int) 
 		if _, err := tx.Exec("INSERT INTO project_task_type (project, task_type) VALUES "+placeholders+";", args...); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (repo *TaskTypeRepo) SetEnabledForProject(projectId int, enabledIDs []int) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := repo.setEnabledForProjectTx(tx, projectId, enabledIDs); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (repo *TaskTypeRepo) SetEnabledForProjectWithRoute(projectId int, enabledIDs []int, fromTypeID int, toTypeID int) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(`
+		UPDATE task SET type = ?
+		WHERE type = ? AND checklist IN (SELECT id FROM checklist WHERE project = ?);
+	`, toTypeID, fromTypeID, projectId); err != nil {
+		return err
+	}
+
+	if err := repo.setEnabledForProjectTx(tx, projectId, enabledIDs); err != nil {
+		return err
 	}
 
 	return tx.Commit()

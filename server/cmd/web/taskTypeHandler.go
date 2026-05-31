@@ -123,15 +123,24 @@ func (app *app) putProjectTaskTypes(w http.ResponseWriter, r *http.Request) {
 
 	body := struct {
 		EnabledTypeIDs []int `json:"enabledTypeIds"`
+		DisableTypeID  *int  `json:"disableTypeId"`
+		RouteToTypeID  *int  `json:"routeToTypeId"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := app.taskTypeService.SetProjectTypes(projectId, body.EnabledTypeIDs); err != nil {
-		respondErr(w, err)
-		return
+	if body.DisableTypeID != nil && body.RouteToTypeID != nil {
+		if err := app.taskTypeService.SetProjectTypesWithRoute(projectId, body.EnabledTypeIDs, *body.DisableTypeID, *body.RouteToTypeID); err != nil {
+			respondErr(w, err)
+			return
+		}
+	} else {
+		if err := app.taskTypeService.SetProjectTypes(projectId, body.EnabledTypeIDs); err != nil {
+			respondErr(w, err)
+			return
+		}
 	}
 	writeJSON(w, http.StatusOK, true)
 }

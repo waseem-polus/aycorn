@@ -46,25 +46,33 @@ func (s *TaskTypeService) GetProjectSettings(projectId int) (*models.ProjectTask
 	}, nil
 }
 
-func (s *TaskTypeService) SetProjectTypes(projectId int, enabledIDs []int) error {
-	// Always include the default type even if the caller omitted it.
+func (s *TaskTypeService) ensureDefaultIncluded(enabledIDs []int) ([]int, error) {
 	defaultID, err := s.TaskTypeRepo.DefaultTypeID()
+	if err != nil {
+		return nil, err
+	}
+	for _, id := range enabledIDs {
+		if id == defaultID {
+			return enabledIDs, nil
+		}
+	}
+	return append(enabledIDs, defaultID), nil
+}
+
+func (s *TaskTypeService) SetProjectTypes(projectId int, enabledIDs []int) error {
+	ids, err := s.ensureDefaultIncluded(enabledIDs)
 	if err != nil {
 		return err
 	}
+	return s.TaskTypeRepo.SetEnabledForProject(projectId, ids)
+}
 
-	hasDefault := false
-	for _, id := range enabledIDs {
-		if id == defaultID {
-			hasDefault = true
-			break
-		}
+func (s *TaskTypeService) SetProjectTypesWithRoute(projectId int, enabledIDs []int, fromTypeID int, toTypeID int) error {
+	ids, err := s.ensureDefaultIncluded(enabledIDs)
+	if err != nil {
+		return err
 	}
-	if !hasDefault {
-		enabledIDs = append(enabledIDs, defaultID)
-	}
-
-	return s.TaskTypeRepo.SetEnabledForProject(projectId, enabledIDs)
+	return s.TaskTypeRepo.SetEnabledForProjectWithRoute(projectId, ids, fromTypeID, toTypeID)
 }
 
 func (s *TaskTypeService) Create(tt *models.TaskType) (*models.TaskType, error) {

@@ -1,16 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type SetEnabledTypesParams = {
+  enabledTypeIds: number[];
+  disableTypeId?: number;
+  routeToTypeId?: number;
+};
+
 export function useProjectTaskTypesMutation(projectId: number) {
   const queryClient = useQueryClient();
 
   const setEnabledTypes = useMutation({
-    mutationFn: async (enabledTypeIds: number[]) => {
+    mutationFn: async ({
+      enabledTypeIds,
+      disableTypeId,
+      routeToTypeId,
+    }: SetEnabledTypesParams) => {
       const res = await fetch(
         `/api/project/${projectId}/settings/task-types`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ enabledTypeIds }),
+          body: JSON.stringify({ enabledTypeIds, disableTypeId, routeToTypeId }),
         },
       );
       if (!res.ok) throw new Error(await res.text());

@@ -11,6 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -178,12 +186,98 @@ const AvailableCategoryGroup = ({
   </div>
 );
 
+type RouteTasksDialogProps = {
+  disablingType: TaskTypeWithCount;
+  routeOptions: TaskTypeWithCount[];
+  routeToTypeId: number | null;
+  onRouteToChange: (id: number) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
+
+const RouteTasksDialog = ({
+  disablingType,
+  routeOptions,
+  routeToTypeId,
+  onRouteToChange,
+  onConfirm,
+  onCancel,
+}: RouteTasksDialogProps) => (
+  <Dialog open onOpenChange={(open) => !open && onCancel()}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Move tasks before disabling</DialogTitle>
+        <DialogDescription>
+          <strong>{disablingType.Name || "This type"}</strong> has{" "}
+          {disablingType.TaskCount === 1
+            ? "1 task"
+            : `${disablingType.TaskCount} tasks`}{" "}
+          in this project. Choose a type to move them to before disabling.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="flex flex-col gap-2">
+        {routeOptions.map((option) => {
+          const selected = routeToTypeId === option.ID;
+          return (
+            <button
+              key={option.ID}
+              type="button"
+              onClick={() => onRouteToChange(option.ID)}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors",
+                selected
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:bg-muted/50",
+              )}
+            >
+              <DynamicIcon
+                name={option.Icon as any}
+                className={cn("size-4 shrink-0", stageStrokeClass(option.Color))}
+              />
+              <span className="flex-1 min-w-0">
+                <span className="block text-sm font-medium truncate">
+                  {option.Name || "Untitled Type"}
+                </span>
+                {option.TaskCount > 0 && (
+                  <span className="block text-xs text-muted-foreground">
+                    {option.TaskCount === 1
+                      ? "1 task"
+                      : `${option.TaskCount} tasks`}
+                  </span>
+                )}
+              </span>
+              <span
+                className={cn(
+                  "size-4 shrink-0 rounded-full border-2 transition-colors",
+                  selected ? "border-primary bg-primary" : "border-muted-foreground",
+                )}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={onConfirm} disabled={routeToTypeId === null}>
+          Disable & move tasks
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
 export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
   const { data, isFetching } = useProjectTaskTypeSettingsQuery(projectId);
   const { setEnabledTypes } = useProjectTaskTypesMutation(projectId);
   const enableCategory = useEnableCategoryMutation(projectId);
 
   const [localEnabledIds, setLocalEnabledIds] = useState<number[] | null>(null);
+  const [pendingDisable, setPendingDisable] = useState<TaskTypeWithCount | null>(null);
+  const [routeToTypeId, setRouteToTypeId] = useState<number | null>(null);
 
   if (!data) {
     return (
@@ -195,19 +289,60 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
 
   const enabledIds = localEnabledIds ?? data.EnabledTypeIDs;
 
-  const handleToggle = (type: TaskTypeWithCount, checked: boolean) => {
-    const next = checked
-      ? [...enabledIds, type.ID]
-      : enabledIds.filter((id) => id !== type.ID);
-
+  const commitDisable = (type: TaskTypeWithCount, resolvedRouteToTypeId?: number) => {
+    const next = enabledIds.filter((id) => id !== type.ID);
     setLocalEnabledIds(next);
 
-    setEnabledTypes.mutate(next, {
-      onError: () => {
-        setLocalEnabledIds(null);
-        toast.error("Failed to update type settings.");
+    setEnabledTypes.mutate(
+      {
+        enabledTypeIds: next,
+        disableTypeId: resolvedRouteToTypeId !== undefined ? type.ID : undefined,
+        routeToTypeId: resolvedRouteToTypeId,
       },
-    });
+      {
+        onError: () => {
+          setLocalEnabledIds(null);
+          toast.error("Failed to update type settings.");
+        },
+      },
+    );
+  };
+
+  const handleToggle = (type: TaskTypeWithCount, checked: boolean) => {
+    if (checked) {
+      const next = [...enabledIds, type.ID];
+      setLocalEnabledIds(next);
+      setEnabledTypes.mutate(
+        { enabledTypeIds: next },
+        {
+          onError: () => {
+            setLocalEnabledIds(null);
+            toast.error("Failed to update type settings.");
+          },
+        },
+      );
+      return;
+    }
+
+    if (type.TaskCount > 0) {
+      setPendingDisable(type);
+      setRouteToTypeId(null);
+      return;
+    }
+
+    commitDisable(type);
+  };
+
+  const handleConfirmRoute = () => {
+    if (!pendingDisable || routeToTypeId === null) return;
+    commitDisable(pendingDisable, routeToTypeId);
+    setPendingDisable(null);
+    setRouteToTypeId(null);
+  };
+
+  const handleCancelRoute = () => {
+    setPendingDisable(null);
+    setRouteToTypeId(null);
   };
 
   const handleEnableCategory = (categoryId: number) => {
@@ -232,6 +367,11 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
     availableByCategory.has(c.ID),
   );
   const showCategoryHeaders = categoriesWithAvailable.length > 1;
+
+  // Route options: enabled types excluding the one being disabled.
+  const routeOptions = pendingDisable
+    ? enabledTypes.filter((t) => t.ID !== pendingDisable.ID)
+    : [];
 
   return (
     <section className="flex flex-col gap-6">
@@ -301,6 +441,17 @@ export function ProjectTaskTypesTab({ projectId }: { projectId: number }) {
           </div>
         )}
       </div>
+
+      {pendingDisable && (
+        <RouteTasksDialog
+          disablingType={pendingDisable}
+          routeOptions={routeOptions}
+          routeToTypeId={routeToTypeId}
+          onRouteToChange={setRouteToTypeId}
+          onConfirm={handleConfirmRoute}
+          onCancel={handleCancelRoute}
+        />
+      )}
     </section>
   );
 }

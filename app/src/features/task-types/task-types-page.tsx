@@ -57,20 +57,17 @@ function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
       className="group h-full"
       style={{ opacity: isDragging ? 0.4 : 1 }}
     >
-      <TaskTypeCard
-        type={type}
-        dragHandle={
-          <div
-            className="cursor-grab touch-none select-none text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-            data-drag-handle=""
-            {...attributes}
-            {...listeners}
-            aria-label="Drag to move to another category"
-          >
-            <GripVertical className="size-4" />
-          </div>
-        }
-      />
+      <TaskTypeCard type={type}>
+        <div
+          className="cursor-grab touch-none select-none text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+          data-drag-handle=""
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to move to another category"
+        >
+          <GripVertical className="size-4" />
+        </div>
+      </TaskTypeCard>
     </div>
   );
 }
