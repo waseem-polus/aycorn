@@ -128,7 +128,6 @@ export function TaskTypeCard({
             </div>
 
             <CardAction className="pointer-events-auto flex items-start gap-0.5">
-              {children}
               <TaskTypeCardMenu
                 isDefault={type.IsDefault}
                 onRename={() => setTimeout(() => setIsEditingName(true), 100)}
@@ -137,6 +136,7 @@ export function TaskTypeCard({
                 }
                 onDelete={() => setDeleteOpen(true)}
               />
+              {children}
             </CardAction>
           </CardHeader>
 

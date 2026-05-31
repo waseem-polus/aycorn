@@ -11,8 +11,8 @@ var ErrDefaultTaskType = errors.New("the default task type cannot be deleted")
 var ErrTransferTypeRequired = errors.New("a transfer type is required when deleting a type that has tasks")
 
 type TaskTypeService struct {
-	TaskTypeRepo    *repos.TaskTypeRepo
-	CategoryRepo    *repos.TaskTypeCategoryRepo
+	TaskTypeRepo *repos.TaskTypeRepo
+	CategoryRepo *repos.TaskTypeCategoryRepo
 }
 
 func (s *TaskTypeService) GetAll() ([]models.TaskTypeGlobal, error) {
@@ -76,9 +76,6 @@ func (s *TaskTypeService) SetProjectTypesWithRoute(projectId int, enabledIDs []i
 }
 
 func (s *TaskTypeService) Create(tt *models.TaskType) (*models.TaskType, error) {
-	if tt.Name == "" {
-		tt.Name = "Untitled"
-	}
 	if tt.Icon == "" {
 		tt.Icon = "square-check"
 	}
