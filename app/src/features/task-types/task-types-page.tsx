@@ -77,6 +77,10 @@ export function TaskTypesPage() {
   const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(
     null,
   );
+  const [pendingCategoryMove, setPendingCategoryMove] = useState<{
+    taskTypeId: number;
+    newCategoryId: number;
+  } | null>(null);
 
   useEffect(() => {
     setOrderedCategories(categories);
@@ -89,12 +93,16 @@ export function TaskTypesPage() {
   const typesByCategory = useMemo(() => {
     const map = new Map<number, TaskTypeGlobal[]>();
     for (const type of types) {
-      const bucket = map.get(type.Category) ?? [];
+      const category =
+        pendingCategoryMove?.taskTypeId === type.ID
+          ? pendingCategoryMove.newCategoryId
+          : type.Category;
+      const bucket = map.get(category) ?? [];
       bucket.push(type);
-      map.set(type.Category, bucket);
+      map.set(category, bucket);
     }
     return map;
-  }, [types]);
+  }, [types, pendingCategoryMove]);
 
   // Group types per category, applying search filter.
   const filteredByCategory = useMemo(() => {
@@ -162,9 +170,13 @@ export function TaskTypesPage() {
       const taskType = types.find((t) => t.ID === taskTypeId);
       if (!taskType || taskType.Category === newCategoryId) return;
 
+      setPendingCategoryMove({ taskTypeId, newCategoryId });
       updateTaskType.mutate(
         { ...taskType, Category: newCategoryId },
-        { onError: () => toast.error("Failed to move type.") },
+        {
+          onSettled: () => setPendingCategoryMove(null),
+          onError: () => toast.error("Failed to move type."),
+        },
       );
     }
   };
@@ -279,7 +291,7 @@ export function TaskTypesPage() {
             </div>
           </SortableContext>
 
-          <DragOverlay>
+          <DragOverlay dropAnimation={null}>
             {activeDragType ? (
               <div className="opacity-90 rotate-1 pointer-events-none">
                 <TaskTypeCard type={activeDragType} />
