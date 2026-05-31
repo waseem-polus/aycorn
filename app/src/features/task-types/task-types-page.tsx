@@ -9,8 +9,10 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import {
   SortableContext,
   arrayMove,
@@ -31,6 +33,17 @@ import { useTaskTypeCategoryMutation } from "@/features/task-types/queries/useTa
 import { TaskTypeCard } from "@/features/task-types/task-type-card";
 import { TaskTypeCategorySection } from "@/features/task-types/task-type-category-section";
 import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
+
+const successDropAnimation: DropAnimation = {
+  duration: 200,
+  easing: "ease-out",
+  keyframes: ({ transform }) => [
+    { opacity: 1, transform: CSS.Transform.toString(transform.initial) },
+    { opacity: 0, transform: CSS.Transform.toString(transform.initial) },
+  ],
+};
+
+const cancelDropAnimation: DropAnimation = { duration: 250, easing: "ease" };
 
 function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -81,6 +94,9 @@ export function TaskTypesPage() {
     taskTypeId: number;
     newCategoryId: number;
   } | null>(null);
+  const [dropResult, setDropResult] = useState<"success" | "cancel" | null>(
+    null,
+  );
 
   useEffect(() => {
     setOrderedCategories(categories);
@@ -118,6 +134,7 @@ export function TaskTypesPage() {
 
   const handleDragStart = (e: DragStartEvent) => {
     setActiveDragId(String(e.active.id));
+    setDropResult(null);
   };
 
   const handleDragOver = (e: DragOverEvent) => {
@@ -146,12 +163,15 @@ export function TaskTypesPage() {
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
+    const activeId = String(active.id);
     setActiveDragId(null);
     setDragOverCategoryId(null);
 
-    if (!over) return;
+    if (!over) {
+      if (activeId.startsWith("tt-")) setDropResult("cancel");
+      return;
+    }
 
-    const activeId = String(active.id);
     const overId = String(over.id);
 
     if (activeId.startsWith("cat-") && overId.startsWith("cat-")) {
@@ -168,8 +188,12 @@ export function TaskTypesPage() {
       const taskTypeId = parseInt(activeId.slice(3));
       const newCategoryId = parseInt(overId.slice(4));
       const taskType = types.find((t) => t.ID === taskTypeId);
-      if (!taskType || taskType.Category === newCategoryId) return;
+      if (!taskType || taskType.Category === newCategoryId) {
+        setDropResult("cancel");
+        return;
+      }
 
+      setDropResult("success");
       setPendingCategoryMove({ taskTypeId, newCategoryId });
       updateTaskType.mutate(
         { ...taskType, Category: newCategoryId },
@@ -179,6 +203,12 @@ export function TaskTypesPage() {
         },
       );
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveDragId(null);
+    setDragOverCategoryId(null);
+    setDropResult("cancel");
   };
 
   const activeDragType = types.find((t) => activeDragId === `tt-${t.ID}`);
@@ -261,6 +291,7 @@ export function TaskTypesPage() {
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <SortableContext
             items={orderedCategories.map((c) => `cat-${c.ID}`)}
@@ -291,7 +322,15 @@ export function TaskTypesPage() {
             </div>
           </SortableContext>
 
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay
+            dropAnimation={
+              dropResult === "success"
+                ? successDropAnimation
+                : dropResult === "cancel"
+                  ? cancelDropAnimation
+                  : null
+            }
+          >
             {activeDragType ? (
               <div className="opacity-90 rotate-1 pointer-events-none">
                 <TaskTypeCard type={activeDragType} />
