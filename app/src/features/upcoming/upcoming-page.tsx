@@ -133,7 +133,11 @@ export function UpcomingPage() {
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -170,8 +174,8 @@ export function UpcomingPage() {
             description="Tasks across every project. Read, edit, and clear what's scheduled."
           />
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-1 items-center gap-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
+            <div className="flex gap-2 flex-1">
               <InputGroup className="flex flex-1">
                 <InputGroupAddon>
                   <Search className="text-muted-foreground" />
@@ -202,8 +206,7 @@ export function UpcomingPage() {
                 )}
               </Button>
             </div>
-
-            <div className="flex flex-1 sm:flex-none justify-end">
+            <div className="flex gap-2 justify-end sm:justify-start">
               <GroupByDropdown
                 groupBy={view.groupBy}
                 granularity={view.granularity}
