@@ -74,7 +74,7 @@ export function DateRangePicker({
   placeholder = "Select a date range",
   onRangeChange,
 }: Props) {
-const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { toFormatted, toFormattedTime } = useDateFormat();
 
   const fromDate = from ? parseLocalDate(from) : undefined;
@@ -167,7 +167,9 @@ const [open, setOpen] = useState(false);
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-start font-normal">
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
-          {label ?? <span className="text-muted-foreground">{placeholder}</span>}
+          {label ?? (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
           {(localRange?.from || localRange?.to) && (
             <span
               role="button"
