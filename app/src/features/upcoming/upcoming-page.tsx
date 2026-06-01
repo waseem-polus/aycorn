@@ -66,6 +66,7 @@ export function UpcomingPage() {
     clearFilterDim,
     setSearch,
     setDateFilter,
+    setHasTimeFilter,
     resetAll,
     activeFilterCount,
     toggleCollapsed,
@@ -285,6 +286,7 @@ export function UpcomingPage() {
         onToggle={toggleFilter}
         onClearDim={clearFilterDim}
         onSetDate={setDateFilter}
+        onSetHasTime={setHasTimeFilter}
         onToggleEmpty={setShowEmpty}
         onReset={resetAll}
         onClose={() => setFilterOpen(false)}

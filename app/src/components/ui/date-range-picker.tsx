@@ -46,15 +46,15 @@ const toYMD = (d: Date): string => {
 };
 
 const getTimeFromISO = (iso: string | null): string => {
-  if (!iso) return "";
+  if (!iso || !iso.includes("T")) return "";
   return new Date(iso).toTimeString().slice(0, 5);
 };
 
 const setTimeOnDate = (isoDate: string | null, time: string): string | null => {
   if (!isoDate || !time) return isoDate;
-  const d = new Date(isoDate);
-  const [hours, minutes] = time.split(":");
-  d.setHours(parseInt(hours), parseInt(minutes));
+  const d = parseLocalDate(isoDate);
+  const [hours, minutes] = time.split(":").map(Number);
+  d.setHours(hours, minutes);
   return d.toISOString();
 };
 

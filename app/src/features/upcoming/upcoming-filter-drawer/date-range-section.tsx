@@ -5,34 +5,44 @@ type Props = {
   label: string;
   fromKey: string;
   toKey: string;
+  hasFromTimeKey: string;
+  hasToTimeKey: string;
   dates: UpcomingFilters["dates"];
+  mode?: "date" | "datetime";
   onSet: (key: string, value: string) => void;
-  onClear: () => void;
+  onSetHasTime: (key: string, value: boolean) => void;
 };
 
 export function DateRangeSection({
   label,
   fromKey,
   toKey,
+  hasFromTimeKey,
+  hasToTimeKey,
   dates,
+  mode = "date",
   onSet,
-  onClear,
+  onSetHasTime,
 }: Props) {
-  const from = dates[fromKey as keyof typeof dates] ?? "";
-  const to = dates[toKey as keyof typeof dates] ?? "";
+  const from = dates[fromKey as keyof typeof dates] as string | undefined;
+  const to = dates[toKey as keyof typeof dates] as string | undefined;
+  const hasFromTime = (dates[hasFromTimeKey as keyof typeof dates] as boolean | undefined) ?? false;
+  const hasToTime = (dates[hasToTimeKey as keyof typeof dates] as boolean | undefined) ?? false;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <DateRangePicker
-        from={from || null}
-        to={to || null}
-        placeholder={label}
-        onRangeChange={(newFrom, newTo) => {
-          onSet(fromKey, newFrom ?? "");
-          onSet(toKey, newTo ?? "");
-          if (!newFrom && !newTo) onClear();
-        }}
-      />
-    </div>
+    <DateRangePicker
+      from={from ?? null}
+      to={to ?? null}
+      hasFromTime={hasFromTime}
+      hasToTime={hasToTime}
+      mode={mode}
+      placeholder={label}
+      onRangeChange={(newFrom, newTo, newHasFromTime, newHasToTime) => {
+        onSet(fromKey, newFrom ?? "");
+        onSet(toKey, newTo ?? "");
+        onSetHasTime(hasFromTimeKey, newHasFromTime ?? false);
+        onSetHasTime(hasToTimeKey, newHasToTime ?? false);
+      }}
+    />
   );
 }

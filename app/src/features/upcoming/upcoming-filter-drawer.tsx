@@ -53,6 +53,7 @@ type Props = {
   onToggle: (dim: FilterDim, key: string | number) => void;
   onClearDim: (dim: FilterDim) => void;
   onSetDate: (key: string, value: string) => void;
+  onSetHasTime: (key: string, value: boolean) => void;
   onToggleEmpty: (v: boolean) => void;
   onReset: () => void;
   onClose: () => void;
@@ -72,6 +73,7 @@ export function UpcomingFilterDrawer({
   onToggle,
   onClearDim,
   onSetDate,
+  onSetHasTime,
   onToggleEmpty,
   onReset,
   onClose,
@@ -173,23 +175,23 @@ export function UpcomingFilterDrawer({
                 label="Time Planned"
                 fromKey="plannedFrom"
                 toKey="plannedTo"
+                hasFromTimeKey="plannedFromHasTime"
+                hasToTimeKey="plannedToHasTime"
+                mode="datetime"
                 dates={filters.dates}
                 onSet={onSetDate}
-                onClear={() => {
-                  onSetDate("plannedFrom", "");
-                  onSetDate("plannedTo", "");
-                }}
+                onSetHasTime={onSetHasTime}
               />
               <DateRangeSection
                 label="Time Completed"
                 fromKey="completedFrom"
                 toKey="completedTo"
+                hasFromTimeKey="completedFromHasTime"
+                hasToTimeKey="completedToHasTime"
+                mode="datetime"
                 dates={filters.dates}
                 onSet={onSetDate}
-                onClear={() => {
-                  onSetDate("completedFrom", "");
-                  onSetDate("completedTo", "");
-                }}
+                onSetHasTime={onSetHasTime}
               />
             </div>
           </div>

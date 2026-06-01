@@ -11,8 +11,12 @@ export type UpcomingFilters = {
   dates: {
     plannedFrom?: string;
     plannedTo?: string;
+    plannedFromHasTime?: boolean;
+    plannedToHasTime?: boolean;
     completedFrom?: string;
     completedTo?: string;
+    completedFromHasTime?: boolean;
+    completedToHasTime?: boolean;
   };
 };
 
@@ -87,10 +91,24 @@ export function useUpcomingFilters() {
   };
 
   const setDateFilter = (key: string, value: string) => {
-    setFilters((prev: UpcomingFilters) => ({
-      ...prev,
-      dates: value ? { ...prev.dates, [key]: value } : (() => { const d = { ...prev.dates }; delete d[key as keyof typeof d]; return d; })(),
-    }));
+    setFilters((prev: UpcomingFilters) => {
+      if (value) return { ...prev, dates: { ...prev.dates, [key]: value } };
+      const d = { ...prev.dates };
+      delete d[key as keyof typeof d];
+      delete d[(key + "HasTime") as keyof typeof d];
+      return { ...prev, dates: d };
+    });
+  };
+
+  const setHasTimeFilter = (key: string, value: boolean) => {
+    setFilters((prev: UpcomingFilters) => {
+      if (!value) {
+        const d = { ...prev.dates };
+        delete d[key as keyof typeof d];
+        return { ...prev, dates: d };
+      }
+      return { ...prev, dates: { ...prev.dates, [key]: value } };
+    });
   };
 
   const resetAll = () => {
@@ -136,6 +154,7 @@ export function useUpcomingFilters() {
     clearFilterDim,
     setSearch,
     setDateFilter,
+    setHasTimeFilter,
     resetAll,
     activeFilterCount,
     toggleCollapsed,

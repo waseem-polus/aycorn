@@ -23,11 +23,24 @@ export function useUpcomingTasksQuery(filters: UpcomingFilters) {
       backendFilters.priority.forEach((p) => url.searchParams.append("priority", p));
       backendFilters.assignee.forEach((a) => url.searchParams.append("assignee", a));
       backendFilters.checklist.forEach((id) => url.searchParams.append("checklist", String(id)));
-      const { plannedFrom, plannedTo, completedFrom, completedTo } = backendFilters.dates ?? {};
+      const {
+        plannedFrom,
+        plannedTo,
+        plannedFromHasTime,
+        plannedToHasTime,
+        completedFrom,
+        completedTo,
+        completedFromHasTime,
+        completedToHasTime,
+      } = backendFilters.dates ?? {};
       if (plannedFrom) url.searchParams.set("plannedFrom", plannedFrom);
+      if (plannedFrom && plannedFromHasTime) url.searchParams.set("plannedFromHasTime", "true");
       if (plannedTo) url.searchParams.set("plannedTo", plannedTo);
+      if (plannedTo && plannedToHasTime) url.searchParams.set("plannedToHasTime", "true");
       if (completedFrom) url.searchParams.set("completedFrom", completedFrom);
+      if (completedFrom && completedFromHasTime) url.searchParams.set("completedFromHasTime", "true");
       if (completedTo) url.searchParams.set("completedTo", completedTo);
+      if (completedTo && completedToHasTime) url.searchParams.set("completedToHasTime", "true");
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();
