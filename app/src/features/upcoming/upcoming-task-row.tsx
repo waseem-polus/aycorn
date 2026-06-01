@@ -87,19 +87,19 @@ function UpcomingTaskRowInner({
             </span>
 
             {/* Stage chip */}
-            <span className="shrink-0 hidden sm:block">
+            <span className="shrink-0 hidden sm:flex w-1/8">
               {stage ? (
                 <WorkflowStageChip stage={stage} className="text-xs" />
               ) : null}
             </span>
 
             {/* Type badge */}
-            <span className="shrink-0 hidden md:block">
+            <span className="shrink-0 hidden md:flex w-1/8">
               <TaskTypeBadge type={task.Type} />
             </span>
 
             {/* Assignee */}
-            <span className="shrink-0 hidden lg:block">
+            <span className="shrink-0 hidden lg:flex w-1/10">
               {task.Assignee ? (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <User className="size-3" />
@@ -119,7 +119,7 @@ function UpcomingTaskRowInner({
             </span>
 
             {/* Date */}
-            <span className="shrink-0 hidden sm:block">
+            <span className="shrink-0 hidden sm:flex sm:justify-end w-1/5 ">
               <TaskPlannedDates
                 start={task.TimePlannedStart}
                 end={task.TimePlannedEnd}
