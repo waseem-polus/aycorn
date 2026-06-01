@@ -56,7 +56,7 @@ export function GroupByDropdown({
   return (
     <DropdownMenu>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-1.5">
               <Layers2 className="text-muted-foreground" />
