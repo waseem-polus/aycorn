@@ -12,17 +12,21 @@ type TaskRepo struct {
 }
 
 type TaskFilters struct {
-	SearchQuery    string
-	ChecklistQuery []string
-	TypeIDQuery    []int
-	StageQuery     []string
-	PriorityQuery  []string
-	AssigneeQuery  []string
-	ProjectIDQuery []int
-	PlannedFrom    string
-	PlannedTo      string
-	CompletedFrom  string
-	CompletedTo    string
+	SearchQuery          string
+	ChecklistQuery       []string
+	TypeIDQuery          []int
+	StageQuery           []string
+	PriorityQuery        []string
+	AssigneeQuery        []string
+	ProjectIDQuery       []int
+	PlannedFrom          string
+	PlannedTo            string
+	PlannedFromHasTime   bool
+	PlannedToHasTime     bool
+	CompletedFrom        string
+	CompletedTo          string
+	CompletedFromHasTime bool
+	CompletedToHasTime   bool
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -516,19 +520,35 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 	}
 
 	if taskFilters.PlannedFrom != "" {
-		query += " AND DATE(t.timePlannedStart) >= ?"
+		if taskFilters.PlannedFromHasTime {
+			query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
+		} else {
+			query += " AND COALESCE(DATE(t.timePlannedEnd), DATE(t.timePlannedStart)) >= ?"
+		}
 		args = append(args, taskFilters.PlannedFrom)
 	}
 	if taskFilters.PlannedTo != "" {
-		query += " AND DATE(t.timePlannedStart) <= ?"
+		if taskFilters.PlannedToHasTime {
+			query += " AND t.timePlannedStart <= ?"
+		} else {
+			query += " AND DATE(t.timePlannedStart) <= ?"
+		}
 		args = append(args, taskFilters.PlannedTo)
 	}
 	if taskFilters.CompletedFrom != "" {
-		query += " AND DATE(t.timeCompleted) >= ?"
+		if taskFilters.CompletedFromHasTime {
+			query += " AND t.timeCompleted >= ?"
+		} else {
+			query += " AND DATE(t.timeCompleted) >= ?"
+		}
 		args = append(args, taskFilters.CompletedFrom)
 	}
 	if taskFilters.CompletedTo != "" {
-		query += " AND DATE(t.timeCompleted) <= ?"
+		if taskFilters.CompletedToHasTime {
+			query += " AND t.timeCompleted <= ?"
+		} else {
+			query += " AND DATE(t.timeCompleted) <= ?"
+		}
 		args = append(args, taskFilters.CompletedTo)
 	}
 

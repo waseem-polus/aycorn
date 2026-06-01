@@ -13,17 +13,21 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	taskFilters := &repos.TaskFilters{
-		SearchQuery:    q.Get("search"),
-		ChecklistQuery: getQuerySlice(q, "checklist"),
-		TypeIDQuery:    getQuerySliceInt(q, "typeId"),
-		StageQuery:     getQuerySlice(q, "stage"),
-		PriorityQuery:  getQuerySlice(q, "priority"),
-		AssigneeQuery:  getQuerySlice(q, "assignee"),
-		ProjectIDQuery: getQuerySliceInt(q, "project"),
-		PlannedFrom:    q.Get("plannedFrom"),
-		PlannedTo:      q.Get("plannedTo"),
-		CompletedFrom:  q.Get("completedFrom"),
-		CompletedTo:    q.Get("completedTo"),
+		SearchQuery:          q.Get("search"),
+		ChecklistQuery:       getQuerySlice(q, "checklist"),
+		TypeIDQuery:          getQuerySliceInt(q, "typeId"),
+		StageQuery:           getQuerySlice(q, "stage"),
+		PriorityQuery:        getQuerySlice(q, "priority"),
+		AssigneeQuery:        getQuerySlice(q, "assignee"),
+		ProjectIDQuery:       getQuerySliceInt(q, "project"),
+		PlannedFrom:          q.Get("plannedFrom"),
+		PlannedTo:            q.Get("plannedTo"),
+		PlannedFromHasTime:   q.Get("plannedFromHasTime") == "true",
+		PlannedToHasTime:     q.Get("plannedToHasTime") == "true",
+		CompletedFrom:        q.Get("completedFrom"),
+		CompletedTo:          q.Get("completedTo"),
+		CompletedFromHasTime: q.Get("completedFromHasTime") == "true",
+		CompletedToHasTime:   q.Get("completedToHasTime") == "true",
 	}
 
 	tasks, err := app.taskService.GetAllTasks(taskFilters)
