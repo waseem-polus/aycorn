@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Stage, TaskWithProject } from "@/types/types";
+import type { Stage, TaskWithProject, Project } from "@/types/types";
 import { ProjectProvider } from "@/contexts/project/ProjectProvider";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
@@ -16,10 +16,12 @@ import {
 } from "@/components/ui/tooltip";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
 
 type Props = {
   task: TaskWithProject;
   stageById: Record<number, Stage>;
+  project?: Project;
   selected: boolean;
   onToggleSelect: (id: number) => void;
 };
@@ -27,6 +29,7 @@ type Props = {
 function UpcomingTaskRowInner({
   task,
   stageById,
+  project,
   selected,
   onToggleSelect,
 }: Props) {
@@ -40,7 +43,7 @@ function UpcomingTaskRowInner({
       new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
   return (
-    <ProjectProvider>
+    <ProjectProvider defaultState={project}>
       <UpcomingProjectDetailsLoader projectId={task.ProjectID} open={open} />
       <TaskProvider defaultState={task}>
         <TaskEditorDrawer onOpenChange={setOpen}>
@@ -67,12 +70,9 @@ function UpcomingTaskRowInner({
             </div>
 
             {/* Priority */}
-            <TaskPriorityIcon
-              variant={task.Priority}
-              className="flex-shrink-0"
-            />
+            <TaskPriorityIcon variant={task.Priority} className="shrink-0" />
 
-            {/* Name + checklist */}
+            {/* Name + project · checklist */}
             <span className="flex flex-col min-w-0 flex-1">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -82,16 +82,7 @@ function UpcomingTaskRowInner({
                 </TooltipTrigger>
                 {task.Name && <TooltipContent>{task.Name}</TooltipContent>}
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {task.ChecklistName}
-                  </span>
-                </TooltipTrigger>
-                {task.ChecklistName && (
-                  <TooltipContent>{task.ChecklistName}</TooltipContent>
-                )}
-              </Tooltip>
+              <UpcomingRowProjectChecklist />
             </span>
 
             {/* Stage chip */}
@@ -127,7 +118,7 @@ function UpcomingTaskRowInner({
             </span>
 
             {/* Date */}
-            <span className="flex-shrink-0">
+            <span className="shrink-0">
               <TaskPlannedDates
                 start={task.TimePlannedStart}
                 end={task.TimePlannedEnd}

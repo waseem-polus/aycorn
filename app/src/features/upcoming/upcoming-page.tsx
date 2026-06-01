@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
-import { useUpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import { useUpcomingFilters, EMPTY_FILTERS } from "@/features/upcoming/hooks/useUpcomingFilters";
 import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
 import {
   buildGroups,
@@ -29,7 +29,6 @@ import { UpcomingGroupHeader } from "@/features/upcoming/upcoming-group-header";
 import { UpcomingTaskRow } from "@/features/upcoming/upcoming-task-row";
 import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
-import { GranularitySegmented } from "@/features/upcoming/upcoming-page/granularity-segmented";
 import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -79,6 +78,7 @@ export function UpcomingPage() {
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(filters);
+  const { data: allTasks = [] } = useUpcomingTasksQuery(EMPTY_FILTERS);
   const { data: projects = [] } = useAllProjectsQuery() as { data: Project[] };
   const { data: workflows = [] } = useAllWorkflowsQuery();
   const { data: taskTypes = [] } = useTaskTypesQuery();
@@ -128,8 +128,6 @@ export function UpcomingPage() {
   );
 
   const filterCount = activeFilterCount();
-  const isTimeGroup =
-    view.groupBy === "timePlanned" || view.groupBy === "timeCompleted";
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -202,13 +200,12 @@ export function UpcomingPage() {
               )}
             </Button>
 
-            {isTimeGroup && (
-              <GranularitySegmented
-                value={view.granularity}
-                onChange={setGranularity}
-              />
-            )}
-            <GroupByDropdown groupBy={view.groupBy} onChange={setGroupBy} />
+            <GroupByDropdown
+              groupBy={view.groupBy}
+              granularity={view.granularity}
+              onChange={setGroupBy}
+              onGranularityChange={setGranularity}
+            />
           </div>
 
           {/* Task list */}
@@ -250,6 +247,7 @@ export function UpcomingPage() {
                               key={task.ID}
                               task={task}
                               stageById={stageById}
+                              project={projectById[task.ProjectID]}
                               selected={selectedIds.has(task.ID)}
                               onToggleSelect={toggleSelect}
                             />
@@ -275,7 +273,7 @@ export function UpcomingPage() {
         workflows={workflows}
         taskTypes={taskTypes}
         taskTypeCategories={taskTypeCategories}
-        allTasks={tasks}
+        allTasks={allTasks}
         onToggle={toggleFilter}
         onClearDim={clearFilterDim}
         onSetDate={setDateFilter}

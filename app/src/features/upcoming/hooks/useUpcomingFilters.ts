@@ -34,7 +34,7 @@ export type UpcomingViewSettings = {
   showEmpty: boolean;
 };
 
-const EMPTY_FILTERS: UpcomingFilters = {
+export const EMPTY_FILTERS: UpcomingFilters = {
   search: "",
   project: [],
   stage: [],

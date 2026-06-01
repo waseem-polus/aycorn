@@ -183,6 +183,7 @@ const [open, setOpen] = useState(false);
       <PopoverContent
         className="flex flex-col w-auto overflow-hidden p-2 gap-3"
         align="start"
+        data-vaul-no-drag
       >
         <Calendar
           mode="range"
