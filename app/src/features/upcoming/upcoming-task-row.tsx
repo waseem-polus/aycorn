@@ -36,11 +36,12 @@ function UpcomingTaskRowInner({
   const [open, setOpen] = useState(false);
   const today = new Date();
   const stage = stageById[task.Stage];
-  const overdue =
+  const overdue = !!(
     task.TimePlannedStart &&
     !task.TimeCompleted &&
     new Date(task.TimePlannedStart) <
-      new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  );
 
   return (
     <ProjectProvider defaultState={project}>
@@ -86,19 +87,19 @@ function UpcomingTaskRowInner({
             </span>
 
             {/* Stage chip */}
-            <span className="flex-shrink-0 hidden sm:block">
+            <span className="shrink-0 hidden sm:block">
               {stage ? (
                 <WorkflowStageChip stage={stage} className="text-xs" />
               ) : null}
             </span>
 
             {/* Type badge */}
-            <span className="flex-shrink-0 hidden md:block">
+            <span className="shrink-0 hidden md:block">
               <TaskTypeBadge type={task.Type} />
             </span>
 
             {/* Assignee */}
-            <span className="flex-shrink-0 hidden lg:block">
+            <span className="shrink-0 hidden lg:block">
               {task.Assignee ? (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <User className="size-3" />
@@ -118,14 +119,14 @@ function UpcomingTaskRowInner({
             </span>
 
             {/* Date */}
-            <span className="shrink-0">
+            <span className="shrink-0 hidden sm:block">
               <TaskPlannedDates
                 start={task.TimePlannedStart}
                 end={task.TimePlannedEnd}
                 hasStartTime={task.HasTimePlannedStart}
                 hasEndTime={task.HasTimePlannedEnd}
                 excludeYear
-                overdue={!!overdue}
+                overdue={overdue}
               />
             </span>
           </div>

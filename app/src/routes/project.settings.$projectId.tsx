@@ -12,7 +12,6 @@ import { ProjectWorkflowTab } from "@/features/settings/project-workflow/project
 import { ProjectTaskTypesTab } from "@/features/settings/project-task-types/project-task-types-tab";
 import { createFileRoute } from "@tanstack/react-router";
 import { LandPlotIcon, TagsIcon, WorkflowIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/project/settings/$projectId")({
   validateSearch: (search: Record<string, unknown>) => ({

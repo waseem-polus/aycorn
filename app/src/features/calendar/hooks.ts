@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export function useDisclosure({
   defaultIsOpen = false,
@@ -17,7 +17,7 @@ export function useDisclosure({
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T,
-): [T, (value: T) => void] => {
+): [T, Dispatch<SetStateAction<T>>] => {
   const readValue = (): T => {
     if (typeof window === "undefined") {
       return initialValue;
@@ -34,7 +34,7 @@ export const useLocalStorage = <T>(
 
   const [storedValue, setStoredValue] = useState<T>(readValue);
 
-  const setValue = (value: T) => {
+  const setValue = (value: SetStateAction<T>) => {
     try {
       const valueToStore =
         value instanceof Function ? value(storedValue) : value;

@@ -52,7 +52,7 @@ const DEFAULT_VIEW: UpcomingViewSettings = {
 };
 
 const FILTER_DIMS = ["project", "stage", "type", "priority", "assignee", "checklist"] as const;
-type FilterDim = (typeof FILTER_DIMS)[number];
+export type FilterDim = (typeof FILTER_DIMS)[number];
 
 export function useUpcomingFilters() {
   const [filters, setFilters] = useLocalStorage<UpcomingFilters>(

@@ -63,7 +63,7 @@ function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
       type={type}
       dragRef={setNodeRef}
       dragStyle={{ opacity: isDragging ? 0.4 : 1 }}
-      dragAttributes={attributes as Record<string, unknown>}
+      dragAttributes={attributes as unknown as Record<string, unknown>}
       dragListeners={pointerListeners}
     >
       <button

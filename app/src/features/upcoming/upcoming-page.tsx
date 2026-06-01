@@ -13,13 +13,15 @@ import {
 } from "@/components/ui/popover";
 import {
   CalendarClock,
+  FilterIcon,
   MoreHorizontal,
   Search,
-  SlidersHorizontal,
-  X,
 } from "lucide-react";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
-import { useUpcomingFilters, EMPTY_FILTERS } from "@/features/upcoming/hooks/useUpcomingFilters";
+import {
+  useUpcomingFilters,
+  EMPTY_FILTERS,
+} from "@/features/upcoming/hooks/useUpcomingFilters";
 import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
 import {
   buildGroups,
@@ -44,7 +46,6 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-  InputGroupText,
 } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
 
@@ -169,43 +170,47 @@ export function UpcomingPage() {
             description="Tasks across every project. Read, edit, and clear what's scheduled."
           />
           {/* Toolbar */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <InputGroup className="flex flex-1">
-              <InputGroupAddon>
-                <Search className="text-muted-foreground" />
-              </InputGroupAddon>
-              <InputGroupInput
-                placeholder="Search tasks…"
-                value={filters.search}
-                onChange={(e) => setSearch(e.target.value)}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-1 items-center gap-2">
+              <InputGroup className="flex flex-1">
+                <InputGroupAddon>
+                  <Search className="text-muted-foreground" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  placeholder="Search tasks…"
+                  value={filters.search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <InputGroupAddon align="inline-end">
+                  {isFetching
+                    ? "…"
+                    : `${searched.length} ${searched.length === 1 ? "task" : "tasks"}`}
+                </InputGroupAddon>
+              </InputGroup>
+
+              <Button
+                variant="outline"
+                size={filterCount > 0 ? "default" : "icon"}
+                onClick={() => setFilterOpen(true)}
+                className="gap-1.5"
+              >
+                <FilterIcon />
+                {filterCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {filterCount}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex flex-1 sm:flex-none justify-end">
+              <GroupByDropdown
+                groupBy={view.groupBy}
+                granularity={view.granularity}
+                onChange={setGroupBy}
+                onGranularityChange={setGranularity}
               />
-              <InputGroupAddon align="inline-end">
-                {isFetching
-                  ? "…"
-                  : `${searched.length} ${searched.length === 1 ? "task" : "tasks"}`}
-              </InputGroupAddon>
-            </InputGroup>
-
-            <Button
-              variant="outline"
-              size={filterCount > 0 ? "default" : "icon"}
-              onClick={() => setFilterOpen(true)}
-              className="gap-1.5"
-            >
-              <SlidersHorizontal />
-              {filterCount > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {filterCount}
-                </Badge>
-              )}
-            </Button>
-
-            <GroupByDropdown
-              groupBy={view.groupBy}
-              granularity={view.granularity}
-              onChange={setGroupBy}
-              onGranularityChange={setGranularity}
-            />
+            </div>
           </div>
 
           {/* Task list */}

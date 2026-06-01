@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import type { Task } from "@/types/types";
+import type { ChecklistTask, Task } from "@/types/types";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 type Props = {
@@ -36,7 +36,7 @@ export function DatePickerInput({
       onRangeChange(newFrom, newTo);
       return;
     }
-    const updated: Task = {
+    const updated: ChecklistTask = {
       ...task,
       TimePlannedStart: newFrom,
       TimePlannedEnd: newTo,

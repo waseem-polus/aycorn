@@ -70,6 +70,7 @@ export function ProjectDropdownMenu({
             navigate({
               to: "/project/settings/$projectId",
               params: { projectId: Project.ID.toString() },
+              search: (prev) => ({ ...prev, tab: (prev as { tab?: string }).tab ?? "workflow" }),
             })
           }
         >

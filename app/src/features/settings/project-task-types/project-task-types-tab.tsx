@@ -39,7 +39,7 @@ const enabledVariants = {
     y: 0,
     transition: { type: "spring", stiffness: 200, damping: 20 },
   },
-};
+} as const;
 
 // Available section: new cards slide down from above (they came from Enabled, which is above)
 const availableVariants = {
@@ -49,7 +49,7 @@ const availableVariants = {
     y: 0,
     transition: { type: "spring", stiffness: 200, damping: 20 },
   },
-};
+} as const;
 
 type TaskTypeCardProps = {
   type: TaskTypeWithCount;

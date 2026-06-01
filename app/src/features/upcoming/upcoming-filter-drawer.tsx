@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   Alert,
-  AlertAction,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
@@ -14,7 +13,7 @@ import { TypeSection } from "@/features/upcoming/upcoming-filter-drawer/type-sec
 import { AssigneeSection } from "@/features/upcoming/upcoming-filter-drawer/assignee-section";
 import { ChecklistSection } from "@/features/upcoming/upcoming-filter-drawer/checklist-section";
 import { PrioritySection } from "@/features/upcoming/upcoming-filter-drawer/priority-section";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type { FilterDim, UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
 import type {
   MultiSelectOption,
   MultiSelectOptionGroup,
@@ -30,12 +29,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
@@ -53,8 +50,8 @@ type Props = {
     ChecklistName: string;
     ProjectID: number;
   }[];
-  onToggle: (dim: string, key: string | number) => void;
-  onClearDim: (dim: string) => void;
+  onToggle: (dim: FilterDim, key: string | number) => void;
+  onClearDim: (dim: FilterDim) => void;
   onSetDate: (key: string, value: string) => void;
   onToggleEmpty: (v: boolean) => void;
   onReset: () => void;
