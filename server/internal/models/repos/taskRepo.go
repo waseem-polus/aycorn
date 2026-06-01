@@ -19,6 +19,10 @@ type TaskFilters struct {
 	PriorityQuery  []string
 	AssigneeQuery  []string
 	ProjectIDQuery []int
+	PlannedFrom    string
+	PlannedTo      string
+	CompletedFrom  string
+	CompletedTo    string
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -509,6 +513,23 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 		for _, v := range taskFilters.AssigneeQuery {
 			args = append(args, v)
 		}
+	}
+
+	if taskFilters.PlannedFrom != "" {
+		query += " AND DATE(t.timePlannedStart) >= ?"
+		args = append(args, taskFilters.PlannedFrom)
+	}
+	if taskFilters.PlannedTo != "" {
+		query += " AND DATE(t.timePlannedStart) <= ?"
+		args = append(args, taskFilters.PlannedTo)
+	}
+	if taskFilters.CompletedFrom != "" {
+		query += " AND DATE(t.timeCompleted) >= ?"
+		args = append(args, taskFilters.CompletedFrom)
+	}
+	if taskFilters.CompletedTo != "" {
+		query += " AND DATE(t.timeCompleted) <= ?"
+		args = append(args, taskFilters.CompletedTo)
 	}
 
 	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"

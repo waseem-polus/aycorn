@@ -25,10 +25,16 @@ export type MultiSelectOption = {
   lead?: React.ReactNode;
 };
 
+export type MultiSelectOptionGroup = {
+  label: string;
+  options: MultiSelectOption[];
+};
+
 type Props = {
   label: string;
   icon: string;
-  options: MultiSelectOption[];
+  options?: MultiSelectOption[];
+  groups?: MultiSelectOptionGroup[];
   selected: (string | number)[];
   onToggle: (key: string | number) => void;
   onClear: () => void;
@@ -38,6 +44,7 @@ export function MultiSelectCombobox({
   label,
   icon,
   options,
+  groups,
   selected,
   onToggle,
   onClear,
@@ -46,60 +53,117 @@ export function MultiSelectCombobox({
   const [query, setQuery] = useState("");
 
   const ql = query.trim().toLowerCase();
-  const shown = ql
-    ? options.filter(
-        (o) =>
-          String(o.label).toLowerCase().includes(ql) ||
-          (o.sublabel ?? "").toLowerCase().includes(ql),
-      )
-    : options;
+  const allOptions = groups
+    ? groups.flatMap((g) => g.options)
+    : (options ?? []);
+
+  const matchFn = (o: MultiSelectOption) =>
+    String(o.label).toLowerCase().includes(ql) ||
+    (o.sublabel ?? "").toLowerCase().includes(ql);
+
+  const shownGroups = groups
+    ? groups
+        .map((g) => ({
+          ...g,
+          options: ql ? g.options.filter(matchFn) : g.options,
+        }))
+        .filter((g) => g.options.length > 0)
+    : null;
+  const shownFlat = !groups
+    ? ql
+      ? allOptions.filter(matchFn)
+      : allOptions
+    : null;
 
   const count = selected.length;
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1">
-        <Popover
-          open={open}
-          onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) setQuery("");
-          }}
-        >
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="flex-1 justify-between font-normal"
-            >
-              <span className="flex items-center gap-2 min-w-0">
-                <DynamicIcon
-                  name={icon as IconName}
-                  className="size-4 shrink-0 text-muted-foreground"
-                  fallback={() => <span className="size-4" />}
-                />
-                <span className="truncate text-muted-foreground">{label}</span>
-                {count > 0 && (
-                  <Badge variant="secondary" className="ml-1 shrink-0">
-                    {count}
-                  </Badge>
-                )}
-              </span>
-              <ChevronDown className="size-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-60 p-0" align="start">
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder={`Search ${label.toLowerCase()}…`}
-                value={query}
-                onValueChange={setQuery}
+      <Popover
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setQuery("");
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <DynamicIcon
+                name={icon as IconName}
+                className="size-4 shrink-0 text-muted-foreground"
+                fallback={() => <span className="size-4" />}
               />
-              <CommandList>
-                <CommandEmpty>No matches.</CommandEmpty>
+              <span className="truncate text-muted-foreground">{label}</span>
+            </span>
+            {count > 0 ? (
+              <span className="flex gap-2 items-center justify-end">
+                <Badge variant="secondary" className="ml-1 text-xs shrink-0">
+                  {count}
+                </Badge>
+                <span
+                  role="button"
+                  aria-label={`Clear ${label} filter`}
+                  className="ml-auto rounded-full p-0.5 hover:bg-muted-foreground/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClear();
+                  }}
+                >
+                  <X className="size-3.5" />
+                </span>
+              </span>
+            ) : (
+              <ChevronDown className="size-4 shrink-0 opacity-50" />
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-60 p-0" align="start" data-vaul-no-drag>
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder={`Search ${label.toLowerCase()}…`}
+              value={query}
+              onValueChange={setQuery}
+            />
+            <CommandList onWheel={(e) => e.stopPropagation()}>
+              <CommandEmpty>No matches.</CommandEmpty>
+              {shownGroups ? (
+                shownGroups.map((g) => (
+                  <CommandGroup key={g.label} heading={g.label}>
+                    {g.options.map((o) => {
+                      const isSelected = selected.includes(o.key);
+                      return (
+                        <CommandItem
+                          key={o.key}
+                          value={String(o.key)}
+                          onSelect={() => onToggle(o.key)}
+                        >
+                          <Check
+                            className={cn(
+                              "size-4 shrink-0",
+                              isSelected ? "opacity-100" : "opacity-0",
+                            )}
+                          />
+                          {o.lead}
+                          <span className="flex-1 truncate">{o.label}</span>
+                          {o.sublabel && (
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {o.sublabel}
+                            </span>
+                          )}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                ))
+              ) : (
                 <CommandGroup>
-                  {shown.map((o) => {
+                  {(shownFlat ?? []).map((o) => {
                     const isSelected = selected.includes(o.key);
                     return (
                       <CommandItem
@@ -124,27 +188,16 @@ export function MultiSelectCombobox({
                     );
                   })}
                 </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {count > 0 && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClear}
-            aria-label={`Clear ${label} filter`}
-          >
-            <X className="size-3.5" />
-          </Button>
-        )}
-      </div>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       {count > 0 && (
         <div className="flex flex-wrap gap-1">
           {selected.map((key) => {
-            const option = options.find((o) => o.key === key);
+            const option = allOptions.find((o) => o.key === key);
             return (
               <Badge
                 key={key}

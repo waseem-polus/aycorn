@@ -20,6 +20,10 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 		PriorityQuery:  getQuerySlice(q, "priority"),
 		AssigneeQuery:  getQuerySlice(q, "assignee"),
 		ProjectIDQuery: getQuerySliceInt(q, "project"),
+		PlannedFrom:    q.Get("plannedFrom"),
+		PlannedTo:      q.Get("plannedTo"),
+		CompletedFrom:  q.Get("completedFrom"),
+		CompletedTo:    q.Get("completedTo"),
 	}
 
 	tasks, err := app.taskService.GetAllTasks(taskFilters)

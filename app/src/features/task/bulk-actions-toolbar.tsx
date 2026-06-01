@@ -16,7 +16,7 @@ import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
-import { DatePickerInput } from "@/components/DatePickerInput";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 type Props = {
   selectedTasks: Task[];
@@ -82,6 +82,8 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
   const sharedAssignee = sharedValue(selectedTasks, "Assignee");
   const sharedStart = sharedValue(selectedTasks, "TimePlannedStart");
   const sharedEnd = sharedValue(selectedTasks, "TimePlannedEnd");
+  const sharedHasFromTime = sharedValue(selectedTasks, "HasTimePlannedStart") ?? false;
+  const sharedHasToTime = sharedValue(selectedTasks, "HasTimePlannedEnd") ?? false;
 
   return (
     <BulkActionsToolbarBase
@@ -109,11 +111,22 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
         />
       </div>
       <div className="w-80">
-        <DatePickerInput
-          start={sharedStart ?? null}
-          end={sharedEnd ?? null}
-          onRangeChange={(s, e) =>
-            applyChange({ TimePlannedStart: s, TimePlannedEnd: e }, "date")
+        <DateRangePicker
+          mode="datetime"
+          from={sharedStart ?? null}
+          to={sharedEnd ?? null}
+          hasFromTime={sharedHasFromTime}
+          hasToTime={sharedHasToTime}
+          onRangeChange={(s, e, hasFrom, hasTo) =>
+            applyChange(
+              {
+                TimePlannedStart: s,
+                TimePlannedEnd: e,
+                HasTimePlannedStart: hasFrom,
+                HasTimePlannedEnd: hasTo,
+              },
+              "date",
+            )
           }
           placeholder={sharedStart === undefined ? "Mixed" : "Select a date"}
         />

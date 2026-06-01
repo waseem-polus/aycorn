@@ -26,7 +26,7 @@ export function DateRangeSection({
       <DateRangePicker
         from={from || null}
         to={to || null}
-        placeholder={`Filter by ${label.toLowerCase()}`}
+        placeholder={label}
         onRangeChange={(newFrom, newTo) => {
           onSet(fromKey, newFrom ?? "");
           onSet(toKey, newTo ?? "");

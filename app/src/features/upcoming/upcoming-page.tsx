@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { Page, PageContent, PageHeader } from "@/components/page/Page";
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  PageTitle,
+} from "@/components/page/Page";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -27,11 +32,12 @@ import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-drop
 import { GranularitySegmented } from "@/features/upcoming/upcoming-page/granularity-segmented";
 import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
-import { DatePickerInput } from "@/components/DatePickerInput";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
+import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
 import type { Stage, Project, Task, TaskWithProject } from "@/types/types";
 import { toast } from "sonner";
@@ -76,6 +82,7 @@ export function UpcomingPage() {
   const { data: projects = [] } = useAllProjectsQuery() as { data: Project[] };
   const { data: workflows = [] } = useAllWorkflowsQuery();
   const { data: taskTypes = [] } = useTaskTypesQuery();
+  const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
   const { bulkUpdate, bulkDelete } = useUpcomingBulkMutation();
 
   const projectById = useMemo(
@@ -158,19 +165,11 @@ export function UpcomingPage() {
     <>
       <Page>
         <PageHeader breadcrumb={["Upcoming"]} />
-        <PageContent fullWidth>
-          {/* Title */}
-          <div className="flex flex-col gap-1">
-            <h1 className="flex items-center gap-2 text-2xl font-semibold">
-              <CalendarClock className="size-6 text-muted-foreground" />
-              Upcoming
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Tasks across every project. Read, edit, and clear what's
-              scheduled.
-            </p>
-          </div>
-
+        <PageContent>
+          <PageTitle
+            title="Upcoming"
+            description="Tasks across every project. Read, edit, and clear what's scheduled."
+          />
           {/* Toolbar */}
           <div className="flex items-center gap-2 flex-wrap">
             <InputGroup className="flex flex-1">
@@ -214,7 +213,7 @@ export function UpcomingPage() {
 
           {/* Task list */}
           {groups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-muted-foreground">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-muted-foreground">
               <CalendarClock className="size-8" />
               <div className="text-center">
                 <p className="font-medium">No tasks match these filters</p>
@@ -229,7 +228,7 @@ export function UpcomingPage() {
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-lg border border-border overflow-y-auto">
               {groups.map((group) => {
                 const collapsed = isCollapsed(group.key);
                 return (
@@ -273,7 +272,9 @@ export function UpcomingPage() {
         showEmpty={view.showEmpty}
         projects={projects}
         stages={allStages}
+        workflows={workflows}
         taskTypes={taskTypes}
+        taskTypeCategories={taskTypeCategories}
         allTasks={tasks}
         onToggle={toggleFilter}
         onClearDim={clearFilterDim}
@@ -307,11 +308,21 @@ export function UpcomingPage() {
           />
         </div>
         <div className="w-80">
-          <DatePickerInput
-            start={sharedValue(selectedTasks, "TimePlannedStart") ?? null}
-            end={sharedValue(selectedTasks, "TimePlannedEnd") ?? null}
-            onRangeChange={(s, e) =>
-              handleBulkUpdate({ TimePlannedStart: s, TimePlannedEnd: e })
+          <DateRangePicker
+            mode="datetime"
+            from={sharedValue(selectedTasks, "TimePlannedStart") ?? null}
+            to={sharedValue(selectedTasks, "TimePlannedEnd") ?? null}
+            hasFromTime={
+              sharedValue(selectedTasks, "HasTimePlannedStart") ?? false
+            }
+            hasToTime={sharedValue(selectedTasks, "HasTimePlannedEnd") ?? false}
+            onRangeChange={(s, e, hasFrom, hasTo) =>
+              handleBulkUpdate({
+                TimePlannedStart: s,
+                TimePlannedEnd: e,
+                HasTimePlannedStart: hasFrom,
+                HasTimePlannedEnd: hasTo,
+              })
             }
             placeholder={
               sharedValue(selectedTasks, "TimePlannedStart") === undefined

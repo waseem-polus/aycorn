@@ -15,7 +15,17 @@ import { AssigneeSection } from "@/features/upcoming/upcoming-filter-drawer/assi
 import { ChecklistSection } from "@/features/upcoming/upcoming-filter-drawer/checklist-section";
 import { PrioritySection } from "@/features/upcoming/upcoming-filter-drawer/priority-section";
 import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
-import type { Project, Stage, TaskTypeGlobal } from "@/types/types";
+import type {
+  MultiSelectOption,
+  MultiSelectOptionGroup,
+} from "@/components/ui/multi-select-combobox";
+import type {
+  Project,
+  Stage,
+  TaskTypeCategory,
+  TaskTypeGlobal,
+  WorkflowSummary,
+} from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
@@ -26,6 +36,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
+import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
   open: boolean;
@@ -33,7 +44,9 @@ type Props = {
   showEmpty: boolean;
   projects: Project[];
   stages: Stage[];
+  workflows: WorkflowSummary[];
   taskTypes: TaskTypeGlobal[];
+  taskTypeCategories: TaskTypeCategory[];
   allTasks: {
     Assignee: string;
     Checklist: number;
@@ -55,7 +68,9 @@ export function UpcomingFilterDrawer({
   showEmpty,
   projects,
   stages,
+  workflows,
   taskTypes,
+  taskTypeCategories,
   allTasks,
   onToggle,
   onClearDim,
@@ -65,30 +80,33 @@ export function UpcomingFilterDrawer({
   onClose,
   activeCount,
 }: Props) {
+  const isMobile = useIsMobile();
+
   const uniqueAssignees = [
     ...new Set(allTasks.map((t) => t.Assignee).filter(Boolean)),
   ].sort();
 
-  const uniqueChecklists = (() => {
-    const seen = new Set<string>();
-    const result: { key: number; label: string; sublabel?: string }[] = [];
-    allTasks.forEach((t) => {
-      const k = `${t.ProjectID}-${t.Checklist}`;
-      if (seen.has(k)) return;
-      seen.add(k);
-      const proj = projects.find((p) => p.ID === t.ProjectID);
-      result.push({
-        key: t.Checklist,
-        label: t.ChecklistName,
-        sublabel: proj?.Name,
-      });
-    });
-    return result;
-  })();
+  const checklistGroups: MultiSelectOptionGroup[] = projects
+    .filter((p) => allTasks.some((t) => t.ProjectID === p.ID))
+    .map((p) => {
+      const seen = new Set<number>();
+      const options: MultiSelectOption[] = [];
+      allTasks
+        .filter((t) => t.ProjectID === p.ID)
+        .forEach((t) => {
+          if (!seen.has(t.Checklist)) {
+            seen.add(t.Checklist);
+            options.push({ key: t.Checklist, label: t.ChecklistName });
+          }
+        });
+      return { label: p.Name, options };
+    })
+    .filter((g) => g.options.length > 0);
 
   return (
     <Drawer
-      direction="right"
+      handleOnly={!isMobile}
+      direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(v) => {
         if (!v) onClose();
@@ -116,7 +134,7 @@ export function UpcomingFilterDrawer({
                 onClear={() => onClearDim("project")}
               />
               <ChecklistSection
-                checklists={uniqueChecklists}
+                groups={checklistGroups}
                 selected={filters.checklist}
                 onToggle={(k) => onToggle("checklist", k)}
                 onClear={() => onClearDim("checklist")}
@@ -127,12 +145,14 @@ export function UpcomingFilterDrawer({
               <span className="text-sm text-muted-foreground">Task</span>
               <StatusSection
                 stages={stages}
+                workflows={workflows}
                 selected={filters.stage}
                 onToggle={(k) => onToggle("stage", k)}
                 onClear={() => onClearDim("stage")}
               />
               <TypeSection
                 taskTypes={taskTypes}
+                categories={taskTypeCategories}
                 selected={filters.type}
                 onToggle={(k) => onToggle("type", k)}
                 onClear={() => onClearDim("type")}
@@ -153,7 +173,7 @@ export function UpcomingFilterDrawer({
             <div className="flex flex-col gap-3">
               <span className="text-sm text-muted-foreground">Dates</span>
               <DateRangeSection
-                label="Planned start"
+                label="Time Planned"
                 fromKey="plannedFrom"
                 toKey="plannedTo"
                 dates={filters.dates}
@@ -164,7 +184,7 @@ export function UpcomingFilterDrawer({
                 }}
               />
               <DateRangeSection
-                label="Completed"
+                label="Time Completed"
                 fromKey="completedFrom"
                 toKey="completedTo"
                 dates={filters.dates}
@@ -200,7 +220,7 @@ export function UpcomingFilterDrawer({
           >
             <RotateCcw className="size-3.5" />
             {activeCount > 0
-              ? `Reset ${activeCount} filters`
+              ? `Reset ${activeCount} filter${activeCount > 1 ? "s" : ""}`
               : "No filters applied"}
           </Button>
         </DrawerFooter>
