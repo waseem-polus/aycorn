@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { STAGE_PALETTE } from "@/features/stage/stage-palette";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
@@ -10,6 +11,7 @@ type Props = {
   hasEndTime: boolean;
   excludeYear?: boolean;
   className?: string;
+  overdue?: boolean;
 };
 
 export function TaskPlannedDates({
@@ -19,6 +21,7 @@ export function TaskPlannedDates({
   hasEndTime,
   excludeYear = false,
   className = "",
+  overdue = false,
 }: Props) {
   const { toFormatted, toFormattedTime } = useDateFormat(excludeYear);
 
@@ -49,8 +52,13 @@ export function TaskPlannedDates({
       : formatDateTime(start, hasStartTime);
 
   return (
-    <Badge variant="secondary" className={className}>
-      <CalendarIcon className="size-2" />
+    <Badge
+      variant="secondary"
+      className={cn(overdue ? STAGE_PALETTE.rose.badge : "", className)}
+    >
+      <CalendarIcon
+        className={cn(overdue ? STAGE_PALETTE.rose.stroke : "", "size-2")}
+      />
       {label}
     </Badge>
   );

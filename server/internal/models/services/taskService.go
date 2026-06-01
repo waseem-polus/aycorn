@@ -10,6 +10,10 @@ type TaskService struct {
 	TaskTypeRepo *repos.TaskTypeRepo
 }
 
+func (s *TaskService) GetAllTasks(filters *repos.TaskFilters) ([]models.TaskWithProject, error) {
+	return s.TaskRepo.AllTasks(filters)
+}
+
 func (s *TaskService) GetTask(taskId int) (*models.TaskWithProject, error) {
 	task, err := s.TaskRepo.FindOneWithProject(taskId)
 	if err != nil {
