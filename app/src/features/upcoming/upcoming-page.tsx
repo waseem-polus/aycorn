@@ -6,23 +6,12 @@ import {
   PageTitle,
 } from "@/components/page/Page";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  CalendarClock,
-  FilterIcon,
-  MoreHorizontal,
-  Search,
-} from "lucide-react";
+import { CalendarClock, FilterIcon, Search } from "lucide-react";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
 import {
   useUpcomingFilters,
   EMPTY_FILTERS,
 } from "@/features/upcoming/hooks/useUpcomingFilters";
-import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
 import {
   buildGroups,
   applyClientFilters,
@@ -31,33 +20,20 @@ import { UpcomingGroupHeader } from "@/features/upcoming/upcoming-group-header";
 import { UpcomingTaskRow } from "@/features/upcoming/upcoming-task-row";
 import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
-import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
-import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { TaskAssignee } from "@/features/task/properties/task-assignee";
+import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
 import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
-import type { Stage, Project, Task, TaskWithProject } from "@/types/types";
-import { toast } from "sonner";
+import type { Stage, Project } from "@/types/types";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
-
-function sharedValue<K extends keyof Task>(
-  tasks: TaskWithProject[],
-  key: K,
-): Task[K] | undefined {
-  if (tasks.length === 0) return undefined;
-  const first = tasks[0][key];
-  return tasks.every((t) => t[key] === first) ? first : undefined;
-}
 
 export function UpcomingPage() {
   const {
@@ -78,7 +54,6 @@ export function UpcomingPage() {
   } = useUpcomingFilters();
 
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState(new Set<number>());
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(filters);
   const { data: allTasks = [] } = useUpcomingTasksQuery(EMPTY_FILTERS);
@@ -87,7 +62,6 @@ export function UpcomingPage() {
   const { data: allStagesData = [] } = useAllStagesQuery();
   const { data: taskTypes = [] } = useTaskTypesQuery();
   const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
-  const { bulkUpdate, bulkDelete } = useUpcomingBulkMutation();
 
   const projectById = useMemo(
     () => Object.fromEntries(projects.map((p) => [p.ID, p])),
@@ -120,46 +94,7 @@ export function UpcomingPage() {
     [searched, view.groupBy, view.granularity, view.showEmpty, groupingData],
   );
 
-  const selectedTasks = useMemo(
-    () => tasks.filter((t) => selectedIds.has(t.ID)),
-    [tasks, selectedIds],
-  );
-
   const filterCount = activeFilterCount();
-
-  const toggleSelect = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-  const clearSelection = () => setSelectedIds(new Set());
-
-  const handleBulkDelete = () => {
-    bulkDelete.mutate([...selectedIds], {
-      onSuccess: () => clearSelection(),
-    });
-  };
-
-  const handleBulkUpdate = (changes: Partial<Task>) => {
-    bulkUpdate.mutate(
-      { ids: [...selectedIds], changes },
-      {
-        onSuccess: (result) => {
-          if (result.success > 0)
-            toast(
-              `Updated ${result.success} ${result.success === 1 ? "task" : "tasks"}.`,
-            );
-          clearSelection();
-        },
-      },
-    );
-  };
 
   return (
     <>
@@ -253,8 +188,6 @@ export function UpcomingPage() {
                               task={task}
                               stageById={stageById}
                               project={projectById[task.ProjectID]}
-                              selected={selectedIds.has(task.ID)}
-                              onToggleSelect={toggleSelect}
                             />
                           ))
                         )}
@@ -265,6 +198,9 @@ export function UpcomingPage() {
               })}
             </div>
           )}
+
+          {/* Bulk actions toolbar — must be inside PageContent to access SelectionContext */}
+          <UpcomingBulkActionsToolbar tasks={tasks} />
         </PageContent>
       </Page>
 
@@ -288,76 +224,6 @@ export function UpcomingPage() {
         onClose={() => setFilterOpen(false)}
         activeCount={filterCount}
       />
-
-      {/* Bulk actions toolbar */}
-      <BulkActionsToolbarBase
-        count={selectedIds.size}
-        onClear={clearSelection}
-        delete={{
-          title: `Delete ${selectedIds.size} ${selectedIds.size === 1 ? "task" : "tasks"}?`,
-          description: "This cannot be undone.",
-          onConfirm: handleBulkDelete,
-          busy: bulkDelete.isPending,
-        }}
-      >
-        <div className="w-32">
-          <SelectTaskPriority
-            value={sharedValue(selectedTasks, "Priority")}
-            onValueChange={(v) => handleBulkUpdate({ Priority: v })}
-            placeholder={
-              sharedValue(selectedTasks, "Priority") === undefined
-                ? "Mixed"
-                : "Priority"
-            }
-          />
-        </div>
-        <div className="w-80">
-          <DateRangePicker
-            mode="datetime"
-            from={sharedValue(selectedTasks, "TimePlannedStart") ?? null}
-            to={sharedValue(selectedTasks, "TimePlannedEnd") ?? null}
-            hasFromTime={
-              sharedValue(selectedTasks, "HasTimePlannedStart") ?? false
-            }
-            hasToTime={sharedValue(selectedTasks, "HasTimePlannedEnd") ?? false}
-            onRangeChange={(s, e, hasFrom, hasTo) =>
-              handleBulkUpdate({
-                TimePlannedStart: s,
-                TimePlannedEnd: e,
-                HasTimePlannedStart: hasFrom,
-                HasTimePlannedEnd: hasTo,
-              })
-            }
-            placeholder={
-              sharedValue(selectedTasks, "TimePlannedStart") === undefined
-                ? "Mixed"
-                : "Select a date"
-            }
-          />
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="More properties">
-              <MoreHorizontal />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-72 flex flex-col gap-3"
-            align="start"
-            sideOffset={8}
-          >
-            <TaskAssignee
-              value={sharedValue(selectedTasks, "Assignee") ?? ""}
-              onValueChange={(v) => handleBulkUpdate({ Assignee: v })}
-              placeholder={
-                sharedValue(selectedTasks, "Assignee") === undefined
-                  ? "Mixed"
-                  : "Assignee"
-              }
-            />
-          </PopoverContent>
-        </Popover>
-      </BulkActionsToolbarBase>
     </>
   );
 }

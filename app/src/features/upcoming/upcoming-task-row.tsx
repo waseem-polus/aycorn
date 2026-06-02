@@ -17,23 +17,21 @@ import {
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
+import {
+  useSharedSelection,
+  selectedItemClasses,
+} from "@/hooks/useSelection";
 
 type Props = {
   task: TaskWithProject;
   stageById: Record<number, Stage>;
   project?: Project;
-  selected: boolean;
-  onToggleSelect: (id: number) => void;
 };
 
-function UpcomingTaskRowInner({
-  task,
-  stageById,
-  project,
-  selected,
-  onToggleSelect,
-}: Props) {
+function UpcomingTaskRowInner({ task, stageById, project }: Props) {
   const [open, setOpen] = useState(false);
+  const { getItemProps, isSelected, setSelectedIds } = useSharedSelection();
+  const id = task.ID.toString();
   const today = new Date();
   const stage = stageById[task.Stage];
   const overdue = !!(
@@ -42,6 +40,7 @@ function UpcomingTaskRowInner({
     new Date(task.TimePlannedStart) <
       new Date(today.getFullYear(), today.getMonth(), today.getDate())
   );
+  const itemProps = getItemProps(id);
 
   return (
     <ProjectProvider defaultState={project}>
@@ -49,25 +48,32 @@ function UpcomingTaskRowInner({
       <TaskProvider defaultState={task}>
         <TaskEditorDrawer onOpenChange={setOpen}>
           <div
-            data-task-card=""
-            data-selected={selected}
+            {...itemProps}
             className={cn(
+              itemProps.className,
               "group flex items-center gap-3 px-3 py-2.5 border-b border-border cursor-pointer hover:bg-accent/50 transition-colors",
-              selected && "bg-accent",
+              selectedItemClasses({ ring: false }),
             )}
-            onClick={() => setOpen(true)}
+            onClick={(e) => {
+              itemProps.onClick(e);
+              if (!e.defaultPrevented) {
+                setOpen(true);
+              }
+            }}
           >
             {/* Checkbox */}
             <div
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleSelect(task.ID);
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
               }}
             >
-              <Checkbox
-                checked={selected}
-                onCheckedChange={() => onToggleSelect(task.ID)}
-              />
+              <Checkbox checked={isSelected(id)} />
             </div>
 
             {/* Priority */}
@@ -139,3 +145,4 @@ function UpcomingTaskRowInner({
 export function UpcomingTaskRow(props: Props) {
   return <UpcomingTaskRowInner {...props} />;
 }
+

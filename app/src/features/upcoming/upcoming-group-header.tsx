@@ -78,7 +78,7 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
       </span>
       <span
         className={cn(
-          "text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right sm:w-3/10",
+          "text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right sm:w-3/10 md:w-1/5",
           isDanger
             ? "bg-destructive/10 text-destructive"
             : "bg-muted text-muted-foreground",
