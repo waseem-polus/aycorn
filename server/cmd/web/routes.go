@@ -65,6 +65,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/workflow/{workflowId}/stages/move", app.bulkMoveStages)
 	mux.HandleFunc("POST /api/workflow/{workflowId}/stage", app.postStage)
 
+	mux.HandleFunc("GET /api/stage", app.getAllStages)
 	mux.HandleFunc("PUT /api/stage/bulk/type", app.bulkSetStageType)
 	mux.HandleFunc("PUT /api/stage/bulk/color", app.bulkSetStageColor)
 	mux.HandleFunc("PUT /api/stage/bulk/icon", app.bulkSetStageIcon)

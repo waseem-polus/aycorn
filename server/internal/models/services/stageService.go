@@ -11,6 +11,10 @@ type StageService struct {
 	StageRepo *repos.StageRepo
 }
 
+func (s *StageService) GetAllStages() ([]models.Stage, error) {
+	return s.StageRepo.All()
+}
+
 var ErrInvalidStageType = errors.New("stage type must be one of: todo, doing, done, blocked")
 
 var ErrInvalidStageColor = errors.New("stage color is not in the allowed palette")

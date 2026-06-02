@@ -10,6 +10,15 @@ import (
 	"github.com/waseem-polus/aycorn/server/internal/models"
 )
 
+func (app *app) getAllStages(w http.ResponseWriter, r *http.Request) {
+	stages, err := app.stageService.GetAllStages()
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, stages)
+}
+
 func (app *app) postStage(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

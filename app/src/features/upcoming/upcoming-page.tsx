@@ -37,6 +37,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
+import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
@@ -83,6 +84,7 @@ export function UpcomingPage() {
   const { data: allTasks = [] } = useUpcomingTasksQuery(EMPTY_FILTERS);
   const { data: projects = [] } = useAllProjectsQuery() as { data: Project[] };
   const { data: workflows = [] } = useAllWorkflowsQuery();
+  const { data: allStagesData = [] } = useAllStagesQuery();
   const { data: taskTypes = [] } = useTaskTypesQuery();
   const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
   const { bulkUpdate, bulkDelete } = useUpcomingBulkMutation();
@@ -92,16 +94,10 @@ export function UpcomingPage() {
     [projects],
   );
   const stageById = useMemo<Record<number, Stage>>(
-    () =>
-      Object.fromEntries(
-        workflows.flatMap((w) => w.Stages.map((s) => [s.ID, s])),
-      ),
-    [workflows],
+    () => Object.fromEntries(allStagesData.map((s) => [s.ID, s])),
+    [allStagesData],
   );
-  const allStages = useMemo<Stage[]>(
-    () => workflows.flatMap((w) => w.Stages),
-    [workflows],
-  );
+  const allStages = allStagesData;
   const groupingData: GroupingData = useMemo(
     () => ({ projectById, stageById }),
     [projectById, stageById],
