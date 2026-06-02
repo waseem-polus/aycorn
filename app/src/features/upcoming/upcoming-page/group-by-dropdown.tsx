@@ -58,13 +58,10 @@ export function GroupByDropdown({
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-1.5">
-              <Layers2 className="text-muted-foreground" />
-              <span className="text-muted-foreground text-xs">
-                Group by
-              </span>{" "}
-              {cur.label}
-              <ChevronDown className="text-muted-foreground" />
+            <Button variant="default" className="gap-1.5">
+              <Layers2 className="text-muted" />
+              <span className="text-muted text-xs">Group by</span> {cur.label}
+              <ChevronDown className="text-muted" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
