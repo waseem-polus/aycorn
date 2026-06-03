@@ -41,12 +41,12 @@ export function StageTypeSelect({
   stage: Stage;
   workflowId: number;
 }) {
-  const { updateStage } = useStageMutation(workflowId);
+  const { bulkSetType } = useStageMutation(workflowId);
 
   const handleSetType = (type: Exclude<StageType, "open">) => {
     if (type === stage.Type) return;
-    updateStage.mutate(
-      { ...stage, Type: type },
+    bulkSetType.mutate(
+      { ids: [stage.ID], type },
       { onError: () => toast.error("Failed to update stage type.") },
     );
   };
