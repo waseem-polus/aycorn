@@ -37,7 +37,7 @@ export function useTaskTypeCategoryMutation() {
       transferCategoryId,
     }: {
       id: number;
-      transferCategoryId: number;
+      transferCategoryId?: number;
     }) => {
       const res = await fetch(`/api/task-type-category/${id}`, {
         method: "DELETE",

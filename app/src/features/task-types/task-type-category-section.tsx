@@ -257,6 +257,7 @@ export function TaskTypeCategorySection({
       <DeleteTaskTypeCategoryDialog
         category={category}
         allCategories={allCategories}
+        typeCount={types.length}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />

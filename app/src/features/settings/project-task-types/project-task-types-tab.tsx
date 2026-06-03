@@ -216,7 +216,7 @@ const RouteTasksDialog = ({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 overflow-y-auto max-h-60">
         {routeOptions.map((option) => {
           const selected = routeToTypeId === option.ID;
           return (
