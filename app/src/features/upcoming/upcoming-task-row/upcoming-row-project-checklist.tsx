@@ -16,7 +16,7 @@ export default function UpcomingRowProjectChecklist() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="truncate text-xs text-muted-foreground">
+        <span className="self-start max-w-full truncate text-xs text-muted-foreground">
           {Project.Name} · {ChecklistName}
         </span>
       </TooltipTrigger>

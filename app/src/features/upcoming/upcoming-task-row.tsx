@@ -18,10 +18,7 @@ import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dayOnly } from "@/utils/date";
 import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
-import {
-  useSharedSelection,
-  selectedItemClasses,
-} from "@/hooks/useSelection";
+import { useSharedSelection, selectedItemClasses } from "@/hooks/useSelection";
 
 type Props = {
   task: TaskWithProject;
@@ -82,7 +79,7 @@ function UpcomingTaskRowInner({ task, stageById, project }: Props) {
             <span className="flex flex-col min-w-0 flex-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="truncate text-sm font-medium">
+                  <span className="self-start max-w-full truncate text-sm font-medium">
                     {task.Name || "Untitled"}
                   </span>
                 </TooltipTrigger>
@@ -144,4 +141,3 @@ function UpcomingTaskRowInner({ task, stageById, project }: Props) {
 export function UpcomingTaskRow(props: Props) {
   return <UpcomingTaskRowInner {...props} />;
 }
-

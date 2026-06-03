@@ -5,6 +5,11 @@ import type { TaskGroup } from "@/features/upcoming/upcoming-grouping";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 import type { Priority } from "@/types/types";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = {
   group: TaskGroup;
@@ -51,22 +56,35 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
       >
         {marker}
       </span>
-      <span
-        className={cn(
-          "text-sm font-medium",
-          isDanger
-            ? "text-destructive"
-            : isMuted
-              ? "text-muted-foreground"
-              : "text-foreground",
+      <span className="flex items-baseline gap-2 min-w-0 flex-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              className={cn(
+                "truncate text-sm font-medium",
+                isDanger
+                  ? "text-destructive"
+                  : isMuted
+                    ? "text-muted-foreground"
+                    : "text-foreground",
+              )}
+            >
+              {group.label}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{group.label}</TooltipContent>
+        </Tooltip>
+        {group.sublabel && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="shrink-0 max-w-[40%] truncate text-xs text-muted-foreground">
+                {group.sublabel}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{group.sublabel}</TooltipContent>
+          </Tooltip>
         )}
-      >
-        {group.label}
       </span>
-      {group.sublabel && (
-        <span className="text-xs text-muted-foreground">{group.sublabel}</span>
-      )}
-      <span className="flex-1" />
       <span className="shrink-0 hidden sm:flex w-1/8 text-xs text-muted-foreground">
         Stage
       </span>
