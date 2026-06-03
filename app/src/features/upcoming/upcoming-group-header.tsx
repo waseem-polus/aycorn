@@ -36,10 +36,7 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2 cursor-pointer select-none sticky top-0 z-10 border-b border-border",
-        isDanger
-          ? "bg-destructive/5 hover:bg-destructive/10"
-          : "bg-muted hover:bg-muted",
+        "flex items-center gap-2 px-3 py-2 cursor-pointer select-none sticky top-0 z-10 border-b border-border bg-muted hover:bg-muted",
       )}
       onClick={onToggle}
     >
@@ -78,10 +75,7 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
       </span>
       <span
         className={cn(
-          "text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right w-3/10 md:w-1/5",
-          isDanger
-            ? "bg-destructive/10 text-destructive"
-            : "bg-muted text-muted-foreground",
+          "text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right w-1/5 lg:w-3/10",
         )}
       >
         {group.tasks.length}

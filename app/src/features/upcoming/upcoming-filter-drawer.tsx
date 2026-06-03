@@ -13,14 +13,12 @@ import { TypeSection } from "@/features/upcoming/upcoming-filter-drawer/type-sec
 import { AssigneeSection } from "@/features/upcoming/upcoming-filter-drawer/assignee-section";
 import { ChecklistSection } from "@/features/upcoming/upcoming-filter-drawer/checklist-section";
 import { PrioritySection } from "@/features/upcoming/upcoming-filter-drawer/priority-section";
-import type { FilterDim, UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
-import type {
-  MultiSelectOption,
-  MultiSelectOptionGroup,
-} from "@/components/ui/multi-select-combobox";
+import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
+import type { MultiSelectOptionGroup } from "@/components/ui/multi-select-combobox";
 import type {
   Project,
   Stage,
+  TaskFacets,
   TaskTypeCategory,
   TaskTypeGlobal,
   WorkflowSummary,
@@ -37,69 +35,49 @@ import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
   open: boolean;
-  filters: UpcomingFilters;
-  showEmpty: boolean;
   projects: Project[];
   stages: Stage[];
   workflows: WorkflowSummary[];
   taskTypes: TaskTypeGlobal[];
   taskTypeCategories: TaskTypeCategory[];
-  allTasks: {
-    Assignee: string;
-    Checklist: number;
-    ChecklistName: string;
-    ProjectID: number;
-  }[];
-  onToggle: (dim: FilterDim, key: string | number) => void;
-  onClearDim: (dim: FilterDim) => void;
-  onSetDate: (key: string, value: string) => void;
-  onSetHasTime: (key: string, value: boolean) => void;
-  onToggleEmpty: (v: boolean) => void;
-  onReset: () => void;
+  facets: TaskFacets;
   onClose: () => void;
-  activeCount: number;
 };
 
 export function UpcomingFilterDrawer({
   open,
-  filters,
-  showEmpty,
   projects,
   stages,
   workflows,
   taskTypes,
   taskTypeCategories,
-  allTasks,
-  onToggle,
-  onClearDim,
-  onSetDate,
-  onSetHasTime,
-  onToggleEmpty,
-  onReset,
+  facets,
   onClose,
-  activeCount,
 }: Props) {
   const isMobile = useIsMobile();
+  const {
+    filters,
+    view,
+    toggleFilter: onToggle,
+    clearFilterDim: onClearDim,
+    setDateFilter: onSetDate,
+    setHasTimeFilter: onSetHasTime,
+    setShowEmpty: onToggleEmpty,
+    resetAll: onReset,
+    activeFilterCount,
+  } = useUpcomingFiltersContext();
+  const showEmpty = view.showEmpty;
+  const activeCount = activeFilterCount();
 
-  const uniqueAssignees = [
-    ...new Set(allTasks.map((t) => t.Assignee).filter(Boolean)),
-  ].sort();
+  const uniqueAssignees = facets.assignees;
 
   const checklistGroups: MultiSelectOptionGroup[] = projects
-    .filter((p) => allTasks.some((t) => t.ProjectID === p.ID))
-    .map((p) => {
-      const seen = new Set<number>();
-      const options: MultiSelectOption[] = [];
-      allTasks
-        .filter((t) => t.ProjectID === p.ID)
-        .forEach((t) => {
-          if (!seen.has(t.Checklist)) {
-            seen.add(t.Checklist);
-            options.push({ key: t.Checklist, label: t.ChecklistName });
-          }
-        });
-      return { label: p.Name, options };
-    })
+    .map((p) => ({
+      label: p.Name,
+      options: facets.checklists
+        .filter((c) => c.projectId === p.ID)
+        .map((c) => ({ key: c.id, label: c.name })),
+    }))
     .filter((g) => g.options.length > 0);
 
   return (

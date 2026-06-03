@@ -39,6 +39,16 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, tasks)
 }
 
+func (app *app) getTaskFacets(w http.ResponseWriter, r *http.Request) {
+	facets, err := app.taskService.GetTaskFacets()
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, facets)
+}
+
 func (app *app) getTask(w http.ResponseWriter, r *http.Request) {
 	taskId, err := strconv.Atoi(r.PathValue("taskId"))
 	if err != nil {

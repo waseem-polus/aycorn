@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { dayOnly } from "@/utils/date";
 import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
 import {
   useSharedSelection,
@@ -32,13 +33,11 @@ function UpcomingTaskRowInner({ task, stageById, project }: Props) {
   const [open, setOpen] = useState(false);
   const { getItemProps, isSelected, setSelectedIds } = useSharedSelection();
   const id = task.ID.toString();
-  const today = new Date();
   const stage = stageById[task.Stage];
   const overdue = !!(
     task.TimePlannedStart &&
     !task.TimeCompleted &&
-    new Date(task.TimePlannedStart) <
-      new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    new Date(task.TimePlannedStart) < dayOnly(new Date())
   );
   const itemProps = getItemProps(id);
 

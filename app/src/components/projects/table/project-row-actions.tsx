@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useProjectMutation } from "@/queries/useProjectMutation";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
 import type { Project } from "@/types/types";
 import { ProjectsListDeleteDialog } from "@/components/projects/projects-list-delete-dialog";
 import { useNavigate } from "@tanstack/react-router";
@@ -40,7 +41,9 @@ export function ProjectRowActions({
       onClick={(e) => e.stopPropagation()}
     >
       {project.Pinned && (
-        <PinIcon className="stroke-red-400 size-4 sm:size-4 shrink-0 sm:hidden" />
+        <PinIcon
+          className={`${stageStrokeClass("red")} size-4 sm:size-4 shrink-0 sm:hidden`}
+        />
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

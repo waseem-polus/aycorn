@@ -59,13 +59,16 @@ export function GroupByDropdown({
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="gap-1.5">
-              <Layers2 className="text-muted" />
-              <span className="text-muted text-xs">Group by</span> {cur.label}
-              <ChevronDown className="text-muted" />
+              <Layers2 className="text-muted dark:text-foreground" />
+              <span className="text-muted text-xs dark:text-foreground">
+                Group by
+              </span>{" "}
+              {cur.label}
+              <ChevronDown className="text-muted dark:text-foreground" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent>Group by</TooltipContent>
+        <TooltipContent>Group by {cur.label.toLowerCase()}</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="start" className="min-w-44">
         {GROUP_OPTIONS.map((o) =>

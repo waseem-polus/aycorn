@@ -2,28 +2,20 @@ import { CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UpcomingGroupHeader } from "@/features/upcoming/upcoming-group-header";
 import { UpcomingTaskRow } from "@/features/upcoming/upcoming-task-row";
+import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import type { TaskGroup } from "@/features/upcoming/upcoming-grouping";
 import type { Stage, Project } from "@/types/types";
 
 type Props = {
   groups: TaskGroup[];
-  filterCount: number;
   stageById: Record<number, Stage>;
   projectById: Record<number, Project>;
-  isCollapsed: (key: string) => boolean;
-  onToggleCollapsed: (key: string) => void;
-  onResetFilters: () => void;
 };
 
-export function UpcomingTaskList({
-  groups,
-  filterCount,
-  stageById,
-  projectById,
-  isCollapsed,
-  onToggleCollapsed,
-  onResetFilters,
-}: Props) {
+export function UpcomingTaskList({ groups, stageById, projectById }: Props) {
+  const { activeFilterCount, isCollapsed, toggleCollapsed, resetAll } =
+    useUpcomingFiltersContext();
+  const filterCount = activeFilterCount();
   if (groups.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-muted-foreground">
@@ -35,7 +27,7 @@ export function UpcomingTaskList({
           </p>
         </div>
         {filterCount > 0 && (
-          <Button variant="outline" size="sm" onClick={onResetFilters}>
+          <Button variant="outline" size="sm" onClick={resetAll}>
             Reset filters
           </Button>
         )}
@@ -52,7 +44,7 @@ export function UpcomingTaskList({
             <UpcomingGroupHeader
               group={group}
               collapsed={collapsed}
-              onToggle={() => onToggleCollapsed(group.key)}
+              onToggle={() => toggleCollapsed(group.key)}
             />
             {!collapsed && (
               <div>

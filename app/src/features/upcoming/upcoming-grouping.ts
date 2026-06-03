@@ -3,25 +3,14 @@ import type {
   GroupByKey,
   Granularity,
 } from "@/features/upcoming/hooks/useUpcomingFilters";
+import {
+  dayOnly,
+  formatMonthDay,
+  formatMonthShort,
+  formatMonthYear,
+  formatWeekdayMonthDay,
+} from "@/utils/date";
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const dayOnly = (x: Date) =>
-  new Date(x.getFullYear(), x.getMonth(), x.getDate());
 const startOfWeek = (date: Date) => {
   const x = dayOnly(date);
   const dow = (x.getDay() + 6) % 7; // Mon = 0
@@ -41,16 +30,15 @@ const weekDiff = (a: Date, b: Date) =>
     (startOfWeek(a).getTime() - startOfWeek(b).getTime()) / (7 * 86400000),
   );
 
-const fmtDay = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
-const fmtDayFull = (d: Date) =>
-  `${DOW[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
-const fmtMonth = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+const fmtDay = (d: Date) => formatMonthDay(d);
+const fmtDayFull = (d: Date) => formatWeekdayMonthDay(d);
+const fmtMonth = (d: Date) => formatMonthYear(d);
 
 export const fmtWeekRange = (ws: Date) => {
   const we = addDays(ws, 6);
   if (ws.getMonth() === we.getMonth())
-    return `${MONTHS[ws.getMonth()]} ${ws.getDate()} – ${we.getDate()}`;
-  return `${MONTHS[ws.getMonth()]} ${ws.getDate()} – ${MONTHS[we.getMonth()]} ${we.getDate()}`;
+    return `${formatMonthShort(ws)} ${ws.getDate()} – ${we.getDate()}`;
+  return `${formatMonthShort(ws)} ${ws.getDate()} – ${formatMonthShort(we)} ${we.getDate()}`;
 };
 
 export function fmtTaskDate(task: TaskWithProject, today: Date): string | null {

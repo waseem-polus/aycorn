@@ -593,6 +593,53 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 	return tasks, rows.Err()
 }
 
+func (repo *TaskRepo) TaskFacets() (*models.TaskFacets, error) {
+	facets := &models.TaskFacets{
+		Assignees:  []string{},
+		Checklists: []models.ChecklistFacet{},
+	}
+
+	assigneeRows, err := repo.DB.Query(`
+		SELECT DISTINCT assignee
+		FROM task
+		WHERE assignee IS NOT NULL AND assignee <> ''
+		ORDER BY assignee
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer assigneeRows.Close()
+	for assigneeRows.Next() {
+		var a string
+		if err := assigneeRows.Scan(&a); err != nil {
+			return nil, err
+		}
+		facets.Assignees = append(facets.Assignees, a)
+	}
+	if err := assigneeRows.Err(); err != nil {
+		return nil, err
+	}
+
+	checklistRows, err := repo.DB.Query(`
+		SELECT c.id, c.name, c.project
+		FROM checklist c
+		WHERE EXISTS (SELECT 1 FROM task t WHERE t.checklist = c.id)
+		ORDER BY c.project, c.name
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer checklistRows.Close()
+	for checklistRows.Next() {
+		cf := models.ChecklistFacet{}
+		if err := checklistRows.Scan(&cf.ID, &cf.Name, &cf.ProjectID); err != nil {
+			return nil, err
+		}
+		facets.Checklists = append(facets.Checklists, cf)
+	}
+	return facets, checklistRows.Err()
+}
+
 func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
 	query := "SELECT t.body FROM task t WHERE t.id = ?;"
 	rows, err := repo.DB.Query(query, taskId)

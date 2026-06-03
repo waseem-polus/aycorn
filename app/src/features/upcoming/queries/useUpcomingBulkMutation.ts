@@ -3,8 +3,10 @@ import type { BulkResult } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const invalidate = () =>
+const invalidate = () => {
   queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] });
+  queryClient.invalidateQueries({ queryKey: ["taskFacets"] });
+};
 
 export function useUpcomingBulkMutation() {
   const bulkUpdate = useMutation({

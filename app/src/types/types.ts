@@ -148,3 +148,14 @@ export type BulkResult = {
 export type BulkDuplicateResult = BulkResult & {
   newIds: number[];
 };
+
+export type ChecklistFacet = {
+  id: number;
+  name: string;
+  projectId: number;
+};
+
+export type TaskFacets = {
+  assignees: string[];
+  checklists: ChecklistFacet[];
+};

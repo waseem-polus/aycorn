@@ -7,36 +7,29 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
-import type {
-  GroupByKey,
-  Granularity,
-} from "@/features/upcoming/hooks/useUpcomingFilters";
+import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 
 type Props = {
-  search: string;
   isFetching: boolean;
   resultCount: number;
-  filterCount: number;
-  groupBy: GroupByKey;
-  granularity: Granularity;
-  onSearchChange: (value: string) => void;
   onFilterOpen: () => void;
-  onGroupByChange: (value: GroupByKey) => void;
-  onGranularityChange: (value: Granularity) => void;
 };
 
 export function UpcomingToolbar({
-  search,
   isFetching,
   resultCount,
-  filterCount,
-  groupBy,
-  granularity,
-  onSearchChange,
   onFilterOpen,
-  onGroupByChange,
-  onGranularityChange,
 }: Props) {
+  const {
+    filters,
+    view,
+    setSearch,
+    setGroupBy,
+    setGranularity,
+    activeFilterCount,
+  } = useUpcomingFiltersContext();
+  const search = filters.search;
+  const filterCount = activeFilterCount();
   return (
     <div className="flex gap-2 flex-col sm:flex-row">
       <div className="flex gap-2 flex-1">
@@ -47,7 +40,7 @@ export function UpcomingToolbar({
           <InputGroupInput
             placeholder="Search tasks…"
             value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
           <InputGroupAddon align="inline-end">
             {isFetching
@@ -72,10 +65,10 @@ export function UpcomingToolbar({
       </div>
       <div className="flex gap-2 justify-end sm:justify-start">
         <GroupByDropdown
-          groupBy={groupBy}
-          granularity={granularity}
-          onChange={onGroupByChange}
-          onGranularityChange={onGranularityChange}
+          groupBy={view.groupBy}
+          granularity={view.granularity}
+          onChange={setGroupBy}
+          onGranularityChange={setGranularity}
         />
       </div>
     </div>

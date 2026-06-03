@@ -6,15 +6,14 @@ import {
   PageTitle,
 } from "@/components/page/Page";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
-import {
-  useUpcomingFilters,
-  EMPTY_FILTERS,
-} from "@/features/upcoming/hooks/useUpcomingFilters";
+import { useTaskFacetsQuery } from "@/features/upcoming/queries/useTaskFacetsQuery";
+import { useUpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
 import {
   buildGroups,
   applyClientFilters,
 } from "@/features/upcoming/upcoming-grouping";
 import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";
+import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { UpcomingToolbar } from "@/features/upcoming/upcoming-page/toolbar";
 import { UpcomingTaskList } from "@/features/upcoming/upcoming-page/task-list";
@@ -27,27 +26,14 @@ import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
 import type { Stage, Project } from "@/types/types";
 
 export function UpcomingPage() {
-  const {
-    filters,
-    view,
-    toggleFilter,
-    clearFilterDim,
-    setSearch,
-    setDateFilter,
-    setHasTimeFilter,
-    resetAll,
-    activeFilterCount,
-    toggleCollapsed,
-    isCollapsed,
-    setGroupBy,
-    setGranularity,
-    setShowEmpty,
-  } = useUpcomingFilters();
+  const filtersApi = useUpcomingFilters();
+  const { filters, view } = filtersApi;
 
   const [filterOpen, setFilterOpen] = useState(false);
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(filters);
-  const { data: allTasks = [] } = useUpcomingTasksQuery(EMPTY_FILTERS);
+  const { data: facets = { assignees: [], checklists: [] } } =
+    useTaskFacetsQuery();
   const { data: projects = [] } = useAllProjectsQuery() as { data: Project[] };
   const { data: workflows = [] } = useAllWorkflowsQuery();
   const { data: allStagesData = [] } = useAllStagesQuery();
@@ -85,10 +71,8 @@ export function UpcomingPage() {
     [searched, view.groupBy, view.granularity, view.showEmpty, groupingData],
   );
 
-  const filterCount = activeFilterCount();
-
   return (
-    <>
+    <UpcomingFiltersContext.Provider value={filtersApi}>
       <Page>
         <PageHeader breadcrumb={["Upcoming"]} />
         <PageContent>
@@ -97,26 +81,15 @@ export function UpcomingPage() {
             description="Tasks across every project. Read, edit, and clear what's scheduled."
           />
           <UpcomingToolbar
-            search={filters.search}
             isFetching={isFetching}
             resultCount={searched.length}
-            filterCount={filterCount}
-            groupBy={view.groupBy}
-            granularity={view.granularity}
-            onSearchChange={setSearch}
             onFilterOpen={() => setFilterOpen(true)}
-            onGroupByChange={setGroupBy}
-            onGranularityChange={setGranularity}
           />
 
           <UpcomingTaskList
             groups={groups}
-            filterCount={filterCount}
             stageById={stageById}
             projectById={projectById}
-            isCollapsed={isCollapsed}
-            onToggleCollapsed={toggleCollapsed}
-            onResetFilters={resetAll}
           />
 
           {/* Bulk actions toolbar — must be inside PageContent to access SelectionContext */}
@@ -127,23 +100,14 @@ export function UpcomingPage() {
       {/* Filter drawer */}
       <UpcomingFilterDrawer
         open={filterOpen}
-        filters={filters}
-        showEmpty={view.showEmpty}
         projects={projects}
         stages={allStages}
         workflows={workflows}
         taskTypes={taskTypes}
         taskTypeCategories={taskTypeCategories}
-        allTasks={allTasks}
-        onToggle={toggleFilter}
-        onClearDim={clearFilterDim}
-        onSetDate={setDateFilter}
-        onSetHasTime={setHasTimeFilter}
-        onToggleEmpty={setShowEmpty}
-        onReset={resetAll}
+        facets={facets}
         onClose={() => setFilterOpen(false)}
-        activeCount={filterCount}
       />
-    </>
+    </UpcomingFiltersContext.Provider>
   );
 }

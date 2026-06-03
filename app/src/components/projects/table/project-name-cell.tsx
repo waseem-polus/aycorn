@@ -8,6 +8,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { useProjectMutation } from "@/queries/useProjectMutation";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
 import type { Project } from "@/types/types";
 
 type ProjectNameCellProps = {
@@ -65,7 +66,9 @@ export function ProjectNameCell({
           className="text-sm p-0 min-h-0 font-normal"
         />
         {project.Pinned && (
-          <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 invisible sm:visible" />
+          <PinIcon
+            className={`${stageStrokeClass("red")} size-3 sm:size-4 shrink-0 invisible sm:visible`}
+          />
         )}
         <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
           <WorkflowIcon className="size-4" />
@@ -88,7 +91,9 @@ export function ProjectNameCell({
               {displayName}
             </span>
             {project.Pinned && (
-              <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 hidden sm:flex" />
+              <PinIcon
+                className={`${stageStrokeClass("red")} size-3 sm:size-4 shrink-0 hidden sm:flex`}
+              />
             )}
             <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
               <WorkflowIcon className="size-4" />

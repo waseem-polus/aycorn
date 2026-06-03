@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { STAGE_PALETTE } from "@/features/stage/stage-palette";
 import { useDateFormat } from "@/hooks/useDateFormatter";
+import { isSameDay } from "@/utils/date";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
@@ -42,12 +43,11 @@ export function TaskPlannedDates({
     return `${toFormatted(dateStr)} ${toFormattedTime(dateStr)}`;
   };
 
-  const isSameDay =
-    end !== null &&
-    new Date(start).toDateString() === new Date(end).toDateString();
+  const sameDay =
+    end !== null && isSameDay(new Date(start), new Date(end));
 
   const label =
-    end !== null && !isSameDay
+    end !== null && !sameDay
       ? `${formatDateTime(start, hasStartTime)} → ${formatDateTime(end, hasEndTime)}`
       : formatDateTime(start, hasStartTime);
 

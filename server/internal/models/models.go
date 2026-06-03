@@ -117,3 +117,14 @@ type BulkResult struct {
 	Failed  int `json:"failed"`
 	Skipped int `json:"skipped"`
 }
+
+type TaskFacets struct {
+	Assignees  []string         `json:"assignees"`
+	Checklists []ChecklistFacet `json:"checklists"`
+}
+
+type ChecklistFacet struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	ProjectID int    `json:"projectId"`
+}
