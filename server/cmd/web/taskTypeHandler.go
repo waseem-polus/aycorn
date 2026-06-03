@@ -82,6 +82,56 @@ func (app *app) deleteTaskType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, true)
 }
 
+func (app *app) bulkUpdateTaskTypes(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs     []int          `json:"ids"`
+		Changes map[string]any `json:"changes"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskTypeService.BulkUpdate(body.IDs, body.Changes)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) bulkDeleteTaskTypes(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs          []int          `json:"ids"`
+		TaskMappings map[string]int `json:"taskMappings"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mappings := map[int]int{}
+	for k, v := range body.TaskMappings {
+		id, err := strconv.Atoi(k)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		mappings[id] = v
+	}
+
+	result, err := app.taskTypeService.BulkDelete(body.IDs, mappings)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 func (app *app) getProjectTaskTypes(w http.ResponseWriter, r *http.Request) {
 	projectId, err := strconv.Atoi(r.PathValue("projectId"))
 	if err != nil {

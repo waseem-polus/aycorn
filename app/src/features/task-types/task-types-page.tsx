@@ -11,6 +11,7 @@ import {
   type DragOverEvent,
   type DragStartEvent,
   type DropAnimation,
+  type Over,
 } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -33,6 +34,9 @@ import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTas
 import { useTaskTypeCategoryMutation } from "@/features/task-types/queries/useTaskTypeCategoryMutation";
 import { TaskTypeCard } from "@/features/task-types/task-type-card";
 import { TaskTypeCategorySection } from "@/features/task-types/task-type-category-section";
+import { TaskTypesBulkActionsToolbar } from "@/features/task-types/task-types-bulk-actions-toolbar";
+import { useSharedSelection } from "@/hooks/useSelection";
+import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
 
 const successDropAnimation: DropAnimation = {
@@ -49,6 +53,7 @@ const cancelDropAnimation: DropAnimation = { duration: 250, easing: "ease" };
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 
 function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
+  const { getItemProps } = useSharedSelection();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `tt-${type.ID}`,
     data: { type: "taskType", taskTypeId: type.ID },
@@ -58,13 +63,17 @@ function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
     onTouchStart?: React.TouchEventHandler;
   } & DragListeners;
 
+  const itemProps = getItemProps(`tt-${type.ID}`, {
+    listeners: pointerListeners,
+  });
+
   return (
     <TaskTypeCard
       type={type}
       dragRef={setNodeRef}
       dragStyle={{ opacity: isDragging ? 0.4 : 1 }}
       dragAttributes={attributes as unknown as Record<string, unknown>}
-      dragListeners={pointerListeners}
+      itemProps={itemProps}
     >
       <button
         type="button"
@@ -85,8 +94,10 @@ export function TaskTypesPage() {
   const { data: types = [], isFetching: typesFetching } = useTaskTypesQuery();
   const { data: categories = [], isFetching: categoriesFetching } =
     useTaskTypeCategoriesQuery();
-  const { createTaskType, updateTaskType } = useTaskTypeMutation();
+  const { createTaskType, updateTaskType, bulkUpdateTaskTypes } =
+    useTaskTypeMutation();
   const { createCategory, reorderCategories } = useTaskTypeCategoryMutation();
+  const { wrapDragStart, wrapDragEnd } = useSharedSelection();
 
   const [orderedCategories, setOrderedCategories] = useState<
     TaskTypeCategory[]
@@ -95,10 +106,10 @@ export function TaskTypesPage() {
   const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(
     null,
   );
-  const [pendingCategoryMove, setPendingCategoryMove] = useState<{
-    taskTypeId: number;
-    newCategoryId: number;
-  } | null>(null);
+  // taskTypeId -> optimistic category while a (single or bulk) move is in flight.
+  const [pendingCategoryMoves, setPendingCategoryMoves] = useState<
+    Record<number, number>
+  >({});
   const [dropResult, setDropResult] = useState<"success" | "cancel" | null>(
     null,
   );
@@ -114,16 +125,13 @@ export function TaskTypesPage() {
   const typesByCategory = useMemo(() => {
     const map = new Map<number, TaskTypeGlobal[]>();
     for (const type of types) {
-      const category =
-        pendingCategoryMove?.taskTypeId === type.ID
-          ? pendingCategoryMove.newCategoryId
-          : type.Category;
+      const category = pendingCategoryMoves[type.ID] ?? type.Category;
       const bucket = map.get(category) ?? [];
       bucket.push(type);
       map.set(category, bucket);
     }
     return map;
-  }, [types, pendingCategoryMove]);
+  }, [types, pendingCategoryMoves]);
 
   // Group types per category, applying search filter.
   const filteredByCategory = useMemo(() => {
@@ -199,15 +207,70 @@ export function TaskTypesPage() {
       }
 
       setDropResult("success");
-      setPendingCategoryMove({ taskTypeId, newCategoryId });
+      setPendingCategoryMoves((prev) => ({
+        ...prev,
+        [taskTypeId]: newCategoryId,
+      }));
       updateTaskType.mutate(
         { ...taskType, Category: newCategoryId },
         {
-          onSettled: () => setPendingCategoryMove(null),
+          onSettled: () => clearPendingMoves([taskTypeId]),
           onError: () => toast.error("Failed to move type."),
         },
       );
     }
+  };
+
+  const clearPendingMoves = (ids: number[]) =>
+    setPendingCategoryMoves((prev) => {
+      const next = { ...prev };
+      for (const id of ids) delete next[id];
+      return next;
+    });
+
+  // Bulk drag: move every selected type onto the dropped-on category in one
+  // request (no fan-out). Optimistic per the dnd drag-move carve-out.
+  const handleBulkMoveToCategory = (ids: Set<string>, over: Over | null) => {
+    setActiveDragId(null);
+    setDragOverCategoryId(null);
+
+    const overId = over ? String(over.id) : null;
+    if (!overId?.startsWith("cat-")) {
+      setDropResult("cancel");
+      return;
+    }
+    const newCategoryId = parseInt(overId.slice(4));
+    const typeIds = Array.from(ids)
+      .filter((id) => id.startsWith("tt-"))
+      .map((id) => parseInt(id.slice(3)))
+      .filter((tid) => {
+        const t = types.find((x) => x.ID === tid);
+        return t !== undefined && t.Category !== newCategoryId;
+      });
+
+    if (typeIds.length === 0) {
+      setDropResult("cancel");
+      return;
+    }
+
+    setDropResult("success");
+    setPendingCategoryMoves((prev) => {
+      const next = { ...prev };
+      for (const tid of typeIds) next[tid] = newCategoryId;
+      return next;
+    });
+    bulkUpdateTaskTypes.mutate(
+      { ids: typeIds, changes: { Category: newCategoryId } },
+      {
+        onSuccess: (result) =>
+          bulkResultToast(
+            result,
+            `Moved ${result.success} type${result.success !== 1 ? "s" : ""}.`,
+          ),
+        onError: () => toast.error("Failed to move types."),
+        onSettled: () => clearPendingMoves(typeIds),
+      },
+    );
   };
 
   const handleDragCancel = () => {
@@ -293,9 +356,9 @@ export function TaskTypesPage() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
+          onDragStart={wrapDragStart(handleDragStart)}
           onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
+          onDragEnd={wrapDragEnd(handleDragEnd, handleBulkMoveToCategory)}
           onDragCancel={handleDragCancel}
         >
           <SortableContext
@@ -344,6 +407,8 @@ export function TaskTypesPage() {
           </DragOverlay>
         </DndContext>
       )}
+
+      <TaskTypesBulkActionsToolbar types={types} categories={orderedCategories} />
     </div>
   );
 }

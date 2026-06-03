@@ -236,7 +236,7 @@ export function TaskTypeCategorySection({
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-7">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-7 pr-1 py-1">
                 {types.length === 0 ? (
                   <div className="col-span-full flex items-center justify-center rounded-lg border border-dashed py-6 text-sm text-muted-foreground">
                     No types in this category.

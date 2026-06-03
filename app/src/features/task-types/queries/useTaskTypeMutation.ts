@@ -1,5 +1,7 @@
-import type { TaskType } from "@/types/types";
+import type { BulkResult, TaskType } from "@/types/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+type TaskTypeChanges = Partial<Pick<TaskType, "Icon" | "Color" | "Category">>;
 
 export function useTaskTypeMutation() {
   const queryClient = useQueryClient();
@@ -53,5 +55,49 @@ export function useTaskTypeMutation() {
     onSuccess: invalidate,
   });
 
-  return { createTaskType, updateTaskType, deleteTaskType };
+  const bulkUpdateTaskTypes = useMutation({
+    mutationFn: async ({
+      ids,
+      changes,
+    }: {
+      ids: number[];
+      changes: TaskTypeChanges;
+    }) => {
+      const res = await fetch("/api/task-type/bulk", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, changes }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json() as Promise<BulkResult>;
+    },
+    onSuccess: invalidate,
+  });
+
+  const bulkDeleteTaskTypes = useMutation({
+    mutationFn: async ({
+      ids,
+      taskMappings,
+    }: {
+      ids: number[];
+      taskMappings: Record<number, number>;
+    }) => {
+      const res = await fetch("/api/task-type/bulk/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, taskMappings }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json() as Promise<BulkResult>;
+    },
+    onSuccess: invalidate,
+  });
+
+  return {
+    createTaskType,
+    updateTaskType,
+    deleteTaskType,
+    bulkUpdateTaskTypes,
+    bulkDeleteTaskTypes,
+  };
 }

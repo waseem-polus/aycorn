@@ -196,6 +196,76 @@ func (repo *TaskTypeRepo) TransferAndDelete(id int, transferToID int) error {
 	return tx.Commit()
 }
 
+func (repo *TaskTypeRepo) UpdateManyFields(ids []int, fields map[string]any) (int, error) {
+	if len(ids) == 0 || len(fields) == 0 {
+		return 0, nil
+	}
+
+	setParts := []string{}
+	setArgs := []any{}
+	for col, val := range fields {
+		setParts = append(setParts, col+" = ?")
+		setArgs = append(setArgs, val)
+	}
+
+	placeholders, idArgs := intIdPlaceholders(ids)
+	query := "UPDATE task_type SET " + strings.Join(setParts, ", ") +
+		" WHERE id IN (" + placeholders + ");"
+
+	args := append(setArgs, idArgs...)
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+// BulkTransferAndDelete moves the tasks of each deleted type to its mapped
+// destination, then deletes the types in one transaction. Default types are
+// never deleted (the WHERE clause excludes them).
+func (repo *TaskTypeRepo) BulkTransferAndDelete(ids []int, mappings map[int]int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("UPDATE task SET type = ? WHERE type = ?;")
+	if err != nil {
+		return 0, err
+	}
+	for fromID, toID := range mappings {
+		if _, err := stmt.Exec(toID, fromID); err != nil {
+			stmt.Close()
+			return 0, err
+		}
+	}
+	stmt.Close()
+
+	placeholders, args := intIdPlaceholders(ids)
+	query := "DELETE FROM task_type WHERE id IN (" + placeholders + ") AND isDefault = 0;"
+	res, err := tx.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
 func (repo *TaskTypeRepo) setEnabledForProjectTx(tx *sql.Tx, projectId int, enabledIDs []int) error {
 	if _, err := tx.Exec("DELETE FROM project_task_type WHERE project = ?;", projectId); err != nil {
 		return err

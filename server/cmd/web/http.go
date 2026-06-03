@@ -50,7 +50,9 @@ func httpStatusForError(err error) int {
 		errors.Is(err, services.ErrInvalidMoveDestination),
 		errors.Is(err, services.ErrInvalidStageOrder),
 		errors.Is(err, services.ErrNoOpenStage),
-		errors.Is(err, services.ErrInvalidStageMapping):
+		errors.Is(err, services.ErrInvalidStageMapping),
+		errors.Is(err, services.ErrTransferTypeRequired),
+		errors.Is(err, services.ErrInvalidTransferType):
 		return http.StatusBadRequest
 	case errors.Is(err, services.ErrStageHasTasks):
 		return http.StatusUnprocessableEntity
