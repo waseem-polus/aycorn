@@ -82,9 +82,9 @@ export function ProjectNameCell({
     <div className="flex items-center gap-2 min-w-0">
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
-          <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 sm:items-center">
+          <div className="min-w-0 flex flex-col gap-1 sm:flex-row sm:gap-2 sm:items-center">
             <span
-              className={`truncate group-hover:underline flex gap-2 items-center text-sm ${
+              className={`truncate group-hover:underline text-sm ${
                 isEmpty ? "text-muted-foreground" : "text-foreground"
               }`}
             >
