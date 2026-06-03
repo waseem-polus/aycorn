@@ -1,5 +1,13 @@
 import { cn } from "@/lib/utils";
-import { forwardRef, type FocusEventHandler, type Ref } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  type FocusEventHandler,
+  type Ref,
+} from "react";
 
 export const EditableHeader = forwardRef(function (
   {
@@ -15,10 +23,31 @@ export const EditableHeader = forwardRef(function (
     className?: string;
     onBlur?: FocusEventHandler<HTMLHeadElement>;
   },
-  ref: Ref<HTMLHeadingElement>,
+  forwardedRef: Ref<HTMLHeadingElement>,
 ) {
+  const innerRef = useRef<HTMLHeadingElement>(null);
+  useImperativeHandle(forwardedRef, () => innerRef.current!);
+
+  // Set content on mount without giving React children to reconcile
+  useLayoutEffect(() => {
+    if (innerRef.current) {
+      innerRef.current.textContent = value;
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync external value changes only when the element isn't focused —
+  // prevents React re-renders from overwriting what the user is typing
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el || el === document.activeElement) return;
+    if (el.textContent !== value) {
+      el.textContent = value;
+    }
+  }, [value]);
+
   return (
     <h1
+      ref={innerRef}
       contentEditable
       spellCheck={false}
       suppressContentEditableWarning
@@ -36,9 +65,6 @@ export const EditableHeader = forwardRef(function (
           e.preventDefault();
         }
       }}
-      ref={ref}
-    >
-      {value}
-    </h1>
+    />
   );
 });
