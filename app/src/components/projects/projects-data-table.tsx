@@ -13,7 +13,6 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { format, formatDistanceToNow } from "date-fns";
-import { Pin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -46,13 +45,17 @@ interface ProjectsDataTableProps {
 const COLUMN_WIDTHS: Record<string, string | undefined> = {
   select: "32px",
   Name: undefined,
-  Pinned: "15%",
   Workflow: "20%",
-  TimeCreated: "15%",
-  TimeModified: "15%",
+  TimeCreated: "20%",
+  TimeModified: "20%",
   actions: "60px",
 };
 const NAME_MIN_WIDTH = "30%";
+const MOBILE_HIDDEN_COLUMNS = new Set([
+  "Workflow",
+  "TimeCreated",
+  "TimeModified",
+]);
 
 export function ProjectsDataTable({
   data,
@@ -64,16 +67,14 @@ export function ProjectsDataTable({
   const { getItemProps, selectedIds, setSelectedIds } = useSharedSelection();
 
   const rowSelection = useMemo<RowSelectionState>(
-    () =>
-      Object.fromEntries(Array.from(selectedIds).map((id) => [id, true])),
+    () => Object.fromEntries(Array.from(selectedIds).map((id) => [id, true])),
     [selectedIds],
   );
 
   const handleRowSelectionChange: OnChangeFn<RowSelectionState> = (updater) => {
-    const next = typeof updater === "function" ? updater(rowSelection) : updater;
-    setSelectedIds(
-      new Set(Object.keys(next).filter((id) => next[id])),
-    );
+    const next =
+      typeof updater === "function" ? updater(rowSelection) : updater;
+    setSelectedIds(new Set(Object.keys(next).filter((id) => next[id])));
   };
 
   const columns: ColumnDef<Project>[] = [
@@ -113,20 +114,11 @@ export function ProjectsDataTable({
       ),
     },
     {
-      accessorKey: "Pinned",
-      header: ({ column }) => <SortableHeader label="Pinned" column={column} />,
-      cell: ({ row }) => (
-        <span className="flex align-middle justify-start pl-2">
-          {row.original.Pinned ? (
-            <Pin className="stroke-red-400 size-4 shrink-0" />
-          ) : null}
-        </span>
-      ),
-    },
-    {
       accessorKey: "WorkflowName",
       id: "Workflow",
-      header: ({ column }) => <SortableHeader label="Workflow" column={column} />,
+      header: ({ column }) => (
+        <SortableHeader label="Workflow" column={column} />
+      ),
       cell: ({ row }) => (
         <WorkflowCell
           workflowId={row.original.Workflow}
@@ -144,7 +136,7 @@ export function ProjectsDataTable({
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-muted-foreground">
+              <span className="block truncate text-muted-foreground">
                 {formatDistanceToNow(date, { addSuffix: true })}
               </span>
             </TooltipTrigger>
@@ -168,7 +160,7 @@ export function ProjectsDataTable({
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-muted-foreground">
+              <span className="block truncate text-muted-foreground">
                 {formatDistanceToNow(date, { addSuffix: true })}
               </span>
             </TooltipTrigger>
@@ -237,6 +229,10 @@ export function ProjectsDataTable({
                           ? NAME_MIN_WIDTH
                           : undefined,
                     }}
+                    className={cn(
+                      MOBILE_HIDDEN_COLUMNS.has(header.column.id) &&
+                        "hidden sm:table-cell",
+                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -279,6 +275,10 @@ export function ProjectsDataTable({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
+                        className={cn(
+                          MOBILE_HIDDEN_COLUMNS.has(cell.column.id) &&
+                            "hidden sm:table-cell",
+                        )}
                         onClick={
                           cell.column.id === "select"
                             ? (e) => e.stopPropagation()
@@ -311,7 +311,7 @@ export function ProjectsDataTable({
       <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
         <div>
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected
+          {table.getFilteredRowModel().rows.length} selected
         </div>
         <div className="flex items-center gap-4">
           <span>

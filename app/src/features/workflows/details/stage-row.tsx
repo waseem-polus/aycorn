@@ -102,12 +102,12 @@ export function StageRow({
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="size-4" />
+        <GripVertical className="size-5 lg:size-4" />
       </button>
 
       <IconPicker
         value={stage.Icon}
-        iconClassName={stageStrokeClass(stage.Color)}
+        iconClassName={cn(stageStrokeClass(stage.Color), "size-5 lg:size-4")}
         onSelect={(name) => name !== stage.Icon && saveStage({ Icon: name })}
       />
 
@@ -130,20 +130,19 @@ export function StageRow({
         />
       </div>
 
-      <div className="flex items-center w-24 shrink-0">
+      <div className="items-center shrink-0 hidden sm:flex sm:w-20">
         <ColorPicker
           value={stage.Color}
           onSelect={(c) => c !== stage.Color && saveStage({ Color: c })}
         />
       </div>
-
-      <div className="w-20 shrink-0">
+      <div className="shrink-0 w-fit sm:w-20">
         {/* TODO: wire up stage-type dropdown with validation */}
         <StageTypeBadge type={stage.Type} />
       </div>
 
       <StageRowMenu
-        isOpen={stage.Type === "open"}
+        isTheOpenStage={stage.Type === "open"}
         onRename={() => setIsEditingName(true)}
         onEditDescription={() => setIsEditingDescription(true)}
         onDelete={() => setDeleteOpen(true)}

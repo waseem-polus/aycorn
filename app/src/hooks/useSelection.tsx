@@ -8,11 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type {
-  DragEndEvent,
-  DragStartEvent,
-  Over,
-} from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent, Over } from "@dnd-kit/core";
 import {
   SelectionArea as ViselectArea,
   type SelectionEvent,
@@ -36,8 +32,11 @@ type SelectionAreaProps = {
 
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 
-const hasModifier = (e: { ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean }) =>
-  !!(e.ctrlKey || e.metaKey || e.shiftKey);
+const hasModifier = (e: {
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+}) => !!(e.ctrlKey || e.metaKey || e.shiftKey);
 
 export const useSelection = ({
   clearOnDrop = true,
@@ -104,29 +103,24 @@ export const useSelection = ({
     [selectedIds, setSelectedIds],
   );
 
-  const handleBeforeStart = useCallback(
-    (e: SelectionEvent): boolean | void => {
-      const target = e.event?.target;
-      const native = e.event;
-      const modifierHeld =
-        !!native && hasModifier(native as unknown as PointerEvent);
-      if (
-        !modifierHeld &&
-        target instanceof Element &&
-        target.closest("[data-task-card], [data-drag-handle]")
-      ) {
-        return false;
-      }
-    },
-    [],
-  );
+  const handleBeforeStart = useCallback((e: SelectionEvent): boolean | void => {
+    const target = e.event?.target;
+    const native = e.event;
+    const modifierHeld =
+      !!native && hasModifier(native as unknown as PointerEvent);
+    if (
+      !modifierHeld &&
+      target instanceof Element &&
+      target.closest("[data-task-card], [data-drag-handle]")
+    ) {
+      return false;
+    }
+  }, []);
 
   const handleStart = useCallback((e: SelectionEvent) => {
     const native = e.event;
     const isAppend =
-      !!native &&
-      "ctrlKey" in native &&
-      (native.ctrlKey || native.metaKey);
+      !!native && "ctrlKey" in native && (native.ctrlKey || native.metaKey);
     if (!isAppend) {
       e.selection.clearSelection();
     }
@@ -203,16 +197,17 @@ export const useSelection = ({
     (
       consumer: (e: DragEndEvent) => void,
       bulkHandler?: (selectedIds: Set<string>, dropTarget: Over | null) => void,
-    ) => (e: DragEndEvent) => {
-      const activeId = String(e.active.id);
-      const current = selectedIdsRef.current;
-      if (current.size > 1 && current.has(activeId)) {
-        bulkHandler?.(new Set(current), e.over);
-        if (clearOnDrop) clearSelection();
-        return;
-      }
-      consumer(e);
-    },
+    ) =>
+      (e: DragEndEvent) => {
+        const activeId = String(e.active.id);
+        const current = selectedIdsRef.current;
+        if (current.size > 1 && current.has(activeId)) {
+          bulkHandler?.(new Set(current), e.over);
+          if (clearOnDrop) clearSelection();
+          return;
+        }
+        consumer(e);
+      },
     [clearOnDrop, clearSelection],
   );
 

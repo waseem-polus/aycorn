@@ -4,7 +4,7 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
-export default defineConfig({
+export default defineConfig(({ command, mode }) => ({
   plugins: [
     tanstackRouter({
       target: "react",
@@ -16,6 +16,13 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
+    {
+      name: "apple-touch-icon",
+      transformIndexHtml() {
+        const isDev = command === "serve" || mode === "development";
+        return [{ tag: "link", attrs: { rel: "apple-touch-icon", href: isDev ? "/apple-touch-icon-dev.png" : "/apple-touch-icon.png" }, injectTo: "head" }];
+      },
+    },
   ],
   resolve: {
     alias: {
@@ -32,4 +39,4 @@ export default defineConfig({
       "/api": `http://localhost:${process.env.AYCORN_PORT ?? 8000}`,
     },
   },
-});
+}));

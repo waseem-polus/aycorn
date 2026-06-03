@@ -37,7 +37,7 @@ export function NavPinnedProjects() {
           pinnedProjects &&
           pinnedProjects.map((project: Project) => (
             <SidebarMenuItem key={project.Name}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild size={isMobile ? "lg" : "default"}>
                 <Link
                   to={"/project/$projectId"}
                   params={{
@@ -86,12 +86,6 @@ export function NavPinnedProjects() {
               </DropdownMenu>
             </SidebarMenuItem>
           ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <EllipsisIcon className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
   );

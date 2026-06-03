@@ -9,6 +9,14 @@ type TaskService struct {
 	TaskRepo *repos.TaskRepo
 }
 
+func (s *TaskService) GetTask(taskId int) (*models.TaskWithProject, error) {
+	task, err := s.TaskRepo.FindOneWithProject(taskId)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
 func (s *TaskService) GetTaskBody(taskId int) (string, error) {
 	taskBody, err := s.TaskRepo.GetTaskBody(taskId)
 	if err != nil {
@@ -18,7 +26,7 @@ func (s *TaskService) GetTaskBody(taskId int) (string, error) {
 	return taskBody, nil
 }
 
-func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.Task, error) {
+func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.ChecklistTask, error) {
 	newTask, err := s.TaskRepo.CreateTask(task)
 	if err != nil {
 		return nil, err
@@ -51,8 +59,10 @@ var bulkTaskUpdatableColumns = map[string]string{
 	"Type":             "type",
 	"Assignee":         "assignee",
 	"Checklist":        "checklist",
-	"TimePlannedStart": "timePlannedStart",
-	"TimePlannedEnd":   "timePlannedEnd",
+	"TimePlannedStart":    "timePlannedStart",
+	"TimePlannedEnd":      "timePlannedEnd",
+	"HasTimePlannedStart": "hasTimePlannedStart",
+	"HasTimePlannedEnd":   "hasTimePlannedEnd",
 }
 
 func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {

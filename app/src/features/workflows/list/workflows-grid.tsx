@@ -9,10 +9,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { WorkflowCard } from "@/features/workflows/list/workflow-card";
 import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
 
@@ -56,8 +53,8 @@ export function WorkflowsGrid({
   const hasResults = filtered.length > 0;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2 items-center">
+    <div className="flex flex-col gap-4 flex-1 min-h-0">
+      <div className="flex gap-2 items-center flex-col md:flex-row">
         <InputGroup>
           <InputGroupInput
             placeholder="Search workflows..."
@@ -72,23 +69,25 @@ export function WorkflowsGrid({
           </InputGroupAddon>
         </InputGroup>
 
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={tab}
-          onValueChange={(value) => {
-            if (value) setTab(value as FilterTab);
-          }}
-        >
-          <ToggleGroupItem value="all">All</ToggleGroupItem>
-          <ToggleGroupItem value="in-use">In Use</ToggleGroupItem>
-          <ToggleGroupItem value="unused">Unused</ToggleGroupItem>
-        </ToggleGroup>
+        <div className="flex gap-2 justify-between w-full md:justify-start md:w-fit">
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={tab}
+            onValueChange={(value) => {
+              if (value) setTab(value as FilterTab);
+            }}
+          >
+            <ToggleGroupItem value="all">All</ToggleGroupItem>
+            <ToggleGroupItem value="in-use">In Use</ToggleGroupItem>
+            <ToggleGroupItem value="unused">Unused</ToggleGroupItem>
+          </ToggleGroup>
 
-        <Button onClick={handleCreate} disabled={createWorkflow.isPending}>
-          <Plus />
-          New Workflow
-        </Button>
+          <Button onClick={handleCreate} disabled={createWorkflow.isPending}>
+            <Plus />
+            New Workflow
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -100,7 +99,7 @@ export function WorkflowsGrid({
           {search ? "No workflows match your search." : "No workflows yet."}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-0 overflow-y-auto content-start p-1">
           {filtered.map((workflow) => (
             <WorkflowCard key={workflow.ID} workflow={workflow} />
           ))}

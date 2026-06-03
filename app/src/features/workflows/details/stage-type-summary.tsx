@@ -24,7 +24,7 @@ export function StageTypeSummary({ stages }: { stages: Stage[] }) {
   }, [stages]);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div className="flex gap-3 overflow-x-auto w-full">
       {STAGE_TYPES.map((type) => (
         <StageTypeSummaryItem
           key={type}
@@ -47,7 +47,7 @@ function StageTypeSummaryItem({
   rule: StageTypeRule;
 }) {
   return (
-    <Card className="flex flex-col gap-1 rounded-lg py-3 px-3 shadow-none items-start">
+    <Card className="flex flex-1 bg-background flex-col gap-1 rounded-lg py-3 px-3 shadow-none items-start">
       <StageTypeBadge type={type} />
       <span
         className={
@@ -58,7 +58,9 @@ function StageTypeSummaryItem({
       >
         {count}
       </span>
-      <span className="text-xs text-muted-foreground">{rule.label}</span>
+      <span className="text-xs text-nowrap text-muted-foreground">
+        {rule.label}
+      </span>
     </Card>
   );
 }

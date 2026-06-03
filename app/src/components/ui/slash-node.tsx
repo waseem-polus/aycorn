@@ -13,13 +13,14 @@ import {
   ListOrdered,
   PilcrowIcon,
   Quote,
+  RadicalIcon,
   Square,
   Table,
 } from "lucide-react";
 import { type TComboboxInputElement, KEYS } from "platejs";
 import { PlateElement } from "platejs/react";
 
-import { insertBlock } from "@/features/editor/transforms";
+import { insertBlock, insertInlineElement } from "@/features/editor/transforms";
 
 import {
   InlineCombobox,
@@ -99,18 +100,18 @@ const groups: Group[] = [
       {
         icon: <Code2 />,
         keywords: ["```"],
-        label: "Code Block⚠️",
+        label: "Code Block",
         value: KEYS.codeBlock,
       },
       {
         icon: <Table />,
-        label: "Table⚠️",
+        label: "Table",
         value: KEYS.table,
       },
       {
         icon: <Quote />,
         keywords: ["citation", "blockquote", "quote", ">"],
-        label: "Blockquote⚠️",
+        label: "Blockquote",
         value: KEYS.blockquote,
       },
       {
@@ -120,6 +121,13 @@ const groups: Group[] = [
         label: "Callout",
         value: KEYS.callout,
       },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        keywords: ["latex", "math", "formula", "equation"],
+        label: "Equation",
+        value: KEYS.equation,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
@@ -127,52 +135,39 @@ const groups: Group[] = [
       },
     })),
   },
-  // {
-  //   group: "Advanced blocks",
-  //   items: [
-  //     {
-  //       icon: <TableOfContentsIcon />,
-  //       keywords: ["toc"],
-  //       label: "Table of contents",
-  //       value: KEYS.toc,
-  //     },
-  //     {
-  //       icon: <Columns3Icon />,
-  //       label: "3 columns",
-  //       value: "action_three_columns",
-  //     },
-  //     {
-  //       focusEditor: false,
-  //       icon: <RadicalIcon />,
-  //       label: "Equation",
-  //       value: KEYS.equation,
-  //     },
-  //     {
-  //       icon: <PenToolIcon />,
-  //       keywords: ["excalidraw"],
-  //       label: "Excalidraw",
-  //       value: KEYS.excalidraw,
-  //     },
-  //     {
-  //       icon: <Code2 />,
-  //       keywords: [
-  //         "code-drawing",
-  //         "diagram",
-  //         "plantuml",
-  //         "graphviz",
-  //         "flowchart",
-  //         "mermaid",
-  //       ],
-  //       label: "Code Drawing",
-  //       value: KEYS.codeDrawing,
-  //     },
-  //   ].map((item) => ({
-  //     ...item,
-  //     onSelect: (editor, value) => {
-  //       insertBlock(editor, value, { upsert: true });
-  //     },
-  //   })),
-  // },
+  {
+    group: "Inline",
+    items: [
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        keywords: ["latex", "math", "formula", "equation"],
+        label: "Inline Equation",
+        value: KEYS.inlineEquation,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertInlineElement(editor, value);
+      },
+    })),
+  },
+  {
+    group: "Advanced blocks",
+    items: [
+      {
+        icon: <ListIcon />,
+        keywords: ["toc", "contents", "outline"],
+        label: "Table of contents",
+        value: KEYS.toc,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value, { upsert: true });
+      },
+    })),
+  },
   // {
   //   group: "Inline",
   //   items: [

@@ -11,7 +11,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { LandPlot, User } from "lucide-react";
+import { GripVertical, LandPlot, User } from "lucide-react";
 import type { ChecklistTask } from "@/types/types";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
@@ -22,20 +22,29 @@ type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 export function KanbanItem({
   task,
   getItemProps,
+  animClass,
 }: {
   task: ChecklistTask;
   getItemProps?: (
     id: string,
     opts?: { listeners?: DragListeners },
   ) => Record<string, unknown>;
+  animClass?: string;
 }) {
   const { setNodeRef, style, listeners, attributes } = useDraggableItem(
     task.ID.toString(),
     { task },
   );
 
+  // Split listeners by sensor: onPointerDown (PointerSensor) stays on the card for
+  // desktop whole-card drag; onTouchStart (TouchSensor) goes to the mobile handle
+  // which has touch-action:none so the browser won't intercept it for scrolling.
+  const { onTouchStart, ...pointerListeners } = (listeners ?? {}) as {
+    onTouchStart?: React.TouchEventHandler;
+  } & DragListeners;
+
   const itemProps = getItemProps?.(task.ID.toString(), {
-    listeners: listeners as DragListeners | undefined,
+    listeners: pointerListeners as DragListeners | undefined,
   });
   const itemClassName = (itemProps?.className as string | undefined) ?? "";
 
@@ -53,31 +62,42 @@ export function KanbanItem({
             {...itemProps}
             data-task-card=""
             className={cn(
-              "overflow-clip",
+              "overflow-clip select-none",
               selectedItemClasses(),
               itemClassName,
+              animClass,
             )}
           >
-            <ItemHeader className="flex justify-between">
-              <TaskPriorityIcon variant={task.Priority} />
-              <Badge variant="outline">
-                <LandPlot className="size-2" />
-                {task.ChecklistName}
-              </Badge>
+            <ItemHeader className="flex justify-between items-center gap-1">
+              <div className="flex flex-1 gap-2 justify-between items-center min-w-0">
+                <TaskPriorityIcon variant={task.Priority} />
+                <TaskTypeBadge variant={task.Type} />
+              </div>
+              <button
+                type="button"
+                data-drag-handle=""
+                aria-label="Drag to reorder"
+                onTouchStart={onTouchStart}
+                style={{ touchAction: "none" }}
+                className="hidden pointer-coarse:flex cursor-grab active:cursor-grabbing text-muted-foreground -mr-1"
+              >
+                <GripVertical className="size-4" />
+              </button>
             </ItemHeader>
             <ItemContent>
-              {task.Name !== "" ? (
-                <ItemTitle>{task.Name}</ItemTitle>
-              ) : (
-                <ItemTitle className="text-muted-foreground">
-                  New Task
-                </ItemTitle>
-              )}
+              <ItemTitle
+                className={task.Name === "" ? "text-muted-foreground" : ""}
+              >
+                {task.Name !== "" ? task.Name : "New Task"}
+              </ItemTitle>
             </ItemContent>
 
             <ItemFooter>
               <span className="w-full flex flex-col gap-1">
-                <TaskTypeBadge variant={task.Type} />
+                <Badge variant="outline">
+                  <LandPlot className="size-2" />
+                  {task.ChecklistName}
+                </Badge>
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
                   className={
@@ -89,7 +109,10 @@ export function KanbanItem({
                 </Badge>
                 <TaskPlannedDates
                   start={task.TimePlannedStart}
-                  end={task.TimePlannedEnd}
+                  end={task.TimePlannedStart}
+                  hasStartTime={task.HasTimePlannedStart}
+                  hasEndTime={false}
+                  excludeYear
                 />
               </span>
             </ItemFooter>

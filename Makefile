@@ -7,22 +7,26 @@ UI_DIST  := $(SRV_DIR)/ui/dist
 # Falls back to "dev" when git isn't available or there are no tags yet.
 VERSION  := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: dev build build-app build-server typecheck install upgrade restart clean
+.PHONY: dev build build-app build-app-dev build-server typecheck install upgrade restart clean
 
-# Development: Vite dev server + Go server (two processes, Ctrl-C kills both)
+# Development: build frontend with dev icon, then start Go server.
 # AYCORN_DB pins the dev DB to server/app.db so it doesn't touch the installed
 # binary's DB under ~/Library/Application Support/aycorn (or the OS equivalent).
-dev:
+dev: build-app-dev
 	@trap 'kill 0' INT; \
-	  cd $(APP_DIR) && npm run dev & \
-	  cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web; \
-	  wait
+    cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web; \
+    wait
 
 # Full release build: React → embed → single Go binary
 build: build-app build-server
 
 build-app:
 	cd $(APP_DIR) && npm run build
+	mkdir -p $(UI_DIST)
+	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
+
+build-app-dev:
+	cd $(APP_DIR) && npx vite build --mode development
 	mkdir -p $(UI_DIST)
 	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
@@ -43,16 +47,16 @@ install: build
 
 # Gracefully stop the running aycorn process (no-op if it isn't running).
 # The server handles SIGTERM cleanly — in-flight requests finish before it exits.
-restart:
+stop:
 	-pkill -TERM -x aycorn
-	@echo "Stopped aycorn (if it was running). Start it again with: aycorn"
+	@echo "Stopped aycorn (if it was running). Run 'aycorn' to start again."
 
 # Rebuild, reinstall, and stop the old process. Run after `git pull`.
 # Run 'aycorn' afterwards to start the new version.
 upgrade:
 	$(MAKE) install
-	-pkill -TERM -x aycorn
-	@echo "Upgraded to $$(aycorn --version). Run 'aycorn' to start."
+	@echo "Upgraded to $$(aycorn --version)"
+	$(MAKE) stop
 
 clean:
 	rm -f $(BINARY)

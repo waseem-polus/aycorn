@@ -10,7 +10,7 @@ import {
   getTaskEndDate,
   getTaskColor,
 } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { EventBullet } from "@/features/calendar/views/monthView";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
@@ -58,7 +58,7 @@ interface IProps extends Omit<
   VariantProps<typeof eventBadgeVariants>,
   "color" | "multiDayPosition"
 > {
-  task: Task;
+  task: ChecklistTask;
   cellDate: Date;
   eventCurrentDay?: number;
   eventTotalDays?: number;

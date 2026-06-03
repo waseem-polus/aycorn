@@ -12,7 +12,7 @@ import {
   getTaskEndDate,
   getTaskColor,
 } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -57,7 +57,7 @@ interface IProps
   extends
     HTMLAttributes<HTMLDivElement>,
     Omit<VariantProps<typeof calendarWeekEventCardVariants>, "color"> {
-  event: Task;
+  event: ChecklistTask;
 }
 
 export function EventBlock({ event, className }: IProps) {

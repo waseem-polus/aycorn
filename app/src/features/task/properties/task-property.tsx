@@ -11,7 +11,10 @@ export function TaskProperty({
 }) {
   return (
     <div className="flex gap-3">
-      <Label htmlFor={htmlFor} className="min-w-1/7 text-muted-foreground">
+      <Label
+        htmlFor={htmlFor}
+        className="min-w-1/5 sm:min-w-1/7 text-muted-foreground"
+      >
         {label}
       </Label>
       {children}

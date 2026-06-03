@@ -5,5 +5,11 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 export function ProjectHeader() {
   const { Project } = useContext(ProjectContext);
 
-  return <RelativeTimeWithTooltip date={Project.TimeModified} label="Modified" />;
+  return (
+    <RelativeTimeWithTooltip
+      className="hidden sm:flex"
+      date={Project.TimeModified}
+      label="Modified"
+    />
+  );
 }

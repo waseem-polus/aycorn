@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 
 export function NewTaskEditorDrawer({
   setTaskDrawerOpen,
@@ -28,10 +28,12 @@ export function NewTaskEditorDrawer({
           Stage:
             task.Stage !== 0
               ? task.Stage
-              : Stages.find((s) => s.Type === "open")?.ID ?? Stages[0]?.ID ?? 0,
+              : (Stages.find((s) => s.Type === "open")?.ID ??
+                Stages[0]?.ID ??
+                0),
         },
         {
-          onSuccess: (newTask: Task) => {
+          onSuccess: (newTask: ChecklistTask) => {
             setTask(newTask);
           },
         },

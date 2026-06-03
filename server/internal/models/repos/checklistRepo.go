@@ -94,6 +94,12 @@ func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
 	return &checklist, nil
 }
 
+func (repo *ChecklistRepo) CreateDefaultChecklist(projectId int) error {
+	query := "INSERT INTO checklist (name, project, isDefault) VALUES ('Default', ?, true);"
+	_, err := repo.DB.Exec(query, projectId)
+	return err
+}
+
 func (repo *ChecklistRepo) CreateChecklist(projectId int) (*models.Checklist, error) {
 	query := "INSERT INTO checklist (name, project, isDefault) VALUES (?, ?, ?) RETURNING id;"
 	res, err := repo.DB.Exec(query,

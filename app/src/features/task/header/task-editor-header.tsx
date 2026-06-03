@@ -1,3 +1,4 @@
+import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip";
 import { Button } from "@/components/ui/button";
 import { DrawerClose, DrawerHeader } from "@/components/ui/drawer";
 import {
@@ -6,35 +7,93 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
+import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import { Ellipsis, Maximize2 } from "lucide-react";
+import {
+  ChevronsRightIcon,
+  ClipboardIcon,
+  CopyCheckIcon,
+  Ellipsis,
+  Maximize2,
+  PinIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useContext } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "../properties/task-type-badge";
 
 export function TaskEditorHeader({
   setOpen = () => {},
+  onCopyAsMarkdown,
+  onCopyAsPlainText,
+  isEditorReady = false,
 }: {
   setOpen: (open: boolean) => void;
+  onCopyAsMarkdown?: () => void;
+  onCopyAsPlainText?: () => void;
+  isEditorReady?: boolean;
 }) {
   const { state: task } = useContext(TaskContext);
-  const { Project } = useContext(ProjectContext);
+  const { Project, Stages } = useContext(ProjectContext);
   const { deleteTask } = useTaskMutation(Project.ID);
+  const navigate = useNavigate();
+
+  const isMobile = useIsMobile();
 
   return (
-    <DrawerHeader className="p-2 border-b">
-      <div className="flex justify-end">
+    <DrawerHeader className="p-2 sm:border-b">
+      <div className="flex justify-between">
         <div className="flex">
+          <DrawerClose asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
+            >
+              <ChevronsRightIcon className={isMobile ? "rotate-90" : ""} />
+            </Button>
+          </DrawerClose>
+
           <Button
             variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground"
+            size="icon-sm"
+            className="text-muted-foreground"
+            onClick={() => {
+              setOpen(false);
+              navigate({
+                to: "/task/$taskId",
+                params: { taskId: String(task.ID) },
+              });
+            }}
           >
             <Maximize2 className="size-3.5" />
           </Button>
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <RelativeTimeWithTooltip
+            date={task.TimeModified}
+            label="Modified"
+            className="hidden sm:flex"
+          />
+          <TaskPriorityIcon variant={task.Priority} />
+          <TaskTypeBadge variant={task.Type} />
+          {Stages.find((s) => s.ID === task.Stage) && (
+            <WorkflowStageChip
+              className="rounded-full"
+              stage={Stages.find((s) => s.ID === task.Stage)!}
+            />
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -47,9 +106,31 @@ export function TaskEditorHeader({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-2">
               <DropdownMenuGroup>
-                <DrawerClose asChild>
-                  <DropdownMenuItem>Close</DropdownMenuItem>
-                </DrawerClose>
+                <DropdownMenuItem>
+                  <PinIcon className="text-muted-foreground" />
+                  Pin
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CopyCheckIcon className="text-muted-foreground" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <ClipboardIcon className="text-muted-foreground" />
+                    Copy as
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      disabled={!isEditorReady}
+                      onClick={onCopyAsMarkdown}
+                    >
+                      Markdown
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onCopyAsPlainText}>
+                      Plain text
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
@@ -68,7 +149,8 @@ export function TaskEditorHeader({
                     }}
                     variant="destructive"
                   >
-                    Delete Task
+                    <Trash2Icon className="text-muted-foreground" />
+                    Delete
                   </DropdownMenuItem>
                 </DrawerClose>
               </DropdownMenuGroup>

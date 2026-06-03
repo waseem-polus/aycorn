@@ -18,12 +18,14 @@ type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 export function KanbanColumn({
   stage,
   getItemProps,
+  lastDrop,
 }: {
   stage: Stage;
   getItemProps?: (
     id: string,
     opts?: { listeners?: DragListeners },
   ) => Record<string, unknown>;
+  lastDrop?: { taskIds: Set<number>; animClass: string } | null;
 }) {
   const { setNodeRef, isOver } = useDropZone(stage.ID);
 
@@ -64,7 +66,12 @@ export function KanbanColumn({
         ref={setNodeRef}
       >
         {filteredTasks.map((task) => (
-          <KanbanItem key={task.ID} task={task} getItemProps={getItemProps} />
+          <KanbanItem
+            key={task.ID}
+            task={task}
+            getItemProps={getItemProps}
+            animClass={lastDrop?.taskIds.has(task.ID) ? lastDrop.animClass : undefined}
+          />
         ))}
       </ItemGroup>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CircleAlert } from "lucide-react";
+import { ArrowLeftRightIcon, CircleAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -109,12 +109,12 @@ export function DeleteStagesDialog({
         </DialogHeader>
 
         {withTasks.length > 0 ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-4 sm:gap-y-2">
+            <p className="hidden sm:inline text-xs font-medium text-muted-foreground">
               Stages being deleted
             </p>
-            <span />
-            <p className="text-xs font-medium text-muted-foreground">
+            <span className="hidden sm:inline" />
+            <p className="hidden sm:inline text-xs font-medium text-muted-foreground">
               Move tasks to
             </p>
 
@@ -123,7 +123,7 @@ export function DeleteStagesDialog({
                 return (
                   <div
                     key={stage.ID}
-                    className="col-span-3 flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
+                    className="col-span-1 sm:col-span-3 flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                   >
                     <span className="flex items-center gap-2">
                       <StageIcon stage={stage} className="shrink-0" />
@@ -139,49 +139,56 @@ export function DeleteStagesDialog({
                 );
               }
 
+              const stageSelector = (
+                <Select
+                  value={mappings[stage.ID]?.toString() ?? ""}
+                  onValueChange={(val) =>
+                    setMappings((prev) => ({
+                      ...prev,
+                      [stage.ID]: Number(val),
+                    }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pick a stage..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {survivingStages.map((dest) => (
+                      <SelectItem key={dest.ID} value={dest.ID.toString()}>
+                        <span className="flex items-center gap-2">
+                          <StageIcon stage={dest} className="shrink-0" />
+                          <span className="truncate">{stageName(dest)}</span>
+                          <StageTypeBadge type={dest.Type} />
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              );
+
               return (
                 <React.Fragment key={stage.ID}>
-                  <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
-                    <span className="flex items-center gap-2">
-                      <StageIcon stage={stage} className="shrink-0" />
-                      <span className="text-sm font-medium truncate">
-                        {stageName(stage)}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-2 rounded-md border border-border px-3 py-2">
+                    <span className="flex justify-between w-full">
+                      <span className="flex items-center gap-2">
+                        <StageIcon stage={stage} className="shrink-0" />
+                        <span className="text-sm font-medium truncate">
+                          {stageName(stage)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {stage.TaskCount} task
+                          {stage.TaskCount !== 1 ? "s" : ""}
+                        </span>
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {stage.TaskCount} task{stage.TaskCount !== 1 ? "s" : ""}
-                      </span>
+                      <StageTypeBadge type={stage.Type} />
                     </span>
-                    <StageTypeBadge type={stage.Type} />
+
+                    <div className="flex sm:hidden">{stageSelector}</div>
                   </div>
 
-                  <span className="text-muted-foreground text-xs text-center">
-                    →
-                  </span>
+                  <ArrowLeftRightIcon className="hidden sm:flex text-muted-foreground size-4" />
 
-                  <Select
-                    value={mappings[stage.ID]?.toString() ?? ""}
-                    onValueChange={(val) =>
-                      setMappings((prev) => ({
-                        ...prev,
-                        [stage.ID]: Number(val),
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Pick a stage..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {survivingStages.map((dest) => (
-                        <SelectItem key={dest.ID} value={dest.ID.toString()}>
-                          <span className="flex items-center gap-2">
-                            <StageIcon stage={dest} className="shrink-0" />
-                            <span className="truncate">{stageName(dest)}</span>
-                            <StageTypeBadge type={dest.Type} />
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="hidden sm:flex">{stageSelector}</div>
                 </React.Fragment>
               );
             })}
@@ -215,7 +222,7 @@ export function DeleteStagesDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-row justify-end">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>

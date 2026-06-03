@@ -1,4 +1,9 @@
-import { MoreHorizontal } from "lucide-react";
+import {
+  MoreHorizontal,
+  RectangleEllipsisIcon,
+  TextCursorInputIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -39,12 +44,17 @@ export function WorkflowCardMenu({
         onClick={(e) => e.stopPropagation()}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={onRename}>
+          <TextCursorInputIcon className="text-muted-foreground" />
+          Rename
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onEditDescription}>
+          <RectangleEllipsisIcon className="text-muted-foreground" />
           Edit description
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={onDelete}>
+          <Trash2Icon />
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>

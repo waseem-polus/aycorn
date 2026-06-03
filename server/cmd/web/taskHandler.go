@@ -8,6 +8,22 @@ import (
 	"github.com/waseem-polus/aycorn/server/internal/models"
 )
 
+func (app *app) getTask(w http.ResponseWriter, r *http.Request) {
+	taskId, err := strconv.Atoi(r.PathValue("taskId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	task, err := app.taskService.GetTask(taskId)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, task)
+}
+
 func (app *app) getTaskBody(w http.ResponseWriter, r *http.Request) {
 	taskId, err := strconv.Atoi(r.PathValue("taskId"))
 	if err != nil {

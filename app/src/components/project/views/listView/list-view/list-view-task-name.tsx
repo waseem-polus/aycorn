@@ -21,11 +21,6 @@ export function ListViewTaskName() {
 
   const isEmpty = task.Name === "";
   const fullName = isEmpty ? "New Task" : task.Name;
-  const MAX_DISPLAY_LENGTH = 80;
-  const displayName =
-    fullName.length > MAX_DISPLAY_LENGTH
-      ? `${fullName.slice(0, MAX_DISPLAY_LENGTH)}...`
-      : fullName;
 
   useFocusAndSelect(editableRef, isEditing);
 
@@ -60,10 +55,10 @@ export function ListViewTaskName() {
   }
 
   return (
-    <ItemTitle className={isEmpty ? "text-muted-foreground" : ""}>
+    <ItemTitle className={`w-full min-w-0${isEmpty ? " text-muted-foreground" : ""}`}>
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
-          <span>{displayName}</span>
+          <span className="truncate">{fullName}</span>
         </HoverCardTrigger>
         <HoverCardContent
           side="top"

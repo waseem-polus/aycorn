@@ -159,7 +159,7 @@ export function StagesBulkActionsToolbar({
           <DropdownMenuContent align="center">
             {openCount > 0 && (
               <>
-                <DropdownMenuLabel className="flex items-start gap-2 text-xs font-normal text-muted-foreground max-w-[240px]">
+                <DropdownMenuLabel className="flex items-start gap-2 text-xs font-normal text-muted-foreground max-w-60">
                   <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-amber-500" />
                   <span>
                     {openCount} open stage{openCount !== 1 ? "s" : ""}{" "}

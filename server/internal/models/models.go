@@ -36,9 +36,11 @@ type Task struct {
 	Body             string
 	TimeCreated      *time.Time
 	TimeModified     *time.Time
-	TimePlannedStart *time.Time
-	TimePlannedEnd   *time.Time
-	TimeCompleted    *time.Time
+	TimePlannedStart   *time.Time
+	TimePlannedEnd     *time.Time
+	HasTimePlannedStart bool
+	HasTimePlannedEnd   bool
+	TimeCompleted      *time.Time
 	Assignee         string
 	Priority         string
 	Type             string
@@ -47,6 +49,11 @@ type Task struct {
 type ChecklistTask struct {
 	Task
 	ChecklistName string
+}
+
+type TaskWithProject struct {
+	ChecklistTask
+	ProjectID int
 }
 
 type Workflow struct {

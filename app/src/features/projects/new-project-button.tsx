@@ -34,7 +34,8 @@ export function NewProjectButton() {
         { workflowId: workflows![0].ID },
         {
           onSuccess,
-          onError: (err) => toast.error(err.message || "Failed to create project."),
+          onError: (err) =>
+            toast.error(err.message || "Failed to create project."),
         },
       );
       return;
@@ -48,7 +49,8 @@ export function NewProjectButton() {
       { workflowId: workflow.ID },
       {
         onSuccess,
-        onError: (err) => toast.error(err.message || "Failed to create project."),
+        onError: (err) =>
+          toast.error(err.message || "Failed to create project."),
       },
     );
   };
@@ -79,7 +81,9 @@ export function NewProjectButton() {
                 >
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate">
-                      {workflow.Name === "" ? "Untitled Workflow" : workflow.Name}
+                      {workflow.Name === ""
+                        ? "Untitled Workflow"
+                        : workflow.Name}
                     </span>
                     {workflow.Description && (
                       <span className="truncate text-xs text-muted-foreground">

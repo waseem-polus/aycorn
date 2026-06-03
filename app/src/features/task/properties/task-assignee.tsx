@@ -62,7 +62,7 @@ export function TaskAssignee({
         id="assignee"
         value={task.Assignee}
         placeholder={placeholder}
-        className="placeholder:text-muted-foreground"
+        className="placeholder:text-muted-foreground text-sm"
         onChange={(e) => {
           setTask({
             ...task,

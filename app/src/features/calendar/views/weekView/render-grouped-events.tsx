@@ -4,11 +4,11 @@ import {
   getTaskStartDate,
   getTaskEndDate,
 } from "@/features/calendar/interfaces";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { EventBlock } from "@/features/calendar/views/weekView/event-block";
 
 interface RenderGroupedEventsProps {
-  groupedEvents: Task[][];
+  groupedEvents: ChecklistTask[][];
   day: Date;
 }
 

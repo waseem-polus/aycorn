@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, PinIcon, WorkflowIcon } from "lucide-react";
 import { EditableHeader } from "@/components/EditableHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,10 @@ export function ProjectNameCell({
 
   if (isEditing) {
     return (
-      <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="min-w-0 w-fit flex flex-col gap-1 sm:flex-row sm:gap-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         <EditableHeader
           ref={editableRef}
           value={project.Name}
@@ -61,6 +64,13 @@ export function ProjectNameCell({
           placeholder="New Project"
           className="text-sm p-0 min-h-0 font-normal"
         />
+        {project.Pinned && (
+          <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 invisible sm:visible" />
+        )}
+        <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
+          <WorkflowIcon className="size-4" />
+          {project.WorkflowName}
+        </div>
       </div>
     );
   }
@@ -69,13 +79,22 @@ export function ProjectNameCell({
     <div className="flex items-center gap-2 min-w-0">
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
-          <span
-            className={`truncate group-hover:underline ${
-              isEmpty ? "text-muted-foreground" : "text-foreground"
-            }`}
-          >
-            {displayName}
-          </span>
+          <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 sm:items-center">
+            <span
+              className={`truncate group-hover:underline flex gap-2 items-center text-sm ${
+                isEmpty ? "text-muted-foreground" : "text-foreground"
+              }`}
+            >
+              {displayName}
+            </span>
+            {project.Pinned && (
+              <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 hidden sm:flex" />
+            )}
+            <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
+              <WorkflowIcon className="size-4" />
+              {project.WorkflowName}
+            </div>
+          </div>
         </HoverCardTrigger>
         <HoverCardContent
           side="top"

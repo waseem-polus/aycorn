@@ -8,9 +8,22 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { MoreHorizontal } from "lucide-react";
 import { SelectionContext, useSelection } from "@/hooks/useSelection";
+import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 
@@ -32,20 +45,31 @@ export function PageContent({
 }) {
   const selection = useSelection();
   const { SelectionArea } = selection;
+  const isMobile = useIsMobile();
+
+  const inner = (
+    <div
+      className={cn(
+        "flex flex-col gap-4 p-3 sm:p-6 md:gap-6 h-full w-full overflow-y-auto",
+        fullWidth ? "" : "max-w-7xl",
+      )}
+    >
+      {children}
+    </div>
+  );
 
   return (
     <SelectionContext.Provider value={selection}>
       <div id="wasm" className="flex flex-1 flex-col grow overflow-hidden">
-        <SelectionArea className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
-          <div
-            className={cn(
-              "flex flex-col gap-4 p-6 md:gap-6 h-full w-full overflow-hidden",
-              fullWidth ? "" : "max-w-7xl",
-            )}
-          >
-            {children}
+        {isMobile ? (
+          <div className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
+            {inner}
           </div>
-        </SelectionArea>
+        ) : (
+          <SelectionArea className="@container/main flex flex-1 flex-col gap-2 items-center overflow-hidden">
+            {inner}
+          </SelectionArea>
+        )}
       </div>
     </SelectionContext.Provider>
   );
@@ -79,6 +103,13 @@ export function PageHeader({
   breadcrumb: Crumb[];
   children?: React.ReactNode;
 }) {
+  const isMobile = useIsMobile();
+  const collapseMiddle = isMobile && breadcrumb.length > 1;
+  const collapsedCrumbs = collapseMiddle ? breadcrumb.slice(0, -1) : [];
+  const visibleCrumbs = collapseMiddle
+    ? [breadcrumb[breadcrumb.length - 1]]
+    : breadcrumb;
+
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -87,21 +118,52 @@ export function PageHeader({
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <Breadcrumb>
-          <BreadcrumbList>
+        <Breadcrumb className="flex-1 min-w-0 overflow-hidden w-fit">
+          <BreadcrumbList className="flex-nowrap w-full">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Home</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            {breadcrumb.map((crumb, index) => {
-              const item =
-                typeof crumb === "string" ? { label: crumb } : crumb;
-              const isLast = index === breadcrumb.length - 1;
+            {collapseMiddle && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex size-9 items-center justify-center">
+                      <MoreHorizontal className="size-4" />
+                      <span className="sr-only">More</span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {collapsedCrumbs.map((crumb) => {
+                        const item =
+                          typeof crumb === "string" ? { label: crumb } : crumb;
+                        return (
+                          <DropdownMenuItem key={item.label} asChild>
+                            {item.to ? (
+                              <Link to={item.to as string} params={item.params}>
+                                {item.label}
+                              </Link>
+                            ) : (
+                              <span>{item.label}</span>
+                            )}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbItem>
+              </>
+            )}
+            {visibleCrumbs.map((crumb, index) => {
+              const item = typeof crumb === "string" ? { label: crumb } : crumb;
+              const isLast = index === visibleCrumbs.length - 1;
               return (
                 <React.Fragment key={item.label}>
                   <BreadcrumbSeparator />
-                  <BreadcrumbItem>
+                  <BreadcrumbItem
+                    className={isLast ? "min-w-0" : "min-w-0 w-fit text-nowrap"}
+                  >
                     {!isLast && item.to ? (
                       <BreadcrumbLink asChild>
                         <Link to={item.to as string} params={item.params}>
@@ -109,7 +171,16 @@ export function PageHeader({
                         </Link>
                       </BreadcrumbLink>
                     ) : (
-                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <BreadcrumbPage className="block truncate">
+                            {item.label}
+                          </BreadcrumbPage>
+                        </TooltipTrigger>
+                        {item.label.length > 0 && (
+                          <TooltipContent>{item.label}</TooltipContent>
+                        )}
+                      </Tooltip>
                     )}
                   </BreadcrumbItem>
                 </React.Fragment>

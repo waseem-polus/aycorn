@@ -117,6 +117,8 @@ CREATE TABLE task (
     timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timePlannedStart TIMESTAMP DEFAULT NULL,
     timePlannedEnd   TIMESTAMP DEFAULT NULL,
+    hasTimePlannedStart BOOLEAN NOT NULL DEFAULT 0,
+    hasTimePlannedEnd   BOOLEAN NOT NULL DEFAULT 0,
     timeCompleted TIMESTAMP DEFAULT NULL,
     assignee VARCHAR,
     priority TEXT CHECK(priority IN ('Urgent','High','Medium','Low')),

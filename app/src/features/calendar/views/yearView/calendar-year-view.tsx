@@ -5,13 +5,13 @@ import { staggerContainer, transition } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { EventListDialog } from "@/features/calendar/dialogs/events-list-dialog";
 import { getCalendarCells } from "@/features/calendar/helpers";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 import { getTaskStartDate, getTaskColor } from "@/features/calendar/interfaces";
 import { EventBullet } from "@/features/calendar/views/monthView";
 
 interface IProps {
-  singleDayEvents: Task[];
-  multiDayEvents: Task[];
+  singleDayEvents: ChecklistTask[];
+  multiDayEvents: ChecklistTask[];
 }
 
 const MONTHS = [

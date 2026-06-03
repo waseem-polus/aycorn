@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import type { Project } from "@/types/types";
 import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
 import { useProjectWorkflowMutation } from "@/features/settings/project-workflow/queries/useProjectWorkflowMutation";
+import { Alert } from "@/components/ui/alert";
 
 export function ProjectWorkflowFooter({ project }: { project: Project }) {
   const navigate = useNavigate();
@@ -26,22 +27,24 @@ export function ProjectWorkflowFooter({ project }: { project: Project }) {
   };
 
   return (
-    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+    <Alert className="bg-background mt-auto text-sm text-muted-foreground">
       <Info className="size-4 shrink-0" />
-      Need a different shape?{" "}
-      <Link to="/workflows" className="text-primary hover:underline">
-        Browse all workflows
-      </Link>{" "}
-      or{" "}
-      <button
-        type="button"
-        onClick={handleCreate}
-        disabled={busy}
-        className="text-primary hover:underline disabled:opacity-50"
-      >
-        create a new one
-      </button>
-      .
-    </p>
+      <span>
+        Need a different shape?{" "}
+        <Link to="/workflows" className="text-primary hover:underline">
+          Browse all workflows
+        </Link>{" "}
+        or{" "}
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={busy}
+          className="text-primary hover:underline disabled:opacity-50"
+        >
+          create a new one
+        </button>
+        .
+      </span>
+    </Alert>
   );
 }

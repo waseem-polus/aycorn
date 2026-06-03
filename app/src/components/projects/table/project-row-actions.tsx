@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import {
+  MoreHorizontal,
+  PinIcon,
+  PinOffIcon,
+  SettingsIcon,
+  TextCursorInputIcon,
+  Trash2Icon,
+  WorkflowIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,7 +35,13 @@ export function ProjectRowActions({
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
-    <div onClick={(e) => e.stopPropagation()}>
+    <div
+      className="flex gap-1 items-center justify-end"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {project.Pinned && (
+        <PinIcon className="stroke-red-400 size-4 sm:size-4 shrink-0 sm:hidden" />
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm">
@@ -35,14 +49,25 @@ export function ProjectRowActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+          <DropdownMenuItem onClick={onRename}>
+            <TextCursorInputIcon className="text-muted-foreground" />
+            Rename
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
               updateProject.mutate({ ...project, Pinned: !project.Pinned })
             }
           >
+            {project.Pinned ? (
+              <PinOffIcon className="text-muted-foreground" />
+            ) : (
+              <PinIcon className="text-muted-foreground" />
+            )}
             {project.Pinned ? "Unpin" : "Pin"}
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem
             onClick={() =>
               navigate({
@@ -51,13 +76,28 @@ export function ProjectRowActions({
               })
             }
           >
+            <SettingsIcon className="text-muted-foreground" />
             Settings
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              navigate({
+                to: "/workflow/$workflowId",
+                params: { workflowId: project.Workflow.toString() },
+              })
+            }
+          >
+            <WorkflowIcon className="text-muted-foreground" />
+            Workflow
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
+
           <DropdownMenuItem
             variant="destructive"
             onClick={() => setDeleteOpen(true)}
           >
+            <Trash2Icon className="text-muted-foreground" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

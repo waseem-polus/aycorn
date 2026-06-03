@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { CircleAlert } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ArrowLeftRightIcon, CircleAlert } from "lucide-react";
 import { toast } from "sonner";
 import type { Stage } from "@/types/types";
 import {
@@ -46,7 +46,10 @@ export function SwitchWorkflowDialog({
   });
   const { switchWorkflow } = useProjectWorkflowMutation(projectId);
 
-  const targetStages = targetWorkflow?.Stages ?? [];
+  const targetStages = useMemo(
+    () => targetWorkflow?.Stages ?? [],
+    [targetWorkflow?.Stages],
+  );
 
   const withTasks = fromStages.filter((s) => s.TaskCount > 0);
   const withoutTasks = fromStages.filter((s) => s.TaskCount === 0);
@@ -102,14 +105,14 @@ export function SwitchWorkflowDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-2xl"
+        className="box-border flex-1 sm:max-w-2xl"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-start sm:text-center">
             {currentWorkflowName} → {target.Name}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-start sm:text-center">
             Route the{" "}
             <span className="font-bold">
               {totalTaskCount} task
@@ -120,12 +123,12 @@ export function SwitchWorkflowDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
+        <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-4 sm:gap-y-2">
+          <p className="hidden sm:inline text-xs font-medium text-muted-foreground">
             From · {currentWorkflowName}
           </p>
-          <span />
-          <p className="text-xs font-medium text-muted-foreground">
+          <span className="hidden sm:inline" />
+          <p className="hidden sm:inline text-xs font-medium text-muted-foreground">
             To · {target.Name}
           </p>
 
@@ -134,7 +137,7 @@ export function SwitchWorkflowDialog({
               return (
                 <div
                   key={stage.ID}
-                  className="col-span-3 flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
+                  className="col-span-1 sm:col-span-3 flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                 >
                   <span className="flex items-center gap-2">
                     <StageIcon stage={stage} className="shrink-0" />
@@ -150,49 +153,56 @@ export function SwitchWorkflowDialog({
               );
             }
 
+            const stageSelector = (
+              <Select
+                value={mappings[stage.ID]?.toString() ?? ""}
+                onValueChange={(val) =>
+                  setMappings((prev) => ({
+                    ...prev,
+                    [stage.ID]: Number(val),
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a destination stage..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {targetStages.map((dest) => (
+                    <SelectItem key={dest.ID} value={dest.ID.toString()}>
+                      <span className="flex items-center gap-2">
+                        <StageIcon stage={dest} className="shrink-0" />
+                        <span className="truncate">{stageName(dest)}</span>
+                        <StageTypeBadge type={dest.Type} />
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+
             return (
               <React.Fragment key={stage.ID}>
-                <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
-                  <span className="flex items-center gap-2">
-                    <StageIcon stage={stage} className="shrink-0" />
-                    <span className="text-sm font-medium truncate">
-                      {stageName(stage)}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-2 rounded-md border border-border px-3 py-2">
+                  <span className="flex justify-between">
+                    <span className="flex items-center gap-2">
+                      <StageIcon stage={stage} className="shrink-0" />
+                      <span className="text-sm font-medium truncate">
+                        {stageName(stage)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {stage.TaskCount} task{stage.TaskCount !== 1 ? "s" : ""}
+                      </span>
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {stage.TaskCount} task{stage.TaskCount !== 1 ? "s" : ""}
-                    </span>
+
+                    <StageTypeBadge type={stage.Type} />
                   </span>
-                  <StageTypeBadge type={stage.Type} />
+
+                  <div className="flex sm:hidden">{stageSelector}</div>
                 </div>
 
-                <span className="text-muted-foreground text-xs text-center">
-                  →
-                </span>
+                <ArrowLeftRightIcon className="hidden sm:flex text-muted-foreground size-4" />
 
-                <Select
-                  value={mappings[stage.ID]?.toString() ?? ""}
-                  onValueChange={(val) =>
-                    setMappings((prev) => ({
-                      ...prev,
-                      [stage.ID]: Number(val),
-                    }))
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a destination stage..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {targetStages.map((dest) => (
-                      <SelectItem key={dest.ID} value={dest.ID.toString()}>
-                        <span className="flex items-center gap-2">
-                          <StageIcon stage={dest} className="shrink-0" />
-                          <span className="truncate">{stageName(dest)}</span>
-                          <StageTypeBadge type={dest.Type} />
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="hidden sm:flex">{stageSelector}</div>
               </React.Fragment>
             );
           })}
@@ -203,7 +213,7 @@ export function SwitchWorkflowDialog({
           <span>You can map several stages to the same destination.</span>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-row justify-end">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>

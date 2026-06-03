@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 @plugin "tailwind-scrollbar-hide";
@@ -82,6 +83,11 @@
   --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
   --sidebar-border: oklch(0.925 0.005 214.3);
   --sidebar-ring: oklch(0.723 0.014 214.4);
+  --brand: oklch(0.508 0.118 165.612);
+  --highlight: oklch(0.96 0.15 100);
+  --success: oklch(0.596 0.145 163.225);
+
+  --header-height: 48px;
 }
 
 .dark {
@@ -116,6 +122,9 @@
   --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.56 0.021 213.5);
+  --brand: oklch(0.696 0.17 162.48);
+  --highlight: oklch(0.9 0.13 100);
+  --success: oklch(0.696 0.17 162.48);
 }
 
 @layer base {
@@ -124,8 +133,61 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Geist", sans-serif;
+  }
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: "Geist Mono", monospace;
   }
 }
+
+/* Syntax highlighting tokens — light mode */
+:root {
+  --hljs-keyword: oklch(0.38 0.18 264);
+  --hljs-string: oklch(0.42 0.14 25);
+  --hljs-comment: oklch(0.58 0.02 220);
+  --hljs-number: oklch(0.44 0.16 210);
+  --hljs-title: oklch(0.44 0.18 290);
+  --hljs-built_in: oklch(0.44 0.16 210);
+  --hljs-attr: oklch(0.44 0.16 210);
+  --hljs-meta: oklch(0.50 0.12 40);
+  --hljs-type: oklch(0.48 0.14 100);
+}
+
+.dark {
+  --hljs-keyword: oklch(0.72 0.16 270);
+  --hljs-string: oklch(0.72 0.14 140);
+  --hljs-comment: oklch(0.55 0.02 220);
+  --hljs-number: oklch(0.72 0.14 60);
+  --hljs-title: oklch(0.72 0.14 300);
+  --hljs-built_in: oklch(0.70 0.14 200);
+  --hljs-attr: oklch(0.70 0.14 200);
+  --hljs-meta: oklch(0.68 0.12 60);
+  --hljs-type: oklch(0.72 0.12 80);
+}
+
+.hljs-keyword,
+.hljs-operator,
+.hljs-selector-tag { color: var(--hljs-keyword); }
+.hljs-string,
+.hljs-template-string,
+.hljs-template-tag,
+.hljs-regexp { color: var(--hljs-string); }
+.hljs-comment,
+.hljs-doctag { color: var(--hljs-comment); font-style: italic; }
+.hljs-number { color: var(--hljs-number); }
+.hljs-title,
+.hljs-title\.class_,
+.hljs-title\.function_ { color: var(--hljs-title); }
+.hljs-built_in { color: var(--hljs-built_in); }
+.hljs-literal { color: var(--hljs-keyword); }
+.hljs-type { color: var(--hljs-type); }
+.hljs-attr,
+.hljs-variable,
+.hljs-selector-attr { color: var(--hljs-attr); }
+.hljs-meta { color: var(--hljs-meta); }
 
 @layer components {
   .ce-placeholder:empty:before {

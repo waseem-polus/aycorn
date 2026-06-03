@@ -267,6 +267,7 @@ InlineComboboxInput.displayName = 'InlineComboboxInput';
 
 const InlineComboboxContent: typeof ComboboxPopover = ({
   className,
+  children,
   ...props
 }) => {
   // Portal prevents CSS from leaking into popover
@@ -295,12 +296,17 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
     <Portal>
       <ComboboxPopover
         className={cn(
-          'z-500 max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
+          'z-500 w-[300px] rounded-md bg-popover shadow-md',
           className
         )}
+        onMouseDown={(e) => e.preventDefault()}
         onKeyDownCapture={handleKeyDown}
         {...props}
-      />
+      >
+        <div className="max-h-[288px] overflow-y-auto touch-pan-y overscroll-contain">
+          {children}
+        </div>
+      </ComboboxPopover>
     </Portal>
   );
 };

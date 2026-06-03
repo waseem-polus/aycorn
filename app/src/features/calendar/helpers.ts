@@ -27,9 +27,12 @@ import {
 } from "date-fns";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import type { ICalendarCell } from "@/features/calendar/interfaces";
-import { getTaskStartDate, getTaskEndDate } from "@/features/calendar/interfaces";
+import {
+  getTaskStartDate,
+  getTaskEndDate,
+} from "@/features/calendar/interfaces";
 import type { TCalendarView, TEventColor } from "@/features/calendar/types";
-import type { Task } from "@/types/types";
+import type { ChecklistTask } from "@/types/types";
 
 const FORMAT_STRING = "MMM d, yyyy";
 
@@ -80,7 +83,7 @@ export function navigateDate(
 }
 
 export function getEventsCount(
-  events: Task[],
+  events: ChecklistTask[],
   date: Date,
   view: TCalendarView,
 ): number {
@@ -93,15 +96,18 @@ export function getEventsCount(
   };
 
   const compareFn = compareFns[view];
-  return events.filter((event) => compareFn(parseISO(getTaskStartDate(event)), date))
-    .length;
+  return events.filter((event) =>
+    compareFn(parseISO(getTaskStartDate(event)), date),
+  ).length;
 }
 
-export function groupEvents(dayEvents: Task[]): Task[][] {
+export function groupEvents(dayEvents: ChecklistTask[]): ChecklistTask[][] {
   const sortedEvents = dayEvents.sort(
-    (a, b) => parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime(),
+    (a, b) =>
+      parseISO(getTaskStartDate(a)).getTime() -
+      parseISO(getTaskStartDate(b)).getTime(),
   );
-  const groups: Task[][] = [];
+  const groups: ChecklistTask[][] = [];
 
   for (const event of sortedEvents) {
     const eventStart = parseISO(getTaskStartDate(event));
@@ -125,7 +131,7 @@ export function groupEvents(dayEvents: Task[]): Task[][] {
 }
 
 export function getEventBlockStyle(
-  event: Task,
+  event: ChecklistTask,
   day: Date,
   groupIndex: number,
   groupSize: number,
@@ -176,8 +182,8 @@ export function getCalendarCells(selectedDate: Date): ICalendarCell[] {
 }
 
 export function calculateMonthEventPositions(
-  multiDayEvents: Task[],
-  singleDayEvents: Task[],
+  multiDayEvents: ChecklistTask[],
+  singleDayEvents: ChecklistTask[],
   selectedDate: Date,
 ): Record<string, number> {
   const monthStart = startOfMonth(selectedDate);
@@ -202,12 +208,14 @@ export function calculateMonthEventPositions(
       );
       return (
         bDuration - aDuration ||
-        parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime()
+        parseISO(getTaskStartDate(a)).getTime() -
+          parseISO(getTaskStartDate(b)).getTime()
       );
     }),
     ...singleDayEvents.sort(
       (a, b) =>
-        parseISO(getTaskStartDate(a)).getTime() - parseISO(getTaskStartDate(b)).getTime(),
+        parseISO(getTaskStartDate(a)).getTime() -
+        parseISO(getTaskStartDate(b)).getTime(),
     ),
   ];
 
@@ -247,7 +255,7 @@ export function calculateMonthEventPositions(
 
 export function getMonthCellEvents(
   date: Date,
-  events: Task[],
+  events: ChecklistTask[],
   eventPositions: Record<string, number>,
 ) {
   const dayStart = startOfDay(date);
@@ -291,14 +299,16 @@ export const getFirstLetters = (str: string): string => {
 };
 
 export const getEventsForDay = (
-  events: Task[],
+  events: ChecklistTask[],
   date: Date,
   isWeek = false,
-): (Task & { point?: "start" | "end" | "none" })[] => {
+): (ChecklistTask & { point?: "start" | "end" | "none" })[] => {
   const targetDate = startOfDay(date);
   return events
     .filter((event) => {
-      const startOfDayForEventStart = startOfDay(parseISO(getTaskStartDate(event)));
+      const startOfDayForEventStart = startOfDay(
+        parseISO(getTaskStartDate(event)),
+      );
       const startOfDayForEventEnd = startOfDay(parseISO(getTaskEndDate(event)));
       if (isWeek) {
         return (
@@ -334,7 +344,10 @@ export const getWeekDates = (date: Date): Date[] => {
   return Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 };
 
-export const getEventsForWeek = (events: Task[], date: Date): Task[] => {
+export const getEventsForWeek = (
+  events: ChecklistTask[],
+  date: Date,
+): ChecklistTask[] => {
   const weekDates = getWeekDates(date);
   const startOfWeekDate = weekDates[0];
   const endOfWeekDate = weekDates[6];
@@ -351,7 +364,10 @@ export const getEventsForWeek = (events: Task[], date: Date): Task[] => {
   });
 };
 
-export const getEventsForMonth = (events: Task[], date: Date): Task[] => {
+export const getEventsForMonth = (
+  events: ChecklistTask[],
+  date: Date,
+): ChecklistTask[] => {
   const startOfMonthDate = startOfMonth(date);
   const endOfMonthDate = endOfMonth(date);
 
@@ -367,7 +383,10 @@ export const getEventsForMonth = (events: Task[], date: Date): Task[] => {
   });
 };
 
-export const getEventsForYear = (events: Task[], date: Date): Task[] => {
+export const getEventsForYear = (
+  events: ChecklistTask[],
+  date: Date,
+): ChecklistTask[] => {
   if (!events || !Array.isArray(events) || !isValid(date)) return [];
 
   const startOfYearDate = startOfYear(date);
@@ -413,7 +432,7 @@ export const getBgColor = (color: string): string => {
   return colorClasses[color as TEventColor] || "";
 };
 
-export const useGetEventsByMode = (events: Task[]) => {
+export const useGetEventsByMode = (events: ChecklistTask[]) => {
   const { view, selectedDate } = useCalendar();
 
   switch (view) {

@@ -1,5 +1,5 @@
 import { ListView } from "@/components/project/views/listView/list-view";
-import { ProjectContentHeader } from "@/components/project/project-content-header";
+import { ProjectContentHeader } from "@/components/project/project-details-content-header";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
@@ -8,7 +8,6 @@ import { KanbanView } from "./views/kanbanView/kanban-view";
 import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
-import { CALENDAR_ITEMS_MOCK, USERS_MOCK } from "@/features/calendar/mocks";
 import { WeekView } from "./views/calendarViews/week-view";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
@@ -69,19 +68,15 @@ export function ProjectDetails({
       <ProjectContentHeader />
 
       <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
-        <CalendarProvider
-          events={CALENDAR_ITEMS_MOCK}
-          users={USERS_MOCK}
-          view="month"
-        >
+        <CalendarProvider events={[]} users={[]} view="month">
           <DndProvider>
             <Tabs value={view} onValueChange={setView} className="h-full">
               <TabsList>
-                <TabsTrigger value="table">
+                <TabsTrigger value="list">
                   <Rows3Icon />
                   List
                 </TabsTrigger>
-                <TabsTrigger value="khanban">
+                <TabsTrigger value="kanban">
                   <LayoutDashboardIcon />
                   Kanban
                 </TabsTrigger>
@@ -96,13 +91,13 @@ export function ProjectDetails({
               </TabsList>
 
               <TabsContent
-                value="table"
+                value="list"
                 className="h-full overflow-visible min-h-0"
               >
                 <ListView setTaskDrawerOpen={setNewTaskOpen} />
               </TabsContent>
               <TabsContent
-                value="khanban"
+                value="kanban"
                 className="h-full overflow-visible min-h-0"
               >
                 <KanbanView setTaskDrawerOpen={setNewTaskOpen} />

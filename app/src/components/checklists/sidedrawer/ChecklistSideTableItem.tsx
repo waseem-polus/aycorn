@@ -2,11 +2,10 @@ import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Goal, Pencil, Trash2 } from "lucide-react";
+import { Ellipsis, Goal, Pencil } from "lucide-react";
 import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -19,32 +18,49 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EditableHeader } from "@/components/EditableHeader";
 import type { ChecklistDetails } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 
 export function ChecklistSideTableItem({
   checklist,
+  autoFocus = false,
+  onFocusConsumed,
 }: {
   checklist: ChecklistDetails;
+  autoFocus?: boolean;
+  onFocusConsumed?: () => void;
 }) {
   const { Project } = useContext(ProjectContext);
   const { update, deleteChecklist } = useChecklistMutation(Project.ID);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(autoFocus);
   const editableRef = useRef<HTMLHeadingElement>(null);
 
   const displayName =
-    checklist.Name === "" ? "New Checklist" : checklist.Name;
+    checklist.Name === "" ? "Untitled Checklist" : checklist.Name;
   const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
     "line-through font-normal": checklist.Status === "done",
+    "font-normal text-foreground-muted": checklist.Name === "",
   });
 
   useFocusAndSelect(editableRef, isEditing);
+
+  useEffect(() => {
+    if (autoFocus) onFocusConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = (newName: string) => {
     setIsEditing(false);
@@ -88,7 +104,7 @@ export function ChecklistSideTableItem({
                   ref={editableRef}
                   value={checklist.Name}
                   setValue={handleSave}
-                  placeholder="New Checklist"
+                  placeholder="Untitled Checklist"
                   className={titleClassName}
                 />
               ) : (
@@ -119,22 +135,46 @@ export function ChecklistSideTableItem({
             </ItemTitle>
           </span>
 
-          <ItemDescription className="pt-2">
+          <div data-slot="item-description" className="pt-2">
             <Progress
               value={(checklist.DoneCount / checklist.TotalCount) * 100}
-              className="w-2xs h-1.5"
+              className="w-full h-1.5"
             />
-          </ItemDescription>
+          </div>
         </ItemContent>
         <ItemActions className="flex items-center">
-          <Button
-            onClick={() => deleteChecklist.mutate(checklist.ID)}
-            size="icon-sm"
-            variant="ghost"
-            className="invisible group-hover:visible hover:cursor-pointer"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                className="sm:invisible sm:group-hover:visible data-[state=open]:visible hover:cursor-pointer"
+              >
+                <Ellipsis className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleStartEdit}>
+                Rename
+              </DropdownMenuItem>
+              {!checklist.IsDefault && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    update.mutate({ ...checklist, IsDefault: true })
+                  }
+                >
+                  Make default
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => deleteChecklist.mutate(checklist.ID)}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ItemActions>
       </div>
     </Item>
