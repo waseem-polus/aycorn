@@ -155,7 +155,7 @@ export function DateRangePicker({
       : null;
 
     return (
-      <span className="font-normal text-foreground">
+      <span className="font-normal text-foreground truncate min-w-0">
         {fromLabel}
         {toLabel && ` → ${toLabel}`}
       </span>

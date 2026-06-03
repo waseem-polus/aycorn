@@ -64,7 +64,7 @@ export function SelectTaskType({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="flex-1 justify-between font-normal"
+          className="w-full justify-between font-normal"
         >
           <span className="flex items-center gap-2 min-w-0">
             {current?.ID ? (
