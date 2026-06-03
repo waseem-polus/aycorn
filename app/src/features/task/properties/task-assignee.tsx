@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/input-group";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import type { Task } from "@/types/types";
-import { User } from "lucide-react";
+import { User, X } from "lucide-react";
 import { useContext, useState } from "react";
 
 type Props = {
@@ -49,6 +49,21 @@ export function TaskAssignee({
             }
           }}
         />
+        {localValue && (
+          <InputGroupAddon align="inline-end">
+            <span
+              role="button"
+              aria-label="Clear assignee"
+              className="rounded-full p-0.5 hover:bg-muted-foreground/20 cursor-pointer"
+              onClick={() => {
+                setLocalValue("");
+                onValueChange("");
+              }}
+            >
+              <X className="size-3.5" />
+            </span>
+          </InputGroupAddon>
+        )}
       </InputGroup>
     );
   }
@@ -76,6 +91,22 @@ export function TaskAssignee({
           })
         }
       />
+      {task.Assignee && (
+        <InputGroupAddon align="inline-end">
+          <span
+            role="button"
+            aria-label="Clear assignee"
+            className="rounded-full p-0.5 hover:bg-muted-foreground/20 cursor-pointer"
+            onClick={() => {
+              const updated = { ...task, Assignee: "" };
+              setTask(updated);
+              onChange(updated);
+            }}
+          >
+            <X className="size-3.5" />
+          </span>
+        </InputGroupAddon>
+      )}
     </InputGroup>
   );
 }

@@ -174,7 +174,7 @@ export function DateRangePicker({
             <span
               role="button"
               aria-label="Clear date range"
-              className="ml-auto rounded-full p-0.5 hover:bg-muted-foreground/20"
+              className="ml-auto rounded-full p-0.5 hover:bg-muted-foreground/20 text-muted-foreground"
               onClick={handleClear}
             >
               <X className="size-3.5" />
