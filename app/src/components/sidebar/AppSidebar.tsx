@@ -19,6 +19,7 @@ import {
   TagsIcon,
   WorkflowIcon,
 } from "lucide-react";
+import { Badge } from "../ui/badge";
 
 const data = {
   navMain: [
@@ -36,11 +37,13 @@ const data = {
       title: "Task Types",
       url: "/task-types",
       icon: TagsIcon,
+      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
     {
       title: "Upcoming",
       url: "/upcoming",
       icon: CalendarClockIcon,
+      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
     {
       title: "Usage",
