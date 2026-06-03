@@ -36,15 +36,28 @@ func (repo *TaskTypeRepo) All() ([]models.TaskType, error) {
 	return types, rows.Err()
 }
 
-func (repo *TaskTypeRepo) AllWithCounts() ([]models.TaskTypeGlobal, error) {
+func (repo *TaskTypeRepo) AllWithCounts(filter string) ([]models.TaskTypeGlobal, error) {
 	query := `
 		SELECT
 			` + taskTypeColumns + `,
 			(SELECT COUNT(DISTINCT ptt.project) FROM project_task_type ptt WHERE ptt.task_type = tt.id) AS projectCount,
 			(SELECT COUNT(*) FROM task t WHERE t.type = tt.id) AS taskCount
 		FROM task_type tt
-		ORDER BY tt.isDefault DESC, tt.id ASC;
 	`
+	switch filter {
+	case "in-use":
+		query += `
+		WHERE (EXISTS (SELECT 1 FROM project_task_type ptt WHERE ptt.task_type = tt.id)
+		    OR EXISTS (SELECT 1 FROM task t WHERE t.type = tt.id))
+		`
+	case "unused":
+		query += `
+		WHERE NOT EXISTS (SELECT 1 FROM project_task_type ptt WHERE ptt.task_type = tt.id)
+		  AND NOT EXISTS (SELECT 1 FROM task t WHERE t.type = tt.id)
+		`
+	}
+	query += "ORDER BY tt.isDefault DESC, tt.id ASC;"
+
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err

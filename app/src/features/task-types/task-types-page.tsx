@@ -28,7 +28,10 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
+import {
+  useTaskTypesQuery,
+  type TaskTypeUsageFilter,
+} from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import { useTaskTypeCategoryMutation } from "@/features/task-types/queries/useTaskTypeCategoryMutation";
@@ -38,6 +41,7 @@ import { TaskTypesBulkActionsToolbar } from "@/features/task-types/task-types-bu
 import { useSharedSelection } from "@/hooks/useSelection";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const successDropAnimation: DropAnimation = {
   duration: 200,
@@ -91,11 +95,12 @@ function DraggableTaskTypeCard({ type }: { type: TaskTypeGlobal }) {
 
 export function TaskTypesPage() {
   const [search, setSearch] = useState("");
-  const { data: types = [], isFetching: typesFetching } = useTaskTypesQuery();
+  const [usageFilter, setUsageFilter] = useState<TaskTypeUsageFilter>("all");
+  const { data: types = [], isFetching: typesFetching } =
+    useTaskTypesQuery(usageFilter);
   const { data: categories = [], isFetching: categoriesFetching } =
     useTaskTypeCategoriesQuery();
-  const { createTaskType, updateTaskType, bulkUpdateTaskTypes } =
-    useTaskTypeMutation();
+  const { updateTaskType, bulkUpdateTaskTypes } = useTaskTypeMutation();
   const { createCategory, reorderCategories } = useTaskTypeCategoryMutation();
   const { wrapDragStart, wrapDragEnd } = useSharedSelection();
 
@@ -281,13 +286,6 @@ export function TaskTypesPage() {
 
   const activeDragType = types.find((t) => activeDragId === `tt-${t.ID}`);
 
-  const handleCreate = () => {
-    createTaskType.mutate(
-      {},
-      { onError: () => toast.error("Failed to create type.") },
-    );
-  };
-
   const handleCreateCategory = () => {
     createCategory.mutate(undefined, {
       onError: () => toast.error("Failed to create category."),
@@ -328,18 +326,25 @@ export function TaskTypesPage() {
           </InputGroupAddon>
         </InputGroup>
 
-        <div className="flex gap-2 justify-end w-full md:w-fit">
-          <Button
+        <div className="flex gap-2 justify-between sm:justify-end w-full md:w-fit">
+          <ToggleGroup
+            type="single"
             variant="outline"
+            value={usageFilter}
+            onValueChange={(v) =>
+              setUsageFilter((v || "all") as TaskTypeUsageFilter)
+            }
+          >
+            <ToggleGroupItem value="all">All</ToggleGroupItem>
+            <ToggleGroupItem value="in-use">In Use</ToggleGroupItem>
+            <ToggleGroupItem value="unused">Unused</ToggleGroupItem>
+          </ToggleGroup>
+          <Button
             onClick={handleCreateCategory}
             disabled={createCategory.isPending}
           >
             <Plus />
             New Category
-          </Button>
-          <Button onClick={handleCreate} disabled={createTaskType.isPending}>
-            <Plus />
-            New Type
           </Button>
         </div>
       </div>
@@ -365,7 +370,7 @@ export function TaskTypesPage() {
             items={orderedCategories.map((c) => `cat-${c.ID}`)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto p-1">
+            <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
               {orderedCategories.length === 0 ? (
                 <div className="flex items-center justify-center rounded-lg border border-dashed py-12 text-sm text-muted-foreground">
                   No task types yet.
@@ -408,7 +413,10 @@ export function TaskTypesPage() {
         </DndContext>
       )}
 
-      <TaskTypesBulkActionsToolbar types={types} categories={orderedCategories} />
+      <TaskTypesBulkActionsToolbar
+        types={types}
+        categories={orderedCategories}
+      />
     </div>
   );
 }

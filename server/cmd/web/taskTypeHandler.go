@@ -9,7 +9,8 @@ import (
 )
 
 func (app *app) getAllTaskTypes(w http.ResponseWriter, r *http.Request) {
-	types, err := app.taskTypeService.GetAll()
+	filter := r.URL.Query().Get("filter")
+	types, err := app.taskTypeService.GetAll(filter)
 	if err != nil {
 		respondErr(w, err)
 		return

@@ -16,8 +16,8 @@ type TaskTypeService struct {
 	CategoryRepo *repos.TaskTypeCategoryRepo
 }
 
-func (s *TaskTypeService) GetAll() ([]models.TaskTypeGlobal, error) {
-	return s.TaskTypeRepo.AllWithCounts()
+func (s *TaskTypeService) GetAll(filter string) ([]models.TaskTypeGlobal, error) {
+	return s.TaskTypeRepo.AllWithCounts(filter)
 }
 
 func (s *TaskTypeService) GetEnabledForProject(projectId int) ([]models.TaskType, error) {
@@ -153,7 +153,7 @@ func (s *TaskTypeService) BulkDelete(ids []int, taskMappings map[int]int) (model
 		return models.BulkResult{}, nil
 	}
 
-	all, err := s.TaskTypeRepo.AllWithCounts()
+	all, err := s.TaskTypeRepo.AllWithCounts("")
 	if err != nil {
 		return models.BulkResult{}, err
 	}

@@ -123,7 +123,7 @@ export function TaskTypeCategorySection({
         ref={setNodeRef}
         style={style}
         className={cn(
-          "flex flex-col gap-2 rounded-lg border border-transparent p-3 transition-colors",
+          "flex flex-col gap-2 rounded-lg border border-transparent py-1 transition-colors",
           isDragging && "opacity-50",
           isDropTarget && !isDragging && "border-primary/40 bg-primary/5",
         )}
@@ -236,7 +236,7 @@ export function TaskTypeCategorySection({
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-7 pr-1 py-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-1 sm:pl-7 ">
                 {types.length === 0 ? (
                   <div className="col-span-full flex items-center justify-center rounded-lg border border-dashed py-6 text-sm text-muted-foreground">
                     No types in this category.
