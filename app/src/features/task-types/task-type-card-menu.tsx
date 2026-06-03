@@ -59,7 +59,7 @@ export function TaskTypeCardMenu({
         {isDefault ? (
           <DropdownMenuItem disabled>
             <LockIcon className="text-muted-foreground" />
-            Cannot delete default
+            Delete
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem variant="destructive" onClick={onDelete}>

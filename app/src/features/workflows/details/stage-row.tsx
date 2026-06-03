@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { EditableHeader } from "@/components/EditableHeader";
 import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
-import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
+import { StageTypeSelect } from "@/features/workflows/details/stage-type-select";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
 import { DeleteStagesDialog } from "@/features/workflows/details/delete-stages-dialog";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
@@ -132,8 +132,7 @@ export function StageRow({
       </div>
 
       <div className="shrink-0 w-fit sm:w-20">
-        {/* TODO: wire up stage-type dropdown with validation */}
-        <StageTypeBadge type={stage.Type} />
+        <StageTypeSelect stage={stage} workflowId={workflowId} />
       </div>
 
       <StageRowMenu
