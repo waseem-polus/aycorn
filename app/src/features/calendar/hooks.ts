@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export function useDisclosure({
   defaultIsOpen = false,
@@ -17,7 +17,7 @@ export function useDisclosure({
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T,
-): [T, (value: T) => void] => {
+): [T, Dispatch<SetStateAction<T>>] => {
   const readValue = (): T => {
     if (typeof window === "undefined") {
       return initialValue;
@@ -34,17 +34,19 @@ export const useLocalStorage = <T>(
 
   const [storedValue, setStoredValue] = useState<T>(readValue);
 
-  const setValue = (value: T) => {
-    try {
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+  const setValue = (value: SetStateAction<T>) => {
+    setStoredValue((prev) => {
+      try {
+        const valueToStore = value instanceof Function ? value(prev) : value;
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        }
+        return valueToStore;
+      } catch (error) {
+        console.warn(`Error setting localStorage key "${key}":`, error);
+        return prev;
       }
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
-    }
+    });
   };
 
   return [storedValue, setValue];

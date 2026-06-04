@@ -9,11 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ChevronDown } from "lucide-react";
-import { TYPES } from "@/types/types";
+import { useProjectTaskTypesQuery } from "@/features/task-types/queries/useProjectTaskTypesQuery";
 import TaskTypeIcon from "@/features/task/properties/icons/TaskTypeIcon";
 
 export function TypeFilter() {
-  const { SetFilter, Filter } = useContext(ProjectContext);
+  const { SetFilter, Filter, Project } = useContext(ProjectContext);
+  const { data: types = [] } = useProjectTaskTypesQuery(Project.ID);
 
   return (
     <DropdownMenu>
@@ -23,26 +24,24 @@ export function TypeFilter() {
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {TYPES.map((type) => (
+      <DropdownMenuContent className="max-h-50 overflow-y-auto">
+        {types.map((type) => (
           <DropdownMenuCheckboxItem
-            checked={Filter.Type.includes(type)}
+            key={type.ID}
+            checked={Filter.Type.includes(type.ID)}
             onCheckedChange={(checked) => {
               if (checked) {
-                SetFilter({
-                  ...Filter,
-                  Type: [...Filter.Type, type],
-                });
+                SetFilter({ ...Filter, Type: [...Filter.Type, type.ID] });
               } else {
                 SetFilter({
                   ...Filter,
-                  Type: Filter.Type.filter((t) => t !== type),
+                  Type: Filter.Type.filter((id) => id !== type.ID),
                 });
               }
             }}
           >
-            <TaskTypeIcon variant={type} />
-            {type}
+            <TaskTypeIcon type={type} />
+            {type.Name}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

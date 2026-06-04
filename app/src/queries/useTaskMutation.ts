@@ -15,6 +15,7 @@ const getSaveTaskQuery = (isNewTask: boolean) => {
 
 const invalidateQueries = (projectId: number) => {
   queryClient.invalidateQueries({ queryKey: ["projectDetails", projectId] });
+  queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] });
 };
 
 export function useTaskMutation(projectId: number) {

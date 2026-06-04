@@ -7,10 +7,9 @@ import { toast } from "sonner";
 import type { Stage } from "@/types/types";
 import { Card } from "@/components/ui/card";
 import { EditableHeader } from "@/components/EditableHeader";
-import { IconPicker } from "@/features/icon-picker/icon-picker";
-import { ColorPicker } from "@/features/color-picker/color-picker";
+import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
-import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
+import { StageTypeSelect } from "@/features/workflows/details/stage-type-select";
 import { StageRowMenu } from "@/features/workflows/details/stage-row-menu";
 import { DeleteStagesDialog } from "@/features/workflows/details/delete-stages-dialog";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
@@ -105,10 +104,12 @@ export function StageRow({
         <GripVertical className="size-5 lg:size-4" />
       </button>
 
-      <IconPicker
-        value={stage.Icon}
+      <IconColorPicker
+        iconValue={stage.Icon}
+        colorValue={stage.Color}
         iconClassName={cn(stageStrokeClass(stage.Color), "size-5 lg:size-4")}
-        onSelect={(name) => name !== stage.Icon && saveStage({ Icon: name })}
+        onIconSelect={(name) => name !== stage.Icon && saveStage({ Icon: name })}
+        onColorSelect={(color) => color !== stage.Color && saveStage({ Color: color })}
       />
 
       <div className="flex flex-col min-w-0 flex-1">
@@ -130,15 +131,8 @@ export function StageRow({
         />
       </div>
 
-      <div className="items-center shrink-0 hidden sm:flex sm:w-20">
-        <ColorPicker
-          value={stage.Color}
-          onSelect={(c) => c !== stage.Color && saveStage({ Color: c })}
-        />
-      </div>
       <div className="shrink-0 w-fit sm:w-20">
-        {/* TODO: wire up stage-type dropdown with validation */}
-        <StageTypeBadge type={stage.Type} />
+        <StageTypeSelect stage={stage} workflowId={workflowId} />
       </div>
 
       <StageRowMenu

@@ -1,0 +1,143 @@
+import { useState } from "react";
+import type { Stage, TaskWithProject, Project } from "@/types/types";
+import { ProjectProvider } from "@/contexts/project/ProjectProvider";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import { UpcomingProjectDetailsLoader } from "@/features/upcoming/upcoming-project-details-loader";
+import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "@/features/task/properties/task-type-badge";
+import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
+import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { dayOnly } from "@/utils/date";
+import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
+import { useSharedSelection, selectedItemClasses } from "@/hooks/useSelection";
+
+type Props = {
+  task: TaskWithProject;
+  stageById: Record<number, Stage>;
+  project?: Project;
+};
+
+function UpcomingTaskRowInner({ task, stageById, project }: Props) {
+  const [open, setOpen] = useState(false);
+  const { getItemProps, isSelected, setSelectedIds } = useSharedSelection();
+  const id = task.ID.toString();
+  const stage = stageById[task.Stage];
+  const overdue = !!(
+    task.TimePlannedStart &&
+    !task.TimeCompleted &&
+    new Date(task.TimePlannedStart) < dayOnly(new Date())
+  );
+  const itemProps = getItemProps(id);
+
+  return (
+    <ProjectProvider defaultState={project}>
+      <UpcomingProjectDetailsLoader projectId={task.ProjectID} open={open} />
+      <TaskProvider defaultState={task}>
+        <TaskEditorDrawer onOpenChange={setOpen}>
+          <div
+            {...itemProps}
+            className={cn(
+              itemProps.className,
+              "group flex items-center gap-3 px-3 py-2.5 border-b border-border cursor-pointer hover:bg-accent/50 transition-colors",
+              selectedItemClasses({ ring: false }),
+            )}
+            onClick={(e) => {
+              itemProps.onClick(e);
+              if (!e.defaultPrevented) {
+                setOpen(true);
+              }
+            }}
+          >
+            {/* Checkbox */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+            >
+              <Checkbox checked={isSelected(id)} />
+            </div>
+
+            {/* Priority */}
+            <TaskPriorityIcon variant={task.Priority} className="shrink-0" />
+
+            {/* Name + project · checklist */}
+            <span className="flex flex-col min-w-0 flex-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="self-start max-w-full truncate text-sm font-medium">
+                    {task.Name || "Untitled"}
+                  </span>
+                </TooltipTrigger>
+                {task.Name && <TooltipContent>{task.Name}</TooltipContent>}
+              </Tooltip>
+              <UpcomingRowProjectChecklist />
+            </span>
+
+            {/* Stage chip */}
+            <span className="shrink-0 hidden sm:flex w-1/8">
+              {stage ? (
+                <WorkflowStageChip stage={stage} className="text-xs" />
+              ) : null}
+            </span>
+
+            {/* Type badge */}
+            <span className="shrink-0 hidden md:flex w-1/8">
+              <TaskTypeBadge type={task.Type} />
+            </span>
+
+            {/* Assignee */}
+            <span className="shrink-0 hidden lg:flex w-1/10">
+              {task.Assignee ? (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <User className="size-3" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="max-w-24 truncate">{task.Assignee}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{task.Assignee}</TooltipContent>
+                  </Tooltip>
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground/50">
+                  <User className="size-3" />
+                  <span>—</span>
+                </span>
+              )}
+            </span>
+
+            {/* Date */}
+            <span className="shrink-0 hidden sm:flex sm:justify-end w-1/5 ">
+              <TaskPlannedDates
+                start={task.TimePlannedStart}
+                end={task.TimePlannedEnd}
+                hasStartTime={task.HasTimePlannedStart}
+                hasEndTime={task.HasTimePlannedEnd}
+                excludeYear
+                overdue={overdue}
+              />
+            </span>
+          </div>
+        </TaskEditorDrawer>
+      </TaskProvider>
+    </ProjectProvider>
+  );
+}
+
+export function UpcomingTaskRow(props: Props) {
+  return <UpcomingTaskRowInner {...props} />;
+}

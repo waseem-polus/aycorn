@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { CheckIcon, Filter, RefreshCcw } from "lucide-react";
 import {
   DropdownMenu,
@@ -8,13 +9,16 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import type { Type } from "@/types/types";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useProjectTaskTypesQuery } from "@/features/task-types/queries/useProjectTaskTypesQuery";
+import { stageSwatchClass } from "@/features/stage/stage-palette";
+import { cn } from "@/lib/utils";
 
 export default function FilterEvents() {
   const { selectedTypes, filterEventsBySelectedTypes, clearFilter } =
     useCalendar();
-
-  const taskTypes: Type[] = ["Dev", "Reminder", "Test"];
+  const { Project } = useContext(ProjectContext);
+  const { data: taskTypes = [] } = useProjectTaskTypesQuery(Project.ID);
 
   return (
     <DropdownMenu>
@@ -24,28 +28,31 @@ export default function FilterEvents() {
         </Toggle>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        {taskTypes.map((taskType) => (
-          <DropdownMenuItem
-            key={taskType}
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              filterEventsBySelectedTypes(taskType);
-            }}
-          >
-            <div
-              className={`size-3.5 rounded-full bg-${taskType}-600 dark:bg-${taskType}-700`}
-            />
-            <span className="capitalize flex justify-center items-center gap-2">
-              {taskType}
-              <span>
-                {selectedTypes.includes(taskType) && (
+        <div className="max-h-50 overflow-y-auto">
+          {taskTypes.map((taskType) => (
+            <DropdownMenuItem
+              key={taskType.ID}
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                filterEventsBySelectedTypes(taskType.ID);
+              }}
+            >
+              <div
+                className={cn(
+                  "size-3.5 rounded-full shrink-0",
+                  stageSwatchClass(taskType.Color),
+                )}
+              />
+              <span className="flex justify-center items-center gap-2">
+                {taskType.Name}
+                {selectedTypes.includes(taskType.ID) && (
                   <CheckIcon className="size-4" />
                 )}
               </span>
-            </span>
-          </DropdownMenuItem>
-        ))}
+            </DropdownMenuItem>
+          ))}
+        </div>
         <Separator className="my-2" />
         <DropdownMenuItem
           disabled={selectedTypes.length === 0}

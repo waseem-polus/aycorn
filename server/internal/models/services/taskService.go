@@ -6,7 +6,16 @@ import (
 )
 
 type TaskService struct {
-	TaskRepo *repos.TaskRepo
+	TaskRepo     *repos.TaskRepo
+	TaskTypeRepo *repos.TaskTypeRepo
+}
+
+func (s *TaskService) GetAllTasks(filters *repos.TaskFilters) ([]models.TaskWithProject, error) {
+	return s.TaskRepo.AllTasks(filters)
+}
+
+func (s *TaskService) GetTaskFacets() (*models.TaskFacets, error) {
+	return s.TaskRepo.TaskFacets()
 }
 
 func (s *TaskService) GetTask(taskId int) (*models.TaskWithProject, error) {
@@ -27,6 +36,14 @@ func (s *TaskService) GetTaskBody(taskId int) (string, error) {
 }
 
 func (s *TaskService) CreateChecklistTask(task *models.ChecklistTask) (*models.ChecklistTask, error) {
+	if task.Type.ID == 0 && s.TaskTypeRepo != nil {
+		defaultID, err := s.TaskTypeRepo.DefaultTypeID()
+		if err != nil {
+			return nil, err
+		}
+		task.Type.ID = defaultID
+	}
+
 	newTask, err := s.TaskRepo.CreateTask(task)
 	if err != nil {
 		return nil, err

@@ -19,16 +19,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
 import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { DeleteStagesDialog } from "@/features/workflows/details/delete-stages-dialog";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
+import { IconPickerPopover } from "@/features/icon-picker/icon-picker-popover";
+import { ColorGrid } from "@/features/color-picker/color-grid";
 
 const ASSIGNABLE_TYPES: Exclude<StageType, "open">[] = [
   "todo",
@@ -45,8 +47,10 @@ export function StagesBulkActionsToolbar({
   workflowId: number;
 }) {
   const { selectedIds, clearSelection } = useSharedSelection();
-  const { bulkSetType, bulkDeleteStages } = useStageMutation(workflowId);
+  const { bulkSetType, bulkSetColor, bulkSetIcon, bulkDeleteStages } =
+    useStageMutation(workflowId);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
 
   const selectedStages = useMemo(() => {
     const ids = new Set(Array.from(selectedIds).map((id) => Number(id)));
@@ -59,8 +63,38 @@ export function StagesBulkActionsToolbar({
   const openCount = selectedStages.filter((s) => s.Type === "open").length;
   const stagesWithTasks = selectedStages.filter((s) => s.TaskCount > 0);
   const hasTaskStages = stagesWithTasks.length > 0;
-  const busy = bulkSetType.isPending || bulkDeleteStages.isPending;
+  const busy =
+    bulkSetType.isPending ||
+    bulkSetColor.isPending ||
+    bulkSetIcon.isPending ||
+    bulkDeleteStages.isPending;
   const ids = selectedStages.map((s) => s.ID);
+
+  const stageNoun = (n: number) => `${n} stage${n !== 1 ? "s" : ""}`;
+
+  const handleSetColor = (color: string) =>
+    bulkSetColor.mutate(
+      { ids, color },
+      {
+        onSuccess: (result) => {
+          bulkResultToast(result, `Updated ${stageNoun(result.success)}.`);
+          clearSelection();
+        },
+        onError: () => toast.error("Failed to update stage colors."),
+      },
+    );
+
+  const handleSetIcon = (icon: string) =>
+    bulkSetIcon.mutate(
+      { ids, icon },
+      {
+        onSuccess: (result) => {
+          bulkResultToast(result, `Updated ${stageNoun(result.success)}.`);
+          clearSelection();
+        },
+        onError: () => toast.error("Failed to update stage icons."),
+      },
+    );
 
   const handleSetType = (type: Exclude<StageType, "open">) => {
     bulkSetType.mutate(
@@ -118,29 +152,35 @@ export function StagesBulkActionsToolbar({
               }
         }
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0} className="w-32">
-              <Button variant="outline" className="w-full" disabled>
-                <Shapes />
-                Icon
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Coming soon</TooltipContent>
-        </Tooltip>
+        <IconPickerPopover
+          value=""
+          onSelect={handleSetIcon}
+          align="center"
+          trigger={
+            <Button variant="outline" disabled={busy}>
+              <Shapes />
+              Icon
+            </Button>
+          }
+        />
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0} className="w-32">
-              <Button variant="outline" className="w-full" disabled>
-                <Palette />
-                Color
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Coming soon</TooltipContent>
-        </Tooltip>
+        <Popover open={colorOpen} onOpenChange={setColorOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" disabled={busy}>
+              <Palette />
+              Color
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-2" align="center">
+            <ColorGrid
+              value=""
+              onSelect={(color) => {
+                setColorOpen(false);
+                handleSetColor(color);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

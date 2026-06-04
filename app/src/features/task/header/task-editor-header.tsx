@@ -87,7 +87,7 @@ export function TaskEditorHeader({
             className="hidden sm:flex"
           />
           <TaskPriorityIcon variant={task.Priority} />
-          <TaskTypeBadge variant={task.Type} />
+          <TaskTypeBadge type={task.Type} />
           {Stages.find((s) => s.ID === task.Stage) && (
             <WorkflowStageChip
               className="rounded-full"

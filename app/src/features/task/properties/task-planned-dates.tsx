@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { STAGE_PALETTE } from "@/features/stage/stage-palette";
 import { useDateFormat } from "@/hooks/useDateFormatter";
+import { isSameDay } from "@/utils/date";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
@@ -10,6 +12,7 @@ type Props = {
   hasEndTime: boolean;
   excludeYear?: boolean;
   className?: string;
+  overdue?: boolean;
 };
 
 export function TaskPlannedDates({
@@ -19,6 +22,7 @@ export function TaskPlannedDates({
   hasEndTime,
   excludeYear = false,
   className = "",
+  overdue = false,
 }: Props) {
   const { toFormatted, toFormattedTime } = useDateFormat(excludeYear);
 
@@ -39,18 +43,22 @@ export function TaskPlannedDates({
     return `${toFormatted(dateStr)} ${toFormattedTime(dateStr)}`;
   };
 
-  const isSameDay =
-    end !== null &&
-    new Date(start).toDateString() === new Date(end).toDateString();
+  const sameDay =
+    end !== null && isSameDay(new Date(start), new Date(end));
 
   const label =
-    end !== null && !isSameDay
+    end !== null && !sameDay
       ? `${formatDateTime(start, hasStartTime)} → ${formatDateTime(end, hasEndTime)}`
       : formatDateTime(start, hasStartTime);
 
   return (
-    <Badge variant="secondary" className={className}>
-      <CalendarIcon className="size-2" />
+    <Badge
+      variant="secondary"
+      className={cn(overdue ? STAGE_PALETTE.rose.badge : "", className)}
+    >
+      <CalendarIcon
+        className={cn(overdue ? STAGE_PALETTE.rose.stroke : "", "size-2")}
+      />
       {label}
     </Badge>
   );

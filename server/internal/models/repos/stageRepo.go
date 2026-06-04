@@ -32,6 +32,26 @@ func scanStage(scanner interface {
 	)
 }
 
+func (repo *StageRepo) All() ([]models.Stage, error) {
+	query := "SELECT " + stageColumns + " " + stageFromJoin + " GROUP BY s.id ORDER BY s.workflow, s.position;"
+	rows, err := repo.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stages := []models.Stage{}
+	for rows.Next() {
+		s := models.Stage{}
+		if err := scanStage(rows, &s); err != nil {
+			return nil, err
+		}
+		stages = append(stages, s)
+	}
+
+	return stages, rows.Err()
+}
+
 func (repo *StageRepo) CountByWorkflow(workflowId int) (int, error) {
 	var count int
 	err := repo.DB.QueryRow("SELECT COUNT(*) FROM stage WHERE workflow = ?;", workflowId).Scan(&count)

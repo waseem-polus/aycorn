@@ -71,7 +71,7 @@ export function KanbanItem({
             <ItemHeader className="flex justify-between items-center gap-1">
               <div className="flex flex-1 gap-2 justify-between items-center min-w-0">
                 <TaskPriorityIcon variant={task.Priority} />
-                <TaskTypeBadge variant={task.Type} />
+                <TaskTypeBadge type={task.Type} />
               </div>
               <button
                 type="button"

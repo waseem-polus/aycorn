@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from "react";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import type { IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
-import type { Task, Type } from "@/types/types";
+import type { Task } from "@/types/types";
 
 interface ICalendarContext {
   selectedDate: Date;
@@ -18,8 +18,8 @@ interface ICalendarContext {
   setSelectedUserId: (userId: string | "all") => void;
   badgeVariant: "dot" | "colored";
   setBadgeVariant: (variant: "dot" | "colored") => void;
-  selectedTypes: Type[];
-  filterEventsBySelectedTypes: (type: Type) => void;
+  selectedTypes: number[];
+  filterEventsBySelectedTypes: (typeId: number) => void;
   filterEventsBySelectedUser: (userId: string | "all") => void;
   users: IUser[];
   events: Task[];
@@ -82,7 +82,7 @@ export function CalendarProvider({
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedUserId, setSelectedUserId] = useState<string | "all">("all");
-  const [selectedTypes, setSelectedTypes] = useState<Type[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
   const [allEvents, setAllEvents] = useState<Task[]>(events || []);
   const [filteredEvents, setFilteredEvents] = useState<Task[]>(events || []);
@@ -115,18 +115,16 @@ export function CalendarProvider({
     updateSettings({ agendaModeGroupBy: groupBy });
   };
 
-  const filterEventsBySelectedTypes = (type: Type) => {
-    const isTypeSelected = selectedTypes.includes(type);
-    const newTypes = isTypeSelected
-      ? selectedTypes.filter((t) => t !== type)
-      : [...selectedTypes, type];
+  const filterEventsBySelectedTypes = (typeId: number) => {
+    const isSelected = selectedTypes.includes(typeId);
+    const newTypes = isSelected
+      ? selectedTypes.filter((id) => id !== typeId)
+      : [...selectedTypes, typeId];
 
     if (newTypes.length > 0) {
-      const filtered = allEvents.filter((event) => {
-        const eventType = event.Type;
-        return newTypes.includes(eventType);
-      });
-      setFilteredEvents(filtered);
+      setFilteredEvents(
+        allEvents.filter((event) => newTypes.includes(event.Type?.ID)),
+      );
     } else {
       setFilteredEvents(allEvents);
     }

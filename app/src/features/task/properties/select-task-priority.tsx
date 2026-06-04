@@ -1,15 +1,25 @@
 import type { Task } from "@/types/types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import TaskPriorityIcon from "./icons/TaskPriorityIcon";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { GaugeCircle } from "lucide-react";
+import { ChevronDown, GaugeCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import TaskPriorityIcon from "./icons/TaskPriorityIcon";
+
+const PRIORITIES: Task["Priority"][] = ["Low", "Medium", "High", "Urgent"];
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -26,50 +36,65 @@ export function SelectTaskPriority({
 }: Props) {
   const { state, setState } = useContext(TaskContext);
   const isControlled = onValueChange !== undefined;
+  const [open, setOpen] = useState(false);
 
-  const handleValueChange = (newPriority: Task["Priority"]) => {
+  const current = isControlled ? value : state.Priority;
+
+  const handleSelect = (priority: Task["Priority"]) => {
+    setOpen(false);
     if (isControlled) {
-      onValueChange(newPriority);
+      onValueChange(priority);
       return;
     }
-    setState({ ...state, Priority: newPriority });
-    onChange({ ...state, Priority: newPriority });
+    setState({ ...state, Priority: priority });
+    onChange({ ...state, Priority: priority });
   };
 
   return (
-    <Select
-      value={isControlled ? (value ?? "") : undefined}
-      defaultValue={isControlled ? undefined : state.Priority}
-      onValueChange={handleValueChange}
-    >
-      <SelectTrigger id="priority" className="w-full">
-        <SelectValue
-          placeholder={
-            <>
-              <GaugeCircle />
-              {placeholder}
-            </>
-          }
-        />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="Low">
-          <TaskPriorityIcon variant="Low" />
-          Low
-        </SelectItem>
-        <SelectItem value="Medium">
-          <TaskPriorityIcon variant="Medium" />
-          Medium
-        </SelectItem>
-        <SelectItem value="High">
-          <TaskPriorityIcon variant="High" />
-          High
-        </SelectItem>
-        <SelectItem value="Urgent">
-          <TaskPriorityIcon variant="Urgent" />
-          Urgent
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id="priority"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          <span className="flex items-center gap-2 min-w-0">
+            {current ? (
+              <TaskPriorityIcon variant={current} />
+            ) : (
+              <GaugeCircle className="size-4 shrink-0 text-muted-foreground" />
+            )}
+            <span
+              className={cn("truncate", !current && "text-muted-foreground")}
+            >
+              {current ?? placeholder}
+            </span>
+          </span>
+          <ChevronDown className="size-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-60 p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search priorities..." />
+          <CommandList>
+            <CommandEmpty>No priorities found.</CommandEmpty>
+            <CommandGroup>
+              {PRIORITIES.map((priority) => (
+                <CommandItem
+                  key={priority}
+                  value={priority}
+                  onSelect={() => handleSelect(priority)}
+                >
+                  <TaskPriorityIcon variant={priority} />
+                  <span>{priority}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

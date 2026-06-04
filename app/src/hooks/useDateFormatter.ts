@@ -1,3 +1,5 @@
+import { formatMonthDay } from "@/utils/date";
+
 export function useDateFormat(excludeYear: boolean = false) {
   const toFormatted = (source: Date | string | null): string => {
     if (source === null) {
@@ -5,11 +7,7 @@ export function useDateFormat(excludeYear: boolean = false) {
     }
 
     const date = typeof source === "string" ? new Date(source) : source;
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: excludeYear ? undefined : "numeric",
-    });
+    return formatMonthDay(date, !excludeYear);
   };
 
   const toFormattedTime = (source: Date | string | null): string => {

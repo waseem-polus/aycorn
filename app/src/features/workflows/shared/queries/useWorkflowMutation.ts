@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { queryClient } from "@/main";
 import type { BulkDuplicateResult, BulkResult, Workflow } from "@/types/types";
 
@@ -28,11 +29,17 @@ export function useWorkflowMutation(workflowId?: number) {
           body: JSON.stringify(workflow),
         },
       );
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update workflow");
+      }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, workflow) => {
       queryClient.invalidateQueries({ queryKey: ["allWorkflows"] });
+      queryClient.invalidateQueries({ queryKey: ["workflowDetails", workflow.ID] });
     },
+    onError: (err) => toast(err.message || "Failed to update workflow."),
   });
 
   const deleteWorkflow = useMutation({

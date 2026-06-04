@@ -8,6 +8,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { useProjectMutation } from "@/queries/useProjectMutation";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
 import type { Project } from "@/types/types";
 
 type ProjectNameCellProps = {
@@ -65,7 +66,9 @@ export function ProjectNameCell({
           className="text-sm p-0 min-h-0 font-normal"
         />
         {project.Pinned && (
-          <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 invisible sm:visible" />
+          <PinIcon
+            className={`${stageStrokeClass("red")} size-3 sm:size-4 shrink-0 invisible sm:visible`}
+          />
         )}
         <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
           <WorkflowIcon className="size-4" />
@@ -79,16 +82,18 @@ export function ProjectNameCell({
     <div className="flex items-center gap-2 min-w-0">
       <HoverCard openDelay={150} closeDelay={100}>
         <HoverCardTrigger asChild>
-          <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 sm:items-center">
+          <div className="min-w-0 flex flex-col gap-1 sm:flex-row sm:gap-2 sm:items-center">
             <span
-              className={`truncate group-hover:underline flex gap-2 items-center text-sm ${
+              className={`truncate group-hover:underline text-sm ${
                 isEmpty ? "text-muted-foreground" : "text-foreground"
               }`}
             >
               {displayName}
             </span>
             {project.Pinned && (
-              <PinIcon className="stroke-red-400 size-3 sm:size-4 shrink-0 hidden sm:flex" />
+              <PinIcon
+                className={`${stageStrokeClass("red")} size-3 sm:size-4 shrink-0 hidden sm:flex`}
+              />
             )}
             <div className="flex gap-1 text-xs text-muted-foreground items-center sm:hidden">
               <WorkflowIcon className="size-4" />

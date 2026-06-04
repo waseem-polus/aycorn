@@ -9,15 +9,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyPanel } from "@/features/settings/empty-panel";
 import { useProjectWorkflowSettingsQuery } from "@/features/settings/project-workflow/queries/useProjectWorkflowSettingsQuery";
 import { ProjectWorkflowTab } from "@/features/settings/project-workflow/project-workflow-tab";
+import { ProjectTaskTypesTab } from "@/features/settings/project-task-types/project-task-types-tab";
 import { createFileRoute } from "@tanstack/react-router";
-import { LandPlotIcon, TagIcon, WorkflowIcon } from "lucide-react";
+import { LandPlotIcon, TagsIcon, WorkflowIcon } from "lucide-react";
 
 export const Route = createFileRoute("/project/settings/$projectId")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: (search.tab as string | undefined) ?? "workflow",
+  }),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { projectId } = Route.useParams();
+  const { tab } = Route.useSearch();
   const id = Number.parseInt(projectId, 10);
   const { data } = useProjectWorkflowSettingsQuery(id);
   const projectName = data?.Project?.Name ?? "";
@@ -41,19 +46,19 @@ function RouteComponent() {
           description="Manage your project's behavior and settings."
         />
 
-        <Tabs defaultValue="workflow" className="flex-1 min-h-0">
+        <Tabs defaultValue={tab} className="flex-1 min-h-0">
           <TabsList>
             <TabsTrigger value="workflow">
               <WorkflowIcon />
               Workflow
             </TabsTrigger>
+            <TabsTrigger value="task-types">
+              <TagsIcon />
+              Task Types
+            </TabsTrigger>
             <TabsTrigger value="checklists">
               <LandPlotIcon />
               Checklists
-            </TabsTrigger>
-            <TabsTrigger value="tags">
-              <TagIcon />
-              Tags
             </TabsTrigger>
           </TabsList>
 
@@ -63,17 +68,14 @@ function RouteComponent() {
             <ProjectWorkflowTab projectId={id} />
           </TabsContent>
 
+          <TabsContent value="task-types">
+            <ProjectTaskTypesTab projectId={id} />
+          </TabsContent>
+
           <TabsContent value="checklists">
             <EmptyPanel
               title="Checklists"
               description="Group tasks by phase, sprint, or area. The default checklist is picked automatically when a teammate creates a new task without choosing one."
-            />
-          </TabsContent>
-
-          <TabsContent value="tags">
-            <EmptyPanel
-              title="Tags"
-              description="Lightweight labels for tasks. Use them to mark type, area of code, or anything that doesn't fit a stage or checklist."
             />
           </TabsContent>
         </Tabs>

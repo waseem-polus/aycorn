@@ -21,11 +21,17 @@ func (app *app) routes() http.Handler {
 
 	mux.HandleFunc("GET /api/project/{projectId}/settings/workflow", app.getProjectWorkflowSettings)
 	mux.HandleFunc("PUT /api/project/{projectId}/settings/workflow", app.switchProjectWorkflow)
+	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types", app.getProjectTaskTypeSettings)
+	mux.HandleFunc("PUT /api/project/{projectId}/settings/task-types", app.putProjectTaskTypes)
+	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types/enabled", app.getProjectTaskTypes)
+	mux.HandleFunc("POST /api/project/{projectId}/settings/task-types/bulk/enable-category", app.postEnableTaskTypeCategory)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 	mux.HandleFunc("DELETE /api/project/{projectId}", app.deleteProject)
 	mux.HandleFunc("POST /api/project", app.postProject)
 
+	mux.HandleFunc("GET /api/tasks", app.getUpcomingTasks)
+	mux.HandleFunc("GET /api/tasks/facets", app.getTaskFacets)
 	mux.HandleFunc("GET /api/task/{taskId}", app.getTask)
 	mux.HandleFunc("GET /api/task/body/{taskId}", app.getTaskBody)
 	mux.HandleFunc("POST /api/task", app.postTask)
@@ -38,6 +44,19 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
 	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)
 
+	mux.HandleFunc("GET /api/task-type", app.getAllTaskTypes)
+	mux.HandleFunc("POST /api/task-type", app.postTaskType)
+	mux.HandleFunc("PUT /api/task-type/bulk", app.bulkUpdateTaskTypes)
+	mux.HandleFunc("POST /api/task-type/bulk/delete", app.bulkDeleteTaskTypes)
+	mux.HandleFunc("PUT /api/task-type/{id}", app.putTaskType)
+	mux.HandleFunc("DELETE /api/task-type/{id}", app.deleteTaskType)
+
+	mux.HandleFunc("GET /api/task-type-category", app.getAllTaskTypeCategories)
+	mux.HandleFunc("POST /api/task-type-category", app.postTaskTypeCategory)
+	mux.HandleFunc("PUT /api/task-type-category/reorder", app.putTaskTypeCategoryReorder)
+	mux.HandleFunc("PUT /api/task-type-category/{id}", app.putTaskTypeCategory)
+	mux.HandleFunc("DELETE /api/task-type-category/{id}", app.deleteTaskTypeCategory)
+
 	mux.HandleFunc("GET /api/workflow", app.getAllWorkflows)
 	mux.HandleFunc("POST /api/workflow/bulk/delete", app.bulkDeleteWorkflows)
 	mux.HandleFunc("POST /api/workflow/bulk/duplicate", app.bulkDuplicateWorkflows)
@@ -49,6 +68,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/workflow/{workflowId}/stages/move", app.bulkMoveStages)
 	mux.HandleFunc("POST /api/workflow/{workflowId}/stage", app.postStage)
 
+	mux.HandleFunc("GET /api/stage", app.getAllStages)
 	mux.HandleFunc("PUT /api/stage/bulk/type", app.bulkSetStageType)
 	mux.HandleFunc("PUT /api/stage/bulk/color", app.bulkSetStageColor)
 	mux.HandleFunc("PUT /api/stage/bulk/icon", app.bulkSetStageIcon)

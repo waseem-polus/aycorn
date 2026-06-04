@@ -12,10 +12,8 @@ import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { formatTime } from "@/features/calendar/helpers";
 import type { ChecklistTask } from "@/types/types";
 import { getTaskColor, getTaskStartDate } from "@/features/calendar/interfaces";
-import {
-  EventBullet,
-  dayCellVariants,
-} from "@/features/calendar/views/monthView";
+import { stageCalendarCellClass } from "@/features/stage/stage-palette";
+import { EventBullet } from "@/features/calendar/views/monthView";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
@@ -80,10 +78,8 @@ export function EventListDialog({
                   <div
                     className={cn(
                       "flex items-center gap-2 p-2 border rounded-md hover:bg-muted cursor-pointer",
-                      {
-                        [dayCellVariants({ color: getTaskColor(task) })]:
-                          badgeVariant === "colored",
-                      },
+                      badgeVariant === "colored" &&
+                        cn("text-white", stageCalendarCellClass(getTaskColor(task))),
                     )}
                   >
                     <EventBullet color={getTaskColor(task)} />

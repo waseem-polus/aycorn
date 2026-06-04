@@ -1,5 +1,6 @@
 import type { TEventColor } from "@/features/calendar/types";
-import type { Task, Type } from "@/types/types";
+import { STAGE_COLORS } from "@/features/stage/stage-palette";
+import type { Task } from "@/types/types";
 
 export interface IUser {
   id: string;
@@ -13,21 +14,11 @@ export interface ICalendarCell {
   date: Date;
 }
 
-export function getColorForTaskType(type: Type): TEventColor {
-  switch (type) {
-    case "Dev":
-      return "green";
-    case "Reminder":
-      return "orange";
-    case "Test":
-      return "blue";
-    default:
-      return "blue";
-  }
-}
+const VALID_COLORS = new Set<string>(STAGE_COLORS);
 
 export function getTaskColor(task: Task): TEventColor {
-  return getColorForTaskType(task.Type);
+  const color = task.Type?.Color;
+  return (VALID_COLORS.has(color) ? color : "gray") as TEventColor;
 }
 
 export function getTaskStartDate(task: Task): string {

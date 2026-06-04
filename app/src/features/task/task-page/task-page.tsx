@@ -204,7 +204,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
         {!propertiesOpen && (
           <div className="flex flex-wrap items-center gap-1.5 pb-2">
             <TaskPriorityIcon variant={task.Priority} />
-            <TaskTypeBadge variant={task.Type} />
+            <TaskTypeBadge type={task.Type} />
             {Stages.find((s) => s.ID === task.Stage) && (
               <WorkflowStageChip
                 className="rounded-full"

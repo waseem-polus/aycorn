@@ -18,8 +18,8 @@ export function useProjectDetailsQuery(
       filter?.Checklist?.forEach((checklist) =>
         url.searchParams.append("checklist", checklist.toString()),
       );
-      filter.Type.forEach((type) =>
-        url.searchParams.append("type", type.toString()),
+      filter.Type.forEach((typeId) =>
+        url.searchParams.append("typeId", typeId.toString()),
       );
       filter.Stage.forEach((stage) =>
         url.searchParams.append("stage", stage.toString()),

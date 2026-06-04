@@ -7,18 +7,40 @@ import (
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
 
-
 type TaskRepo struct {
 	DB *sql.DB
 }
 
 type TaskFilters struct {
-	SearchQuery    string
-	ChecklistQuery []string
-	TypeQuery      []string
-	StageQuery     []string
-	PriorityQuery  []string
-	AssigneeQuery  []string
+	SearchQuery          string
+	ChecklistQuery       []string
+	TypeIDQuery          []int
+	StageQuery           []string
+	PriorityQuery        []string
+	AssigneeQuery        []string
+	ProjectIDQuery       []int
+	PlannedFrom          string
+	PlannedTo            string
+	PlannedFromHasTime   bool
+	PlannedToHasTime     bool
+	CompletedFrom        string
+	CompletedTo          string
+	CompletedFromHasTime bool
+	CompletedToHasTime   bool
+}
+
+// taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
+const taskTypeSelect = `
+	tt.id,
+	tt.name,
+	COALESCE(tt.description, ''),
+	tt.icon,
+	tt.color,
+	tt.isDefault`
+
+// scanTaskTypeInto scans the 6 task_type columns (produced by taskTypeSelect) into tt.
+func scanTaskTypeInto(scanner interface{ Scan(...any) error }, tt *models.TaskType) error {
+	return scanner.Scan(&tt.ID, &tt.Name, &tt.Description, &tt.Icon, &tt.Color, &tt.IsDefault)
 }
 
 func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]models.ChecklistTask, error) {
@@ -37,10 +59,11 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		    t.timeCompleted,
 		    t.assignee,
 		    t.priority,
-			t.type,
-			t.stage
+			t.stage,
+			` + taskTypeSelect + `
 		FROM checklist c
 			INNER JOIN task t ON t.checklist = c.id
+			INNER JOIN task_type tt ON tt.id = t.type
 		WHERE c.project = ?
 	`
 	args := []any{projectId}
@@ -57,9 +80,9 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 		}
 	}
 
-	if len(taskFilters.TypeQuery) > 0 {
-		query += " AND t.type IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.TypeQuery)), ",") + ")"
-		for _, v := range taskFilters.TypeQuery {
+	if len(taskFilters.TypeIDQuery) > 0 {
+		query += " AND t.type IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.TypeIDQuery)), ",") + ")"
+		for _, v := range taskFilters.TypeIDQuery {
 			args = append(args, v)
 		}
 	}
@@ -90,15 +113,13 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
-
 	}
+	defer rows.Close()
 
 	checklistTasks := []models.ChecklistTask{}
-
 	for rows.Next() {
 		ct := models.ChecklistTask{}
-
-		err := rows.Scan(
+		if err := rows.Scan(
 			&ct.Checklist,
 			&ct.ChecklistName,
 			&ct.ID,
@@ -112,24 +133,19 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 			&ct.TimeCompleted,
 			&ct.Assignee,
 			&ct.Priority,
-			&ct.Type,
 			&ct.Stage,
-		)
-		if err != nil {
+			&ct.Type.ID,
+			&ct.Type.Name,
+			&ct.Type.Description,
+			&ct.Type.Icon,
+			&ct.Type.Color,
+			&ct.Type.IsDefault,
+		); err != nil {
 			return nil, err
 		}
-
 		checklistTasks = append(checklistTasks, ct)
 	}
-
-	err = rows.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	return checklistTasks, nil
+	return checklistTasks, rows.Err()
 }
 
 func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.ChecklistTask, error) {
@@ -149,7 +165,7 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Checkli
 		newTask.HasTimePlannedEnd,
 		newTask.Assignee,
 		newTask.Priority,
-		newTask.Type,
+		newTask.Type.ID,
 		newTask.Stage,
 	)
 	if err != nil {
@@ -161,12 +177,7 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Checkli
 		return nil, err
 	}
 
-	task, err := repo.FindOne(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return task, nil
+	return repo.FindOne(id)
 }
 
 func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
@@ -199,7 +210,7 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.TimeCompleted,
 		task.Assignee,
 		task.Priority,
-		task.Type,
+		task.Type.ID,
 		task.Stage,
 		task.ID,
 	)
@@ -230,26 +241,29 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.ChecklistTask, error) {
 			t.timeCompleted,
 			t.assignee,
 			t.priority,
-			t.type,
 			t.stage,
 			t.checklist,
-			c.name
+			c.name,
+			` + taskTypeSelect + `
 		FROM task t
 		INNER JOIN checklist c ON c.id = t.checklist
+		INNER JOIN task_type tt ON tt.id = t.type
 		WHERE t.id = ?;
 	`
 	rows, err := repo.DB.Query(query, taskId)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	task := models.ChecklistTask{}
-	rows.Next()
-	err = rows.Err()
-	if err != nil {
-		return nil, err
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+		return nil, sql.ErrNoRows
 	}
 
+	task := models.ChecklistTask{}
 	err = rows.Scan(
 		&task.ID,
 		&task.Name,
@@ -263,16 +277,19 @@ func (repo *TaskRepo) FindOne(taskId int64) (*models.ChecklistTask, error) {
 		&task.TimeCompleted,
 		&task.Assignee,
 		&task.Priority,
-		&task.Type,
 		&task.Stage,
 		&task.Checklist,
 		&task.ChecklistName,
+		&task.Type.ID,
+		&task.Type.Name,
+		&task.Type.Description,
+		&task.Type.Icon,
+		&task.Type.Color,
+		&task.Type.IsDefault,
 	)
 	if err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
 
 	return &task, nil
 }
@@ -374,13 +391,14 @@ func (repo *TaskRepo) FindOneWithProject(taskId int) (*models.TaskWithProject, e
 			t.timeCompleted,
 			COALESCE(t.assignee, ''),
 			t.priority,
-			t.type,
 			t.stage,
 			t.checklist,
 			c.name,
-			c.project
+			c.project,
+			` + taskTypeSelect + `
 		FROM task t
 		INNER JOIN checklist c ON c.id = t.checklist
+		INNER JOIN task_type tt ON tt.id = t.type
 		WHERE t.id = ?;
 	`
 	rows, err := repo.DB.Query(query, taskId)
@@ -410,11 +428,16 @@ func (repo *TaskRepo) FindOneWithProject(taskId int) (*models.TaskWithProject, e
 		&task.TimeCompleted,
 		&task.Assignee,
 		&task.Priority,
-		&task.Type,
 		&task.Stage,
 		&task.Checklist,
 		&task.ChecklistName,
 		&task.ProjectID,
+		&task.Type.ID,
+		&task.Type.Name,
+		&task.Type.Description,
+		&task.Type.Icon,
+		&task.Type.Color,
+		&task.Type.IsDefault,
 	)
 	if err != nil {
 		return nil, err
@@ -423,17 +446,210 @@ func (repo *TaskRepo) FindOneWithProject(taskId int) (*models.TaskWithProject, e
 	return &task, nil
 }
 
+func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProject, error) {
+	query := `
+		SELECT
+			c.id,
+			c.name,
+			c.project,
+			t.id,
+		    t.name,
+			t.timeCreated,
+			t.timeModified,
+		    t.timePlannedStart,
+		    t.timePlannedEnd,
+		    t.hasTimePlannedStart,
+		    t.hasTimePlannedEnd,
+		    t.timeCompleted,
+		    COALESCE(t.assignee, ''),
+		    t.priority,
+			t.stage,
+			` + taskTypeSelect + `
+		FROM checklist c
+			INNER JOIN task t ON t.checklist = c.id
+			INNER JOIN task_type tt ON tt.id = t.type
+		WHERE 1=1
+	`
+	args := []any{}
+
+	if taskFilters.SearchQuery != "" {
+		query += " AND t.name LIKE ?"
+		args = append(args, "%"+taskFilters.SearchQuery+"%")
+	}
+
+	if len(taskFilters.ProjectIDQuery) > 0 {
+		query += " AND c.project IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.ProjectIDQuery)), ",") + ")"
+		for _, v := range taskFilters.ProjectIDQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.ChecklistQuery) > 0 {
+		query += " AND t.checklist IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.ChecklistQuery)), ",") + ")"
+		for _, v := range taskFilters.ChecklistQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.TypeIDQuery) > 0 {
+		query += " AND t.type IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.TypeIDQuery)), ",") + ")"
+		for _, v := range taskFilters.TypeIDQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.StageQuery) > 0 {
+		query += " AND t.stage IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StageQuery)), ",") + ")"
+		for _, v := range taskFilters.StageQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.PriorityQuery) > 0 {
+		query += " AND t.priority IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.PriorityQuery)), ",") + ")"
+		for _, v := range taskFilters.PriorityQuery {
+			args = append(args, v)
+		}
+	}
+
+	if len(taskFilters.AssigneeQuery) > 0 {
+		query += " AND t.assignee IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.AssigneeQuery)), ",") + ")"
+		for _, v := range taskFilters.AssigneeQuery {
+			args = append(args, v)
+		}
+	}
+
+	if taskFilters.PlannedFrom != "" {
+		if taskFilters.PlannedFromHasTime {
+			query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
+		} else {
+			query += " AND COALESCE(DATE(t.timePlannedEnd), DATE(t.timePlannedStart)) >= ?"
+		}
+		args = append(args, taskFilters.PlannedFrom)
+	}
+	if taskFilters.PlannedTo != "" {
+		if taskFilters.PlannedToHasTime {
+			query += " AND t.timePlannedStart <= ?"
+		} else {
+			query += " AND DATE(t.timePlannedStart) <= ?"
+		}
+		args = append(args, taskFilters.PlannedTo)
+	}
+	if taskFilters.CompletedFrom != "" {
+		if taskFilters.CompletedFromHasTime {
+			query += " AND t.timeCompleted >= ?"
+		} else {
+			query += " AND DATE(t.timeCompleted) >= ?"
+		}
+		args = append(args, taskFilters.CompletedFrom)
+	}
+	if taskFilters.CompletedTo != "" {
+		if taskFilters.CompletedToHasTime {
+			query += " AND t.timeCompleted <= ?"
+		} else {
+			query += " AND DATE(t.timeCompleted) <= ?"
+		}
+		args = append(args, taskFilters.CompletedTo)
+	}
+
+	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"
+
+	rows, err := repo.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tasks := []models.TaskWithProject{}
+	for rows.Next() {
+		t := models.TaskWithProject{}
+		if err := rows.Scan(
+			&t.Checklist,
+			&t.ChecklistName,
+			&t.ProjectID,
+			&t.ID,
+			&t.Name,
+			&t.TimeCreated,
+			&t.TimeModified,
+			&t.TimePlannedStart,
+			&t.TimePlannedEnd,
+			&t.HasTimePlannedStart,
+			&t.HasTimePlannedEnd,
+			&t.TimeCompleted,
+			&t.Assignee,
+			&t.Priority,
+			&t.Stage,
+			&t.Type.ID,
+			&t.Type.Name,
+			&t.Type.Description,
+			&t.Type.Icon,
+			&t.Type.Color,
+			&t.Type.IsDefault,
+		); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, rows.Err()
+}
+
+func (repo *TaskRepo) TaskFacets() (*models.TaskFacets, error) {
+	facets := &models.TaskFacets{
+		Assignees:  []string{},
+		Checklists: []models.ChecklistFacet{},
+	}
+
+	assigneeRows, err := repo.DB.Query(`
+		SELECT DISTINCT assignee
+		FROM task
+		WHERE assignee IS NOT NULL AND assignee <> ''
+		ORDER BY assignee
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer assigneeRows.Close()
+	for assigneeRows.Next() {
+		var a string
+		if err := assigneeRows.Scan(&a); err != nil {
+			return nil, err
+		}
+		facets.Assignees = append(facets.Assignees, a)
+	}
+	if err := assigneeRows.Err(); err != nil {
+		return nil, err
+	}
+
+	checklistRows, err := repo.DB.Query(`
+		SELECT c.id, c.name, c.project
+		FROM checklist c
+		WHERE EXISTS (SELECT 1 FROM task t WHERE t.checklist = c.id)
+		ORDER BY c.project, c.name
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer checklistRows.Close()
+	for checklistRows.Next() {
+		cf := models.ChecklistFacet{}
+		if err := checklistRows.Scan(&cf.ID, &cf.Name, &cf.ProjectID); err != nil {
+			return nil, err
+		}
+		facets.Checklists = append(facets.Checklists, cf)
+	}
+	return facets, checklistRows.Err()
+}
+
 func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
 	query := "SELECT t.body FROM task t WHERE t.id = ?;"
 	rows, err := repo.DB.Query(query, taskId)
 	if err != nil {
 		return "[]", err
 	}
+	defer rows.Close()
 
-	rows.Next()
-	err = rows.Err()
-	if err != nil {
-		return "[]", err
+	if !rows.Next() {
+		return "[]", rows.Err()
 	}
 
 	taskBody := "[]"
@@ -441,8 +657,6 @@ func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
 	if err != nil {
 		return "[]", err
 	}
-
-	defer rows.Close()
 
 	return taskBody, nil
 }

@@ -1,18 +1,12 @@
-import type { Task } from "@/types/types";
-import { Bell, Bot, Bug } from "lucide-react";
+import type { TaskType } from "@/types/types";
+import { DynamicIcon } from "lucide-react/dynamic";
+import { stageStrokeClass } from "@/features/stage/stage-palette";
 
-export default function TaskTypeIcon({ variant }: { variant: Task["Type"] }) {
-  let icon = <Bot className="size-4 stroke-green-500" />;
-  switch (variant) {
-    case "Dev":
-      break;
-    case "Test":
-      icon = <Bug className="size-4 stroke-blue-500" />;
-      break;
-    case "Reminder":
-      icon = <Bell className="size-4 stroke-orange-400" />;
-      break;
-  }
-
-  return icon;
+export default function TaskTypeIcon({ type }: { type: TaskType }) {
+  return (
+    <DynamicIcon
+      name={type.Icon as any}
+      className={`size-4 ${stageStrokeClass(type.Color)}`}
+    />
+  );
 }

@@ -1,31 +1,28 @@
-import type { Task } from "@/types/types";
+import type { TaskType } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
-import TaskTypeIcon from "./icons/TaskTypeIcon";
+import { DynamicIcon } from "lucide-react/dynamic";
+import { stageBadgeClass, stageStrokeClass } from "@/features/stage/stage-palette";
 import { cn } from "@/lib/utils";
 
 export default function TaskTypeBadge({
-  variant,
+  type,
   className = "",
 }: {
-  variant: Task["Type"];
+  type: TaskType;
   className?: string;
 }) {
-  let color = "bg-green-100 dark:bg-green-900/40";
-  switch (variant) {
-    case "Dev":
-      break;
-    case "Test":
-      color = "bg-blue-100 dark:bg-blue-900/30";
-      break;
-    case "Reminder":
-      color = "bg-orange-100 dark:bg-orange-900/30";
-      break;
-  }
+  if (!type?.ID) return null;
 
   return (
-    <Badge variant="secondary" className={cn(className, color)}>
-      <TaskTypeIcon variant={variant} />
-      {variant}
+    <Badge
+      variant="secondary"
+      className={cn(className, stageBadgeClass(type.Color))}
+    >
+      <DynamicIcon
+        name={type.Icon as any}
+        className={`size-3.5 ${stageStrokeClass(type.Color)}`}
+      />
+      {type.Name}
     </Badge>
   );
 }

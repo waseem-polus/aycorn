@@ -17,7 +17,7 @@ export function TaskProperty({
       >
         {label}
       </Label>
-      {children}
+      <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
 }

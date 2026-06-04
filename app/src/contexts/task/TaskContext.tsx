@@ -22,7 +22,7 @@ export const defaultTaskContextValue: TaskContextType = {
     HasTimePlannedEnd: false,
     Assignee: "",
     Priority: "Low",
-    Type: "Dev",
+    Type: { ID: 0, Name: "", Description: "", Icon: "square-check", Color: "gray", IsDefault: false, Category: 0 },
     Stage: 0,
   },
   setState: () => {},

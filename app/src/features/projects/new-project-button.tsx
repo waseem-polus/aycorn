@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
 import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
+import { useWorkflowMutation } from "../workflows/shared/queries/useWorkflowMutation";
 
 export function NewProjectButton() {
   const [open, setOpen] = useState(false);
@@ -55,6 +56,20 @@ export function NewProjectButton() {
     );
   };
 
+  const { createWorkflow } = useWorkflowMutation();
+  const handleCreateWorkflow = () => {
+    createWorkflow.mutate(undefined, {
+      onSuccess: (newId) => {
+        navigate({
+          to: "/workflow/$workflowId",
+          params: { workflowId: String(newId) },
+          search: { new: true },
+        });
+      },
+      onError: () => toast.error("Failed to create workflow."),
+    });
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -71,7 +86,15 @@ export function NewProjectButton() {
         <Command>
           <CommandInput placeholder="Search workflows..." />
           <CommandList>
-            <CommandEmpty>No workflows found.</CommandEmpty>
+            <CommandEmpty>
+              No workflows found.{" "}
+              <button
+                className="underline hover:cursor-pointer"
+                onClick={handleCreateWorkflow}
+              >
+                Create a workflow here
+              </button>
+            </CommandEmpty>
             <CommandGroup>
               {(workflows ?? []).map((workflow) => (
                 <CommandItem

@@ -83,16 +83,20 @@ func findAvailablePort(startPort int) (net.Listener, int, error) {
 }
 
 type app struct {
-	projectRepo   *repos.ProjectRepo
-	checklistRepo *repos.ChecklistRepo
-	workflowRepo  *repos.WorkflowRepo
-	stageRepo     *repos.StageRepo
+	projectRepo          *repos.ProjectRepo
+	checklistRepo        *repos.ChecklistRepo
+	workflowRepo         *repos.WorkflowRepo
+	stageRepo            *repos.StageRepo
+	taskTypeRepo         *repos.TaskTypeRepo
+	taskTypeCategoryRepo *repos.TaskTypeCategoryRepo
 
-	projectService   *services.ProjectService
-	checklistService *services.ChecklistService
-	taskService      *services.TaskService
-	workflowService  *services.WorkflowService
-	stageService     *services.StageService
+	projectService          *services.ProjectService
+	checklistService        *services.ChecklistService
+	taskService             *services.TaskService
+	workflowService         *services.WorkflowService
+	stageService            *services.StageService
+	taskTypeService         *services.TaskTypeService
+	taskTypeCategoryService *services.TaskTypeCategoryService
 }
 
 func main() {
@@ -125,6 +129,8 @@ func main() {
 	taskRepo := &repos.TaskRepo{DB: db}
 	workflowRepo := &repos.WorkflowRepo{DB: db}
 	stageRepo := &repos.StageRepo{DB: db}
+	taskTypeRepo := &repos.TaskTypeRepo{DB: db}
+	taskTypeCategoryRepo := &repos.TaskTypeCategoryRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -132,30 +138,43 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		WorkflowRepo:  workflowRepo,
 		StageRepo:     stageRepo,
+		TaskTypeRepo:  taskTypeRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
 	}
-	taskService := &services.TaskService{TaskRepo: taskRepo}
+	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo}
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,
 		StageRepo:    stageRepo,
 	}
 	stageService := &services.StageService{StageRepo: stageRepo}
+	taskTypeService := &services.TaskTypeService{
+		TaskTypeRepo: taskTypeRepo,
+		CategoryRepo: taskTypeCategoryRepo,
+	}
+	taskTypeCategoryService := &services.TaskTypeCategoryService{
+		CategoryRepo: taskTypeCategoryRepo,
+		TaskTypeRepo: taskTypeRepo,
+	}
 
 	app := app{
-		projectRepo:   projectRepo,
-		checklistRepo: checklistRepo,
-		workflowRepo:  workflowRepo,
-		stageRepo:     stageRepo,
+		projectRepo:          projectRepo,
+		checklistRepo:        checklistRepo,
+		workflowRepo:         workflowRepo,
+		stageRepo:            stageRepo,
+		taskTypeRepo:         taskTypeRepo,
+		taskTypeCategoryRepo: taskTypeCategoryRepo,
 
-		projectService:   projectService,
-		checklistService: checklistService,
-		taskService:      taskService,
-		workflowService:  workflowService,
-		stageService:     stageService,
+		projectService:          projectService,
+		checklistService:        checklistService,
+		taskService:             taskService,
+		workflowService:         workflowService,
+		stageService:            stageService,
+		taskTypeService:         taskTypeService,
+		taskTypeCategoryService: taskTypeCategoryService,
 	}
 
 	ln, port, err := findAvailablePort(resolvePort())
