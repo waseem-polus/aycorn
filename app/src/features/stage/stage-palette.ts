@@ -9,6 +9,7 @@
 
 type StageColorFacets = {
   swatch: string; // solid fill — picker grid + StageColorSquare
+  progress: string; // muted fill — SegmentedProgress bars
   stroke: string; // icon stroke — StageIcon, stage-row icon
   tint: string; // subtle bg — kanban column, WorkflowStageChip
   badge: string; // bg + text — StageTypeBadge
@@ -45,6 +46,7 @@ export type StageColor = (typeof STAGE_COLORS)[number];
 export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   gray: {
     swatch: "bg-neutral-500 dark:bg-neutral-400",
+    progress: "bg-neutral-400 dark:bg-neutral-400/70",
     stroke: "stroke-neutral-500 dark:stroke-neutral-400",
     tint: "bg-accent",
     badge:
@@ -58,6 +60,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   slate: {
     swatch: "bg-slate-500 dark:bg-slate-400",
+    progress: "bg-slate-400 dark:bg-slate-400/70",
     stroke: "stroke-slate-500 dark:stroke-slate-400",
     tint: "bg-slate-50 dark:bg-slate-950/40",
     badge: "bg-slate-50 text-slate-800 dark:bg-slate-950/40 dark:text-slate-200",
@@ -70,6 +73,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   red: {
     swatch: "bg-red-500 dark:bg-red-400",
+    progress: "bg-red-400 dark:bg-red-400/70",
     stroke: "stroke-red-500 dark:stroke-red-400",
     tint: "bg-red-50 dark:bg-red-950/40",
     badge: "bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-200",
@@ -82,6 +86,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   rose: {
     swatch: "bg-rose-500 dark:bg-rose-400",
+    progress: "bg-rose-400 dark:bg-rose-400/70",
     stroke: "stroke-rose-500 dark:stroke-rose-400",
     tint: "bg-rose-50 dark:bg-rose-950/40",
     badge: "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200",
@@ -94,6 +99,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   orange: {
     swatch: "bg-orange-500 dark:bg-orange-400",
+    progress: "bg-orange-400 dark:bg-orange-400/70",
     stroke: "stroke-orange-500 dark:stroke-orange-400",
     tint: "bg-orange-50 dark:bg-orange-950/40",
     badge:
@@ -107,6 +113,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   amber: {
     swatch: "bg-amber-500 dark:bg-amber-400",
+    progress: "bg-amber-400 dark:bg-amber-400/70",
     stroke: "stroke-amber-500 dark:stroke-amber-400",
     tint: "bg-amber-50 dark:bg-amber-950/40",
     badge: "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200",
@@ -119,6 +126,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   yellow: {
     swatch: "bg-yellow-500 dark:bg-yellow-400",
+    progress: "bg-yellow-400 dark:bg-yellow-400/70",
     stroke: "stroke-yellow-500 dark:stroke-yellow-400",
     tint: "bg-yellow-50 dark:bg-yellow-950/40",
     badge:
@@ -132,6 +140,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   lime: {
     swatch: "bg-lime-500 dark:bg-lime-400",
+    progress: "bg-lime-400 dark:bg-lime-400/70",
     stroke: "stroke-lime-500 dark:stroke-lime-400",
     tint: "bg-lime-50 dark:bg-lime-950/40",
     badge: "bg-lime-50 text-lime-800 dark:bg-lime-950/40 dark:text-lime-200",
@@ -144,6 +153,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   green: {
     swatch: "bg-green-500 dark:bg-green-400",
+    progress: "bg-green-400 dark:bg-green-400/70",
     stroke: "stroke-green-500 dark:stroke-green-400",
     tint: "bg-green-50 dark:bg-green-950/40",
     badge: "bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200",
@@ -156,6 +166,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   emerald: {
     swatch: "bg-emerald-500 dark:bg-emerald-400",
+    progress: "bg-emerald-400 dark:bg-emerald-400/70",
     stroke: "stroke-emerald-500 dark:stroke-emerald-400",
     tint: "bg-emerald-50 dark:bg-emerald-950/40",
     badge:
@@ -169,6 +180,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   teal: {
     swatch: "bg-teal-500 dark:bg-teal-400",
+    progress: "bg-teal-400 dark:bg-teal-400/70",
     stroke: "stroke-teal-500 dark:stroke-teal-400",
     tint: "bg-teal-50 dark:bg-teal-950/40",
     badge: "bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-200",
@@ -181,6 +193,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   cyan: {
     swatch: "bg-cyan-500 dark:bg-cyan-400",
+    progress: "bg-cyan-400 dark:bg-cyan-400/70",
     stroke: "stroke-cyan-500 dark:stroke-cyan-400",
     tint: "bg-cyan-50 dark:bg-cyan-950/40",
     badge: "bg-cyan-50 text-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-200",
@@ -193,6 +206,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   sky: {
     swatch: "bg-sky-500 dark:bg-sky-400",
+    progress: "bg-sky-400 dark:bg-sky-400/70",
     stroke: "stroke-sky-500 dark:stroke-sky-400",
     tint: "bg-sky-50 dark:bg-sky-950/40",
     badge: "bg-sky-50 text-sky-800 dark:bg-sky-950/40 dark:text-sky-200",
@@ -205,6 +219,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   blue: {
     swatch: "bg-blue-500 dark:bg-blue-400",
+    progress: "bg-blue-400 dark:bg-blue-400/70",
     stroke: "stroke-blue-500 dark:stroke-blue-400",
     tint: "bg-blue-50 dark:bg-blue-950/40",
     badge: "bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200",
@@ -217,6 +232,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   indigo: {
     swatch: "bg-indigo-500 dark:bg-indigo-400",
+    progress: "bg-indigo-400 dark:bg-indigo-400/70",
     stroke: "stroke-indigo-500 dark:stroke-indigo-400",
     tint: "bg-indigo-50 dark:bg-indigo-950/40",
     badge:
@@ -230,6 +246,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   violet: {
     swatch: "bg-violet-500 dark:bg-violet-400",
+    progress: "bg-violet-400 dark:bg-violet-400/70",
     stroke: "stroke-violet-500 dark:stroke-violet-400",
     tint: "bg-violet-50 dark:bg-violet-950/40",
     badge:
@@ -243,6 +260,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   purple: {
     swatch: "bg-purple-500 dark:bg-purple-400",
+    progress: "bg-purple-400 dark:bg-purple-400/70",
     stroke: "stroke-purple-500 dark:stroke-purple-400",
     tint: "bg-purple-50 dark:bg-purple-950/40",
     badge:
@@ -256,6 +274,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   fuchsia: {
     swatch: "bg-fuchsia-500 dark:bg-fuchsia-400",
+    progress: "bg-fuchsia-400 dark:bg-fuchsia-400/70",
     stroke: "stroke-fuchsia-500 dark:stroke-fuchsia-400",
     tint: "bg-fuchsia-50 dark:bg-fuchsia-950/40",
     badge:
@@ -269,6 +288,7 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
   },
   pink: {
     swatch: "bg-pink-500 dark:bg-pink-400",
+    progress: "bg-pink-400 dark:bg-pink-400/70",
     stroke: "stroke-pink-500 dark:stroke-pink-400",
     tint: "bg-pink-50 dark:bg-pink-950/40",
     badge: "bg-pink-50 text-pink-800 dark:bg-pink-950/40 dark:text-pink-200",
@@ -285,6 +305,7 @@ const facets = (color: string): StageColorFacets =>
   STAGE_PALETTE[color as StageColor] ?? STAGE_PALETTE.gray;
 
 export const stageSwatchClass = (color: string) => facets(color).swatch;
+export const stageProgressClass = (color: string) => facets(color).progress;
 export const stageStrokeClass = (color: string) => facets(color).stroke;
 export const stageTintClass = (color: string) => facets(color).tint;
 export const stageBadgeClass = (color: string) => facets(color).badge;

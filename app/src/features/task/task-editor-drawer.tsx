@@ -103,7 +103,11 @@ export default function TaskEditorDrawer({
           onCopyAsPlainText={handleCopyAsPlainText}
           isEditorReady={editorReady}
         />
-        <div className="flex-1 min-h-0 overflow-y-auto" data-vaul-no-drag onWheel={(e) => e.stopPropagation()}>
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          data-vaul-no-drag
+          onWheel={(e) => e.stopPropagation()}
+        >
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
               <EditableTaskName onChange={handleTaskChanges} />
@@ -122,7 +126,7 @@ export default function TaskEditorDrawer({
                 </Button>
               </CollapsibleTrigger>
             </div>
-            {!propertiesOpen && (
+            {false && (
               <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
                 <Badge variant="outline">
                   <LandPlotIcon className="size-2" />

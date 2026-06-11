@@ -90,10 +90,13 @@ export type Checklist = {
   IsDefault: boolean;
 };
 
+export type StageCount = { StageID: number; Count: number };
+
 export type ChecklistDetails = Checklist & {
   DoneCount: number;
   TotalCount: number;
   Status: StageType;
+  StageCounts: StageCount[];
 };
 
 export type Task = {

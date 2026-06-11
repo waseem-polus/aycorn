@@ -44,6 +44,7 @@ export function ChecklistFilters({
                   TotalCount: 0,
                   DoneCount: 0,
                   Status: "open",
+                  StageCounts: [],
                   ...newChecklist,
                 },
               ]);

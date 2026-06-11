@@ -45,6 +45,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 
 	for rows.Next() {
 		c := models.ChecklistDetails{}
+		c.StageCounts = []models.StageCount{}
 
 		err := rows.Scan(
 			&c.ID,
@@ -69,7 +70,43 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 		return nil, err
 	}
 
-	defer rows.Close()
+	rows.Close()
+
+	indexByID := make(map[int]int, len(checklists))
+	for i, c := range checklists {
+		indexByID[c.ID] = i
+	}
+
+	countsQuery := `
+		SELECT t.checklist, t.stage, COUNT(*)
+		FROM task t
+		WHERE t.checklist IN (SELECT id FROM checklist WHERE project = ?)
+		GROUP BY t.checklist, t.stage;
+	`
+	countRows, err := repo.DB.Query(countsQuery, projectId)
+	if err != nil {
+		return nil, err
+	}
+	defer countRows.Close()
+
+	for countRows.Next() {
+		var checklistID int
+		var sc models.StageCount
+
+		err := countRows.Scan(&checklistID, &sc.StageID, &sc.Count)
+		if err != nil {
+			return nil, err
+		}
+
+		if i, ok := indexByID[checklistID]; ok {
+			checklists[i].StageCounts = append(checklists[i].StageCounts, sc)
+		}
+	}
+
+	err = countRows.Err()
+	if err != nil {
+		return nil, err
+	}
 
 	return checklists, nil
 }

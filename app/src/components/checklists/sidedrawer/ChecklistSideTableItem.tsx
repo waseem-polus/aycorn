@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/item";
 import { Ellipsis, Goal, Pencil } from "lucide-react";
 import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
-import { Progress } from "@/components/ui/progress";
+import { SegmentedProgress } from "@/components/ui/segmented-progress";
 import {
   Tooltip,
   TooltipContent,
@@ -33,6 +33,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
+import { stageProgressClass } from "@/features/stage/stage-palette";
 
 export function ChecklistSideTableItem({
   checklist,
@@ -43,7 +44,7 @@ export function ChecklistSideTableItem({
   autoFocus?: boolean;
   onFocusConsumed?: () => void;
 }) {
-  const { Project } = useContext(ProjectContext);
+  const { Project, Stages } = useContext(ProjectContext);
   const { update, deleteChecklist } = useChecklistMutation(Project.ID);
   const [isEditing, setIsEditing] = useState(autoFocus);
   const editableRef = useRef<HTMLHeadingElement>(null);
@@ -54,6 +55,10 @@ export function ChecklistSideTableItem({
     "line-through font-normal": checklist.Status === "done",
     "font-normal text-foreground-muted": checklist.Name === "",
   });
+
+  const countByStage = new Map(
+    checklist.StageCounts.map((s) => [s.StageID, s.Count]),
+  );
 
   useFocusAndSelect(editableRef, isEditing);
 
@@ -92,13 +97,7 @@ export function ChecklistSideTableItem({
                 </TooltipContent>
               </Tooltip>
             )}
-            <ItemTitle
-              className={
-                checklist.Status === "done"
-                  ? "line-through font-normal"
-                  : "font-medium"
-              }
-            >
+            <ItemTitle className="flex justify-between w-full min-w-0 font-medium">
               {isEditing ? (
                 <EditableHeader
                   ref={editableRef}
@@ -108,37 +107,49 @@ export function ChecklistSideTableItem({
                   className={titleClassName}
                 />
               ) : (
-                <HoverCard openDelay={150} closeDelay={100}>
-                  <HoverCardTrigger asChild>
-                    <span className={cn("truncate", titleClassName)}>
-                      {displayName}
-                    </span>
-                  </HoverCardTrigger>
-                  <HoverCardContent
-                    side="top"
-                    align="start"
-                    className="flex w-auto items-center gap-2 py-1.5 px-2"
-                  >
-                    <span className="text-sm">{displayName}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="size-6"
-                      onClick={handleStartEdit}
-                      aria-label="Rename checklist"
+                <>
+                  <HoverCard openDelay={150} closeDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <span className={cn("truncate", titleClassName)}>
+                        {displayName}
+                      </span>
+                    </HoverCardTrigger>
+                    <HoverCardContent
+                      side="top"
+                      align="start"
+                      className="flex w-auto items-center gap-2 py-1.5 px-2"
                     >
-                      <Pencil className="size-3.5" />
-                    </Button>
-                  </HoverCardContent>
-                </HoverCard>
+                      <span className="text-sm">{displayName}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="size-6"
+                        onClick={handleStartEdit}
+                        aria-label="Rename checklist"
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    </HoverCardContent>
+                  </HoverCard>
+
+                  <span className="text-muted-foreground text-xs font-light">
+                    {checklist.TotalCount > 0
+                      ? `${checklist.DoneCount}/${checklist.TotalCount}`
+                      : "N/A"}
+                  </span>
+                </>
               )}
             </ItemTitle>
           </span>
 
           <div data-slot="item-description" className="pt-2">
-            <Progress
-              value={(checklist.DoneCount / checklist.TotalCount) * 100}
-              className="w-full h-1.5"
+            <SegmentedProgress
+              className="h-1.5"
+              segments={Stages.map((stage) => ({
+                count: countByStage.get(stage.ID) ?? 0,
+                className: stageProgressClass(stage.Color),
+                label: stage.Name,
+              }))}
             />
           </div>
         </ItemContent>
@@ -148,7 +159,7 @@ export function ChecklistSideTableItem({
               <Button
                 size="icon-sm"
                 variant="ghost"
-                className="sm:invisible sm:group-hover:visible data-[state=open]:visible hover:cursor-pointer"
+                className="data-[state=open]:visible hover:cursor-pointer"
               >
                 <Ellipsis className="size-4" />
               </Button>

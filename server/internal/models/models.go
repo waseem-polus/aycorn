@@ -21,11 +21,17 @@ type Checklist struct {
 	IsDefault    bool
 }
 
+type StageCount struct {
+	StageID int
+	Count   int
+}
+
 type ChecklistDetails struct {
 	Checklist
-	DoneCount  int
-	TotalCount int
-	Status     string
+	DoneCount   int
+	TotalCount  int
+	Status      string
+	StageCounts []StageCount
 }
 
 type TaskTypeCategory struct {
