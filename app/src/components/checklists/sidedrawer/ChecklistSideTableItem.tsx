@@ -33,7 +33,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
-import { stageProgressClass } from "@/features/stage/stage-palette";
+import { stageCalendarBadgeClass } from "@/features/stage/stage-palette";
 
 export function ChecklistSideTableItem({
   checklist,
@@ -51,9 +51,8 @@ export function ChecklistSideTableItem({
 
   const displayName =
     checklist.Name === "" ? "Untitled Checklist" : checklist.Name;
-  const titleClassName = cn("text-sm p-0 min-h-0 font-medium", {
-    "line-through font-normal": checklist.Status === "done",
-    "font-normal text-foreground-muted": checklist.Name === "",
+  const titleClassName = cn("text-sm p-0 min-h-0", {
+    "text-muted-foreground": checklist.Name === "",
   });
 
   const countByStage = new Map(
@@ -85,7 +84,7 @@ export function ChecklistSideTableItem({
         <ItemMedia className="flex flex-col justify-center h-full">
           <ChecklistStatusIcon variant={checklist.Status} />
         </ItemMedia>
-        <ItemContent>
+        <ItemContent className="min-w-0">
           <span className="inline-flex gap-2 items-center">
             {checklist.IsDefault && (
               <Tooltip>
@@ -144,12 +143,13 @@ export function ChecklistSideTableItem({
 
           <div data-slot="item-description" className="pt-2">
             <SegmentedProgress
-              className="h-1.5"
+              variant="labeled"
               segments={Stages.map((stage) => ({
                 count: countByStage.get(stage.ID) ?? 0,
-                className: stageProgressClass(stage.Color),
+                className: cn(stageCalendarBadgeClass(stage.Color), "border"),
                 label: stage.Name,
               }))}
+              className="h-6"
             />
           </div>
         </ItemContent>

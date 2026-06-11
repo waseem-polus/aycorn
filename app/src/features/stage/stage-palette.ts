@@ -63,7 +63,8 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
     progress: "bg-slate-400 dark:bg-slate-400/70",
     stroke: "stroke-slate-500 dark:stroke-slate-400",
     tint: "bg-slate-50 dark:bg-slate-950/40",
-    badge: "bg-slate-50 text-slate-800 dark:bg-slate-950/40 dark:text-slate-200",
+    badge:
+      "bg-slate-50 text-slate-800 dark:bg-slate-950/40 dark:text-slate-200",
     bullet: "bg-slate-600 dark:bg-slate-500",
     calendarBadge:
       "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300",
@@ -116,7 +117,8 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
     progress: "bg-amber-400 dark:bg-amber-400/70",
     stroke: "stroke-amber-500 dark:stroke-amber-400",
     tint: "bg-amber-50 dark:bg-amber-950/40",
-    badge: "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200",
+    badge:
+      "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200",
     bullet: "bg-amber-600 dark:bg-amber-500",
     calendarBadge:
       "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300",
@@ -156,7 +158,8 @@ export const STAGE_PALETTE: Record<StageColor, StageColorFacets> = {
     progress: "bg-green-400 dark:bg-green-400/70",
     stroke: "stroke-green-500 dark:stroke-green-400",
     tint: "bg-green-50 dark:bg-green-950/40",
-    badge: "bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200",
+    badge:
+      "bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200",
     bullet: "bg-green-600 dark:bg-green-500",
     calendarBadge:
       "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300",

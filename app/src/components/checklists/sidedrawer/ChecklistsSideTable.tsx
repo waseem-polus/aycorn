@@ -40,7 +40,7 @@ export default function TaskSideDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="h-full">
+      <DrawerContent className="h-full min-w-1/2 ">
         <DrawerHeader>
           <DrawerTitle className="flex gap-1">
             <LandPlot className="size-5" />
