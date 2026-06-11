@@ -1,4 +1,5 @@
 app.db
+server/backups/
 server/ui/dist/
 server/dev.db
 aycorn

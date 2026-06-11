@@ -100,9 +100,22 @@ type app struct {
 }
 
 func main() {
-	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "version") {
-		fmt.Println(version)
-		os.Exit(0)
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "version", "--version":
+			fmt.Println(version)
+			return
+		case "backup":
+			if err := runBackup(os.Args[2:]); err != nil {
+				log.Fatal(err)
+			}
+			return
+		case "restore":
+			if err := runRestore(os.Args[2:]); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
 	}
 
 	dbPath, err := resolveDBPath()
@@ -110,6 +123,14 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Using database at %s", dbPath)
+
+	// Note whether the DB already has data before we open it, so a brand-new
+	// DB's first boot doesn't trigger a useless pre-migration backup.
+	dbExisted := false
+	if fi, err := os.Stat(dbPath); err == nil && fi.Size() > 0 {
+		dbExisted = true
+	}
+
 	db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on")
 	if err != nil {
 		log.Fatal(err)
@@ -119,6 +140,13 @@ func main() {
 	goose.SetBaseFS(migrations.Files)
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		log.Fatal(err)
+	}
+	// Snapshot before applying any pending migration so an upgrade can never
+	// silently lose data. Aborts startup if the snapshot fails.
+	if dbExisted {
+		if err := backupBeforeMigrate(db, dbPath); err != nil {
+			log.Fatal(err)
+		}
 	}
 	if err := goose.Up(db, "sql"); err != nil {
 		log.Fatal(err)

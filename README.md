@@ -134,6 +134,8 @@ Open the URL from the `Listening on` line in your browser. Aycorn defaults to po
 aycorn --version
 ```
 
+**To back up or restore your data:** see [Backup & migrating to a new machine](#backup--migrating-to-a-new-machine).
+
 ---
 
 ## Upgrading
@@ -145,7 +147,7 @@ aycorn --version
 3. Repeat the install step — move the new file to `/usr/local/bin/aycorn` (overwriting the old one).
 4. Run `aycorn` to start the new version.
 
-Your database is stored separately from the binary, so your data is never affected by an upgrade.
+Your database is stored separately from the binary, so your data is never affected by an upgrade. And if a new version needs to update the database schema, Aycorn automatically snapshots your database first — see [Backup & migrating to a new machine](#backup--migrating-to-a-new-machine).
 
 ### From a source build
 
@@ -188,6 +190,49 @@ AYCORN_DB=/path/to/my.db aycorn
 
 ---
 
+## Backup & migrating to a new machine
+
+Because all your data lives in one SQLite file, backing up and moving Aycorn is just a matter of snapshotting that file safely. Aycorn does this for you with `VACUUM INTO`, which produces a clean, consistent copy even while the app is running.
+
+### Automatic backups on upgrade
+
+Every time Aycorn starts and finds that a new version needs to update the database schema, it **automatically snapshots your database first** — before applying any change. So an upgrade can never silently lose data; the previous state is always saved.
+
+Snapshots live in a `backups/` folder next to your database, named by timestamp (e.g. `app-20260611-091500-pre-v5.db`). Aycorn keeps the **10 most recent** by default; set `AYCORN_BACKUP_KEEP` to change that (`0` keeps all):
+
+```bash
+AYCORN_BACKUP_KEEP=20 aycorn
+```
+
+### Manual backup
+
+Make an on-demand snapshot at any time:
+
+```bash
+aycorn backup                      # writes a timestamped file into the backups/ folder
+aycorn backup ~/aycorn-backup.db   # or write to a path you choose
+```
+
+### Restore / move to new hardware
+
+To move your data to a new machine (or roll back to a snapshot):
+
+```bash
+# On the old machine — make a clean snapshot and copy it over
+aycorn backup ~/aycorn-snapshot.db
+scp ~/aycorn-snapshot.db newhost:~/
+
+# On the new machine — install Aycorn first, then:
+aycorn restore ~/aycorn-snapshot.db   # validates the snapshot, backs up any existing DB, installs it
+aycorn                                # start normally; the schema rolls forward automatically
+```
+
+`restore` checks the snapshot is a healthy SQLite database, backs up your current database first (so the restore is itself reversible), then swaps the file in. **Stop any running Aycorn before restoring.**
+
+> The version you install on the new machine must be the **same or newer** than the one the snapshot came from — Aycorn only upgrades a database forward, never downgrades it.
+
+---
+
 ## Make commands (for source builders)
 
 | Command | What it does |
@@ -196,9 +241,11 @@ AYCORN_DB=/path/to/my.db aycorn
 | `make build` | Build the production binary (React + Go bundled together) at `./aycorn`. |
 | `make install` | Build and copy the binary to `/usr/local/bin/aycorn` so you can run it from anywhere. |
 | `make upgrade` | Rebuild, reinstall, and stop the running instance. Run after `git pull`. Then run `aycorn` to start the new version. |
-| `make restart` | Gracefully stop the running `aycorn` process. Does nothing if it isn't running. |
+| `make stop` | Gracefully stop the running `aycorn` process. Does nothing if it isn't running. |
 | `make typecheck` | Run the TypeScript type checker on the frontend without building. |
 | `make clean` | Delete the built binary and frontend build artifacts. |
+| `make backup` | Snapshot the dev database (`server/app.db`). Pass `DEST=path` to choose where it's written. Acts on the dev DB only — not your installed data. |
+| `make restore` | Restore the dev database from a snapshot. Pass `SRC=path` for the snapshot to restore. Acts on the dev DB only. |
 
 ---
 

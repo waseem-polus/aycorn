@@ -7,7 +7,7 @@ UI_DIST  := $(SRV_DIR)/ui/dist
 # Falls back to "dev" when git isn't available or there are no tags yet.
 VERSION  := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: dev build build-app build-app-dev build-server typecheck install upgrade restart clean
+.PHONY: dev build build-app build-app-dev build-server typecheck install upgrade stop clean backup restore
 
 # Development: build frontend with dev icon, then start Go server.
 # AYCORN_DB pins the dev DB to server/app.db so it doesn't touch the installed
@@ -52,11 +52,21 @@ stop:
 	@echo "Stopped aycorn (if it was running). Run 'aycorn' to start again."
 
 # Rebuild, reinstall, and stop the old process. Run after `git pull`.
-# Run 'aycorn' afterwards to start the new version.
+# Run 'aycorn' afterwards to start the new version. The next start automatically
+# snapshots the DB before applying any schema migration, so upgrades can't lose data.
 upgrade:
 	$(MAKE) install
 	@echo "Upgraded to $$(aycorn --version)"
 	$(MAKE) stop
+
+# Snapshot / restore the DEV database (server/app.db) via the binary's subcommands.
+# These operate on the dev DB only (AYCORN_DB=./app.db); the installed binary's
+# `aycorn backup` / `aycorn restore` act on your real data under the OS config dir.
+backup:
+	cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web backup $(DEST)
+
+restore:
+	cd $(SRV_DIR) && AYCORN_DB=./app.db go run ./cmd/web restore $(SRC)
 
 clean:
 	rm -f $(BINARY)
