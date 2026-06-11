@@ -28,6 +28,7 @@ Implications an agent must account for:
   ```
   sqlite3 app.db < assets/queries/placeholder.sql
   ```
+- **Backups & restore.** The binary snapshots the DB with SQLite `VACUUM INTO` (see [`cmd/web/backup.go`](cmd/web/backup.go)). On startup, `backupBeforeMigrate` snapshots the DB *before* `goose.Up` whenever the on-disk version is behind the embedded migrations — so an upgrade can never silently lose data; a snapshot failure aborts startup. Snapshots land in a `backups/` folder beside the DB (so `make dev` → `server/backups/`), rotated to the newest `AYCORN_BACKUP_KEEP` (default 10, `0` = keep all). Manual subcommands: `aycorn backup [dest]` and `aycorn restore <src>` (`restore` integrity-checks the snapshot, snapshots the current DB first, then swaps the file in; refuses if an `aycorn` process is detected). `make backup` / `make restore SRC=...` are dev-DB wrappers. `server/backups/` is gitignored.
 
 ---
 
