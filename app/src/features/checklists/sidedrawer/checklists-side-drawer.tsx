@@ -1,5 +1,5 @@
 import { Empty, EmptyDescription } from "@/components/ui/empty";
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { LandPlot } from "lucide-react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import {
@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/drawer";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/useMobile";
-import { ChecklistFilters } from "@/features/checklists/checklist-filters";
+import {
+  ChecklistFilters,
+  type ChecklistStatusFilter,
+} from "@/features/checklists/checklist-filters";
 import { ChecklistCard } from "@/features/checklists/checklist-card";
 
 export default function ChecklistsSideDrawer({
@@ -27,6 +30,19 @@ export default function ChecklistsSideDrawer({
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [newlyCreatedId, setNewlyCreatedId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ChecklistStatusFilter>("all");
+
+  const filteredChecklists = useMemo(
+    () =>
+      Checklists.filter((c) => {
+        if (search && !c.Name.toLowerCase().includes(search.toLowerCase()))
+          return false;
+        if (statusFilter !== "all" && c.Status !== statusFilter) return false;
+        return true;
+      }),
+    [Checklists, search, statusFilter],
+  );
 
   return (
     <Drawer
@@ -50,10 +66,17 @@ export default function ChecklistsSideDrawer({
           </DrawerDescription>
         </DrawerHeader>
         <div className="p-4 pt-1 flex flex-col gap-2 flex-1 min-h-0">
-          <ChecklistFilters onCreated={setNewlyCreatedId} />
+          <ChecklistFilters
+            search={search}
+            onSearchChange={setSearch}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            count={filteredChecklists.length}
+            onCreated={setNewlyCreatedId}
+          />
           <div className="flex flex-col gap-2 flex-1 overflow-auto min-h-0">
-            {Checklists.length > 0 ? (
-              Checklists.map((checklist) => (
+            {filteredChecklists.length > 0 ? (
+              filteredChecklists.map((checklist) => (
                 <ChecklistCard
                   key={checklist.ID}
                   checklist={checklist}
