@@ -25,7 +25,7 @@ export default function ChecklistStatusIcon({
         <CircularProgress
           done={doneCount}
           total={totalCount}
-          className="size-5 text-green-500 dark:text-green-600"
+          className="size-5 text-green-500 dark:text-green-500"
         />
       );
   }
