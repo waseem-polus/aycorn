@@ -18,6 +18,7 @@ import { EditableHeader } from "@/components/EditableHeader";
 import ChecklistStatusIcon from "@/features/stage/checklist-status-icon";
 import { stageCalendarBadgeClass } from "@/features/stage/stage-palette";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
+import { DeleteChecklistDialog } from "@/features/checklists/delete-checklist-dialog";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import type { ChecklistDetails } from "@/types/types";
@@ -34,10 +35,11 @@ export function ChecklistCard({
   autoFocus?: boolean;
   onFocusConsumed?: () => void;
 }) {
-  const { Project, Stages } = useContext(ProjectContext);
-  const { update, deleteChecklist } = useChecklistMutation(Project.ID);
+  const { Project, Stages, Checklists } = useContext(ProjectContext);
+  const { update } = useChecklistMutation(Project.ID);
   const [isEditingName, setIsEditingName] = useState(autoFocus);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLHeadingElement>(null);
 
@@ -67,7 +69,17 @@ export function ChecklistCard({
     }
   };
 
+  const candidates = Checklists.filter((c) => c.ID !== checklist.ID);
+
   return (
+    <>
+    <DeleteChecklistDialog
+      checklist={checklist}
+      candidates={candidates}
+      projectId={Project.ID}
+      open={deleteDialogOpen}
+      onOpenChange={setDeleteDialogOpen}
+    />
     <Card className="overflow-hidden rounded-lg shadow-none p-4 pt-3 flex flex-col gap-2 shrink-0">
       <SegmentedProgress
         variant="labeled"
@@ -154,7 +166,8 @@ export function ChecklistCard({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => deleteChecklist.mutate(checklist.ID)}
+              disabled={candidates.length === 0}
+              onClick={() => setDeleteDialogOpen(true)}
             >
               Delete
             </DropdownMenuItem>
@@ -172,5 +185,6 @@ export function ChecklistCard({
         />
       </div>
     </Card>
+    </>
   );
 }

@@ -182,6 +182,16 @@ func (repo *ChecklistRepo) UpdateChecklist(checklist *models.Checklist) (bool, e
 	return rowsAffected > 0, nil
 }
 
+func (repo *ChecklistRepo) TransferTasks(fromChecklistId, toChecklistId int) error {
+	_, err := repo.DB.Exec("UPDATE task SET checklist = ? WHERE checklist = ?;", toChecklistId, fromChecklistId)
+	return err
+}
+
+func (repo *ChecklistRepo) SetDefault(checklistId int) error {
+	_, err := repo.DB.Exec("UPDATE checklist SET isDefault = true WHERE id = ?;", checklistId)
+	return err
+}
+
 func (repo *ChecklistRepo) DeleteChecklist(checklistId int) (bool, error) {
 	query := "DELETE FROM checklist WHERE id = ?;"
 

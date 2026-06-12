@@ -44,13 +44,18 @@ export function useChecklistMutation(projectId: number) {
   });
 
   const deleteChecklist = useMutation({
-    mutationFn: async (checklistId: number) => {
-      const res = await fetch(
-        `/api/checklist/${checklistId}`,
-        {
-          method: "DELETE",
-        },
-      );
+    mutationFn: async ({
+      id,
+      transferChecklistId,
+    }: {
+      id: number;
+      transferChecklistId: number;
+    }) => {
+      const res = await fetch(`/api/checklist/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transferChecklistId }),
+      });
       return await res.json();
     },
     onSuccess: () => invalidateQueries(projectId),

@@ -42,11 +42,38 @@ func (s *ChecklistService) UpdateChecklist(checklist *models.Checklist) (bool, e
 	return success, nil
 }
 
-func (s *ChecklistService) DeleteChecklist(checklistId int) (bool, error) {
-	success, err := s.ChecklistRepo.DeleteChecklist(checklistId)
+func (s *ChecklistService) DeleteChecklist(checklistId int, transferChecklistId int) (bool, error) {
+	checklist, err := s.ChecklistRepo.FindOne(int64(checklistId))
 	if err != nil {
 		return false, err
 	}
 
-	return success, nil
+	if transferChecklistId > 0 {
+		if err := s.ChecklistRepo.TransferTasks(checklistId, transferChecklistId); err != nil {
+			return false, err
+		}
+	}
+
+	if checklist.IsDefault {
+		promoteID := transferChecklistId
+		if promoteID == 0 {
+			others, err := s.ChecklistRepo.InProject(checklist.Project)
+			if err != nil {
+				return false, err
+			}
+			for _, c := range others {
+				if c.ID != checklistId {
+					promoteID = c.ID
+					break
+				}
+			}
+		}
+		if promoteID > 0 {
+			if err := s.ChecklistRepo.SetDefault(promoteID); err != nil {
+				return false, err
+			}
+		}
+	}
+
+	return s.ChecklistRepo.DeleteChecklist(checklistId)
 }

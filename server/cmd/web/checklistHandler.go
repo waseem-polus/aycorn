@@ -48,13 +48,20 @@ func (app *app) putChecklist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) deleteChecklist(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	checklistId, err := strconv.Atoi(r.PathValue("checklistId"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	success, err := app.checklistService.DeleteChecklist(checklistId)
+	body := struct {
+		TransferChecklistID int `json:"transferChecklistId"`
+	}{}
+	json.NewDecoder(r.Body).Decode(&body)
+
+	success, err := app.checklistService.DeleteChecklist(checklistId, body.TransferChecklistID)
 	if err != nil {
 		respondErr(w, err)
 		return
