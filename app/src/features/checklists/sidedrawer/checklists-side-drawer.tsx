@@ -31,7 +31,8 @@ export default function ChecklistsSideDrawer({
   const [open, setOpen] = useState(false);
   const [newlyCreatedId, setNewlyCreatedId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ChecklistStatusFilter>("all");
+  const [statusFilter, setStatusFilter] =
+    useState<ChecklistStatusFilter>("all");
 
   const filteredChecklists = useMemo(
     () =>
@@ -55,7 +56,7 @@ export default function ChecklistsSideDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="h-full min-w-1/3">
+      <DrawerContent className="h-full min-w-xl">
         <DrawerHeader>
           <DrawerTitle className="flex gap-1">
             <LandPlot className="size-5" />

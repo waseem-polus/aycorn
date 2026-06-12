@@ -124,10 +124,9 @@ function SegmentedProgress({
           const isLast = segmentIndex === visibleSegments.length - 1;
 
           return (
-            <Tooltip>
+            <Tooltip key={segmentIndex}>
               <TooltipTrigger asChild>
                 <div
-                  key={segmentIndex}
                   className={cn(
                     "flex h-full min-w-0 items-center gap-1 overflow-hidden px-2",
                     segmentRounding(isFirst, isLast),

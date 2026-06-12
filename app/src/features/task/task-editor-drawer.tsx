@@ -96,7 +96,7 @@ export default function TaskEditorDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
+      <DrawerContent className="min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
         <TaskEditorHeader
           setOpen={setOpen}
           onCopyAsMarkdown={handleCopyAsMarkdown}
