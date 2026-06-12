@@ -124,35 +124,35 @@ function SegmentedProgress({
           const isLast = segmentIndex === visibleSegments.length - 1;
 
           return (
-            <div
-              key={segmentIndex}
-              className={cn(
-                "flex h-full min-w-0 items-center gap-1 overflow-hidden px-2",
-                segmentRounding(isFirst, isLast),
-                segment.className,
-              )}
-              style={{ flexGrow: segment.count, flexBasis: 0 }}
-            >
-              {segment.label ? (
-                <>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  key={segmentIndex}
+                  className={cn(
+                    "flex h-full min-w-0 items-center gap-1 overflow-hidden px-2",
+                    segmentRounding(isFirst, isLast),
+                    segment.className,
+                  )}
+                  style={{ flexGrow: segment.count, flexBasis: 0 }}
+                >
+                  {segment.label ? (
+                    <>
                       <span className="min-w-0 flex-1 truncate text-xs leading-none">
                         {segment.label}
                       </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{tooltipContent}</TooltipContent>
-                  </Tooltip>
-                  <span className="shrink-0 text-xs leading-none">
-                    {segment.count}
-                  </span>
-                </>
-              ) : (
-                <span className="mx-auto shrink-0 text-xs leading-none">
-                  {segment.count}
-                </span>
-              )}
-            </div>
+                      <span className="shrink-0 text-xs leading-none">
+                        {segment.count}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="mx-auto shrink-0 text-xs leading-none">
+                      {segment.count}
+                    </span>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{tooltipContent}</TooltipContent>
+            </Tooltip>
           );
         })
       )}
