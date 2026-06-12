@@ -43,7 +43,6 @@ export function SelectChecklist({
   const { state: task, setState: setTask } = useContext(TaskContext);
   const {
     Checklists: checklists,
-    SetChecklists,
     Project,
   } = useContext(ProjectContext);
   const isControlled = onValueChange !== undefined;
@@ -82,16 +81,6 @@ export function SelectChecklist({
   const handleCreate = () => {
     create.mutate(searchValue.trim(), {
       onSuccess: (newChecklist: Checklist) => {
-        SetChecklists([
-          ...checklists,
-          {
-            TotalCount: 0,
-            DoneCount: 0,
-            Status: "unused",
-            StageCounts: [],
-            ...newChecklist,
-          },
-        ]);
         handleSelect(newChecklist.ID);
       },
       onError: () => toast.error("Failed to create checklist"),

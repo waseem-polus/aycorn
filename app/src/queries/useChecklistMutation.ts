@@ -1,5 +1,5 @@
 import { queryClient } from "@/main";
-import type { Checklist } from "@/types/types";
+import type { Checklist, ChecklistDetails, ProjectDetails } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 
 const invalidateQueries = (projectId: number) => {
@@ -27,7 +27,20 @@ export function useChecklistMutation(projectId: number) {
       });
       return await res.json();
     },
-    onSuccess: () => invalidateQueries(projectId),
+    onSuccess: (newChecklist: Checklist) => {
+      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+        if (!old) return old;
+        const details: ChecklistDetails = {
+          ...newChecklist,
+          TotalCount: 0,
+          DoneCount: 0,
+          Status: "unused",
+          StageCounts: [],
+        };
+        return { ...old, Checklists: [...old.Checklists, details] };
+      });
+      invalidateQueries(projectId);
+    },
   });
 
   const deleteChecklist = useMutation({
