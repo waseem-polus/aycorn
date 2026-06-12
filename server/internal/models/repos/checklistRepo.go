@@ -136,10 +136,10 @@ func (repo *ChecklistRepo) CreateDefaultChecklist(projectId int) error {
 	return err
 }
 
-func (repo *ChecklistRepo) CreateChecklist(projectId int) (*models.Checklist, error) {
+func (repo *ChecklistRepo) CreateChecklist(projectId int, name string) (*models.Checklist, error) {
 	query := "INSERT INTO checklist (name, project, isDefault) VALUES (?, ?, ?) RETURNING id;"
 	res, err := repo.DB.Exec(query,
-		"",
+		name,
 		projectId,
 		false,
 	)

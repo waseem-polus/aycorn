@@ -24,8 +24,8 @@ func (s *ChecklistService) GetChecklistsInProject(checklistId int) ([]models.Che
 	return checklists, nil
 }
 
-func (s *ChecklistService) CreateChecklist(projectId int) (*models.Checklist, error) {
-	checklist, err := s.ChecklistRepo.CreateChecklist(projectId)
+func (s *ChecklistService) CreateChecklist(projectId int, name string) (*models.Checklist, error) {
+	checklist, err := s.ChecklistRepo.CreateChecklist(projectId, name)
 	if err != nil {
 		return nil, err
 	}

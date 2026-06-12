@@ -126,7 +126,7 @@ export default function TaskEditorDrawer({
                 </Button>
               </CollapsibleTrigger>
             </div>
-            {false && (
+            {!propertiesOpen && (
               <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
                 <Badge variant="outline">
                   <LandPlotIcon className="size-2" />

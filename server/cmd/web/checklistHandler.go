@@ -17,7 +17,10 @@ func (app *app) postChecklist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newChecklist, err := app.checklistService.CreateChecklist(projectId)
+	var body struct{ Name string }
+	json.NewDecoder(r.Body).Decode(&body)
+
+	newChecklist, err := app.checklistService.CreateChecklist(projectId, body.Name)
 	if err != nil {
 		respondErr(w, err)
 		return

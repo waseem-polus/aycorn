@@ -19,13 +19,12 @@ export function useChecklistMutation(projectId: number) {
   });
 
   const create = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(
-        `/api/checklist/${projectId}`,
-        {
-          method: "POST",
-        },
-      );
+    mutationFn: async (name: string = "") => {
+      const res = await fetch(`/api/checklist/${projectId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ Name: name }),
+      });
       return await res.json();
     },
     onSuccess: () => invalidateQueries(projectId),

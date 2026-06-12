@@ -1,6 +1,11 @@
 import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip";
 import { Button } from "@/components/ui/button";
-import { DrawerClose, DrawerHeader } from "@/components/ui/drawer";
+import {
+  DrawerClose,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +57,10 @@ export function TaskEditorHeader({
 
   return (
     <DrawerHeader className="p-2 sm:border-b">
+      <DrawerTitle hidden>{task.Name}</DrawerTitle>
+      <DrawerDescription hidden>
+        Task editor for task "{task.Name}"
+      </DrawerDescription>
       <div className="flex justify-between">
         <div className="flex">
           <DrawerClose asChild>
