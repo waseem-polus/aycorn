@@ -14,6 +14,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 	query := `
 		SELECT c.id,
 			c.name,
+			COALESCE(c.description, ''),
 			c.project,
 			c.timeCreated,
 			c.timeModified,
@@ -21,11 +22,8 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 			COUNT(t.id),
 			SUM(CASE WHEN s.type = 'done' THEN 1 ELSE 0 END),
 			CASE
-		        WHEN COUNT(t.id) = 0 THEN 'open'
-		        WHEN SUM(CASE WHEN s.type != 'open'    THEN 1 ELSE 0 END) = 0 THEN 'open'
-		        WHEN SUM(CASE WHEN s.type != 'blocked' THEN 1 ELSE 0 END) = 0 THEN 'blocked'
-		        WHEN SUM(CASE WHEN s.type != 'todo'    THEN 1 ELSE 0 END) = 0 THEN 'todo'
-		        WHEN SUM(CASE WHEN s.type != 'done'    THEN 1 ELSE 0 END) = 0 THEN 'done'
+		        WHEN COUNT(t.id) = 0 THEN 'unused'
+		        WHEN SUM(CASE WHEN s.type != 'done' THEN 1 ELSE 0 END) = 0 THEN 'done'
 		        ELSE 'doing'
 			END
 		FROM checklist c
@@ -50,6 +48,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 		err := rows.Scan(
 			&c.ID,
 			&c.Name,
+			&c.Description,
 			&c.Project,
 			&c.TimeCreated,
 			&c.TimeModified,
@@ -112,7 +111,7 @@ func (repo *ChecklistRepo) InProject(projectId int) ([]models.ChecklistDetails, 
 }
 
 func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
-	query := "SELECT id, name, project, timeCreated, timeModified, isDefault FROM checklist WHERE id = ?;"
+	query := "SELECT id, name, COALESCE(description, ''), project, timeCreated, timeModified, isDefault FROM checklist WHERE id = ?;"
 	rows, err := repo.DB.Query(query, id)
 	if err != nil {
 		return nil, err
@@ -121,7 +120,7 @@ func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
 	rows.Next()
 
 	checklist := models.Checklist{}
-	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Project, &checklist.TimeCreated, &checklist.TimeModified, &checklist.IsDefault)
+	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Description, &checklist.Project, &checklist.TimeCreated, &checklist.TimeModified, &checklist.IsDefault)
 	if err != nil {
 		return nil, err
 	}
@@ -162,11 +161,12 @@ func (repo *ChecklistRepo) CreateChecklist(projectId int) (*models.Checklist, er
 }
 
 func (repo *ChecklistRepo) UpdateChecklist(checklist *models.Checklist) (bool, error) {
-	query := "UPDATE checklist SET name = ?, isDefault = ? WHERE id = ?;"
+	query := "UPDATE checklist SET name = ?, description = ?, isDefault = ? WHERE id = ?;"
 
 	res, err := repo.DB.Exec(
 		query,
 		checklist.Name,
+		checklist.Description,
 		checklist.IsDefault,
 		checklist.ID,
 	)

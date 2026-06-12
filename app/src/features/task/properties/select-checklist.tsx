@@ -23,6 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -96,18 +97,25 @@ export function SelectChecklist({
                 <CommandItem
                   key={checklist.ID}
                   value={
-                    checklist.Name !== "" ? checklist.Name : "New Checklist"
+                    checklist.Name !== ""
+                      ? checklist.Name
+                      : "Untitled Checklist"
                   }
                   onSelect={() => handleSelect(checklist.ID)}
                 >
                   <LandPlotIcon className="size-4 shrink-0" />
                   <span className="flex-1">
-                    {checklist.Name !== "" ? checklist.Name : "New Checklist"}
+                    {checklist.Name !== ""
+                      ? checklist.Name
+                      : "Untitled Checklist"}
                   </span>
                   {checklist.IsDefault && (
                     <Tooltip>
                       <TooltipTrigger>
-                        <GoalIcon className="size-4 shrink-0 text-muted-foreground" />
+                        <Badge variant="outline">
+                          <GoalIcon className="text-muted-foreground" />
+                          default
+                        </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
                         This is the default checklist for new tasks

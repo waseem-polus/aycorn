@@ -35,9 +35,9 @@ function SegmentedProgress({
   const defaultHeight = variant === "labeled" ? "h-7" : "h-2";
 
   const segmentRounding = (isFirst: boolean, isLast: boolean) => {
-    if (isFirst && isLast) return "rounded-xl";
-    if (isFirst) return "rounded-l-xl rounded-r-sm";
-    if (isLast) return "rounded-l-sm rounded-r-xl";
+    if (isFirst && isLast) return "rounded-md";
+    if (isFirst) return "rounded-l-md rounded-r-sm";
+    if (isLast) return "rounded-l-sm rounded-r-md";
     return "rounded-sm";
   };
 
@@ -52,7 +52,7 @@ function SegmentedProgress({
       {...props}
     >
       {totalCount === 0 ? (
-        <div className="bg-muted h-full flex-1 rounded-xl text-xs text-muted-foreground grid place-content-center">
+        <div className="bg-muted h-full flex-1 rounded-md text-xs text-muted-foreground grid place-content-center">
           No tasks yet
         </div>
       ) : variant === "pills" ? (

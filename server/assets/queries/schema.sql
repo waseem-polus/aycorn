@@ -70,6 +70,7 @@ CREATE TABLE checklist (
     id INTEGER PRIMARY KEY,
     project INTEGER,
     name VARCHAR,
+    description VARCHAR DEFAULT '',
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isDefault BOOLEAN,

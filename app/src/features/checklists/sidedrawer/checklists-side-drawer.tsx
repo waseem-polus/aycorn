@@ -1,5 +1,4 @@
 import { Empty, EmptyDescription } from "@/components/ui/empty";
-import { ItemGroup, ItemSeparator } from "@/components/ui/item";
 import React, { useContext } from "react";
 import { LandPlot } from "lucide-react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -13,10 +12,10 @@ import {
 } from "@/components/ui/drawer";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/useMobile";
-import { ChecklistFilters } from "../ChecklistFilters";
-import { ChecklistSideTableItem } from "./ChecklistSideTableItem";
+import { ChecklistFilters } from "@/features/checklists/checklist-filters";
+import { ChecklistCard } from "@/features/checklists/checklist-card";
 
-export default function TaskSideDrawer({
+export default function ChecklistsSideDrawer({
   children,
   onOpenChange = () => {},
 }: {
@@ -40,7 +39,7 @@ export default function TaskSideDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="h-full min-w-1/2 ">
+      <DrawerContent className="h-full min-w-1/3">
         <DrawerHeader>
           <DrawerTitle className="flex gap-1">
             <LandPlot className="size-5" />
@@ -52,24 +51,22 @@ export default function TaskSideDrawer({
         </DrawerHeader>
         <div className="p-4 pt-1 flex flex-col gap-2 flex-1 min-h-0">
           <ChecklistFilters onCreated={setNewlyCreatedId} />
-          <ItemGroup className="flex-1 rounded-md border overflow-auto min-h-0">
+          <div className="flex flex-col gap-2 flex-1 overflow-auto min-h-0">
             {Checklists.length > 0 ? (
-              Checklists.map((checklist, i) => (
-                <React.Fragment key={checklist.ID}>
-                  <ChecklistSideTableItem
-                    checklist={checklist}
-                    autoFocus={checklist.ID === newlyCreatedId}
-                    onFocusConsumed={() => setNewlyCreatedId(null)}
-                  />
-                  {Checklists.length - 1 != i && <ItemSeparator />}
-                </React.Fragment>
+              Checklists.map((checklist) => (
+                <ChecklistCard
+                  key={checklist.ID}
+                  checklist={checklist}
+                  autoFocus={checklist.ID === newlyCreatedId}
+                  onFocusConsumed={() => setNewlyCreatedId(null)}
+                />
               ))
             ) : (
               <Empty>
                 <EmptyDescription>No Checklists Found</EmptyDescription>
               </Empty>
             )}
-          </ItemGroup>
+          </div>
         </div>
       </DrawerContent>
     </Drawer>

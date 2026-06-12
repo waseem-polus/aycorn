@@ -15,6 +15,7 @@ type Project struct {
 type Checklist struct {
 	ID           int
 	Name         string
+	Description  string
 	Project      int
 	TimeCreated  *time.Time
 	TimeModified *time.Time

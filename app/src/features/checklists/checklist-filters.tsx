@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/input-group";
 import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { useChecklistMutation } from "@/queries/useChecklistMutation";
 import type { Checklist } from "@/types/types";
@@ -43,7 +43,7 @@ export function ChecklistFilters({
                 {
                   TotalCount: 0,
                   DoneCount: 0,
-                  Status: "open",
+                  Status: "unused",
                   StageCounts: [],
                   ...newChecklist,
                 },

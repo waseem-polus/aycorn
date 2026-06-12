@@ -1,14 +1,14 @@
 import { LandPlot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ChecklistSideDrawer from "@/components/checklists/sidedrawer/ChecklistsSideTable";
+import ChecklistsSideDrawer from "@/features/checklists/sidedrawer/checklists-side-drawer";
 
 export function ProjectChecklists() {
   return (
-    <ChecklistSideDrawer>
+    <ChecklistsSideDrawer>
       <Button variant="outline">
         <LandPlot />
         Checklists
       </Button>
-    </ChecklistSideDrawer>
+    </ChecklistsSideDrawer>
   );
 }
