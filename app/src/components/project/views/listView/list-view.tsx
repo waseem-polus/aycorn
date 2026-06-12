@@ -28,7 +28,7 @@ export function ListView({
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { Tasks, Stages } = useContext(ProjectContext);
+  const { Tasks, Stages, Checklists } = useContext(ProjectContext);
   const stagesById = React.useMemo(
     () => new Map(Stages.map((s) => [s.ID, s])),
     [Stages],
@@ -96,30 +96,34 @@ export function ListView({
                                   excludeYear
                                 />
 
-                                <Badge
-                                  variant="outline"
-                                  className="bg-background flex sm:hidden"
-                                >
-                                  <LandPlot className="size-2" />
-                                  {task.ChecklistName !== ""
-                                    ? task.ChecklistName
-                                    : "New Checklist"}
-                                </Badge>
+                                {Checklists.length > 1 && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-background flex sm:hidden"
+                                  >
+                                    <LandPlot className="size-2" />
+                                    {task.ChecklistName !== ""
+                                      ? task.ChecklistName
+                                      : "New Checklist"}
+                                  </Badge>
+                                )}
                               </span>
                             </ItemDescription>
                           </ItemContent>
                           <ItemActions>
                             <span className="hidden sm:flex w-full justify-end gap-2">
                               <TaskTypeBadge type={task.Type} />
-                              <Badge
-                                variant="outline"
-                                className="bg-background"
-                              >
-                                <LandPlot className="size-2" />
-                                {task.ChecklistName !== ""
-                                  ? task.ChecklistName
-                                  : "New Checklist"}
-                              </Badge>
+                              {Checklists.length > 1 && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-background"
+                                >
+                                  <LandPlot className="size-2" />
+                                  {task.ChecklistName !== ""
+                                    ? task.ChecklistName
+                                    : "Untitled Checklist"}
+                                </Badge>
+                              )}
                             </span>
                             <ChevronRightIcon className="size-4" />
                           </ItemActions>

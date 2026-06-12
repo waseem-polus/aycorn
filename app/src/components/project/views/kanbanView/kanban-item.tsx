@@ -16,6 +16,8 @@ import type { ChecklistTask } from "@/types/types";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
+import { useContext } from "react";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 
@@ -47,6 +49,8 @@ export function KanbanItem({
     listeners: pointerListeners as DragListeners | undefined,
   });
   const itemClassName = (itemProps?.className as string | undefined) ?? "";
+
+  const { Checklists } = useContext(ProjectContext);
 
   return (
     <TaskProvider defaultState={task} key={task.ID}>
@@ -94,10 +98,12 @@ export function KanbanItem({
 
             <ItemFooter>
               <span className="w-full flex flex-col gap-1">
-                <Badge variant="outline">
-                  <LandPlot className="size-2" />
-                  {task.ChecklistName}
-                </Badge>
+                {Checklists.length > 1 && (
+                  <Badge variant="outline">
+                    <LandPlot className="size-2" />
+                    {task.ChecklistName}
+                  </Badge>
+                )}
                 <Badge
                   variant={task.Assignee !== "" ? "secondary" : "outline"}
                   className={
