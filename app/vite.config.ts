@@ -29,6 +29,10 @@ export default defineConfig(({ command, mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "../server/ui/dist",
+    emptyOutDir: true,
+  },
   optimizeDeps: {
     include: ["@tabler/icons-react"],
   },

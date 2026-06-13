@@ -22,13 +22,9 @@ build: build-app build-server
 
 build-app:
 	cd $(APP_DIR) && npm run build
-	mkdir -p $(UI_DIST)
-	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
 build-app-dev:
 	cd $(APP_DIR) && npx vite build --mode development
-	mkdir -p $(UI_DIST)
-	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
 # Run TypeScript type check without building
 typecheck:
@@ -70,4 +66,4 @@ restore:
 
 clean:
 	rm -f $(BINARY)
-	rm -rf $(UI_DIST) $(APP_DIR)/dist dist-release
+	rm -rf $(UI_DIST) dist-release
