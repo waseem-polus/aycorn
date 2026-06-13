@@ -25,12 +25,12 @@ export function TaskRelationshipsCard() {
           <CardContent className="flex flex-col p-0 gap-4 sm:gap-2 min-w-0">
             <div className="flex justify-between">
               <span className="flex items-center gap-2">
-                <LinkIcon className="size-3 stroke-muted-foreground" />7 Linked
-                Tasks
+                <LinkIcon className="size-3 stroke-muted-foreground" />
+                Linked Tasks
               </span>
 
               <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
-                Manage
+                Manage 7 links
                 <ChevronRight className="size-4" />
               </span>
             </div>
