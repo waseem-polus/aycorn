@@ -15,7 +15,6 @@ export function StageTypeSummary({ stages }: { stages: Stage[] }) {
       todo: 0,
       doing: 0,
       done: 0,
-      blocked: 0,
     };
     for (const s of stages) {
       initial[s.Type]++;

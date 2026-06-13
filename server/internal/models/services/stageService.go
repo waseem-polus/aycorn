@@ -15,7 +15,7 @@ func (s *StageService) GetAllStages() ([]models.Stage, error) {
 	return s.StageRepo.All()
 }
 
-var ErrInvalidStageType = errors.New("stage type must be one of: todo, doing, done, blocked")
+var ErrInvalidStageType = errors.New("stage type must be one of: todo, doing, done")
 
 var ErrInvalidStageColor = errors.New("stage color is not in the allowed palette")
 
@@ -28,10 +28,9 @@ var ErrInvalidMoveDestination = errors.New("move destination must be an existing
 var ErrInvalidStageOrder = errors.New("ordered stage ids must be exactly the stages in this workflow")
 
 var creatableStageTypes = map[string]struct{}{
-	"todo":    {},
-	"doing":   {},
-	"done":    {},
-	"blocked": {},
+	"todo":  {},
+	"doing": {},
+	"done":  {},
 }
 
 const defaultNewStageType = "doing"

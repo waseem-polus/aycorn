@@ -19,7 +19,6 @@ type StageDefault struct {
 }
 
 var StageDefaults = map[string]StageDefault{
-	"blocked": {Name: "Blocked", Description: "Tasks cannot be started", Color: "red", Icon: "circle-minus", Type: "blocked"},
 	"open":    {Name: "Open", Description: "Tasks are being planned", Color: "gray", Icon: "circle-dashed", Type: "open"},
 	"todo":    {Name: "Todo", Description: "Tasks are ready to start", Color: "orange", Icon: "circle", Type: "todo"},
 	"doing":   {Name: "Doing", Description: "Tasks are being worked on", Color: "green", Icon: "circle-dot", Type: "doing"},

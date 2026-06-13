@@ -11,7 +11,6 @@ export const STAGE_TYPE_RULES: Record<StageType, StageTypeRule> = {
   todo: { label: "optional", min: 0, max: Infinity },
   doing: { label: "optional", min: 0, max: Infinity },
   done: { label: "optional", min: 0, max: Infinity },
-  blocked: { label: "optional", min: 0, max: Infinity },
 };
 
 export const STAGE_TYPE_COLORS: Record<StageType, string> = {
@@ -19,5 +18,4 @@ export const STAGE_TYPE_COLORS: Record<StageType, string> = {
   todo: "orange",
   doing: "green",
   done: "purple",
-  blocked: "red",
 };

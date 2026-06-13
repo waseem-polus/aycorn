@@ -19,7 +19,7 @@ INSERT INTO stage (id, workflow, name, description, color, icon, position, type)
 
 -- Workflow 3: Software Project
 (9,  3, 'Open',         'Tasks are being planned',              'gray',   'circle-dashed', 1, 'open'),
-(10, 3, 'Blocked',      'Blocked by other development',         'red',    'circle-minus',  2, 'blocked'),
+(10, 3, 'Backlog',      'Tasks waiting to be picked up',        'orange', 'circle',        2, 'todo'),
 (11, 3, 'Ready',        'Ready to begin development',           'orange', 'circle',        3, 'todo'),
 (12, 3, 'Development',  'Development has begun',                'green',  'circle-dot',    4, 'doing'),
 (13, 3, 'Review',       'Testing and review has begun',         'blue',   'circle-dot',    5, 'doing'),

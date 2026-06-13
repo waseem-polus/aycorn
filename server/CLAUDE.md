@@ -72,7 +72,7 @@ Schema summary:
 workflow  (id, name, description, timeCreated, timeModified)
 stage     (id, workflow→workflow.id ON DELETE CASCADE, name, description,
            color, icon, position,
-           type CHECK in ('open','todo','doing','done','blocked'),
+           type CHECK in ('open','todo','doing','done'),
            timeCreated, timeModified)
 project   (id, name, pinned, workflow→workflow.id, timeCreated, timeModified)
 checklist (id, project→project.id, name, timeCreated, timeModified, isDefault)

@@ -22,7 +22,7 @@ CREATE TABLE stage (
     color VARCHAR NOT NULL,
     icon VARCHAR NOT NULL,
     position INTEGER NOT NULL,
-    type TEXT NOT NULL CHECK(type IN ('open', 'todo', 'doing', 'done', 'blocked')),
+    type TEXT NOT NULL CHECK(type IN ('open', 'todo', 'doing', 'done')),
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

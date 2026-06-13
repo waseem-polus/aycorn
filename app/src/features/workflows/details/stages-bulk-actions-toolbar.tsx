@@ -32,12 +32,7 @@ import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import { IconPickerPopover } from "@/features/icon-picker/icon-picker-popover";
 import { ColorGrid } from "@/features/color-picker/color-grid";
 
-const ASSIGNABLE_TYPES: Exclude<StageType, "open">[] = [
-  "todo",
-  "doing",
-  "done",
-  "blocked",
-];
+const ASSIGNABLE_TYPES: Exclude<StageType, "open">[] = ["todo", "doing", "done"];
 
 export function StagesBulkActionsToolbar({
   stages,
