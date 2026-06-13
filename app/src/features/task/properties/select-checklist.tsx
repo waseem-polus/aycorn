@@ -127,11 +127,7 @@ export function SelectChecklist({
                 {filteredChecklists.map((checklist) => (
                   <CommandItem
                     key={checklist.ID}
-                    value={
-                      checklist.Name !== ""
-                        ? checklist.Name
-                        : "Untitled Checklist"
-                    }
+                    value={checklist.ID.toString()}
                     onSelect={() => handleSelect(checklist.ID)}
                   >
                     <LandPlotIcon className="size-4 shrink-0" />
