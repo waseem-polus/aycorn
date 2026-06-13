@@ -56,7 +56,7 @@ export default function ChecklistsSideDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="h-full min-w-xl">
+      <DrawerContent className="h-full sm:min-w-xl">
         <DrawerHeader>
           <DrawerTitle className="flex gap-1">
             <LandPlot className="size-5" />
