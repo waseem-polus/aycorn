@@ -21,12 +21,12 @@ export function TaskRelationshipsCard() {
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
-        <Card className="mx-3 sm:mx-6 mt-4 px-3 py-4 sm:p-4 hover:bg-accent hover:cursor-pointer min-w-0">
+        <Card className="mx-3 sm:mx-6 mt-2 sm:mt-4 px-3 py-4 sm:p-4 hover:bg-accent hover:cursor-pointer min-w-0">
           <CardContent className="flex flex-col p-0 gap-4 sm:gap-2 min-w-0">
             <div className="flex justify-between">
               <span className="flex items-center gap-2">
-                <LinkIcon className="size-3 stroke-muted-foreground" />
-                Relations
+                <LinkIcon className="size-3 stroke-muted-foreground" />7 Linked
+                Tasks
               </span>
 
               <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
@@ -40,26 +40,26 @@ export function TaskRelationshipsCard() {
                 <span className="font-semibold">0</span>
                 <span className="font-light"> of </span>
                 <span className="font-semibold">2</span>
-                <span className="font-light">Blockers resolved</span>
+                <span className="font-light">blockers resolved</span>
               </Badge>
               <Badge variant="outline" className={stageBadgeClass("red")}>
-                <OctagonMinusIcon className={stageStrokeClass("red")} />1
-                <span className="font-light">Blocked by</span>
+                <OctagonMinusIcon className={stageStrokeClass("red")} />
+                <span className="font-light">Blocks</span>1
               </Badge>
               <Badge variant="outline" className={stageBadgeClass("purple")}>
-                <AtSignIcon className={stageStrokeClass("purple")} />2
-                <span className="font-light">Mentions</span>
+                <AtSignIcon className={stageStrokeClass("purple")} />
+                <span className="font-light">Mentions</span> 2
               </Badge>
               <Badge variant="outline" className={stageBadgeClass("purple")}>
-                <AtSignIcon className={stageStrokeClass("purple")} />1
-                <span className="font-light">Mentioned by</span>
+                <AtSignIcon className={stageStrokeClass("purple")} />
+                <span className="font-light">Mentioned by</span> 1
               </Badge>
               <Badge variant="outline" className={stageBadgeClass("emerald")}>
                 <ListTodoIcon className={stageStrokeClass("emerald")} />
                 <span className="font-semibold">1</span>
                 <span className="font-light"> of </span>
                 <span className="font-semibold">2</span>
-                <span className="font-light">Subtasks done</span>
+                <span className="font-light">subtasks done</span>
               </Badge>
             </span>
           </CardContent>

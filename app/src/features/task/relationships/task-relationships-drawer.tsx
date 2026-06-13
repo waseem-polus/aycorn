@@ -12,10 +12,10 @@ export function TaskRelationshipsDrawer() {
       <DrawerHeader>
         <DrawerTitle className="flex gap-2 items-center">
           <LinkIcon className="size-4 stroke-muted-foreground" />
-          Relations
+          Linked Tasks
         </DrawerTitle>
         <DrawerDescription className="text-start">
-          Manage relationships between your tasks
+          7 linked tasks · auto reciprocal
         </DrawerDescription>
       </DrawerHeader>
     </DrawerContent>
