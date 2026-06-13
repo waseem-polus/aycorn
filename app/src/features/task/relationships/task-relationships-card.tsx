@@ -19,7 +19,7 @@ export function TaskRelationshipsCard() {
   const isMobile = useIsMobile();
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} handleOnly={!isMobile}>
       <DrawerTrigger asChild>
         <Card className="mx-3 sm:mx-6 mt-2 sm:mt-4 px-3 py-4 sm:p-4 hover:bg-accent hover:cursor-pointer min-w-0">
           <CardContent className="flex flex-col p-0 gap-4 sm:gap-2 min-w-0">

@@ -32,7 +32,7 @@ export function TaskRelationshipsDrawer() {
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
-            <InputGroupAddon align="inline-end">7 tasks</InputGroupAddon>
+            <InputGroupAddon align="inline-end">7 links</InputGroupAddon>
           </InputGroup>
           <Button className="hover:cursor-pointer">
             <PlusIcon />
