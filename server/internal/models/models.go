@@ -119,6 +119,33 @@ type Stage struct {
 	TimeModified *time.Time
 }
 
+type TaskRelationshipType struct {
+	ID       int    `json:"ID"`
+	FromName string `json:"FromName"`
+	ToName   string `json:"ToName"`
+	Behavior string `json:"Behavior"`
+	Icon     string `json:"Icon"`
+	Color    string `json:"Color"`
+	IsSystem bool   `json:"IsSystem"`
+}
+
+// RelatedTask is the "other" task in a relationship, summarized from the
+// queried task's perspective.
+type RelatedTask struct {
+	ID            int    `json:"ID"`
+	Name          string `json:"Name"`
+	ProjectID     int    `json:"ProjectID"`
+	ChecklistName string `json:"ChecklistName"`
+	IsDone        bool   `json:"IsDone"`
+}
+
+type TaskRelationship struct {
+	ID        int                  `json:"ID"`
+	Type      TaskRelationshipType `json:"Type"`
+	Direction string               `json:"Direction"` // "from" if the queried task is fromTask, else "to"
+	Other     RelatedTask          `json:"Other"`
+}
+
 type BulkResult struct {
 	Success int `json:"success"`
 	Failed  int `json:"failed"`

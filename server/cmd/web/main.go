@@ -89,6 +89,7 @@ type app struct {
 	stageRepo            *repos.StageRepo
 	taskTypeRepo         *repos.TaskTypeRepo
 	taskTypeCategoryRepo *repos.TaskTypeCategoryRepo
+	taskRelationshipRepo *repos.TaskRelationshipRepo
 
 	projectService          *services.ProjectService
 	checklistService        *services.ChecklistService
@@ -97,6 +98,7 @@ type app struct {
 	stageService            *services.StageService
 	taskTypeService         *services.TaskTypeService
 	taskTypeCategoryService *services.TaskTypeCategoryService
+	taskRelationshipService *services.TaskRelationshipService
 }
 
 func main() {
@@ -159,6 +161,7 @@ func main() {
 	stageRepo := &repos.StageRepo{DB: db}
 	taskTypeRepo := &repos.TaskTypeRepo{DB: db}
 	taskTypeCategoryRepo := &repos.TaskTypeCategoryRepo{DB: db}
+	taskRelationshipRepo := &repos.TaskRelationshipRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -187,6 +190,9 @@ func main() {
 		CategoryRepo: taskTypeCategoryRepo,
 		TaskTypeRepo: taskTypeRepo,
 	}
+	taskRelationshipService := &services.TaskRelationshipService{
+		TaskRelationshipRepo: taskRelationshipRepo,
+	}
 
 	app := app{
 		projectRepo:          projectRepo,
@@ -195,6 +201,7 @@ func main() {
 		stageRepo:            stageRepo,
 		taskTypeRepo:         taskTypeRepo,
 		taskTypeCategoryRepo: taskTypeCategoryRepo,
+		taskRelationshipRepo: taskRelationshipRepo,
 
 		projectService:          projectService,
 		checklistService:        checklistService,
@@ -203,6 +210,7 @@ func main() {
 		stageService:            stageService,
 		taskTypeService:         taskTypeService,
 		taskTypeCategoryService: taskTypeCategoryService,
+		taskRelationshipService: taskRelationshipService,
 	}
 
 	ln, port, err := findAvailablePort(resolvePort())

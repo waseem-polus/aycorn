@@ -39,6 +39,9 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/task/bulk", app.bulkUpdateTasks)
 	mux.HandleFunc("POST /api/task/bulk/delete", app.bulkDeleteTasks)
 	mux.HandleFunc("DELETE /api/task/{taskId}", app.deleteTask)
+	mux.HandleFunc("GET /api/task/relationships/{taskId}", app.getTaskRelationships)
+
+	mux.HandleFunc("GET /api/task-relationship-type", app.getAllTaskRelationshipTypes)
 
 	mux.HandleFunc("POST /api/checklist/{projectId}", app.postChecklist)
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)

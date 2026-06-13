@@ -144,6 +144,34 @@ export type TaskFilter = {
   Stage: Stage["ID"][];
 };
 
+export const RELATIONSHIP_BEHAVIORS = ["blocking", "subtask", "link"] as const;
+export type RelationshipBehavior = (typeof RELATIONSHIP_BEHAVIORS)[number];
+
+export type TaskRelationshipType = {
+  ID: number;
+  FromName: string;
+  ToName: string;
+  Behavior: RelationshipBehavior;
+  Icon: string;
+  Color: string;
+  IsSystem: boolean;
+};
+
+export type RelatedTask = {
+  ID: number;
+  Name: string;
+  ProjectID: number;
+  ChecklistName: string;
+  IsDone: boolean;
+};
+
+export type TaskRelationship = {
+  ID: number;
+  Type: TaskRelationshipType;
+  Direction: "from" | "to";
+  Other: RelatedTask;
+};
+
 export type BulkResult = {
   success: number;
   failed: number;

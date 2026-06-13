@@ -84,3 +84,17 @@ INSERT INTO task ( id, checklist, stage, name, body, timeCreated, timeCompleted,
 (19, 8, 7,  'Vercel - DevOps',            '[]', '2025-03-10 11:15:00', '2025-03-20 17:00:00', '2025-03-18 16:00:00', '2025-03-18 17:00:00', '', 'Urgent', 4),
 (20, 8, 8,  'Linear - Software Engineer', '[]', '2025-03-12 09:00:00', '2025-03-22 12:00:00', NULL,                  NULL,                  '', 'Medium', 4),
 (21, 8, 6,  'Supabase - Backend',         '[]', '2025-03-15 10:00:00', NULL,                  '2025-03-25 14:00:00', '2025-03-25 15:00:00', '', 'High',   4);
+
+-- Example task relationships, centered on task 1 ("Gather requirements") so its
+-- card shows a spread of every behavior/direction. relationshipType IDs:
+-- 1 = blocking (blocks / blocked by), 2 = subtask (parent / subtask), 3 = link (mentions / mentioned by).
+-- Tasks 9 and 14 are in a done stage, so they exercise the "resolved"/"done" counts.
+INSERT INTO task_relationship (fromTask, toTask, relationshipType) VALUES
+    (2,  1,  1),  -- task 2 blocks task 1        -> task 1: blocked by (unresolved)
+    (9,  1,  1),  -- task 9 blocks task 1        -> task 1: blocked by (resolved, 9 is done)
+    (1,  3,  1),  -- task 1 blocks task 3        -> task 1: blocks 1
+    (1,  4,  2),  -- task 1 parent of task 4     -> task 1: subtask (not done)
+    (1,  14, 2),  -- task 1 parent of task 14    -> task 1: subtask (done, cross-project)
+    (1,  5,  3),  -- task 1 mentions task 5      -> task 1: mentions (cross-project)
+    (1,  15, 3),  -- task 1 mentions task 15     -> task 1: mentions (cross-project)
+    (6,  1,  3);  -- task 6 mentions task 1      -> task 1: mentioned by
