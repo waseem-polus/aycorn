@@ -22,19 +22,19 @@ export function TaskRelationshipsCard() {
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Card className="mx-3 sm:mx-6 mt-4 px-3 py-4 sm:p-4 hover:bg-accent hover:cursor-pointer min-w-0">
-          <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-0 gap-3 sm:gap-2 min-w-0">
-            <div className="flex sm:shrink justify-between">
+          <CardContent className="flex flex-col p-0 gap-4 sm:gap-2 min-w-0">
+            <div className="flex justify-between">
               <span className="flex items-center gap-2">
                 <LinkIcon className="size-3 stroke-muted-foreground" />
                 Relations
               </span>
 
-              <span className="inline-flex sm:hidden items-center gap-1 text-muted-foreground text-xs">
+              <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
                 Manage
                 <ChevronRight className="size-4" />
               </span>
             </div>
-            <span className="flex flex-1 sm:px-2 gap-1 min-w-0 flex-wrap">
+            <span className="flex flex-1 gap-1 sm:gap-2 min-w-0 flex-wrap">
               <Badge variant="outline" className={stageBadgeClass("red")}>
                 <OctagonMinusIcon className={stageStrokeClass("red")} />
                 <span className="font-semibold">0</span>
@@ -61,10 +61,6 @@ export function TaskRelationshipsCard() {
                 <span className="font-semibold">2</span>
                 <span className="font-light">Subtasks done</span>
               </Badge>
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1 text-muted-foreground text-xs">
-              Manage
-              <ChevronRight className="size-4" />
             </span>
           </CardContent>
         </Card>
