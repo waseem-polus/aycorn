@@ -1,4 +1,8 @@
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,10 +32,15 @@ import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, LandPlotIcon, User } from "lucide-react";
+import {
+  ChevronDown,
+  LandPlotIcon,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import { extractPlainText } from "@/features/task/task-utils";
+import { TaskRelationshipsCard } from "@/features/task/relationships/task-relationships-card";
 
 export default function TaskEditorDrawer({
   children,
@@ -96,7 +105,7 @@ export default function TaskEditorDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
+      <DrawerContent className="sm:min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
         <TaskEditorHeader
           setOpen={setOpen}
           onCopyAsMarkdown={handleCopyAsMarkdown}
@@ -178,6 +187,8 @@ export default function TaskEditorDrawer({
               </section>
             </CollapsibleContent>
           </Collapsible>
+
+          <TaskRelationshipsCard />
 
           {open &&
           (task.ID === 0 ||
