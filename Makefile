@@ -51,9 +51,9 @@ stop:
 # Run 'aycorn' afterwards to start the new version. The next start automatically
 # snapshots the DB before applying any schema migration, so upgrades can't lose data.
 upgrade:
+	$(MAKE) stop
 	$(MAKE) install
 	@echo "Upgraded to $$(aycorn --version)"
-	$(MAKE) stop
 
 # Snapshot / restore the DEV database (server/app.db) via the binary's subcommands.
 # These operate on the dev DB only (AYCORN_DB=./app.db); the installed binary's

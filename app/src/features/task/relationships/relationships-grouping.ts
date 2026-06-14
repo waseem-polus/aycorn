@@ -9,6 +9,8 @@ export type RelationshipCategory = {
   color: string;
   icon: string;
   relationships: TaskRelationship[];
+  typeId: number;
+  direction: TaskRelationship["Direction"];
 };
 
 // The 6 directional buckets, in display order. Labels are fixed per
@@ -50,6 +52,6 @@ export function groupIntoCategories(
     const rels = byBucket.get(key);
     if (!rels || rels.length === 0) return [];
     const type = rels[0].Type;
-    return [{ key, label, color: type.Color, icon: type.Icon, relationships: rels }];
+    return [{ key, label, color: type.Color, icon: type.Icon, relationships: rels, typeId: type.ID, direction }];
   });
 }

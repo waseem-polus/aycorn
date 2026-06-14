@@ -55,7 +55,7 @@ func (repo *TaskRelationshipRepo) ForTask(taskId int) ([]models.TaskRelationship
 		       CASE WHEN tr.fromTask = ? THEN 'from' ELSE 'to' END,
 		       trt.id, trt.fromName, trt.toName, trt.behavior, trt.icon, trt.color, trt.isSystem,
 		       ot.id, COALESCE(ot.name, ''), c.project, p.name, c.name,
-		       COALESCE(ot.priority, ''), (ot.timeCompleted IS NOT NULL),
+		       COALESCE(ot.priority, ''), (s.type = 'done'),
 		       s.id, s.workflow, s.name, COALESCE(s.description, ''), s.color, s.icon, s.position, s.type,
 		       tt.id, tt.name, COALESCE(tt.description, ''), tt.icon, tt.color, tt.isDefault
 		  FROM task_relationship tr
@@ -115,4 +115,27 @@ func (repo *TaskRelationshipRepo) ForTask(taskId int) ([]models.TaskRelationship
 	}
 
 	return relationships, rows.Err()
+}
+
+func (repo *TaskRelationshipRepo) Create(fromTaskID, toTaskID, typeID int) error {
+	_, err := repo.DB.Exec(
+		`INSERT INTO task_relationship (fromTask, toTask, relationshipType) VALUES (?, ?, ?)`,
+		fromTaskID, toTaskID, typeID,
+	)
+	return err
+}
+
+func (repo *TaskRelationshipRepo) Delete(id int) error {
+	res, err := repo.DB.Exec(`DELETE FROM task_relationship WHERE id = ?`, id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
 }

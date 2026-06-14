@@ -56,7 +56,8 @@ func httpStatusForError(err error) int {
 		return http.StatusBadRequest
 	case errors.Is(err, services.ErrStageHasTasks):
 		return http.StatusUnprocessableEntity
-	case errors.Is(err, services.ErrWorkflowInUse):
+	case errors.Is(err, services.ErrWorkflowInUse),
+		errors.Is(err, services.ErrDuplicateRelationship):
 		return http.StatusConflict
 	case errors.Is(err, services.ErrDefaultTaskType):
 		return http.StatusForbidden
