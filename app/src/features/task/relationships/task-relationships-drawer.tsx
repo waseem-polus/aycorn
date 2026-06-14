@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon, LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import {
   Command,
@@ -95,8 +95,6 @@ export function TaskRelationshipsDrawer() {
     createRelationship.mutate({ fromTaskId, toTaskId, typeId });
     setNewRelState(null);
   };
-
-  const newButtonOpen = newRelState !== null;
 
   return (
     <DrawerContent className="sm:min-w-2xl p-4 gap-4">
