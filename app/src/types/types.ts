@@ -5,6 +5,7 @@ export const STAGE_TYPES = ["open", "todo", "doing", "done", "blocked"] as const
 
 export type Priority = (typeof PRIORITIES)[number];
 export type StageType = (typeof STAGE_TYPES)[number];
+export type ChecklistStatus = "unused" | "doing" | "done";
 
 export type TaskTypeCategory = {
   ID: number;
@@ -85,15 +86,19 @@ export type Stage = {
 export type Checklist = {
   ID: number;
   Name: string;
+  Description: string;
   TimeCreated: string;
   TimeModified: string;
   IsDefault: boolean;
 };
 
+export type StageCount = { StageID: number; Count: number };
+
 export type ChecklistDetails = Checklist & {
   DoneCount: number;
   TotalCount: number;
-  Status: StageType;
+  Status: ChecklistStatus;
+  StageCounts: StageCount[];
 };
 
 export type Task = {

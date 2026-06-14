@@ -96,14 +96,18 @@ export default function TaskEditorDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="min-w-1/2 p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
+      <DrawerContent className="min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
         <TaskEditorHeader
           setOpen={setOpen}
           onCopyAsMarkdown={handleCopyAsMarkdown}
           onCopyAsPlainText={handleCopyAsPlainText}
           isEditorReady={editorReady}
         />
-        <div className="flex-1 min-h-0 overflow-y-auto" data-vaul-no-drag onWheel={(e) => e.stopPropagation()}>
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          data-vaul-no-drag
+          onWheel={(e) => e.stopPropagation()}
+        >
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
               <EditableTaskName onChange={handleTaskChanges} />

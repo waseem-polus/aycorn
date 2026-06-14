@@ -1,5 +1,5 @@
 import { queryClient } from "@/main";
-import type { Checklist } from "@/types/types";
+import type { Checklist, ChecklistDetails, ProjectDetails } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 
 const invalidateQueries = (projectId: number) => {
@@ -19,26 +19,43 @@ export function useChecklistMutation(projectId: number) {
   });
 
   const create = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(
-        `/api/checklist/${projectId}`,
-        {
-          method: "POST",
-        },
-      );
+    mutationFn: async (name: string = "") => {
+      const res = await fetch(`/api/checklist/${projectId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ Name: name }),
+      });
       return await res.json();
     },
-    onSuccess: () => invalidateQueries(projectId),
+    onSuccess: (newChecklist: Checklist) => {
+      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+        if (!old) return old;
+        const details: ChecklistDetails = {
+          ...newChecklist,
+          TotalCount: 0,
+          DoneCount: 0,
+          Status: "unused",
+          StageCounts: [],
+        };
+        return { ...old, Checklists: [...old.Checklists, details] };
+      });
+      invalidateQueries(projectId);
+    },
   });
 
   const deleteChecklist = useMutation({
-    mutationFn: async (checklistId: number) => {
-      const res = await fetch(
-        `/api/checklist/${checklistId}`,
-        {
-          method: "DELETE",
-        },
-      );
+    mutationFn: async ({
+      id,
+      transferChecklistId,
+    }: {
+      id: number;
+      transferChecklistId: number;
+    }) => {
+      const res = await fetch(`/api/checklist/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transferChecklistId }),
+      });
       return await res.json();
     },
     onSuccess: () => invalidateQueries(projectId),

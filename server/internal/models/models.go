@@ -15,17 +15,24 @@ type Project struct {
 type Checklist struct {
 	ID           int
 	Name         string
+	Description  string
 	Project      int
 	TimeCreated  *time.Time
 	TimeModified *time.Time
 	IsDefault    bool
 }
 
+type StageCount struct {
+	StageID int
+	Count   int
+}
+
 type ChecklistDetails struct {
 	Checklist
-	DoneCount  int
-	TotalCount int
-	Status     string
+	DoneCount   int
+	TotalCount  int
+	Status      string
+	StageCounts []StageCount
 }
 
 type TaskTypeCategory struct {

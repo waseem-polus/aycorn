@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -17,7 +18,13 @@ func (app *app) postChecklist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newChecklist, err := app.checklistService.CreateChecklist(projectId)
+	var body struct{ Name string }
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil && err != io.EOF {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newChecklist, err := app.checklistService.CreateChecklist(projectId, body.Name)
 	if err != nil {
 		respondErr(w, err)
 		return
@@ -45,13 +52,23 @@ func (app *app) putChecklist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) deleteChecklist(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	checklistId, err := strconv.Atoi(r.PathValue("checklistId"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	success, err := app.checklistService.DeleteChecklist(checklistId)
+	body := struct {
+		TransferChecklistID int `json:"transferChecklistId"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil && err != io.EOF {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	success, err := app.checklistService.DeleteChecklist(checklistId, body.TransferChecklistID)
 	if err != nil {
 		respondErr(w, err)
 		return

@@ -24,8 +24,8 @@ func (s *ChecklistService) GetChecklistsInProject(checklistId int) ([]models.Che
 	return checklists, nil
 }
 
-func (s *ChecklistService) CreateChecklist(projectId int) (*models.Checklist, error) {
-	checklist, err := s.ChecklistRepo.CreateChecklist(projectId)
+func (s *ChecklistService) CreateChecklist(projectId int, name string) (*models.Checklist, error) {
+	checklist, err := s.ChecklistRepo.CreateChecklist(projectId, name)
 	if err != nil {
 		return nil, err
 	}
@@ -42,11 +42,28 @@ func (s *ChecklistService) UpdateChecklist(checklist *models.Checklist) (bool, e
 	return success, nil
 }
 
-func (s *ChecklistService) DeleteChecklist(checklistId int) (bool, error) {
-	success, err := s.ChecklistRepo.DeleteChecklist(checklistId)
+func (s *ChecklistService) DeleteChecklist(checklistId int, transferChecklistId int) (bool, error) {
+	checklist, err := s.ChecklistRepo.FindOne(int64(checklistId))
 	if err != nil {
 		return false, err
 	}
 
-	return success, nil
+	promoteID := 0
+	if checklist.IsDefault {
+		promoteID = transferChecklistId
+		if promoteID == 0 {
+			others, err := s.ChecklistRepo.InProject(checklist.Project)
+			if err != nil {
+				return false, err
+			}
+			for _, c := range others {
+				if c.ID != checklistId {
+					promoteID = c.ID
+					break
+				}
+			}
+		}
+	}
+
+	return s.ChecklistRepo.DeleteWithTransfer(checklistId, transferChecklistId, promoteID)
 }

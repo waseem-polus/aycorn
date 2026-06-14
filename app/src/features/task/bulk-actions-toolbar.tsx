@@ -74,7 +74,8 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
   const sharedStage = sharedValue(selectedTasks, "Stage");
   const firstTypeId = selectedTasks[0]?.Type?.ID;
   const sharedType =
-    selectedTasks.length > 0 && selectedTasks.every((t) => t.Type?.ID === firstTypeId)
+    selectedTasks.length > 0 &&
+    selectedTasks.every((t) => t.Type?.ID === firstTypeId)
       ? selectedTasks[0].Type
       : undefined;
   const sharedPriority = sharedValue(selectedTasks, "Priority");
@@ -82,8 +83,10 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
   const sharedAssignee = sharedValue(selectedTasks, "Assignee");
   const sharedStart = sharedValue(selectedTasks, "TimePlannedStart");
   const sharedEnd = sharedValue(selectedTasks, "TimePlannedEnd");
-  const sharedHasFromTime = sharedValue(selectedTasks, "HasTimePlannedStart") ?? false;
-  const sharedHasToTime = sharedValue(selectedTasks, "HasTimePlannedEnd") ?? false;
+  const sharedHasFromTime =
+    sharedValue(selectedTasks, "HasTimePlannedStart") ?? false;
+  const sharedHasToTime =
+    sharedValue(selectedTasks, "HasTimePlannedEnd") ?? false;
 
   return (
     <BulkActionsToolbarBase
@@ -128,7 +131,9 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
               "date",
             )
           }
-          placeholder={sharedStart === undefined ? "Mixed" : "Select a date"}
+          placeholder={
+            sharedStart === undefined ? "Mixed dates" : "Select a date"
+          }
         />
       </div>
 
@@ -151,17 +156,23 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
           <TaskAssignee
             value={sharedAssignee ?? ""}
             onValueChange={(v) => applyChange({ Assignee: v }, "assignee")}
-            placeholder={sharedAssignee === undefined ? "Mixed" : "Assignee"}
+            placeholder={
+              sharedAssignee === undefined ? "Mixed assignees" : "Assignee"
+            }
           />
           <SelectTaskType
             value={sharedType}
-            onValueChange={(v) => applyChange({ Type: v.ID } as unknown as Partial<Task>, "type")}
-            placeholder={sharedType === undefined ? "Mixed" : "Type"}
+            onValueChange={(v) =>
+              applyChange({ Type: v.ID } as unknown as Partial<Task>, "type")
+            }
+            placeholder={sharedType === undefined ? "Mixed types" : "Type"}
           />
           <SelectChecklist
             value={sharedChecklist}
             onValueChange={(v) => applyChange({ Checklist: v }, "checklist")}
-            placeholder={sharedChecklist === undefined ? "Mixed" : "Checklist"}
+            placeholder={
+              sharedChecklist === undefined ? "Mixed checklists" : "Checklist"
+            }
           />
         </PopoverContent>
       </Popover>

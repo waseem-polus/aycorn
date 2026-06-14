@@ -1,6 +1,11 @@
 import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip";
 import { Button } from "@/components/ui/button";
-import { DrawerClose, DrawerHeader } from "@/components/ui/drawer";
+import {
+  DrawerClose,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +36,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { priorityOutlineBadgeClass } from "../properties/task-priority-palette";
 
 export function TaskEditorHeader({
   setOpen = () => {},
@@ -52,8 +60,12 @@ export function TaskEditorHeader({
 
   return (
     <DrawerHeader className="p-2 sm:border-b">
+      <DrawerTitle hidden>{task.Name}</DrawerTitle>
+      <DrawerDescription hidden>
+        Task editor for task "{task.Name}"
+      </DrawerDescription>
       <div className="flex justify-between">
-        <div className="flex">
+        <div className="flex items-center">
           <DrawerClose asChild>
             <Button
               variant="ghost"
@@ -78,15 +90,24 @@ export function TaskEditorHeader({
           >
             <Maximize2 className="size-3.5" />
           </Button>
-        </div>
 
-        <div className="flex gap-2 items-center">
+          <Separator orientation="vertical" className="mx-3" />
+
           <RelativeTimeWithTooltip
             date={task.TimeModified}
             label="Modified"
             className="hidden sm:flex"
           />
-          <TaskPriorityIcon variant={task.Priority} />
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <Badge
+            variant="outline"
+            className={priorityOutlineBadgeClass(task.Priority)}
+          >
+            <TaskPriorityIcon variant={task.Priority} />
+            {task.Priority}
+          </Badge>
           <TaskTypeBadge type={task.Type} />
           {Stages.find((s) => s.ID === task.Stage) && (
             <WorkflowStageChip
