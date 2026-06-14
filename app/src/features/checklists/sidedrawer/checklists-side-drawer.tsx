@@ -62,7 +62,7 @@ export default function ChecklistsSideDrawer({
             <LandPlot className="size-5" />
             Checklists
           </DrawerTitle>
-          <DrawerDescription>
+          <DrawerDescription className="text-start">
             View and update this project's checklists
           </DrawerDescription>
         </DrawerHeader>
