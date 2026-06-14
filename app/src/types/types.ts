@@ -161,8 +161,12 @@ export type RelatedTask = {
   ID: number;
   Name: string;
   ProjectID: number;
+  ProjectName: string;
   ChecklistName: string;
+  Priority: Priority;
   IsDone: boolean;
+  Stage: Stage;
+  Type: TaskType;
 };
 
 export type TaskRelationship = {

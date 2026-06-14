@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { useContext } from "react";
 import {
   DrawerContent,
   DrawerDescription,
@@ -10,10 +10,20 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { TaskContext } from "@/contexts/task/TaskContext";
+import { useTaskRelationshipsQuery } from "@/features/task/relationships/queries/useTaskRelationshipsQuery";
+import { groupIntoCategories } from "@/features/task/relationships/relationships-grouping";
+import { RelationshipCategorySection } from "@/features/task/relationships/task-relationships-drawer/relationship-category";
+import { Button } from "@/components/ui/button";
 
 export function TaskRelationshipsDrawer() {
+  const { state: task } = useContext(TaskContext);
+  const { data, isLoading } = useTaskRelationshipsQuery(task.ID);
+
+  const categories = groupIntoCategories(data ?? []);
+
   return (
     <DrawerContent className="sm:min-w-2xl p-4 gap-4">
       <DrawerHeader className="p-0">
@@ -25,7 +35,7 @@ export function TaskRelationshipsDrawer() {
           View and edit linked tasks
         </DrawerDescription>
       </DrawerHeader>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         <div className="flex gap-2">
           <InputGroup>
             <InputGroupInput placeholder="Search linked tasks..." />
@@ -39,17 +49,30 @@ export function TaskRelationshipsDrawer() {
             New
           </Button>
         </div>
-        <ToggleGroup
-          defaultValue="all"
-          type="single"
-          variant="outline"
-          className="self-start"
+        <div
+          className="flex flex-col gap-3 overflow-y-auto"
+          onWheel={(e) => e.stopPropagation()}
         >
-          <ToggleGroupItem value="all">All</ToggleGroupItem>
-          <ToggleGroupItem value="blocking">Blocking</ToggleGroupItem>
-          <ToggleGroupItem value="subtasks">Subtasks</ToggleGroupItem>
-          <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
-        </ToggleGroup>
+          {isLoading ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-12 text-muted-foreground">
+              <LinkIcon className="size-6" />
+              <p className="text-sm">No linked tasks yet</p>
+            </div>
+          ) : (
+            categories.map((category) => (
+              <RelationshipCategorySection
+                key={category.key}
+                category={category}
+              />
+            ))
+          )}
+        </div>
       </div>
     </DrawerContent>
   );

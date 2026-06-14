@@ -130,13 +130,18 @@ type TaskRelationshipType struct {
 }
 
 // RelatedTask is the "other" task in a relationship, summarized from the
-// queried task's perspective.
+// queried task's perspective. It carries enough to render a task row (priority,
+// stage, type) without a second fetch, since the task may live in any project.
 type RelatedTask struct {
-	ID            int    `json:"ID"`
-	Name          string `json:"Name"`
-	ProjectID     int    `json:"ProjectID"`
-	ChecklistName string `json:"ChecklistName"`
-	IsDone        bool   `json:"IsDone"`
+	ID            int      `json:"ID"`
+	Name          string   `json:"Name"`
+	ProjectID     int      `json:"ProjectID"`
+	ProjectName   string   `json:"ProjectName"`
+	ChecklistName string   `json:"ChecklistName"`
+	Priority      string   `json:"Priority"`
+	IsDone        bool     `json:"IsDone"`
+	Stage         Stage    `json:"Stage"`
+	Type          TaskType `json:"Type"`
 }
 
 type TaskRelationship struct {

@@ -54,11 +54,17 @@ func (repo *TaskRelationshipRepo) ForTask(taskId int) ([]models.TaskRelationship
 		SELECT tr.id,
 		       CASE WHEN tr.fromTask = ? THEN 'from' ELSE 'to' END,
 		       trt.id, trt.fromName, trt.toName, trt.behavior, trt.icon, trt.color, trt.isSystem,
-		       ot.id, COALESCE(ot.name, ''), c.project, c.name, (ot.timeCompleted IS NOT NULL)
+		       ot.id, COALESCE(ot.name, ''), c.project, p.name, c.name,
+		       COALESCE(ot.priority, ''), (ot.timeCompleted IS NOT NULL),
+		       s.id, s.workflow, s.name, COALESCE(s.description, ''), s.color, s.icon, s.position, s.type,
+		       tt.id, tt.name, COALESCE(tt.description, ''), tt.icon, tt.color, tt.isDefault
 		  FROM task_relationship tr
 		  JOIN task_relationship_type trt ON trt.id = tr.relationshipType
 		  JOIN task ot ON ot.id = CASE WHEN tr.fromTask = ? THEN tr.toTask ELSE tr.fromTask END
 		  JOIN checklist c ON c.id = ot.checklist
+		  JOIN project p ON p.id = c.project
+		  JOIN stage s ON s.id = ot.stage
+		  JOIN task_type tt ON tt.id = ot.type
 		 WHERE tr.fromTask = ? OR tr.toTask = ?
 		 ORDER BY tr.id;
 	`
@@ -84,8 +90,24 @@ func (repo *TaskRelationshipRepo) ForTask(taskId int) ([]models.TaskRelationship
 			&r.Other.ID,
 			&r.Other.Name,
 			&r.Other.ProjectID,
+			&r.Other.ProjectName,
 			&r.Other.ChecklistName,
+			&r.Other.Priority,
 			&r.Other.IsDone,
+			&r.Other.Stage.ID,
+			&r.Other.Stage.Workflow,
+			&r.Other.Stage.Name,
+			&r.Other.Stage.Description,
+			&r.Other.Stage.Color,
+			&r.Other.Stage.Icon,
+			&r.Other.Stage.Position,
+			&r.Other.Stage.Type,
+			&r.Other.Type.ID,
+			&r.Other.Type.Name,
+			&r.Other.Type.Description,
+			&r.Other.Type.Icon,
+			&r.Other.Type.Color,
+			&r.Other.Type.IsDefault,
 		); err != nil {
 			return nil, err
 		}
