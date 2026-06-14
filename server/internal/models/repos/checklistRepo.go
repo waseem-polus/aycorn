@@ -117,15 +117,17 @@ func (repo *ChecklistRepo) FindOne(id int64) (*models.Checklist, error) {
 		return nil, err
 	}
 
-	rows.Next()
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, sql.ErrNoRows
+	}
 
 	checklist := models.Checklist{}
 	err = rows.Scan(&checklist.ID, &checklist.Name, &checklist.Description, &checklist.Project, &checklist.TimeCreated, &checklist.TimeModified, &checklist.IsDefault)
 	if err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
 
 	return &checklist, nil
 }
@@ -197,6 +199,42 @@ func (repo *ChecklistRepo) DeleteChecklist(checklistId int) (bool, error) {
 
 	res, err := repo.DB.Exec(query, checklistId)
 	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
+func (repo *ChecklistRepo) DeleteWithTransfer(checklistId, transferChecklistId, promoteID int) (bool, error) {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+
+	if transferChecklistId > 0 {
+		if _, err := tx.Exec("UPDATE task SET checklist = ? WHERE checklist = ?;", transferChecklistId, checklistId); err != nil {
+			return false, err
+		}
+	}
+
+	if promoteID > 0 {
+		if _, err := tx.Exec("UPDATE checklist SET isDefault = true WHERE id = ?;", promoteID); err != nil {
+			return false, err
+		}
+	}
+
+	res, err := tx.Exec("DELETE FROM checklist WHERE id = ?;", checklistId)
+	if err != nil {
+		return false, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return false, err
 	}
 

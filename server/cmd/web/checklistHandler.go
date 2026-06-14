@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -18,7 +19,10 @@ func (app *app) postChecklist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body struct{ Name string }
-	json.NewDecoder(r.Body).Decode(&body)
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil && err != io.EOF {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	newChecklist, err := app.checklistService.CreateChecklist(projectId, body.Name)
 	if err != nil {
@@ -59,7 +63,10 @@ func (app *app) deleteChecklist(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		TransferChecklistID int `json:"transferChecklistId"`
 	}{}
-	json.NewDecoder(r.Body).Decode(&body)
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil && err != io.EOF {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	success, err := app.checklistService.DeleteChecklist(checklistId, body.TransferChecklistID)
 	if err != nil {

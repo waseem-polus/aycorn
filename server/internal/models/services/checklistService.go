@@ -48,14 +48,9 @@ func (s *ChecklistService) DeleteChecklist(checklistId int, transferChecklistId 
 		return false, err
 	}
 
-	if transferChecklistId > 0 {
-		if err := s.ChecklistRepo.TransferTasks(checklistId, transferChecklistId); err != nil {
-			return false, err
-		}
-	}
-
+	promoteID := 0
 	if checklist.IsDefault {
-		promoteID := transferChecklistId
+		promoteID = transferChecklistId
 		if promoteID == 0 {
 			others, err := s.ChecklistRepo.InProject(checklist.Project)
 			if err != nil {
@@ -68,12 +63,7 @@ func (s *ChecklistService) DeleteChecklist(checklistId int, transferChecklistId 
 				}
 			}
 		}
-		if promoteID > 0 {
-			if err := s.ChecklistRepo.SetDefault(promoteID); err != nil {
-				return false, err
-			}
-		}
 	}
 
-	return s.ChecklistRepo.DeleteChecklist(checklistId)
+	return s.ChecklistRepo.DeleteWithTransfer(checklistId, transferChecklistId, promoteID)
 }
