@@ -42,6 +42,7 @@ export function ChecklistCard({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLHeadingElement>(null);
+  const renameRequestedRef = useRef(false);
 
   useFocusAndSelect(nameRef, isEditingName);
   useFocusAndSelect(descriptionRef, isEditingDescription);
@@ -150,9 +151,21 @@ export function ChecklistCard({
               <Ellipsis className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            onCloseAutoFocus={(e) => {
+              if (renameRequestedRef.current) {
+                e.preventDefault();
+                renameRequestedRef.current = false;
+                nameRef.current?.focus();
+              }
+            }}
+          >
             <DropdownMenuItem
-              onClick={() => setTimeout(() => setIsEditingName(true), 100)}
+              onClick={() => {
+                renameRequestedRef.current = true;
+                setIsEditingName(true);
+              }}
             >
               Rename
             </DropdownMenuItem>
@@ -166,7 +179,7 @@ export function ChecklistCard({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              disabled={candidates.length === 0}
+              disabled={checklist.TotalCount > 0 && candidates.length === 0}
               onClick={() => setDeleteDialogOpen(true)}
             >
               Delete
