@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/item";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { GripVertical, LandPlot, User } from "lucide-react";
+import { UnresolvedBlockersBadge } from "@/features/task/relationships/unresolved-blockers-badge";
 import type { ChecklistTask } from "@/types/types";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { SubtaskProgressBar } from "@/features/task/relationships/subtask-progress-bar";
 
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 
@@ -120,6 +122,10 @@ export function KanbanItem({
                   hasEndTime={false}
                   excludeYear
                 />
+
+                <UnresolvedBlockersBadge taskId={task.ID} />
+
+                <SubtaskProgressBar taskId={task.ID} className="mt-3" />
               </span>
             </ItemFooter>
           </a>

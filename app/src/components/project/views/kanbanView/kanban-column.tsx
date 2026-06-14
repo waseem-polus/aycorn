@@ -38,7 +38,7 @@ export function KanbanColumn({
   const tint = stageTintClass(stage.Color);
 
   return (
-    <div className="min-w-56 w-full overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
+    <div className="min-w-64 w-full overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
       <div className="p-2">
         <span className="flex items-center gap-2 text-foreground">
           <StageIcon stage={stage} />

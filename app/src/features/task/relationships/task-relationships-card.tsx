@@ -116,7 +116,6 @@ export function TaskRelationshipsCard() {
                 {groups.map((group) => (
                   <Badge
                     key={group.key}
-                    variant="outline"
                     className={stageBadgeClass(group.type.Color)}
                   >
                     <DynamicIcon
