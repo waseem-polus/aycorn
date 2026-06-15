@@ -6,7 +6,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -77,7 +76,7 @@ export function SelectRelationshipTask({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-80 sm:min-w-lg p-0" align="end">
         <Command>
-          <CommandInput placeholder="Search tasks..." />
+        <CommandInput placeholder="Search tasks..." />
           <CommandList>
             {tasksLoading ? (
               <div className="flex flex-col gap-2 p-2">
@@ -95,6 +94,7 @@ export function SelectRelationshipTask({
                     <CommandGroup
                       key={projectId}
                       heading={project?.Name ?? `Project ${projectId}`}
+                      className="border-b"
                     >
                       {projectTasks.map((task) => {
                         const stage = stageById.get(
@@ -105,7 +105,7 @@ export function SelectRelationshipTask({
                                 key={task.ID}
                                 value={`${task.Name} ${project?.Name ?? ""}`}
                                 onSelect={() => handleSelect(task)}
-                                className="flex flex-row gap-3 py-4 items-center"
+                                className="flex flex-row gap-3 py-3 items-center"
                             >
                                 <TaskPriorityIcon variant={task.Priority}  />
 
@@ -115,10 +115,7 @@ export function SelectRelationshipTask({
 
                                 <span className="flex gap-2">
                                     {stage && (
-                                        <WorkflowStageChip
-                                        stage={stage}
-                                        className="shrink-0 text-xs"
-                                        />
+                                        <WorkflowStageChip stage={stage} className="shrink-0 text-xs" />
                                     )}
                                     <TaskTypeBadge type={task.Type} />
                                 </span>
