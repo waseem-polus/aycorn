@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useDeleteTaskRelationshipMutation } from "@/features/task/relationships/queries/useDeleteTaskRelationshipMutation";
+import { Link } from "@tanstack/react-router";
 
 export function RelationshipTaskRow({
   task,
@@ -18,29 +19,38 @@ export function RelationshipTaskRow({
   task: RelatedTask;
   relationshipId: number;
 }) {
-  const subtitle = `${task.ProjectName} · ${task.ChecklistName}`;
   const deleteRelationship = useDeleteTaskRelationshipMutation();
 
   return (
-    <div className="group flex items-center gap-3 px-3 py-2.5 border-b border-border last:border-b-0">
-      <TaskPriorityIcon variant={task.Priority} className="shrink-0" />
+    <Link to="/task/$taskId"
+        params={{ taskId: task.ID.toString() }}
+        className="group flex items-center gap-3 px-3 py-2.5 border-b border-border last:border-b-0 hover:bg-accent"
+    >
+        <TaskPriorityIcon variant={task.Priority} className="shrink-0" />
 
       <span className="flex flex-col min-w-0 flex-1">
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="self-start max-w-full truncate text-sm font-medium">
-              {task.Name || "Untitled"}
+              {task.Name || "Untitled Task"}
             </span>
           </TooltipTrigger>
           {task.Name && <TooltipContent>{task.Name}</TooltipContent>}
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="self-start max-w-full truncate text-xs text-muted-foreground">
-              {subtitle}
-            </span>
+            <Link
+                to="/project/$projectId"
+                params={{ projectId: task.ProjectID.toString() }}
+                className="self-start max-w-full truncate text-xs text-muted-foreground hover:underline"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {task.ProjectName} · {task.ChecklistName}
+            </Link>
           </TooltipTrigger>
-          <TooltipContent>{subtitle}</TooltipContent>
+            <TooltipContent>
+                {task.ProjectName} · {task.ChecklistName}
+          </TooltipContent>
         </Tooltip>
       </span>
 
@@ -60,6 +70,6 @@ export function RelationshipTaskRow({
       >
         <XIcon className="size-3.5" />
       </Button>
-    </div>
+    </Link>
   );
 }
