@@ -10,8 +10,6 @@ type TaskRelationshipRepo struct {
 	DB *sql.DB
 }
 
-const taskRelationshipTypeColumns = "id, fromName, toName, behavior, icon, color, isSystem"
-
 func scanTaskRelationshipType(scanner interface {
 	Scan(...any) error
 }, t *models.TaskRelationshipType) error {
@@ -23,11 +21,19 @@ func scanTaskRelationshipType(scanner interface {
 		&t.Icon,
 		&t.Color,
 		&t.IsSystem,
+		&t.UsageCount,
 	)
 }
 
 func (repo *TaskRelationshipRepo) AllTypes() ([]models.TaskRelationshipType, error) {
-	query := "SELECT " + taskRelationshipTypeColumns + " FROM task_relationship_type ORDER BY id;"
+	query := `
+		SELECT trt.id, trt.fromName, trt.toName, trt.behavior, trt.icon, trt.color, trt.isSystem,
+		       COUNT(tr.id) as usageCount
+		  FROM task_relationship_type trt
+		  LEFT JOIN task_relationship tr ON tr.relationshipType = trt.id
+		 GROUP BY trt.id
+		 ORDER BY trt.id;
+	`
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -115,6 +121,99 @@ func (repo *TaskRelationshipRepo) ForTask(taskId int) ([]models.TaskRelationship
 	}
 
 	return relationships, rows.Err()
+}
+
+func (repo *TaskRelationshipRepo) CreateType(fromName, toName, behavior, icon, color string) (int, error) {
+	res, err := repo.DB.Exec(
+		`INSERT INTO task_relationship_type (fromName, toName, behavior, icon, color) VALUES (?, ?, ?, ?, ?)`,
+		fromName, toName, behavior, icon, color,
+	)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	return int(id), err
+}
+
+func (repo *TaskRelationshipRepo) UpdateType(id int, fromName, toName, behavior, icon, color string) error {
+	res, err := repo.DB.Exec(
+		`UPDATE task_relationship_type SET fromName=?, toName=?, behavior=?, icon=?, color=? WHERE id=? AND isSystem=0`,
+		fromName, toName, behavior, icon, color, id,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (repo *TaskRelationshipRepo) UpdateTypeIcon(id int, icon string) error {
+	res, err := repo.DB.Exec(
+		`UPDATE task_relationship_type SET icon=? WHERE id=?`,
+		icon, id,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (repo *TaskRelationshipRepo) UpdateTypeNames(id int, fromName, toName string) error {
+	res, err := repo.DB.Exec(
+		`UPDATE task_relationship_type SET fromName=?, toName=? WHERE id=?`,
+		fromName, toName, id,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (repo *TaskRelationshipRepo) DeleteType(id int) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Cascade-delete relationships first (FK is RESTRICT, not CASCADE)
+	if _, err := tx.Exec(`DELETE FROM task_relationship WHERE relationshipType=?`, id); err != nil {
+		return err
+	}
+
+	res, err := tx.Exec(`DELETE FROM task_relationship_type WHERE id=? AND isSystem=0`, id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+
+	return tx.Commit()
 }
 
 func (repo *TaskRelationshipRepo) Create(fromTaskID, toTaskID, typeID int) error {

@@ -82,7 +82,7 @@ export function ListViewRow({
                       <LandPlot className="size-2" />
                       {task.ChecklistName !== ""
                         ? task.ChecklistName
-                        : "New Checklist"}
+                        : "Untitled Checklist"}
                     </Badge>
                   )}
 

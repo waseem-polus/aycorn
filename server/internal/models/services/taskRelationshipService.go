@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 
@@ -9,6 +10,15 @@ import (
 )
 
 var ErrDuplicateRelationship = errors.New("a relationship of this type already exists between these tasks")
+var ErrSystemType = errors.New("system relationship types cannot be deleted")
+var ErrTypeNotFound = errors.New("relationship type not found")
+
+// behaviorColor maps each behavior to the canonical color for new types.
+var behaviorColor = map[string]string{
+	"blocking": "red",
+	"subtask":  "emerald",
+	"link":     "purple",
+}
 
 type TaskRelationshipService struct {
 	TaskRelationshipRepo *repos.TaskRelationshipRepo
@@ -20,6 +30,50 @@ func (s *TaskRelationshipService) GetRelationshipTypes() ([]models.TaskRelations
 
 func (s *TaskRelationshipService) GetTaskRelationships(taskId int) ([]models.TaskRelationship, error) {
 	return s.TaskRelationshipRepo.ForTask(taskId)
+}
+
+func (s *TaskRelationshipService) CreateRelationshipType(fromName, toName, behavior, icon string) (int, error) {
+	color := behaviorColor[behavior]
+	if color == "" {
+		color = "gray"
+	}
+	return s.TaskRelationshipRepo.CreateType(fromName, toName, behavior, icon, color)
+}
+
+func (s *TaskRelationshipService) UpdateRelationshipType(id int, fromName, toName, behavior, icon string) error {
+	color := behaviorColor[behavior]
+	if color == "" {
+		color = "gray"
+	}
+	err := s.TaskRelationshipRepo.UpdateType(id, fromName, toName, behavior, icon, color)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrTypeNotFound
+	}
+	return err
+}
+
+func (s *TaskRelationshipService) UpdateRelationshipTypeIcon(id int, icon string) error {
+	err := s.TaskRelationshipRepo.UpdateTypeIcon(id, icon)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrTypeNotFound
+	}
+	return err
+}
+
+func (s *TaskRelationshipService) UpdateRelationshipTypeNames(id int, fromName, toName string) error {
+	err := s.TaskRelationshipRepo.UpdateTypeNames(id, fromName, toName)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrTypeNotFound
+	}
+	return err
+}
+
+func (s *TaskRelationshipService) DeleteRelationshipType(id int) error {
+	err := s.TaskRelationshipRepo.DeleteType(id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrSystemType
+	}
+	return err
 }
 
 func (s *TaskRelationshipService) DeleteRelationship(id int) error {

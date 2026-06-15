@@ -155,6 +155,7 @@ export type TaskRelationshipType = {
   Icon: string;
   Color: string;
   IsSystem: boolean;
+  UsageCount: number;
 };
 
 export type RelatedTask = {

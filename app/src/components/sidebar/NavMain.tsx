@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuBadge,
   SidebarMenuButton,
@@ -12,6 +13,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 
 export function NavMain({
   items,
+  label,
 }: {
   items: {
     title: string;
@@ -19,11 +21,13 @@ export function NavMain({
     icon?: React.ComponentType;
     badge?: React.ReactElement;
   }[];
+  label?: string;
 }) {
   const isMobile = useIsMobile();
 
   return (
     <SidebarGroup>
+      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => (

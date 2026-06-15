@@ -6,6 +6,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -17,9 +18,10 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import { useAllTasksForRelationshipQuery } from "@/features/task/relationships/queries/useAllTasksForRelationshipQuery";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
-import TaskTypeBadge from "@/features/task/properties/task-type-badge";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import type { Project, Stage, TaskWithProject } from "@/types/types";
+import TaskPriorityIcon from "../../properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "../../properties/task-type-badge";
 
 type Props = {
   open: boolean;
@@ -73,7 +75,7 @@ export function SelectRelationshipTask({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
+      <PopoverContent className="w-80 sm:min-w-lg p-0" align="end">
         <Command>
           <CommandInput placeholder="Search tasks..." />
           <CommandList>
@@ -99,28 +101,28 @@ export function SelectRelationshipTask({
                           task.Stage as unknown as number,
                         );
                         return (
-                          <CommandItem
-                            key={task.ID}
-                            value={`${task.Name} ${project?.Name ?? ""}`}
-                            onSelect={() => handleSelect(task)}
-                            className="flex flex-col gap-2 items-start"
-                          >
-                            <span className="flex-1 truncate text-sm">
-                              {task.Name || "Untitled Task"}
-                            </span>
-                            <span className="flex gap-2">
-                              {stage && (
-                                <WorkflowStageChip
-                                  stage={stage}
-                                  className="shrink-0 text-xs"
-                                />
-                              )}
-                              <TaskTypeBadge
-                                type={task.Type}
-                                className="shrink-0 text-xs"
-                              />
-                            </span>
-                          </CommandItem>
+                            <CommandItem
+                                key={task.ID}
+                                value={`${task.Name} ${project?.Name ?? ""}`}
+                                onSelect={() => handleSelect(task)}
+                                className="flex flex-row gap-3 py-4 items-center"
+                            >
+                                <TaskPriorityIcon variant={task.Priority}  />
+
+                                <span className="flex-1 truncate text-sm">
+                                    {task.Name || "Untitled Task"}
+                                </span>
+
+                                <span className="flex gap-2">
+                                    {stage && (
+                                        <WorkflowStageChip
+                                        stage={stage}
+                                        className="shrink-0 text-xs"
+                                        />
+                                    )}
+                                    <TaskTypeBadge type={task.Type} />
+                                </span>
+                            </CommandItem>
                         );
                       })}
                     </CommandGroup>

@@ -120,13 +120,14 @@ type Stage struct {
 }
 
 type TaskRelationshipType struct {
-	ID       int    `json:"ID"`
-	FromName string `json:"FromName"`
-	ToName   string `json:"ToName"`
-	Behavior string `json:"Behavior"`
-	Icon     string `json:"Icon"`
-	Color    string `json:"Color"`
-	IsSystem bool   `json:"IsSystem"`
+	ID         int    `json:"ID"`
+	FromName   string `json:"FromName"`
+	ToName     string `json:"ToName"`
+	Behavior   string `json:"Behavior"`
+	Icon       string `json:"Icon"`
+	Color      string `json:"Color"`
+	IsSystem   bool   `json:"IsSystem"`
+	UsageCount int    `json:"UsageCount"`
 }
 
 // RelatedTask is the "other" task in a relationship, summarized from the

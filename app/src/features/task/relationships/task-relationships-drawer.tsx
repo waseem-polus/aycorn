@@ -98,7 +98,7 @@ export function TaskRelationshipsDrawer() {
 
   return (
     <DrawerContent className="sm:min-w-2xl p-4 gap-4">
-      <DrawerHeader className="p-0">
+      <DrawerHeader className="p-0 shrink-0">
         <DrawerTitle className="flex gap-2 items-center">
           <LinkIcon className="size-4 stroke-muted-foreground" />
           Linked Tasks
@@ -107,8 +107,8 @@ export function TaskRelationshipsDrawer() {
           View and edit linked tasks
         </DrawerDescription>
       </DrawerHeader>
-      <div className="flex flex-col">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-2 flex-1 min-h-0">
+        <div className="flex gap-2 shrink-0">
           <InputGroup>
             <InputGroupInput placeholder="Search linked tasks..." />
             <InputGroupAddon>
@@ -126,7 +126,7 @@ export function TaskRelationshipsDrawer() {
               trigger={
                 <Button className="hover:cursor-pointer">
                   <PlusIcon />
-                  New
+                  Add
                 </Button>
               }
             />
@@ -138,7 +138,7 @@ export function TaskRelationshipsDrawer() {
               <PopoverTrigger asChild>
                 <Button className="hover:cursor-pointer">
                   <PlusIcon />
-                  New
+                  Link
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-60 p-0" align="start">
@@ -194,7 +194,7 @@ export function TaskRelationshipsDrawer() {
           )}
         </div>
         <div
-          className="flex flex-col gap-3 overflow-y-auto"
+          className="flex flex-col gap-3 overflow-y-auto -mr-2 pr-2"
           onWheel={(e) => e.stopPropagation()}
         >
           {isLoading ? (

@@ -63,7 +63,7 @@ export function RelationshipCategorySection({
               onClick={() => setOpen(true)}
             >
               <PlusIcon />
-              Add
+              Add {category.label}
             </Button>
           }
         />
