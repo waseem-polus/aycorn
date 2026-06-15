@@ -105,7 +105,7 @@ export function SelectRelationshipTask({
                                 key={task.ID}
                                 value={`${task.Name} ${project?.Name ?? ""}`}
                                 onSelect={() => handleSelect(task)}
-                                className="flex flex-row gap-3 py-3 items-center"
+                                className="flex flex-row gap-3 py-2 items-center"
                             >
                                 <TaskPriorityIcon variant={task.Priority}  />
 
