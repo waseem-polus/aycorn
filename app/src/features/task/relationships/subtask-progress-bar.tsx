@@ -1,22 +1,19 @@
 import { SegmentedProgress } from "@/components/ui/segmented-progress";
-import { useSubtaskProgress } from "@/features/task/relationships/queries/useSubtaskProgress";
 import { cn } from "@/lib/utils";
 
 export function SubtaskProgressBar({
-  taskId,
-  className = "",
+    done,
+    total,
+    className = "",
 }: {
-  taskId: number;
-  className?: string;
+    done: number;
+    total: number;
+    className?: string;
 }) {
-  const progress = useSubtaskProgress(taskId);
-  if (!progress) return null;
-
-  const { done, total } = progress;
   const pct = Math.round((done / total) * 100);
 
   return (
-    <span className={cn("flex gap-2 items-center", className)}>
+    <span className={cn("flex gap-2 items-center w-full", className)}>
       <span className="text-muted-foreground text-xs">
         {done}/{total}
       </span>

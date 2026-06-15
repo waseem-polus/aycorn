@@ -20,6 +20,7 @@ import { UnresolvedBlockersBadge } from "@/features/task/relationships/unresolve
 import { SubtaskProgressBar } from "@/features/task/relationships/subtask-progress-bar";
 import { cn } from "@/lib/utils";
 import type { ChecklistTask, Stage } from "@/types/types";
+import { useSubtaskProgress } from "@/features/task/relationships/queries/useSubtaskProgress";
 
 export function ListViewRow({
   task,
@@ -33,6 +34,7 @@ export function ListViewRow({
   itemProps: Record<string, unknown>;
 }) {
   const itemClassName = (itemProps.className as string | undefined) ?? "";
+  const subtaskProgress = useSubtaskProgress(task.ID);
 
   return (
     <TaskProvider defaultState={task}>
@@ -92,10 +94,13 @@ export function ListViewRow({
             </ItemContent>
             <ItemActions>
               <span className="hidden sm:flex w-full justify-end gap-2">
-                <SubtaskProgressBar
-                  taskId={task.ID}
-                  className="w-full min-w-3xs"
-                />
+                {subtaskProgress && (
+                    <SubtaskProgressBar
+                        done={subtaskProgress.done}
+                        total={subtaskProgress.total}
+                        className="min-w-3xs"
+                    />
+                )}
                 <TaskTypeBadge type={task.Type} />
                 {showChecklist && (
                   <Badge variant="outline" className="bg-background">
@@ -108,9 +113,11 @@ export function ListViewRow({
               </span>
               <ChevronRightIcon className="size-4" />
             </ItemActions>
-            <ItemFooter className="sm:hidden">
-              <SubtaskProgressBar taskId={task.ID} className="w-full mt-2" />
-            </ItemFooter>
+            {subtaskProgress && (
+                <ItemFooter className="sm:hidden">
+                    <SubtaskProgressBar done={subtaskProgress.done} total={subtaskProgress.total} />
+                </ItemFooter>
+            )}
           </a>
         </Item>
       </TaskEditorDrawer>
