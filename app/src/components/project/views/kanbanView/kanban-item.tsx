@@ -97,7 +97,7 @@ export function KanbanItem({
               <ItemTitle
                 className={task.Name === "" ? "text-muted-foreground" : ""}
               >
-                {task.Name !== "" ? task.Name : "New Task"}
+                {task.Name !== "" ? task.Name : "Untitled Task"}
               </ItemTitle>
 
               <span className="w-full flex flex-col gap-1">

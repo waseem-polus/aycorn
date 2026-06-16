@@ -116,7 +116,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
   };
 
   const handleDelete = () => {
-    const taskName = task.Name === "" ? "New Task" : task.Name;
+    const taskName = task.Name === "" ? "Untitled Task" : task.Name;
     deleteTask.mutate(task.ID, {
       onSuccess: () => {
         toast(`Deleted '${taskName}'`);

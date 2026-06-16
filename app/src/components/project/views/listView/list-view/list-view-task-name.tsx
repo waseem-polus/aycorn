@@ -20,7 +20,7 @@ export function ListViewTaskName() {
   const editableRef = useRef<HTMLHeadingElement>(null);
 
   const isEmpty = task.Name === "";
-  const fullName = isEmpty ? "New Task" : task.Name;
+  const fullName = isEmpty ? "Untitled Task" : task.Name;
 
   useFocusAndSelect(editableRef, isEditing);
 
