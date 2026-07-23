@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 	"github.com/waseem-polus/aycorn/server/internal/migrations"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 	"github.com/waseem-polus/aycorn/server/internal/models/services"
+	_ "modernc.org/sqlite"
 )
 
 // version is set at build time via -ldflags "-X main.version=<tag>".
@@ -131,7 +131,7 @@ func main() {
 		dbExisted = true
 	}
 
-	db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
 		log.Fatal(err)
 	}
