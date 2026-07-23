@@ -33,14 +33,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+    ArrowDownRightIcon,
+    ArrowUpRightIcon,
+    AtSignIcon,
   ChevronDown,
   LandPlotIcon,
+  OctagonMinusIcon,
+  SquareCheckIcon,
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import { extractPlainText } from "@/features/task/task-utils";
 import { TaskRelationshipsCard } from "@/features/task/relationships/task-relationships-card";
+import TaskTypeBadge from "./properties/task-type-badge";
+import { Separator } from "@/components/ui/separator";
+import { STAGE_PALETTE } from "../stage/stage-palette";
+import RelativePlannedDateBadge from "./properties/relative-planned-date-badge";
 
 export default function TaskEditorDrawer({
   children,
@@ -56,7 +64,7 @@ export default function TaskEditorDrawer({
   const [editorReady, setEditorReady] = useState(false);
 
   const { state: task, setState: setTask } = useContext(TaskContext);
-  const { Project } = useContext(ProjectContext);
+  const { Project, Stages } = useContext(ProjectContext);
   const { update } = useTaskMutation(Project.ID);
 
   const handleTaskChanges = (updatedTask: Task) => {
@@ -88,6 +96,8 @@ export default function TaskEditorDrawer({
     handleTaskChanges({ ...task, Body: value });
   };
 
+  const stage = Stages.find((s) => s.ID === task.Stage)!;
+
   return (
     <Drawer
       handleOnly={!isMobile}
@@ -111,6 +121,7 @@ export default function TaskEditorDrawer({
           onCopyAsMarkdown={handleCopyAsMarkdown}
           onCopyAsPlainText={handleCopyAsPlainText}
           isEditorReady={editorReady}
+          taskStage={stage}
         />
         <div
           className="flex-1 min-h-0 overflow-y-auto"
@@ -136,28 +147,61 @@ export default function TaskEditorDrawer({
               </CollapsibleTrigger>
             </div>
             {!propertiesOpen && (
-              <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
-                <Badge variant="outline">
-                  <LandPlotIcon className="size-2" />
-                  {task.ChecklistName}
-                </Badge>
-                <Badge
-                  variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={
-                    task.Assignee !== "" ? "" : "text-muted-foreground"
-                  }
-                >
-                  <User className="size-2" />
-                  {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
-                </Badge>
-                <TaskPlannedDates
-                  start={task.TimePlannedStart}
-                  end={task.TimePlannedEnd}
-                  hasStartTime={task.HasTimePlannedStart}
-                  hasEndTime={task.HasTimePlannedEnd}
-                  excludeYear
-                />
-              </div>
+                <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
+
+                    <Badge variant="secondary">
+                        <LandPlotIcon className="size-2" />
+                        {task.ChecklistName}
+                    </Badge>
+
+                    <Badge
+                        variant={task.Assignee !== "" ? "secondary" : "outline"}
+                        className={task.Assignee !== "" ? "" : "text-muted-foreground"}
+                    >
+                        <User className="size-2" />
+                        {task.Assignee !== "" ? task.Assignee : "—"}
+                    </Badge>
+
+                    <RelativePlannedDateBadge
+                        start={task.TimePlannedStart}
+                        end={task.TimePlannedEnd}
+                        overdue={
+                            task.TimePlannedStart !== null
+                            && new Date(task.TimePlannedEnd ?? task.TimePlannedStart) < new Date()
+                            && stage.Type !== "done"
+                        }
+                    />
+
+                    <Separator orientation="vertical" className="h-4! sm:mx-2" />
+
+                    <Badge variant="secondary" className="text-foreground">
+                        <ArrowDownRightIcon className="stroke-foreground" />
+
+                        <Separator orientation="vertical" className="h-4! mx-1" />
+
+                        <OctagonMinusIcon className={STAGE_PALETTE.red.stroke} />
+                        <span className={STAGE_PALETTE.red.calendarBadge}>1</span>
+
+                        <Separator orientation="vertical" className="h-4! mx-1" />
+
+                        <SquareCheckIcon className={STAGE_PALETTE.emerald.stroke}/>
+                        <span className={STAGE_PALETTE.emerald.calendarBadge}>12</span>
+                    </Badge>
+
+                    <Badge variant="secondary"  className="text-foreground">
+                        <ArrowUpRightIcon className="stroke-foreground"/>
+
+                        <Separator orientation="vertical" className="h-4! mx-1" />
+
+                        <OctagonMinusIcon className={STAGE_PALETTE.red.stroke} />
+                        <span className={STAGE_PALETTE.red.calendarBadge}>1</span>
+
+                        <Separator orientation="vertical" className="h-4! mx-1" />
+
+                        <AtSignIcon className={STAGE_PALETTE.purple.stroke}/>
+                        <span className={STAGE_PALETTE.purple.calendarBadge}>1</span>
+                    </Badge>
+                </div>
             )}
             <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
               <section className="flex flex-col gap-2">
@@ -184,11 +228,13 @@ export default function TaskEditorDrawer({
                 <TaskProperty label="Date" htmlFor="date">
                   <DatePickerInput onChange={handleTaskChanges} />
                 </TaskProperty>
+
+                <Separator orientation="horizontal" className="my-2"/>
+
+                <TaskRelationshipsCard />
               </section>
             </CollapsibleContent>
           </Collapsible>
-
-          <TaskRelationshipsCard />
 
           {open &&
           (task.ID === 0 ||

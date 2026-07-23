@@ -31,7 +31,11 @@ export function RelationshipCategorySection({
   const handleAdd = (task: TaskWithProject) => {
     const fromTaskId = category.direction === "from" ? currentTask.ID : task.ID;
     const toTaskId = category.direction === "from" ? task.ID : currentTask.ID;
-    createRelationship.mutate({ fromTaskId, toTaskId, typeId: category.typeId });
+    createRelationship.mutate({
+      fromTaskId,
+      toTaskId,
+      typeId: category.typeId,
+    });
   };
 
   return (
@@ -63,14 +67,18 @@ export function RelationshipCategorySection({
               onClick={() => setOpen(true)}
             >
               <PlusIcon />
-              Add {category.label}
+              Add
             </Button>
           }
         />
       </div>
       <div className="rounded-lg border border-border overflow-hidden">
         {category.relationships.map((rel) => (
-          <RelationshipTaskRow key={rel.ID} task={rel.Other} relationshipId={rel.ID} />
+          <RelationshipTaskRow
+            key={rel.ID}
+            task={rel.Other}
+            relationshipId={rel.ID}
+          />
         ))}
       </div>
     </div>

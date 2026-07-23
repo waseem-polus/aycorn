@@ -62,12 +62,16 @@ export function RelationshipTaskRow({
         <TaskTypeBadge type={task.Type} />
       </span>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="shrink-0 size-6 text-muted-foreground hover:text-foreground hover:cursor-pointer"
-        onClick={() => deleteRelationship.mutate(relationshipId)}
-      >
+        <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 size-6 text-muted-foreground hover:text-foreground hover:cursor-pointer"
+            onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                deleteRelationship.mutate(relationshipId)
+            }}
+        >
         <XIcon className="size-3.5" />
       </Button>
     </Link>

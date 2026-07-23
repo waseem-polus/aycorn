@@ -11,7 +11,7 @@ export function UnresolvedBlockersBadge({ taskId }: { taskId: number }) {
     <Badge variant="outline" className={priorityOutlineBadgeClass("Urgent")}>
       <OctagonMinusIcon />
       <span className="font-semibold">{count}</span>
-      <span className="font-light"> unresolved blocker{count > 1 ? "s" : ""}</span>
+      <span className="font-light truncate"> unresolved blocker{count > 1 ? "s" : ""}</span>
     </Badge>
   );
 }

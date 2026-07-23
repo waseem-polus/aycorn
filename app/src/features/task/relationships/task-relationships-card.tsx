@@ -14,6 +14,8 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { ChevronRight, LinkIcon } from "lucide-react";
 import type { TaskRelationship } from "@/types/types";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type RelationshipGroup = {
   key: string;
@@ -94,42 +96,38 @@ export function TaskRelationshipsCard() {
   return (
     <Drawer direction={isMobile ? "bottom" : "right"} handleOnly={!isMobile}>
       <DrawerTrigger asChild>
-        <Card className="mx-3 sm:mx-6 mt-2 sm:mt-4 px-3 py-4 sm:p-4 hover:bg-accent hover:cursor-pointer min-w-0">
-          <CardContent className="flex flex-col p-0 gap-4 sm:gap-2 min-w-0">
-            <div className="flex justify-between">
-              <span className="flex items-center gap-2">
-                <LinkIcon className="size-3 stroke-muted-foreground" />
-                Linked Tasks
-              </span>
+        <div className="relative flex justify-between items-start gap-3">
+            <span className="text-sm font-medium flex items-center gap-2 text-muted-foreground min-w-1/5 sm:min-w-1/7 min-h-9 align-middle">
+                Links
+            </span>
 
-              <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
-                Manage {total} {total === 1 ? "link" : "links"}
-                <ChevronRight className="size-4" />
-              </span>
-            </div>
-            {total === 0 ? (
-              <span className="text-muted-foreground text-sm">
-                No linked tasks
-              </span>
-            ) : (
-              <span className="flex flex-1 gap-1 sm:gap-2 min-w-0 flex-wrap">
-                {groups.map((group) => (
-                  <Badge
-                    key={group.key}
-                    className={stageBadgeClass(group.type.Color)}
-                  >
-                    <DynamicIcon
-                      name={group.type.Icon as IconName}
-                      className={stageStrokeClass(group.type.Color)}
-                      fallback={() => <LinkIcon />}
-                    />
-                    {groupLabel(group)}
-                  </Badge>
-                ))}
-              </span>
-            )}
-          </CardContent>
-        </Card>
+                  <Button variant="outline" className={cn("flex gap-2 px-3 w-full h-fit min-h-9 justify-start items-start flex-1 min-w-0")}>
+                      <LinkIcon className="stroke-muted-foreground size-3.5 shrink mt-1" />
+                {total === 0 ? (
+                    <>
+                        <span className="text-muted-foreground text-sm">
+                            Manage links
+                        </span>
+                    </>
+                ) : (
+                    <span className="flex shrink gap-1 sm:gap-2 min-w-0 flex-wrap">
+                    {groups.map((group) => (
+                        <Badge
+                            key={group.key}
+                            className={stageBadgeClass(group.type.Color)}
+                        >
+                            <DynamicIcon
+                                name={group.type.Icon as IconName}
+                                className={stageStrokeClass(group.type.Color)}
+                                fallback={() => <LinkIcon />}
+                            />
+                            {groupLabel(group)}
+                        </Badge>
+                    ))}
+                    </span>
+                )}
+            </Button>
+        </div>
       </DrawerTrigger>
       <TaskRelationshipsDrawer />
     </Drawer>

@@ -114,7 +114,7 @@ export function TaskRelationshipsDrawer() {
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
-            <InputGroupAddon align="inline-end">7 links</InputGroupAddon>
+                      <InputGroupAddon align="inline-end">{data?.length ?? 0} link{(data?.length ?? 0) > 1 ? "s" : ""}</InputGroupAddon>
           </InputGroup>
 
           {newRelState?.step === "task" ? (

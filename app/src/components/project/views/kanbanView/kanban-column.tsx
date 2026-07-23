@@ -12,6 +12,8 @@ import type { Stage } from "@/types/types";
 import { useContext, useMemo, type SyntheticEvent } from "react";
 import { KanbanItem } from "./kanban-item";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 
 type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 
@@ -39,25 +41,32 @@ export function KanbanColumn({
 
   return (
     <div className="min-w-64 w-full overflow-hidden flex flex-col gap-2 p-1 h-full min-h-full">
-      <div className="p-2">
-        <span className="flex items-center gap-2 text-foreground">
-          <StageIcon stage={stage} />
-          {stage.Name}
-          <Badge variant="outline" className="size-5">
-            {filteredTasks.length}
-          </Badge>
-        </span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="text-muted-foreground text-sm h-5 block truncate">
-              {stage.Description}
-            </span>
-          </TooltipTrigger>
-          {stage.Description && (
-            <TooltipContent>{stage.Description}</TooltipContent>
-          )}
-        </Tooltip>
-      </div>
+        <div className="flex justify-between items-center shrink">
+            <div className="p-2 flex-1">
+                <span className="flex items-center gap-2 text-foreground">
+                    <StageIcon stage={stage} />
+                    {stage.Name}
+                    <Badge variant="outline" className="size-5">
+                        {filteredTasks.length}
+                    </Badge>
+                </span>
+
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="text-muted-foreground text-sm h-5 block truncate">
+                        {stage.Description}
+                        </span>
+                    </TooltipTrigger>
+                    {stage.Description && (
+                        <TooltipContent>{stage.Description}</TooltipContent>
+                    )}
+                </Tooltip>
+            </div>
+
+            <Button variant="ghost" size="icon-sm">
+                <PlusIcon />
+            </Button>
+          </div>
       <ItemGroup
         className={cn(
           "h-full overflow-y-scroll w-full min-w-0 overflow-x-visible flex flex-col gap-2 p-2 rounded-xl",
