@@ -151,7 +151,7 @@ func runBackup(args []string) error {
 		return fmt.Errorf("no database at %s to back up", dbPath)
 	}
 
-	db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func runRestore(args []string) error {
 
 	// Snapshot the current DB first so restore is reversible.
 	if fi, err := os.Stat(dbPath); err == nil && fi.Size() > 0 {
-		db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on")
+		db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func runRestore(args []string) error {
 
 // integrityCheck opens path as a SQLite DB and runs PRAGMA integrity_check.
 func integrityCheck(path string) error {
-	db, err := sql.Open("sqlite3", path)
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return err
 	}

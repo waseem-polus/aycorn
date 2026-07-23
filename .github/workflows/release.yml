@@ -52,7 +52,7 @@ jobs:
       - name: Build Go server
         working-directory: server
         env:
-          CGO_ENABLED: '1'
+          CGO_ENABLED: '0'
           GOARCH: ${{ matrix.goarch }}
         run: go build -ldflags="-s -w" -o ../aycorn-${{ matrix.suffix }}${{ matrix.ext }} ./cmd/web
 
