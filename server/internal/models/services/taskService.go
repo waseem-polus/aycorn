@@ -61,6 +61,15 @@ func (s *TaskService) UpdateTask(updatedTask *models.ChecklistTask) (bool, error
 	return success, nil
 }
 
+func (s *TaskService) UpdateTaskBody(taskId int, body string) (bool, error) {
+	success, err := s.TaskRepo.UpdateTaskBody(taskId, body)
+	if err != nil {
+		return false, err
+	}
+
+	return success, nil
+}
+
 func (s *TaskService) DeleteTask(taskId int) (bool, error) {
 	success, err := s.TaskRepo.DeleteTask(taskId)
 	if err != nil {

@@ -15,7 +15,7 @@ import { DndKit } from "./plugins/dnd-kit";
 import { ListKit } from "./plugins/list-kit";
 import { AutoformatKit } from "./plugins/autoformat-kit";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/useMobile";
 import { type Value } from "platejs";
 import { CodeBlockKit } from "./plugins/code-block-kit";
@@ -78,6 +78,7 @@ export function RichEditor({
   });
 
   const [value, setValue] = useState<Value>(initialValue);
+  const hasEmitted = useRef(false);
 
   useEffect(() => {
     onEditorReady?.(editor);
@@ -89,9 +90,15 @@ export function RichEditor({
 
   const debouncedValue = useDebounce(value, debounceDuration);
   useEffect(() => {
-    if (onDebounceChange) {
-      onDebounceChange(debouncedValue);
+    // Skip the initial emission that fires on mount with `initialValue` — only
+    // genuine user edits should trigger a persist, never the mere act of
+    // mounting the editor (which would otherwise write back the loaded value,
+    // or an empty value before the real body has loaded).
+    if (!hasEmitted.current) {
+      hasEmitted.current = true;
+      return;
     }
+    onDebounceChange?.(debouncedValue);
   }, [debouncedValue]);
 
   return (
