@@ -49,7 +49,7 @@ export function ChecklistFilters({
         </InputGroup>
         <Button
           onClick={() =>
-            create.mutate(undefined, {
+            create.mutate("", {
               onSuccess: (newChecklist: Checklist) => {
                 SetChecklists([
                   ...Checklists,
