@@ -64,7 +64,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
     SetTasks,
     Stages,
   } = useContext(ProjectContext);
-  const { update, deleteTask } = useTaskMutation(projectId);
+  const { update, updateBody, deleteTask } = useTaskMutation(projectId);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const editorRef = useRef<PlateEditor | null>(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -91,9 +91,10 @@ export function TaskPage({ projectId }: { projectId: number }) {
   };
 
   const handleEditorValueChange = (value: Value) => {
-    const updated = { ...task, Body: value };
-    setTask(updated);
-    handleTaskChanges(updated);
+    setTask({ ...task, Body: value });
+    if (task.ID !== 0) {
+      updateBody.mutate({ taskId: task.ID, body: value });
+    }
   };
 
   const handleCopyAsMarkdown = () => {

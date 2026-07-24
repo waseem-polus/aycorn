@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -79,6 +80,32 @@ func (app *app) getTaskBody(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, taskBody)
+}
+
+func (app *app) putTaskBody(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	taskId, err := strconv.Atoi(r.PathValue("taskId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// The request body is the serialized Plate document (a JSON array) to store
+	// verbatim in the body column.
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	success, err := app.taskService.UpdateTaskBody(taskId, string(body))
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, success)
 }
 
 func (app *app) postTask(w http.ResponseWriter, r *http.Request) {

@@ -181,10 +181,12 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Checkli
 }
 
 func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
+	// body is deliberately not updated here — it is written only through
+	// UpdateTaskBody so that property/name/stage/date edits (which often carry
+	// a task object with no loaded body) can never clobber the stored body.
 	query := `
 		UPDATE task SET
 			name = ?,
-			body = ?,
 			checklist = ?,
 			timePlannedStart = ?,
 			timePlannedEnd = ?,
@@ -201,7 +203,6 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 	res, err := repo.DB.Exec(
 		query,
 		task.Name,
-		task.Body,
 		task.Checklist,
 		task.TimePlannedStart,
 		task.TimePlannedEnd,
@@ -214,6 +215,22 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		task.Stage,
 		task.ID,
 	)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
+func (repo *TaskRepo) UpdateTaskBody(taskId int, body string) (bool, error) {
+	query := `UPDATE task SET body = ? WHERE id = ?;`
+
+	res, err := repo.DB.Exec(query, body, taskId)
 	if err != nil {
 		return false, err
 	}
@@ -641,7 +658,7 @@ func (repo *TaskRepo) TaskFacets() (*models.TaskFacets, error) {
 }
 
 func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
-	query := "SELECT t.body FROM task t WHERE t.id = ?;"
+	query := "SELECT COALESCE(t.body, '') FROM task t WHERE t.id = ?;"
 	rows, err := repo.DB.Query(query, taskId)
 	if err != nil {
 		return "[]", err
@@ -656,6 +673,14 @@ func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
 	err = rows.Scan(&taskBody)
 	if err != nil {
 		return "[]", err
+	}
+
+	// A valid body is always a serialized Plate document (a JSON array). Rows
+	// damaged by the historical body-clobber bug hold "" or the JSON-encoded
+	// empty string (`""`), neither of which parses into a document. Normalize
+	// anything that isn't array-shaped to an empty document.
+	if !strings.HasPrefix(strings.TrimSpace(taskBody), "[") {
+		return "[]", nil
 	}
 
 	return taskBody, nil

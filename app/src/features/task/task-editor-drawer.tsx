@@ -48,7 +48,7 @@ export default function TaskEditorDrawer({
 
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project } = useContext(ProjectContext);
-  const { update } = useTaskMutation(Project.ID);
+  const { update, updateBody } = useTaskMutation(Project.ID);
 
   const handleTaskChanges = (updatedTask: Task) => {
     update.mutate(updatedTask);
@@ -76,7 +76,9 @@ export default function TaskEditorDrawer({
   const { isPending, isFetching, data } = useTaskBodyQuery(task.ID, open);
   const handleEditorValueChange = (value: Value) => {
     setTask({ ...task, Body: value });
-    handleTaskChanges({ ...task, Body: value });
+    if (task.ID !== 0) {
+      updateBody.mutate({ taskId: task.ID, body: value });
+    }
   };
 
   return (

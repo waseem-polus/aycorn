@@ -1,13 +1,20 @@
 import { queryClient } from "@/main";
 import type { BulkResult, ProjectDetails, Task } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
+import type { Value } from "platejs";
 
 const getSaveTaskQuery = (isNewTask: boolean) => {
   const method = isNewTask ? "POST" : "PUT";
   return async (task: Task) => {
+    // The body is written exclusively through the dedicated body endpoint
+    // (see `updateBody`). The general update PUT must never carry a body —
+    // most callers hold a task whose body was never loaded, so including it
+    // would clobber the stored body. New-task creation still sends it.
+    const { Body, ...rest } = task;
+    const payload = isNewTask ? { ...rest, Body: JSON.stringify(Body) } : rest;
     const res = await fetch("/api/task", {
       method: method,
-      body: JSON.stringify({ ...task, Body: JSON.stringify(task.Body) }),
+      body: JSON.stringify(payload),
     });
     return await res.json();
   };
@@ -140,6 +147,26 @@ export function useTaskMutation(projectId: number) {
     onSettled: () => invalidateQueries(projectId),
   });
 
+  const updateBody = useMutation({
+    mutationFn: async ({ taskId, body }: { taskId: number; body: Value }) => {
+      const res = await fetch(`/api/task/body/${taskId}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to save task body");
+      }
+      return await res.json();
+    },
+    onSuccess: (_data, { taskId, body }) => {
+      // Keep the cached body in sync with what we just persisted, without
+      // invalidating — invalidation would refetch and flip the editor back to
+      // its loading skeleton mid-edit.
+      queryClient.setQueryData(["taskBody", taskId], body);
+    },
+  });
+
   const bulkDelete = useMutation({
     mutationFn: async (taskIds: number[]) => {
       const res = await fetch(`/api/task/bulk/delete`, {
@@ -155,5 +182,5 @@ export function useTaskMutation(projectId: number) {
     onSuccess: () => invalidateQueries(projectId),
   });
 
-  return { update, create, deleteTask, bulkUpdate, bulkDelete };
+  return { update, updateBody, create, deleteTask, bulkUpdate, bulkDelete };
 }
