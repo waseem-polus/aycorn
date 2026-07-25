@@ -129,6 +129,19 @@ Open the URL from the `Listening on` line in your browser. Aycorn defaults to po
 
 **To stop it:** press `Ctrl-C` in the terminal where it's running. Aycorn waits for any in-progress requests to finish before it exits.
 
+**Accessing Aycorn from another device (Tailscale, LAN):** by default Aycorn binds to `127.0.0.1`, so it's only reachable from the machine it's running on. If you want to reach it from another device (e.g. over [Tailscale](https://tailscale.com/)), set `AYCORN_HOST` to the address you want it to listen on:
+
+```bash
+AYCORN_HOST=100.x.x.x aycorn   # bind to your Tailscale IP (find it with `tailscale ip -4`)
+```
+
+Or pass it as a flag:
+```bash
+aycorn --host 100.x.x.x
+```
+
+Binding to your Tailscale IP keeps Aycorn reachable only over your private tailnet, rather than opening it to your whole LAN.
+
 **To check the version:**
 ```bash
 aycorn --version
@@ -299,6 +312,14 @@ After doing any of the above once, macOS will remember and won't ask again.
 SmartScreen shows this warning for executable files downloaded from the internet that don't have a code-signing certificate. It's the Windows equivalent of the macOS Gatekeeper prompt.
 
 Click **More info**, then click **Run anyway**. Windows will remember your choice for this file.
+
+---
+
+### Windows: "Windows Defender Firewall has blocked some features of this app"
+
+By default Aycorn binds only to `127.0.0.1` (loopback), so it isn't reachable from other devices and shouldn't trigger this prompt. If you're seeing it, you likely set `AYCORN_HOST` (or `--host`) to a wider address like `0.0.0.0` to allow access from other devices. 
+
+If you don't need access from other devices, just leave `AYCORN_HOST` unset — Aycorn will only ever request loopback access.
 
 ---
 

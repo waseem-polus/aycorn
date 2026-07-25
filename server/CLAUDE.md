@@ -62,6 +62,8 @@ Nullable text columns (e.g. `description`) are therefore wrapped in `COALESCE(co
 
 ## Database (SQLite)
 
+**Driver:** `modernc.org/sqlite` (registered as `"sqlite"`), a pure-Go transpilation of SQLite — not `mattn/go-sqlite3`. This is deliberate: it needs no C toolchain to build, on any OS. If you ever reach for `mattn/go-sqlite3`'s DSN pragma syntax (`?_foreign_keys=on`) out of habit, use modernc's instead: `?_pragma=foreign_keys(1)` (repeat `_pragma=` per pragma).
+
 **Migrations:** `server/internal/migrations/sql/` — goose applies these on startup. See [`server/assets/queries/CLAUDE.md`](../assets/queries/CLAUDE.md) for how to add migrations.
 
 `server/assets/queries/schema.sql` is a **human-readable reference only** — keep it in sync with migrations when you change the schema, but it is not loaded by the server.

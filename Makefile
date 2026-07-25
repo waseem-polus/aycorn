@@ -31,7 +31,7 @@ typecheck:
 	cd $(APP_DIR) && npx tsc -b --noEmit
 
 build-server:
-	cd $(SRV_DIR) && go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(BINARY) ./cmd/web
+	cd $(SRV_DIR) && CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(BINARY) ./cmd/web
 	@echo "Binary ready: ./$(BINARY) ($(VERSION))"
 
 # Install the binary system-wide so `aycorn` works from anywhere.

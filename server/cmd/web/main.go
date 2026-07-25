@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 	"github.com/waseem-polus/aycorn/server/internal/migrations"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 	"github.com/waseem-polus/aycorn/server/internal/models/services"
+	_ "modernc.org/sqlite"
 )
 
 // version is set at build time via -ldflags "-X main.version=<tag>".
@@ -70,11 +70,34 @@ func resolvePort() int {
 	return 8000
 }
 
+// resolveHost returns the address to bind to.
+//
+// Precedence:
+//  1. --host <addr> CLI flag
+//  2. $AYCORN_HOST env var
+//  3. Default: 127.0.0.1 (loopback only — not reachable from other devices)
+//
+// Aycorn is a localhost-only app by design; only override this if you know
+// you want it reachable from other devices (e.g. binding to a Tailscale
+// interface address, or "0.0.0.0" for your whole LAN).
+func resolveHost() string {
+	args := os.Args[1:]
+	for i, arg := range args {
+		if arg == "--host" && i+1 < len(args) {
+			return args[i+1]
+		}
+	}
+	if h := os.Getenv("AYCORN_HOST"); h != "" {
+		return h
+	}
+	return "127.0.0.1"
+}
+
 // findAvailablePort tries to bind to startPort, then startPort+1, …, up to 10
 // attempts. Returns the bound listener and the port it landed on.
-func findAvailablePort(startPort int) (net.Listener, int, error) {
+func findAvailablePort(host string, startPort int) (net.Listener, int, error) {
 	for port := startPort; port < startPort+10; port++ {
-		ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		ln, err := net.Listen("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
 		if err == nil {
 			return ln, port, nil
 		}
@@ -133,7 +156,7 @@ func main() {
 		dbExisted = true
 	}
 
-	db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -213,7 +236,8 @@ func main() {
 		taskRelationshipService: taskRelationshipService,
 	}
 
-	ln, port, err := findAvailablePort(resolvePort())
+	host := resolveHost()
+	ln, port, err := findAvailablePort(host, resolvePort())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -222,7 +246,7 @@ func main() {
 
 	// Start the server in a goroutine so we can listen for shutdown signals.
 	go func() {
-		log.Printf("Listening on http://localhost:%d", port)
+		log.Printf("Listening on http://%s", net.JoinHostPort(host, strconv.Itoa(port)))
 		if err := server.Serve(ln); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
