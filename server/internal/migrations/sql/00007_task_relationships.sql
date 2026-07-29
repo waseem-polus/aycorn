@@ -16,9 +16,9 @@ CREATE TABLE task_relationship_type (
 
 -- Seed the 3 built-in system types. Icon/color mirror the previously hardcoded card.
 INSERT INTO task_relationship_type (fromName, toName, behavior, icon, color, isSystem) VALUES
-    ('blocks',   'blocked by',   'blocking', 'octagon-minus', 'red',     1),
-    ('subtask',   'parent',      'subtask',  'list-todo',     'emerald', 1),
-    ('mentions', 'mentioned by', 'link',     'at-sign',       'purple',  1);
+    ('Blocks',   'Blocked By',   'blocking', 'octagon-minus', 'red',     1),
+    ('Subtask',   'Parent',      'subtask',  'list-todo',     'emerald', 1),
+    ('Mentions', 'Mentioned By', 'link',     'at-sign',       'purple',  1);
 
 -- +goose StatementBegin
 CREATE TRIGGER task_relationship_type_timeModified
@@ -30,7 +30,7 @@ END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE task_relationship (
+CREATE TABLE task_relationship task_relationship_type(
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
     fromTask         INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,
     toTask           INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,

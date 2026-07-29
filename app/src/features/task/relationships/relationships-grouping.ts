@@ -23,9 +23,9 @@ const SYSTEM_LABELS: Record<
   RelationshipBehavior,
   Record<TaskRelationship["Direction"], string>
 > = {
-  blocking: { to: "Blocked by", from: "Blocks" },
-  subtask: { from: "Subtasks", to: "Parent tasks" },
-  link: { from: "Mentions", to: "Mentioned by" },
+  blocking: { to: "Blocked By", from: "Blocks" },
+  subtask: { from: "Subtasks", to: "Parents" },
+  link: { from: "Mentions", to: "Mentioned By" },
 };
 
 export const capitalize = (text: string) =>
