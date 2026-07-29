@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
 import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   stageBadgeClass,
   stageStrokeClass,
@@ -11,7 +10,7 @@ import { useTaskRelationshipsQuery } from "@/features/task/relationships/queries
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { useIsMobile } from "@/hooks/useMobile";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronRight, LinkIcon } from "lucide-react";
+import { LinkIcon } from "lucide-react";
 import type { TaskRelationship } from "@/types/types";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

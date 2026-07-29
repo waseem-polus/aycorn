@@ -35,7 +35,6 @@ import { useContext } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { Stage } from "@/types/types";
-import { UnresolvedBlockersBadge } from "../relationships/unresolved-blockers-badge";
 import { Badge } from "@/components/ui/badge";
 import { priorityOutlineBadgeClass } from "../properties/task-priority-palette";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";

@@ -159,13 +159,13 @@ func (app *app) getTaskRelationships(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	relationships, err := app.taskRelationshipService.GetTaskRelationships(taskId)
+	result, err := app.taskRelationshipService.GetTaskRelationships(taskId)
 	if err != nil {
 		respondErr(w, err)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, relationships)
+	writeJSON(w, http.StatusOK, result)
 }
 
 type createRelationshipBody struct {

@@ -16,7 +16,7 @@ export type RelationshipCategory = {
 // The 6 directional buckets, in display order. Labels are fixed per
 // (behavior, direction) because the system types' names don't read uniformly
 // across directions (e.g. "parent"/"subtask" are nouns, "blocks" is a verb).
-const CATEGORY_ORDER: {
+export const CATEGORY_ORDER: {
   behavior: RelationshipBehavior;
   direction: TaskRelationship["Direction"];
   label: string;

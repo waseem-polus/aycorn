@@ -1,14 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import type { TaskRelationship } from "@/types/types";
+import type { TaskRelationship, TaskRelationshipsResult } from "@/types/types";
+
+const fetchTaskRelationships = async (
+  taskId: number,
+): Promise<TaskRelationshipsResult> => {
+  const res = await fetch(`/api/task/relationships/${taskId}`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+};
 
 export function useTaskRelationshipsQuery(taskId: number) {
-  return useQuery<TaskRelationship[]>({
+  return useQuery({
     queryKey: ["taskRelationships", taskId],
-    queryFn: async () => {
-      const res = await fetch(`/api/task/relationships/${taskId}`);
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    },
+    queryFn: () => fetchTaskRelationships(taskId),
     enabled: taskId !== 0,
+    select: (result): TaskRelationship[] => result.Relationships,
+  });
+}
+
+export function useTaskRelationshipCounts(taskId: number) {
+  return useQuery({
+    queryKey: ["taskRelationships", taskId],
+    queryFn: () => fetchTaskRelationships(taskId),
+    enabled: taskId !== 0,
+    select: (result) => result.Counts,
   });
 }

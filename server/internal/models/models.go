@@ -152,6 +152,18 @@ type TaskRelationship struct {
 	Other     RelatedTask          `json:"Other"`
 }
 
+// TaskRelationshipCounts totals a task's relationships by behavior
+// ("blocking", "subtask", "link") within each direction.
+type TaskRelationshipCounts struct {
+	From map[string]int `json:"From"`
+	To   map[string]int `json:"To"`
+}
+
+type TaskRelationshipsResult struct {
+	Relationships []TaskRelationship     `json:"Relationships"`
+	Counts        TaskRelationshipCounts `json:"Counts"`
+}
+
 type BulkResult struct {
 	Success int `json:"success"`
 	Failed  int `json:"failed"`
