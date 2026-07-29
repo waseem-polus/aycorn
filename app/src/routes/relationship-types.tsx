@@ -17,8 +17,8 @@ function RouteComponent() {
       <PageHeader breadcrumb={["Relationship Types"]} />
       <PageContent>
         <PageTitle
-          title="Task Links"
-          description="Define how tasks relate to each other across your projects."
+          title="Task Relationship Types"
+          description="Define how tasks relate to each other across your projects. Relationships are bidirectional and create a two-way link between tasks."
         />
         <RelationshipTypesPage />
       </PageContent>

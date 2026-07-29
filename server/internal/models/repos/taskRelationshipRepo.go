@@ -173,7 +173,7 @@ func (repo *TaskRelationshipRepo) UpdateTypeIcon(id int, icon string) error {
 
 func (repo *TaskRelationshipRepo) UpdateTypeNames(id int, fromName, toName string) error {
 	res, err := repo.DB.Exec(
-		`UPDATE task_relationship_type SET fromName=?, toName=? WHERE id=?`,
+		`UPDATE task_relationship_type SET fromName=?, toName=? WHERE id=? AND isSystem=0`,
 		fromName, toName, id,
 	)
 	if err != nil {

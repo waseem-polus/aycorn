@@ -30,10 +30,10 @@ export function RelationshipTypesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full" />
+          ))}
         </div>
       ) : types.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-muted-foreground">
@@ -41,7 +41,7 @@ export function RelationshipTypesPage() {
           <p className="text-sm">No relationship types yet</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {types.map((type) => (
             <RelationshipTypeCard key={type.ID} type={type} />
           ))}

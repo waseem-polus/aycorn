@@ -67,7 +67,7 @@ func (s *TaskRelationshipService) UpdateRelationshipTypeIcon(id int, icon string
 func (s *TaskRelationshipService) UpdateRelationshipTypeNames(id int, fromName, toName string) error {
 	err := s.TaskRelationshipRepo.UpdateTypeNames(id, fromName, toName)
 	if errors.Is(err, sql.ErrNoRows) {
-		return ErrTypeNotFound
+		return ErrSystemType
 	}
 	return err
 }

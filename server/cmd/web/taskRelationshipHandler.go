@@ -122,8 +122,8 @@ func (app *app) patchTaskRelationshipTypeNames(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := app.taskRelationshipService.UpdateRelationshipTypeNames(id, body.FromName, body.ToName); err != nil {
-		if errors.Is(err, services.ErrTypeNotFound) {
-			http.Error(w, err.Error(), http.StatusNotFound)
+		if errors.Is(err, services.ErrSystemType) {
+			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
 		respondErr(w, err)
