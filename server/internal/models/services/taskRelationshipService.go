@@ -24,8 +24,8 @@ type TaskRelationshipService struct {
 	TaskRelationshipRepo *repos.TaskRelationshipRepo
 }
 
-func (s *TaskRelationshipService) GetRelationshipTypes() ([]models.TaskRelationshipType, error) {
-	return s.TaskRelationshipRepo.AllTypes()
+func (s *TaskRelationshipService) GetRelationshipTypes(filters *repos.TaskRelationshipTypeFilters) ([]models.TaskRelationshipType, error) {
+	return s.TaskRelationshipRepo.AllTypes(filters)
 }
 
 func (s *TaskRelationshipService) GetTaskRelationships(taskId int) (models.TaskRelationshipsResult, error) {

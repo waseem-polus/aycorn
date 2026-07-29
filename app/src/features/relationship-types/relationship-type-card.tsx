@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowRightIcon, LockIcon } from "lucide-react";
+import { ArrowRightLeftIcon, LockIcon } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { toast } from "sonner";
 import {
@@ -136,7 +136,7 @@ export function RelationshipTypeCard({ type }: Props) {
                 <TooltipTrigger asChild>
                   <span className="flex items-center gap-2">
                     <span className="truncate">{type.FromName}</span>
-                    <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                    <ArrowRightLeftIcon className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">{type.ToName}</span>
                   </span>
                 </TooltipTrigger>
@@ -157,7 +157,7 @@ export function RelationshipTypeCard({ type }: Props) {
                   placeholder="From…"
                   className="text-base font-medium p-0 min-h-0 cursor-text min-w-12"
                 />
-                <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                <ArrowRightLeftIcon className="size-3.5 shrink-0 text-muted-foreground" />
                 <EditableHeader
                   ref={toNameRef}
                   value={type.ToName}
@@ -194,7 +194,7 @@ export function RelationshipTypeCard({ type }: Props) {
           </CardAction>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-1.5 px-4">
+        {/*<CardContent className="flex flex-col gap-1.5 px-4">
           <ExampleRow
             sourceLetter="A"
             targetLetter="B"
@@ -207,7 +207,7 @@ export function RelationshipTypeCard({ type }: Props) {
             value={type.ToName}
             placeholder="to label…"
           />
-        </CardContent>
+        </CardContent>*/}
 
         <CardContent className="flex items-center justify-between gap-2 border-t px-4 pt-3">
           <div className="flex flex-wrap items-center gap-1.5">

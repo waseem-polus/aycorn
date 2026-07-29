@@ -10,6 +10,11 @@ type TaskRelationshipRepo struct {
 	DB *sql.DB
 }
 
+type TaskRelationshipTypeFilters struct {
+	SearchQuery   string
+	BehaviorQuery string
+}
+
 func scanTaskRelationshipType(scanner interface {
 	Scan(...any) error
 }, t *models.TaskRelationshipType) error {
@@ -25,16 +30,26 @@ func scanTaskRelationshipType(scanner interface {
 	)
 }
 
-func (repo *TaskRelationshipRepo) AllTypes() ([]models.TaskRelationshipType, error) {
+func (repo *TaskRelationshipRepo) AllTypes(filters *TaskRelationshipTypeFilters) ([]models.TaskRelationshipType, error) {
 	query := `
 		SELECT trt.id, trt.fromName, trt.toName, trt.behavior, trt.icon, trt.color, trt.isSystem,
 		       COUNT(tr.id) as usageCount
 		  FROM task_relationship_type trt
 		  LEFT JOIN task_relationship tr ON tr.relationshipType = trt.id
-		 GROUP BY trt.id
-		 ORDER BY trt.id;
+		 WHERE 1=1
 	`
-	rows, err := repo.DB.Query(query)
+	args := []any{}
+	if filters.SearchQuery != "" {
+		query += " AND (trt.fromName LIKE ? OR trt.toName LIKE ?)"
+		args = append(args, "%"+filters.SearchQuery+"%", "%"+filters.SearchQuery+"%")
+	}
+	if filters.BehaviorQuery != "" {
+		query += " AND trt.behavior = ?"
+		args = append(args, filters.BehaviorQuery)
+	}
+	query += " GROUP BY trt.id ORDER BY trt.id;"
+
+	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

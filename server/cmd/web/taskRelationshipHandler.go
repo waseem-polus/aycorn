@@ -6,11 +6,18 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 	"github.com/waseem-polus/aycorn/server/internal/models/services"
 )
 
 func (app *app) getAllTaskRelationshipTypes(w http.ResponseWriter, r *http.Request) {
-	types, err := app.taskRelationshipService.GetRelationshipTypes()
+	q := r.URL.Query()
+	filters := &repos.TaskRelationshipTypeFilters{
+		SearchQuery:   q.Get("search"),
+		BehaviorQuery: q.Get("behavior"),
+	}
+
+	types, err := app.taskRelationshipService.GetRelationshipTypes(filters)
 	if err != nil {
 		respondErr(w, err)
 		return
