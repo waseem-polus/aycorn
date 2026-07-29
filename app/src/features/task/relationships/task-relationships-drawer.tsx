@@ -31,11 +31,19 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import { useTaskRelationshipsQuery } from "@/features/task/relationships/queries/useTaskRelationshipsQuery";
 import { useTaskRelationshipTypesQuery } from "@/features/task/relationships/queries/useTaskRelationshipTypesQuery";
 import { useCreateTaskRelationshipMutation } from "@/features/task/relationships/queries/useCreateTaskRelationshipMutation";
-import { groupIntoCategories } from "@/features/task/relationships/relationships-grouping";
+import {
+  groupRelationshipsByType,
+  toRelationshipSections,
+} from "@/features/task/relationships/relationships-grouping";
 import { RelationshipCategorySection } from "@/features/task/relationships/task-relationships-drawer/relationship-category";
 import { SelectRelationshipTask } from "@/features/task/relationships/task-relationships-drawer/select-relationship-task";
 import { stageBadgeClass, stageStrokeClass } from "@/features/stage/stage-palette";
-import type { RelationshipBehavior, TaskRelationshipType, TaskWithProject } from "@/types/types";
+import {
+  RELATIONSHIP_BEHAVIORS,
+  type RelationshipBehavior,
+  type TaskRelationshipType,
+  type TaskWithProject,
+} from "@/types/types";
 
 type NewRelState =
   | null
@@ -48,8 +56,6 @@ const BEHAVIOR_GROUP_LABEL: Record<RelationshipBehavior, string> = {
   link: "Link",
 };
 
-const BEHAVIOR_ORDER: RelationshipBehavior[] = ["blocking", "subtask", "link"];
-
 export function TaskRelationshipsDrawer() {
   const { state: task } = useContext(TaskContext);
   const { data, isLoading } = useTaskRelationshipsQuery(task.ID);
@@ -58,7 +64,7 @@ export function TaskRelationshipsDrawer() {
 
   const [newRelState, setNewRelState] = useState<NewRelState>(null);
 
-  const categories = groupIntoCategories(data ?? []);
+  const categories = toRelationshipSections(groupRelationshipsByType(data ?? []));
 
   const typesByBehavior = useMemo(() => {
     const map = new Map<RelationshipBehavior, TaskRelationshipType[]>();
@@ -144,7 +150,7 @@ export function TaskRelationshipsDrawer() {
               <PopoverContent className="w-60 p-0" align="start">
                 <Command>
                   <CommandList>
-                    {BEHAVIOR_ORDER.filter((b) => typesByBehavior.has(b)).map((behavior) => (
+                    {RELATIONSHIP_BEHAVIORS.filter((b) => typesByBehavior.has(b)).map((behavior) => (
                       <CommandGroup key={behavior} heading={BEHAVIOR_GROUP_LABEL[behavior]}>
                         {typesByBehavior.get(behavior)!.flatMap((type) => [
                           <CommandItem

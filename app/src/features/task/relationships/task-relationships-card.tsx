@@ -11,47 +11,28 @@ import { TaskContext } from "@/contexts/task/TaskContext";
 import { useIsMobile } from "@/hooks/useMobile";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { LinkIcon } from "lucide-react";
-import type { TaskRelationship } from "@/types/types";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  groupRelationshipsByType,
+  toRelationshipSections,
+  type RelationshipSection,
+} from "@/features/task/relationships/relationships-grouping";
 
-type RelationshipGroup = {
-  key: string;
-  type: TaskRelationship["Type"];
-  direction: TaskRelationship["Direction"];
-  total: number;
-  done: number;
-};
+// The "N of M ..." progress copy only applies to the 2 system-type sections
+// it was written for. Gated on IsSystem (not Behavior alone) so a custom type
+// sharing the "blocking"/"subtask" behavior doesn't inherit wording that
+// assumes it's the system type.
+const sectionLabel = (section: RelationshipSection) => {
+  const total = section.relationships.length;
+  const done = section.relationships.filter((rel) => rel.Other.IsDone).length;
 
-const capitalize = (text: string) =>
-  text.charAt(0).toUpperCase() + text.slice(1);
-
-// Group relationships by (type, direction) so each badge summarizes one
-// directional bucket (e.g. all "blocked by" relationships for this task).
-const groupRelationships = (
-  relationships: TaskRelationship[],
-): RelationshipGroup[] => {
-  const groups = new Map<string, RelationshipGroup>();
-  for (const rel of relationships) {
-    const key = `${rel.Type.ID}-${rel.Direction}`;
-    const group = groups.get(key) ?? {
-      key,
-      type: rel.Type,
-      direction: rel.Direction,
-      total: 0,
-      done: 0,
-    };
-    group.total += 1;
-    if (rel.Other.IsDone) group.done += 1;
-    groups.set(key, group);
-  }
-  return [...groups.values()];
-};
-
-const groupLabel = (group: RelationshipGroup) => {
-  const { type, direction, total, done } = group;
-  if (type.Behavior === "blocking" && direction === "to") {
+  if (
+    section.type.IsSystem &&
+    section.type.Behavior === "blocking" &&
+    section.direction === "to"
+  ) {
     return (
       <>
         <span className="font-semibold">{done}</span>
@@ -61,7 +42,11 @@ const groupLabel = (group: RelationshipGroup) => {
       </>
     );
   }
-  if (type.Behavior === "subtask" && direction === "from") {
+  if (
+    section.type.IsSystem &&
+    section.type.Behavior === "subtask" &&
+    section.direction === "from"
+  ) {
     return (
       <>
         <span className="font-semibold">{done}</span>
@@ -71,10 +56,9 @@ const groupLabel = (group: RelationshipGroup) => {
       </>
     );
   }
-  const name = direction === "from" ? type.FromName : type.ToName;
   return (
     <>
-      <span className="font-light">{capitalize(name)}</span> {total}
+      <span className="font-light">{section.label}</span> {total}
     </>
   );
 };
@@ -89,7 +73,7 @@ export function TaskRelationshipsCard() {
   }, [isError]);
 
   const relationships = data ?? [];
-  const groups = groupRelationships(relationships);
+  const sections = toRelationshipSections(groupRelationshipsByType(relationships));
   const total = relationships.length;
 
   return (
@@ -110,17 +94,17 @@ export function TaskRelationshipsCard() {
                     </>
                 ) : (
                     <span className="flex shrink gap-1 sm:gap-2 min-w-0 flex-wrap">
-                    {groups.map((group) => (
+                    {sections.map((section) => (
                         <Badge
-                            key={group.key}
-                            className={stageBadgeClass(group.type.Color)}
+                            key={section.key}
+                            className={stageBadgeClass(section.type.Color)}
                         >
                             <DynamicIcon
-                                name={group.type.Icon as IconName}
-                                className={stageStrokeClass(group.type.Color)}
+                                name={section.type.Icon as IconName}
+                                className={stageStrokeClass(section.type.Color)}
                                 fallback={() => <LinkIcon />}
                             />
-                            {groupLabel(group)}
+                            {sectionLabel(section)}
                         </Badge>
                     ))}
                     </span>

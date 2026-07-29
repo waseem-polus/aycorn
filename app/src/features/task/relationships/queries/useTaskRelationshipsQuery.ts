@@ -17,12 +17,3 @@ export function useTaskRelationshipsQuery(taskId: number) {
     select: (result): TaskRelationship[] => result.Relationships,
   });
 }
-
-export function useTaskRelationshipCounts(taskId: number) {
-  return useQuery({
-    queryKey: ["taskRelationships", taskId],
-    queryFn: () => fetchTaskRelationships(taskId),
-    enabled: taskId !== 0,
-    select: (result) => result.Counts,
-  });
-}

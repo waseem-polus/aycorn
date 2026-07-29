@@ -10,14 +10,14 @@ import {
 import { RelationshipTaskRow } from "@/features/task/relationships/task-relationships-drawer/relationship-task-row";
 import { SelectRelationshipTask } from "@/features/task/relationships/task-relationships-drawer/select-relationship-task";
 import { useCreateTaskRelationshipMutation } from "@/features/task/relationships/queries/useCreateTaskRelationshipMutation";
-import type { RelationshipCategory } from "@/features/task/relationships/relationships-grouping";
+import type { RelationshipSection } from "@/features/task/relationships/relationships-grouping";
 import type { TaskWithProject } from "@/types/types";
 import { TaskContext } from "@/contexts/task/TaskContext";
 
 export function RelationshipCategorySection({
   category,
 }: {
-  category: RelationshipCategory;
+  category: RelationshipSection;
 }) {
   const [open, setOpen] = useState(false);
   const { state: currentTask } = useContext(TaskContext);
@@ -34,7 +34,7 @@ export function RelationshipCategorySection({
     createRelationship.mutate({
       fromTaskId,
       toTaskId,
-      typeId: category.typeId,
+      typeId: category.type.ID,
     });
   };
 
@@ -42,10 +42,10 @@ export function RelationshipCategorySection({
     <div className="flex flex-col">
       <div className="flex items-center justify-between gap-2 py-2">
         <span className="flex items-center gap-2 min-w-0">
-          <Badge variant="outline" className={stageBadgeClass(category.color)}>
+          <Badge variant="outline" className={stageBadgeClass(category.type.Color)}>
             <DynamicIcon
-              name={category.icon as IconName}
-              className={stageStrokeClass(category.color)}
+              name={category.type.Icon as IconName}
+              className={stageStrokeClass(category.type.Color)}
               fallback={() => <LinkIcon />}
             />
             {category.label}

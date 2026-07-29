@@ -177,14 +177,8 @@ export type TaskRelationship = {
   Other: RelatedTask;
 };
 
-export type TaskRelationshipCounts = {
-  From: Record<RelationshipBehavior, number>;
-  To: Record<RelationshipBehavior, number>;
-};
-
 export type TaskRelationshipsResult = {
   Relationships: TaskRelationship[];
-  Counts: TaskRelationshipCounts;
 };
 
 export type BulkResult = {

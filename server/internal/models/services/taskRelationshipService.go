@@ -33,27 +33,7 @@ func (s *TaskRelationshipService) GetTaskRelationships(taskId int) (models.TaskR
 	if err != nil {
 		return models.TaskRelationshipsResult{}, err
 	}
-	return models.TaskRelationshipsResult{
-		Relationships: relationships,
-		Counts:        countRelationshipsByBehavior(relationships),
-	}, nil
-}
-
-// countRelationshipsByBehavior totals relationships by behavior within each
-// direction. Behaviors are pre-seeded at 0 so callers never need a fallback.
-func countRelationshipsByBehavior(relationships []models.TaskRelationship) models.TaskRelationshipCounts {
-	counts := models.TaskRelationshipCounts{
-		From: map[string]int{"blocking": 0, "subtask": 0, "link": 0},
-		To:   map[string]int{"blocking": 0, "subtask": 0, "link": 0},
-	}
-	for _, rel := range relationships {
-		if rel.Direction == "from" {
-			counts.From[rel.Type.Behavior]++
-		} else {
-			counts.To[rel.Type.Behavior]++
-		}
-	}
-	return counts
+	return models.TaskRelationshipsResult{Relationships: relationships}, nil
 }
 
 func (s *TaskRelationshipService) CreateRelationshipType(fromName, toName, behavior, icon string) (int, error) {
