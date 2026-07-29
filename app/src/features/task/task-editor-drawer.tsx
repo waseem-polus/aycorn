@@ -12,7 +12,7 @@ import { SelectTaskStage } from "@/features/stage/select-task-stage";
 import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { DatePickerInput } from "@/components/DatePickerInput";
-import { Fragment, useContext, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { EditableTaskName } from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
@@ -32,57 +32,13 @@ import { useTaskBodyQuery } from "@/queries/useTaskQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-    ArrowDownRightIcon,
-    ArrowUpRightIcon,
-    AtSignIcon,
-  ChevronDown,
-  LandPlotIcon,
-  OctagonMinusIcon,
-  SquareCheckIcon,
-  User,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extractPlainText } from "@/features/task/task-utils";
 import { TaskRelationshipsCard } from "@/features/task/relationships/task-relationships-card";
-import { useTaskRelationshipCounts } from "@/features/task/relationships/queries/useTaskRelationshipsQuery";
-import { CATEGORY_ORDER } from "@/features/task/relationships/relationships-grouping";
+import { TaskRelationshipBadges } from "@/features/task/relationships/task-relationship-badges";
 import { Separator } from "@/components/ui/separator";
-import { stageStrokeClass, stageCalendarBadgeClass, type StageColor } from "@/features/stage/stage-palette";
 import RelativePlannedDateBadge from "./properties/relative-planned-date-badge";
-import {
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent,
-} from "@/components/ui/hover-card";
-import type { RelationshipBehavior, TaskRelationship } from "@/types/types";
-
-const BEHAVIOR_BADGES: {
-  behavior: RelationshipBehavior;
-  icon: LucideIcon;
-  color: StageColor;
-}[] = [
-  { behavior: "blocking", icon: OctagonMinusIcon, color: "red" },
-  { behavior: "subtask", icon: SquareCheckIcon, color: "emerald" },
-  { behavior: "link", icon: AtSignIcon, color: "purple" },
-];
-
-const categoryLabel = (
-  behavior: RelationshipBehavior,
-  direction: TaskRelationship["Direction"],
-) =>
-  CATEGORY_ORDER.find(
-    (c) => c.behavior === behavior && c.direction === direction,
-  )?.label ?? behavior;
-
-const DIRECTION_COPY: Record<
-  "To" | "From",
-  { title: string; description: string }
-> = {
-  To: { title: "Incoming", description: "Other tasks that relate to this one." },
-  From: { title: "Outgoing", description: "This task relates to other tasks." },
-};
 
 export default function TaskEditorDrawer({
   children,
@@ -133,68 +89,6 @@ export default function TaskEditorDrawer({
   };
 
   const stage = Stages.find((s) => s.ID === task.Stage)!;
-
-  const { data: relationshipCounts } = useTaskRelationshipCounts(task.ID);
-
-  const renderRelationshipBadge = (
-    direction: "To" | "From",
-    ArrowIcon: LucideIcon,
-  ) => {
-    const directionCounts = relationshipCounts?.[direction];
-    if (!directionCounts) return null;
-
-    const activeBadges = BEHAVIOR_BADGES.filter(
-      ({ behavior }) => directionCounts[behavior] > 0,
-    );
-    if (activeBadges.length === 0) return null;
-
-    return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
-          <Badge variant="secondary" className="text-foreground" tabIndex={0}>
-            <ArrowIcon className="stroke-foreground" />
-            {activeBadges.map(({ behavior, icon: Icon, color }) => (
-              <Fragment key={behavior}>
-                <Separator orientation="vertical" className="h-4! mx-1" />
-                <Icon className={stageStrokeClass(color)} />
-                <span className={stageCalendarBadgeClass(color)}>
-                  {directionCounts[behavior]}
-                </span>
-              </Fragment>
-            ))}
-          </Badge>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-56 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <ArrowIcon className="size-3.5 stroke-foreground" />
-            {DIRECTION_COPY[direction].title}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1 mb-2">
-            {DIRECTION_COPY[direction].description}
-          </p>
-          <div className="flex flex-col gap-1.5">
-            {activeBadges.map(({ behavior, icon: Icon, color }) => (
-              <div
-                key={behavior}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Icon className={cn("size-3.5", stageStrokeClass(color))} />
-                  {categoryLabel(
-                    behavior,
-                    direction.toLowerCase() as TaskRelationship["Direction"],
-                  )}
-                </span>
-                <span className="font-medium">
-                  {directionCounts[behavior]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </HoverCardContent>
-      </HoverCard>
-    );
-  };
 
   return (
     <Drawer
@@ -272,8 +166,7 @@ export default function TaskEditorDrawer({
 
                     <Separator orientation="vertical" className="h-4! sm:mx-2" />
 
-                    {renderRelationshipBadge("To", ArrowDownRightIcon)}
-                    {renderRelationshipBadge("From", ArrowUpRightIcon)}
+                    <TaskRelationshipBadges taskId={task.ID} />
                 </div>
             )}
             <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">

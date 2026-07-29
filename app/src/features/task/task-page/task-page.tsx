@@ -27,7 +27,7 @@ import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
 import { TaskProperty } from "@/features/task/properties/task-property";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
-import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
+import RelativePlannedDateBadge from "@/features/task/properties/relative-planned-date-badge";
 import { DatePickerInput } from "@/components/DatePickerInput";
 import { RichEditor } from "@/features/editor/rich-editor";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
@@ -53,6 +53,9 @@ import {
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
+import { Separator } from "@/components/ui/separator";
+import { TaskRelationshipsCard } from "@/features/task/relationships/task-relationships-card";
+import { TaskRelationshipBadges } from "@/features/task/relationships/task-relationship-badges";
 
 export function TaskPage({ projectId }: { projectId: number }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
@@ -115,6 +118,8 @@ export function TaskPage({ projectId }: { projectId: number }) {
     navigator.clipboard.writeText(content);
     toast("Copied as plain text");
   };
+
+  const stage = Stages.find((s) => s.ID === task.Stage);
 
   const handleDelete = () => {
     const taskName = task.Name === "" ? "Untitled Task" : task.Name;
@@ -206,13 +211,10 @@ export function TaskPage({ projectId }: { projectId: number }) {
           <div className="flex flex-wrap items-center gap-1.5 pb-2">
             <TaskPriorityIcon variant={task.Priority} />
             <TaskTypeBadge type={task.Type} />
-            {Stages.find((s) => s.ID === task.Stage) && (
-              <WorkflowStageChip
-                className="rounded-full"
-                stage={Stages.find((s) => s.ID === task.Stage)!}
-              />
+            {stage && (
+              <WorkflowStageChip className="rounded-full" stage={stage} />
             )}
-            <Badge variant="outline">
+            <Badge variant="secondary">
               <LandPlotIcon className="size-2" />
               {task.ChecklistName}
             </Badge>
@@ -221,14 +223,20 @@ export function TaskPage({ projectId }: { projectId: number }) {
               className={task.Assignee !== "" ? "" : "text-muted-foreground"}
             >
               <User className="size-2" />
-              {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
+              {task.Assignee !== "" ? task.Assignee : "—"}
             </Badge>
-            <TaskPlannedDates
+            <RelativePlannedDateBadge
               start={task.TimePlannedStart}
               end={task.TimePlannedEnd}
-              hasStartTime={task.HasTimePlannedStart}
-              hasEndTime={task.HasTimePlannedEnd}
+              overdue={
+                task.TimePlannedStart !== null &&
+                new Date(task.TimePlannedEnd ?? task.TimePlannedStart) <
+                  new Date() &&
+                stage?.Type !== "done"
+              }
             />
+            <Separator orientation="vertical" className="h-4! sm:mx-2" />
+            <TaskRelationshipBadges taskId={task.ID} />
           </div>
         )}
 
@@ -252,6 +260,10 @@ export function TaskPage({ projectId }: { projectId: number }) {
             <TaskProperty label="Date" htmlFor="date">
               <DatePickerInput onChange={handleTaskChanges} />
             </TaskProperty>
+
+            <Separator orientation="horizontal" className="my-2" />
+
+            <TaskRelationshipsCard />
           </section>
         </CollapsibleContent>
       </Collapsible>
