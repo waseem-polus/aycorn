@@ -308,7 +308,16 @@ export function ProjectsDataTable({
         </Table>
       </div>
 
-      <DataTablePagination table={table} />
+      <DataTablePagination
+        pageIndex={table.getState().pagination.pageIndex}
+        pageCount={table.getPageCount()}
+        canPreviousPage={table.getCanPreviousPage()}
+        canNextPage={table.getCanNextPage()}
+        selectedCount={table.getSelectedRowModel().rows.length}
+        totalCount={table.getCoreRowModel().rows.length}
+        onPreviousPage={() => table.previousPage()}
+        onNextPage={() => table.nextPage()}
+      />
 
       <BulkActionsToolbar
         selectedProjects={selectedProjects}
