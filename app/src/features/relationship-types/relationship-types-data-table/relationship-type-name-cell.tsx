@@ -45,7 +45,7 @@ export function RelationshipTypeNameCell({ type, field, placeholder }: Props) {
 
   return (
     <div
-      className="min-w-0 h-full"
+      className="flex-1 min-w-0 h-full flex items-center"
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
@@ -53,7 +53,7 @@ export function RelationshipTypeNameCell({ type, field, placeholder }: Props) {
         value={value}
         setValue={handleSave}
         placeholder={placeholder}
-        className="w-full h-full flex items-center text-sm p-1 -m-1 font-normal cursor-text"
+        className="w-full min-w-0 whitespace-normal wrap-break-word text-sm p-1 -m-1 font-normal cursor-text"
       />
     </div>
   );
