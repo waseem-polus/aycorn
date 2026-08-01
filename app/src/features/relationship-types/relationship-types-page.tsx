@@ -21,7 +21,7 @@ export function RelationshipTypesPage() {
   const [behaviorFilter, setBehaviorFilter] =
     useState<RelationshipBehaviorFilter>("all");
   const debouncedSearch = useDebounce(search);
-  const { data: types = [], isFetching } = useTaskRelationshipTypesQuery(
+  const { data: types = [], isPending } = useTaskRelationshipTypesQuery(
     debouncedSearch,
     behaviorFilter,
   );
@@ -77,7 +77,7 @@ export function RelationshipTypesPage() {
 
       <RelationshipTypesDataTable
         data={types}
-        isFetching={isFetching}
+        isLoading={isPending}
         emptyMessage={
           search || behaviorFilter !== "all"
             ? "No relationship types match your search."

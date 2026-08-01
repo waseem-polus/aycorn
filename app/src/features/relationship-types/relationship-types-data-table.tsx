@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   data: TaskRelationshipType[];
-  isFetching: boolean;
+  isLoading: boolean;
   emptyMessage?: string;
 };
 
@@ -50,7 +50,7 @@ const MOBILE_HIDDEN_COLUMNS = new Set(["ToName", "Behavior", "UsageCount"]);
 
 export function RelationshipTypesDataTable({
   data,
-  isFetching,
+  isLoading,
   emptyMessage = "No relationship types found.",
 }: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -67,7 +67,7 @@ export function RelationshipTypesDataTable({
     setSelectedIds(new Set(Object.keys(next).filter((id) => next[id])));
   };
 
-  const columns: ColumnDef<TaskRelationshipType>[] = [
+  const columns = useMemo<ColumnDef<TaskRelationshipType>[]>(() => [
     {
       id: "select",
       header: ({ table }) => (
@@ -161,7 +161,7 @@ export function RelationshipTypesDataTable({
       cell: ({ row }) => <RelationshipTypeRowActions type={row.original} />,
       enableSorting: false,
     },
-  ];
+  ], []);
 
   const table = useReactTable({
     data,
@@ -216,7 +216,7 @@ export function RelationshipTypesDataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {!isFetching && table.getRowModel().rows.length > 0 ? (
+            {!isLoading && table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => {
                 const itemProps = row.original.IsSystem
                   ? null
