@@ -140,6 +140,47 @@ func (app *app) patchTaskRelationshipTypeNames(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusNoContent)
 }
 
+type bulkUpdateRelationshipTypeBehaviorBody struct {
+	IDs      []int  `json:"ids"`
+	Behavior string `json:"behavior"`
+}
+
+func (app *app) bulkUpdateRelationshipTypeBehavior(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var body bulkUpdateRelationshipTypeBehaviorBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskRelationshipService.BulkUpdateBehavior(body.IDs, body.Behavior)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) bulkDeleteRelationshipTypes(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	ids := []int{}
+	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskRelationshipService.BulkDeleteRelationshipTypes(ids)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
 func (app *app) deleteTaskRelationshipType(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {

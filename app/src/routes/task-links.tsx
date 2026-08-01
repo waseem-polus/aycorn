@@ -7,18 +7,18 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { RelationshipTypesPage } from "@/features/relationship-types/relationship-types-page";
 
-export const Route = createFileRoute("/relationship-types")({
+export const Route = createFileRoute("/task-links")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={["Relationship Types"]} />
+      <PageHeader breadcrumb={["Task Links"]} />
       <PageContent>
         <PageTitle
-          title="Task Relationship Types"
-          description="Define how tasks relate to each other across your projects. Relationships are bidirectional and create a two-way link between tasks."
+          title="Task Links"
+          description="Links are a bidirectional connection between tasks across your projects."
         />
         <RelationshipTypesPage />
       </PageContent>

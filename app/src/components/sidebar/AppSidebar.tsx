@@ -48,7 +48,7 @@ const data = {
     },
     {
       title: "Task Links",
-      url: "/relationship-types",
+      url: "/task-links",
       icon: LinkIcon,
       badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },

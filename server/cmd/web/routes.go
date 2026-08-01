@@ -44,6 +44,8 @@ func (app *app) routes() http.Handler {
 
 	mux.HandleFunc("GET /api/task-relationship-type", app.getAllTaskRelationshipTypes)
 	mux.HandleFunc("POST /api/task-relationship-type", app.postTaskRelationshipType)
+	mux.HandleFunc("PUT /api/task-relationship-type/bulk/behavior", app.bulkUpdateRelationshipTypeBehavior)
+	mux.HandleFunc("POST /api/task-relationship-type/bulk/delete", app.bulkDeleteRelationshipTypes)
 	mux.HandleFunc("PUT /api/task-relationship-type/{id}", app.putTaskRelationshipType)
 	mux.HandleFunc("PATCH /api/task-relationship-type/{id}/icon", app.patchTaskRelationshipTypeIcon)
 	mux.HandleFunc("PATCH /api/task-relationship-type/{id}/names", app.patchTaskRelationshipTypeNames)

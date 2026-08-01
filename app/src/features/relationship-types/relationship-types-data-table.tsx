@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { ArrowRightIcon } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -8,11 +8,9 @@ import {
   useReactTable,
   type ColumnDef,
   type OnChangeFn,
-  type Row,
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import { format, formatDistanceToNow } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -22,48 +20,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { Project } from "@/types/types";
+import type { TaskRelationshipType } from "@/types/types";
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-toolbar";
-import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
-import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
-import { WorkflowCell } from "@/components/projects/table/workflow-cell";
+import { RelationshipTypeBehaviorCell } from "@/features/relationship-types/relationship-types-data-table/relationship-type-behavior-cell";
+import { RelationshipTypeIcon } from "@/features/relationship-types/relationship-types-data-table/relationship-type-icon";
+import { RelationshipTypeNameCell } from "@/features/relationship-types/relationship-types-data-table/relationship-type-name-cell";
+import { RelationshipTypeRowActions } from "@/features/relationship-types/relationship-types-data-table/relationship-type-row-actions";
+import { RelationshipTypesBulkActionsToolbar } from "@/features/relationship-types/relationship-types-data-table/relationship-types-bulk-actions-toolbar";
 import { selectedItemClasses, useSharedSelection } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 
-interface ProjectsDataTableProps {
-  data: Project[];
+type Props = {
+  data: TaskRelationshipType[];
   isFetching: boolean;
-}
+  emptyMessage?: string;
+};
 
 const COLUMN_WIDTHS: Record<string, string | undefined> = {
   select: "32px",
-  Name: undefined,
-  Workflow: "20%",
-  TimeCreated: "20%",
-  TimeModified: "20%",
-  actions: "60px",
+  FromName: undefined,
+  ToName: undefined,
+  Behavior: "140px",
+  UsageCount: "90px",
+  actions: "56px",
 };
-const NAME_MIN_WIDTH = "30%";
-const MOBILE_HIDDEN_COLUMNS = new Set([
-  "Workflow",
-  "TimeCreated",
-  "TimeModified",
-]);
+const NAME_MIN_WIDTH = "22%";
+const MOBILE_HIDDEN_COLUMNS = new Set(["ToName", "Behavior", "UsageCount"]);
 
-export function ProjectsDataTable({
+export function RelationshipTypesDataTable({
   data,
   isFetching,
-}: ProjectsDataTableProps) {
-  const navigate = useNavigate();
+  emptyMessage = "No relationship types found.",
+}: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const { getItemProps, selectedIds, setSelectedIds } = useSharedSelection();
 
   const rowSelection = useMemo<RowSelectionState>(
@@ -77,7 +67,7 @@ export function ProjectsDataTable({
     setSelectedIds(new Set(Object.keys(next).filter((id) => next[id])));
   };
 
-  const columns: ColumnDef<Project>[] = [
+  const columns: ColumnDef<TaskRelationshipType>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -90,98 +80,85 @@ export function ProjectsDataTable({
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        </div>
-      ),
+      cell: ({ row }) =>
+        row.original.IsSystem ? (
+          <Checkbox checked={false} disabled className="invisible" />
+        ) : (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
       enableSorting: false,
     },
     {
-      accessorKey: "Name",
-      header: ({ column }) => <SortableHeader label="Name" column={column} />,
+      accessorKey: "FromName",
+      header: ({ column }) => (
+        <SortableHeader label="Link Name" column={column} />
+      ),
       cell: ({ row }) => (
-        <ProjectNameCell
-          project={row.original}
-          isEditing={editingId === row.original.ID}
-          onStartEdit={() => setEditingId(row.original.ID)}
-          onStopEdit={() => setEditingId(null)}
+        <div className="flex flex-col gap-1.5 min-w-0 py-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <RelationshipTypeIcon type={row.original} />
+            <RelationshipTypeNameCell
+              type={row.original}
+              field="FromName"
+              placeholder="Link…"
+            />
+          </div>
+          <div className="flex items-center gap-2 min-w-0 pl-10 sm:hidden">
+            <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground" />
+            <RelationshipTypeNameCell
+              type={row.original}
+              field="ToName"
+              placeholder="To…"
+            />
+          </div>
+          <div className="flex items-center gap-2 pl-10 sm:hidden">
+            <RelationshipTypeBehaviorCell type={row.original} />
+            <span className="text-xs text-muted-foreground">
+              {row.original.UsageCount} usages
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "ToName",
+      header: ({ column }) => (
+        <SortableHeader label="Inverse Name" column={column} />
+      ),
+      cell: ({ row }) => (
+        <RelationshipTypeNameCell
+          type={row.original}
+          field="ToName"
+          placeholder="Inverse…"
         />
       ),
     },
     {
-      accessorKey: "WorkflowName",
-      id: "Workflow",
-      header: ({ column }) => (
-        <SortableHeader label="Workflow" column={column} />
-      ),
+      accessorKey: "Behavior",
+      id: "Behavior",
+      header: () => "Behavior",
+      cell: ({ row }) => <RelationshipTypeBehaviorCell type={row.original} />,
+      enableSorting: false,
+    },
+    {
+      accessorKey: "UsageCount",
+      id: "UsageCount",
+      header: ({ column }) => <SortableHeader label="Usages" column={column} />,
       cell: ({ row }) => (
-        <WorkflowCell
-          workflowId={row.original.Workflow}
-          workflowName={row.original.WorkflowName}
-        />
+        <span className="text-sm text-muted-foreground">
+          {row.original.UsageCount}
+        </span>
       ),
-    },
-    {
-      accessorKey: "TimeCreated",
-      header: ({ column }) => (
-        <SortableHeader label="Created" column={column} />
-      ),
-      cell: ({ row }) => {
-        const date = new Date(row.original.TimeCreated);
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-block max-w-full truncate text-muted-foreground">
-                {formatDistanceToNow(date, { addSuffix: true })}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {format(date, "MMM d, yyyy (h:mm a)")}
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-      sortingFn: (a, b) =>
-        new Date(a.original.TimeCreated).getTime() -
-        new Date(b.original.TimeCreated).getTime(),
-    },
-    {
-      accessorKey: "TimeModified",
-      header: ({ column }) => (
-        <SortableHeader label="Modified" column={column} />
-      ),
-      cell: ({ row }) => {
-        const date = new Date(row.original.TimeModified);
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-block max-w-full truncate text-muted-foreground">
-                {formatDistanceToNow(date, { addSuffix: true })}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {format(date, "MMM d, yyyy (h:mm a)")}
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-      sortingFn: (a, b) =>
-        new Date(a.original.TimeModified).getTime() -
-        new Date(b.original.TimeModified).getTime(),
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <ProjectRowActions
-          project={row.original}
-          onRename={() => setEditingId(row.original.ID)}
-        />
-      ),
+      cell: ({ row }) => <RelationshipTypeRowActions type={row.original} />,
       enableSorting: false,
     },
   ];
@@ -195,20 +172,12 @@ export function ProjectsDataTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    enableRowSelection: true,
+    enableRowSelection: (row) => !row.original.IsSystem,
     initialState: { pagination: { pageSize: 10 } },
     getRowId: (row) => `${row.ID}`,
   });
 
-  const handleRowClick = (row: Row<Project>) => {
-    if (editingId !== null) return;
-    navigate({
-      to: "/project/$projectId",
-      params: { projectId: `${row.original.ID}` },
-    });
-  };
-
-  const selectedProjects = table
+  const selectedTypes = table
     .getSelectedRowModel()
     .rows.map((r) => r.original);
 
@@ -225,7 +194,8 @@ export function ProjectsDataTable({
                     style={{
                       width: COLUMN_WIDTHS[header.column.id],
                       minWidth:
-                        header.column.id === "Name"
+                        header.column.id === "FromName" ||
+                        header.column.id === "ToName"
                           ? NAME_MIN_WIDTH
                           : undefined,
                     }}
@@ -248,26 +218,23 @@ export function ProjectsDataTable({
           <TableBody>
             {!isFetching && table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => {
-                const itemProps = getItemProps(row.id);
-                const itemOnClick = (
-                  itemProps as {
-                    onClick?: (e: React.MouseEvent) => void;
-                  }
-                ).onClick;
+                const itemProps = row.original.IsSystem
+                  ? null
+                  : getItemProps(row.id);
+                const itemOnClick = itemProps?.onClick as
+                  | ((e: React.MouseEvent) => void)
+                  | undefined;
                 const itemClassName =
-                  (itemProps.className as string | undefined) ?? "";
+                  (itemProps?.className as string | undefined) ?? "";
                 return (
                   <TableRow
                     key={row.id}
-                    {...itemProps}
+                    {...(itemProps ?? {})}
                     data-task-card=""
                     data-state={row.getIsSelected() && "selected"}
-                    onClick={(e) => {
-                      itemOnClick?.(e);
-                      if (!e.defaultPrevented) handleRowClick(row);
-                    }}
+                    onClick={itemOnClick}
                     className={cn(
-                      "group cursor-pointer",
+                      "group",
                       selectedItemClasses({ ring: false }),
                       itemClassName,
                     )}
@@ -276,14 +243,10 @@ export function ProjectsDataTable({
                       <TableCell
                         key={cell.id}
                         className={cn(
+                          "align-top sm:align-middle",
                           MOBILE_HIDDEN_COLUMNS.has(cell.column.id) &&
                             "hidden sm:table-cell",
                         )}
-                        onClick={
-                          cell.column.id === "select"
-                            ? (e) => e.stopPropagation()
-                            : undefined
-                        }
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -300,7 +263,7 @@ export function ProjectsDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No Projects Found
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             )}
@@ -310,8 +273,8 @@ export function ProjectsDataTable({
 
       <DataTablePagination table={table} />
 
-      <BulkActionsToolbar
-        selectedProjects={selectedProjects}
+      <RelationshipTypesBulkActionsToolbar
+        selectedTypes={selectedTypes}
         onClear={() => table.resetRowSelection()}
       />
     </div>

@@ -13,8 +13,8 @@ import { Route as WorkflowsRouteImport } from './routes/workflows'
 import { Route as UsageRouteImport } from './routes/usage'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as TaskTypesRouteImport } from './routes/task-types'
+import { Route as TaskLinksRouteImport } from './routes/task-links'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as RelationshipTypesRouteImport } from './routes/relationship-types'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkflowWorkflowIdRouteImport } from './routes/workflow.$workflowId'
 import { Route as TaskTaskIdRouteImport } from './routes/task.$taskId'
@@ -41,14 +41,14 @@ const TaskTypesRoute = TaskTypesRouteImport.update({
   path: '/task-types',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TaskLinksRoute = TaskLinksRouteImport.update({
+  id: '/task-links',
+  path: '/task-links',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RelationshipTypesRoute = RelationshipTypesRouteImport.update({
-  id: '/relationship-types',
-  path: '/relationship-types',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -80,8 +80,8 @@ const ProjectSettingsProjectIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/relationship-types': typeof RelationshipTypesRoute
   '/settings': typeof SettingsRoute
+  '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
@@ -93,8 +93,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/relationship-types': typeof RelationshipTypesRoute
   '/settings': typeof SettingsRoute
+  '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
@@ -107,8 +107,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/relationship-types': typeof RelationshipTypesRoute
   '/settings': typeof SettingsRoute
+  '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
   '/upcoming': typeof UpcomingRoute
   '/usage': typeof UsageRoute
@@ -122,8 +122,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/relationship-types'
     | '/settings'
+    | '/task-links'
     | '/task-types'
     | '/upcoming'
     | '/usage'
@@ -135,8 +135,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/relationship-types'
     | '/settings'
+    | '/task-links'
     | '/task-types'
     | '/upcoming'
     | '/usage'
@@ -148,8 +148,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/relationship-types'
     | '/settings'
+    | '/task-links'
     | '/task-types'
     | '/upcoming'
     | '/usage'
@@ -162,8 +162,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  RelationshipTypesRoute: typeof RelationshipTypesRoute
   SettingsRoute: typeof SettingsRoute
+  TaskLinksRoute: typeof TaskLinksRoute
   TaskTypesRoute: typeof TaskTypesRoute
   UpcomingRoute: typeof UpcomingRoute
   UsageRoute: typeof UsageRoute
@@ -204,18 +204,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TaskTypesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/task-links': {
+      id: '/task-links'
+      path: '/task-links'
+      fullPath: '/task-links'
+      preLoaderRoute: typeof TaskLinksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/relationship-types': {
-      id: '/relationship-types'
-      path: '/relationship-types'
-      fullPath: '/relationship-types'
-      preLoaderRoute: typeof RelationshipTypesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -258,8 +258,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  RelationshipTypesRoute: RelationshipTypesRoute,
   SettingsRoute: SettingsRoute,
+  TaskLinksRoute: TaskLinksRoute,
   TaskTypesRoute: TaskTypesRoute,
   UpcomingRoute: UpcomingRoute,
   UsageRoute: UsageRoute,

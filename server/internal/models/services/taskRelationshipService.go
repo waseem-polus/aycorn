@@ -72,6 +72,40 @@ func (s *TaskRelationshipService) UpdateRelationshipTypeNames(id int, fromName, 
 	return err
 }
 
+func (s *TaskRelationshipService) BulkUpdateBehavior(ids []int, behavior string) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	color := behaviorColor[behavior]
+	if color == "" {
+		color = "gray"
+	}
+	affected, err := s.TaskRelationshipRepo.UpdateManyBehavior(ids, behavior, color)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+func (s *TaskRelationshipService) BulkDeleteRelationshipTypes(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.TaskRelationshipRepo.DeleteMany(ids)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
 func (s *TaskRelationshipService) DeleteRelationshipType(id int) error {
 	err := s.TaskRelationshipRepo.DeleteType(id)
 	if errors.Is(err, sql.ErrNoRows) {

@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { LinkIcon, PlusIcon, Search } from "lucide-react";
+import { PlusIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   InputGroup,
   InputGroupAddon,
@@ -14,7 +13,7 @@ import {
   type RelationshipBehaviorFilter,
 } from "@/features/task/relationships/queries/useTaskRelationshipTypesQuery";
 import { useRelationshipTypeMutation } from "@/features/relationship-types/queries/useRelationshipTypeMutation";
-import { RelationshipTypeCard } from "@/features/relationship-types/relationship-type-card";
+import { RelationshipTypesDataTable } from "@/features/relationship-types/relationship-types-data-table";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function RelationshipTypesPage() {
@@ -26,7 +25,6 @@ export function RelationshipTypesPage() {
     debouncedSearch,
     behaviorFilter,
   );
-  const isLoading = isFetching && types.length === 0;
   const { createRelationshipType } = useRelationshipTypeMutation();
 
   const handleCreate = () => {
@@ -72,33 +70,20 @@ export function RelationshipTypesPage() {
             disabled={createRelationshipType.isPending}
           >
             <PlusIcon />
-            New Type
+            New Link
           </Button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full" />
-          ))}
-        </div>
-      ) : types.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-muted-foreground">
-          <LinkIcon className="size-6" />
-          <p className="text-sm">
-            {search || behaviorFilter !== "all"
-              ? "No relationship types match your search."
-              : "No relationship types yet"}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {types.map((type) => (
-            <RelationshipTypeCard key={type.ID} type={type} />
-          ))}
-        </div>
-      )}
+      <RelationshipTypesDataTable
+        data={types}
+        isFetching={isFetching}
+        emptyMessage={
+          search || behaviorFilter !== "all"
+            ? "No relationship types match your search."
+            : "No relationship types yet"
+        }
+      />
     </div>
   );
 }

@@ -231,6 +231,63 @@ func (repo *TaskRelationshipRepo) DeleteType(id int) error {
 	return tx.Commit()
 }
 
+func (repo *TaskRelationshipRepo) UpdateManyBehavior(ids []int, behavior, color string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	query := "UPDATE task_relationship_type SET behavior=?, color=? WHERE id IN (" + placeholders + ") AND isSystem=0;"
+	args = append([]any{behavior, color}, args...)
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *TaskRelationshipRepo) DeleteMany(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	placeholders, args := intIdPlaceholders(ids)
+
+	if _, err := tx.Exec(
+		"DELETE FROM task_relationship WHERE relationshipType IN ("+placeholders+");",
+		args...,
+	); err != nil {
+		return 0, err
+	}
+
+	res, err := tx.Exec(
+		"DELETE FROM task_relationship_type WHERE id IN ("+placeholders+") AND isSystem=0;",
+		args...,
+	)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
 func (repo *TaskRelationshipRepo) Create(fromTaskID, toTaskID, typeID int) error {
 	_, err := repo.DB.Exec(
 		`INSERT INTO task_relationship (fromTask, toTask, relationshipType) VALUES (?, ?, ?)`,
