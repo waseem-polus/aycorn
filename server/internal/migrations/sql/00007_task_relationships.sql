@@ -30,7 +30,7 @@ END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE task_relationship task_relationship_type(
+CREATE TABLE task_relationship (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
     fromTask         INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,
     toTask           INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,
