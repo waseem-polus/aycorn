@@ -9,6 +9,7 @@ type DataTablePaginationProps = {
   totalCount: number;
   onPreviousPage: () => void;
   onNextPage: () => void;
+  hideSelection?: boolean;
 };
 
 export function DataTablePagination({
@@ -20,12 +21,11 @@ export function DataTablePagination({
   totalCount,
   onPreviousPage,
   onNextPage,
+  hideSelection = false,
 }: DataTablePaginationProps) {
   return (
     <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
-      <div>
-        {selectedCount} of {totalCount} selected
-      </div>
+      <div>{!hideSelection && `${selectedCount} of ${totalCount} selected`}</div>
       <div className="flex items-center gap-4">
         <span>
           Page {pageIndex + 1} of {Math.max(pageCount, 1)}

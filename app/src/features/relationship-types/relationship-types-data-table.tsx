@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { ArrowRightIcon } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -50,7 +49,6 @@ const COLUMN_WIDTHS: Record<string, string | undefined> = {
   actions: "56px",
 };
 const NAME_MIN_WIDTH = "22%";
-const MOBILE_HIDDEN_COLUMNS = new Set(["ToName", "Behavior", "UsageCount"]);
 
 export function RelationshipTypesDataTable({
   data,
@@ -104,29 +102,13 @@ export function RelationshipTypesDataTable({
         <SortableHeader label="Link Name" column={column} />
       ),
       cell: ({ row }) => (
-        <div className="flex flex-col gap-1.5 min-w-0 py-1">
-          <div className="flex items-center gap-2 min-w-0">
-            <RelationshipTypeIcon type={row.original} />
-            <RelationshipTypeNameCell
-              type={row.original}
-              field="FromName"
-              placeholder={BEHAVIOR_FROM_NAME_PLACEHOLDER[row.original.Behavior]}
-            />
-          </div>
-          <div className="flex items-center gap-2 min-w-0 pl-10 sm:hidden">
-            <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground" />
-            <RelationshipTypeNameCell
-              type={row.original}
-              field="ToName"
-              placeholder={BEHAVIOR_TO_NAME_PLACEHOLDER[row.original.Behavior]}
-            />
-          </div>
-          <div className="flex items-center gap-2 pl-10 sm:hidden">
-            <RelationshipTypeBehaviorCell type={row.original} />
-            <span className="text-xs text-muted-foreground">
-              {row.original.UsageCount} usages
-            </span>
-          </div>
+        <div className="flex items-center gap-2 min-w-0 py-1">
+          <RelationshipTypeIcon type={row.original} />
+          <RelationshipTypeNameCell
+            type={row.original}
+            field="FromName"
+            placeholder={BEHAVIOR_FROM_NAME_PLACEHOLDER[row.original.Behavior]}
+          />
         </div>
       ),
     },
@@ -203,10 +185,6 @@ export function RelationshipTypesDataTable({
                           ? NAME_MIN_WIDTH
                           : undefined,
                     }}
-                    className={cn(
-                      MOBILE_HIDDEN_COLUMNS.has(header.column.id) &&
-                        "hidden sm:table-cell",
-                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -244,14 +222,7 @@ export function RelationshipTypesDataTable({
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={cn(
-                          "align-top sm:align-middle",
-                          MOBILE_HIDDEN_COLUMNS.has(cell.column.id) &&
-                            "hidden sm:table-cell",
-                        )}
-                      >
+                      <TableCell key={cell.id} className="align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),

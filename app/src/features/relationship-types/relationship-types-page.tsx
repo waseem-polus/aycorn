@@ -13,8 +13,10 @@ import {
   type RelationshipBehaviorFilter,
 } from "@/features/task/relationships/queries/useTaskRelationshipTypesQuery";
 import { useRelationshipTypeMutation } from "@/features/relationship-types/queries/useRelationshipTypeMutation";
+import { RelationshipTypesCardList } from "@/features/relationship-types/relationship-types-card-list";
 import { RelationshipTypesDataTable } from "@/features/relationship-types/relationship-types-data-table";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useIsMobile } from "@/hooks/useMobile";
 
 export function RelationshipTypesPage() {
   const [search, setSearch] = useState("");
@@ -26,6 +28,7 @@ export function RelationshipTypesPage() {
     behaviorFilter,
   );
   const { createRelationshipType } = useRelationshipTypeMutation();
+  const isMobile = useIsMobile();
 
   const handleCreate = () => {
     createRelationshipType.mutate(
@@ -75,15 +78,27 @@ export function RelationshipTypesPage() {
         </div>
       </div>
 
-      <RelationshipTypesDataTable
-        data={types}
-        isLoading={isPending}
-        emptyMessage={
-          search || behaviorFilter !== "all"
-            ? "No relationship types match your search."
-            : "No relationship types yet"
-        }
-      />
+      {isMobile ? (
+        <RelationshipTypesCardList
+          data={types}
+          isLoading={isPending}
+          emptyMessage={
+            search || behaviorFilter !== "all"
+              ? "No relationship types match your search."
+              : "No relationship types yet"
+          }
+        />
+      ) : (
+        <RelationshipTypesDataTable
+          data={types}
+          isLoading={isPending}
+          emptyMessage={
+            search || behaviorFilter !== "all"
+              ? "No relationship types match your search."
+              : "No relationship types yet"
+          }
+        />
+      )}
     </div>
   );
 }
