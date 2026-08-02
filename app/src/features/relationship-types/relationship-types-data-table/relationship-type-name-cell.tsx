@@ -1,3 +1,4 @@
+import { LockIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -22,10 +23,16 @@ export function RelationshipTypeNameCell({ type, field, placeholder }: Props) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="block grow min-w-0 truncate text-sm">{value}</span>
+          <span className="block grow min-w-0 truncate text-sm cursor-not-allowed">{value}</span>
         </TooltipTrigger>
-        <TooltipContent>
-          System relationship types cannot be edited or deleted
+        <TooltipContent align="start">
+          <div className="flex flex-col gap-0.5">
+            <span>{placeholder}</span>
+            <span className="flex items-center gap-1 text-background/70">
+              <LockIcon className="size-2.5 shrink-0" />
+              System relationship types cannot be edited or deleted
+            </span>
+          </div>
         </TooltipContent>
       </Tooltip>
     );
@@ -44,17 +51,22 @@ export function RelationshipTypeNameCell({ type, field, placeholder }: Props) {
   };
 
   return (
-    <div
-      className="flex-1 min-w-0 h-full flex items-center"
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-    >
-      <EditableHeader
-        value={value}
-        setValue={handleSave}
-        placeholder={placeholder}
-        className="w-full min-w-0 whitespace-normal wrap-break-word text-sm p-1 -m-1 font-normal cursor-text"
-      />
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex-1 min-w-0 h-full flex items-center"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <EditableHeader
+            value={value}
+            setValue={handleSave}
+            placeholder={placeholder}
+            className="w-full min-w-0 whitespace-normal wrap-break-word text-sm p-1 -m-1 font-normal cursor-text"
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent align="start">{placeholder}</TooltipContent>
+    </Tooltip>
   );
 }
