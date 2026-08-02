@@ -11,7 +11,7 @@ const DIRECTION_ORDER: Record<
   TaskRelationship["Direction"][]
 > = {
   blocking: ["to", "from"],
-  subtask: ["from", "to"],
+  subtask: ["to", "from"],
   link: ["from", "to"],
 };
 
@@ -24,7 +24,7 @@ const SYSTEM_LABELS: Record<
   Record<TaskRelationship["Direction"], string>
 > = {
   blocking: { to: "Blocked By", from: "Blocks" },
-  subtask: { from: "Subtasks", to: "Parents" },
+  subtask: { from: "Parents", to: "Subtasks" },
   link: { from: "Mentions", to: "Mentioned By" },
 };
 

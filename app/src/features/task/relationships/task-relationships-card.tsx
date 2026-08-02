@@ -45,7 +45,7 @@ const sectionLabel = (section: RelationshipSection) => {
   if (
     section.type.IsSystem &&
     section.type.Behavior === "subtask" &&
-    section.direction === "from"
+    section.direction === "to"
   ) {
     return (
       <>

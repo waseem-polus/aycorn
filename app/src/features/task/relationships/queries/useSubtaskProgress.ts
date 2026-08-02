@@ -10,7 +10,7 @@ export function useSubtaskProgress(taskId: number): SubtaskProgress | null {
   if (!data) return null;
 
   const subtasks = data.filter(
-    (rel) => rel.Type.Behavior === "subtask" && rel.Direction === "from",
+    (rel) => rel.Type.Behavior === "subtask" && rel.Direction === "to",
   );
   if (subtasks.length === 0) return null;
 

@@ -17,7 +17,7 @@ CREATE TABLE task_relationship_type (
 -- Seed the 3 built-in system types. Icon/color mirror the previously hardcoded card.
 INSERT INTO task_relationship_type (fromName, toName, behavior, icon, color, isSystem) VALUES
     ('Blocks',   'Blocked By',   'blocking', 'octagon-minus', 'red',     1),
-    ('Subtask',   'Parent',      'subtask',  'list-todo',     'emerald', 1),
+    ('Subtask Of',   'Parent Of',      'subtask',  'list-todo',     'emerald', 1),
     ('Mentions', 'Mentioned By', 'link',     'at-sign',       'purple',  1);
 
 -- +goose StatementBegin
