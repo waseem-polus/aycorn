@@ -23,6 +23,10 @@ import {
 import type { TaskRelationshipType } from "@/types/types";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { SortableHeader } from "@/components/projects/table/sortable-header";
+import {
+  BEHAVIOR_FROM_NAME_PLACEHOLDER,
+  BEHAVIOR_TO_NAME_PLACEHOLDER,
+} from "@/features/relationship-types/behavior-constants";
 import { RelationshipTypeBehaviorCell } from "@/features/relationship-types/relationship-types-data-table/relationship-type-behavior-cell";
 import { RelationshipTypeIcon } from "@/features/relationship-types/relationship-types-data-table/relationship-type-icon";
 import { RelationshipTypeNameCell } from "@/features/relationship-types/relationship-types-data-table/relationship-type-name-cell";
@@ -106,7 +110,7 @@ export function RelationshipTypesDataTable({
             <RelationshipTypeNameCell
               type={row.original}
               field="FromName"
-              placeholder="Link…"
+              placeholder={BEHAVIOR_FROM_NAME_PLACEHOLDER[row.original.Behavior]}
             />
           </div>
           <div className="flex items-center gap-2 min-w-0 pl-10 sm:hidden">
@@ -114,7 +118,7 @@ export function RelationshipTypesDataTable({
             <RelationshipTypeNameCell
               type={row.original}
               field="ToName"
-              placeholder="To…"
+              placeholder={BEHAVIOR_TO_NAME_PLACEHOLDER[row.original.Behavior]}
             />
           </div>
           <div className="flex items-center gap-2 pl-10 sm:hidden">
@@ -135,7 +139,7 @@ export function RelationshipTypesDataTable({
         <RelationshipTypeNameCell
           type={row.original}
           field="ToName"
-          placeholder="Inverse…"
+          placeholder={BEHAVIOR_TO_NAME_PLACEHOLDER[row.original.Behavior]}
         />
       ),
     },
