@@ -11,55 +11,28 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { useTaskRelationshipsQuery } from "@/features/task/relationships/queries/useTaskRelationshipsQuery";
-import { useTaskRelationshipTypesQuery } from "@/features/task/relationships/queries/useTaskRelationshipTypesQuery";
 import { useCreateTaskRelationshipMutation } from "@/features/task/relationships/queries/useCreateTaskRelationshipMutation";
 import {
   groupRelationshipsByType,
   toRelationshipSections,
 } from "@/features/task/relationships/relationships-grouping";
 import { RelationshipCategorySection } from "@/features/task/relationships/task-relationships-drawer/relationship-category";
-import { SelectRelationshipTask } from "@/features/task/relationships/task-relationships-drawer/select-relationship-task";
-import { stageBadgeClass, stageStrokeClass } from "@/features/stage/stage-palette";
-import {
-  RELATIONSHIP_BEHAVIORS,
-  type RelationshipBehavior,
-  type TaskRelationshipType,
-  type TaskWithProject,
-} from "@/types/types";
+import { SelectRelationshipTask } from "@/features/task/relationships/select-relationship-task";
+import { SelectRelationshipTypeAndDirection } from "@/features/task/relationships/select-relationship-type-and-direction";
+import type { TaskWithProject } from "@/types/types";
 
 type NewRelState =
   | null
   | { step: "category" }
   | { step: "task"; typeId: number; direction: "from" | "to" };
 
-const BEHAVIOR_GROUP_LABEL: Record<RelationshipBehavior, string> = {
-  blocking: "Blocking",
-  subtask: "Subtask",
-  link: "Link",
-};
-
 export function TaskRelationshipsDrawer() {
   const { state: task } = useContext(TaskContext);
   const { data, isLoading } = useTaskRelationshipsQuery(task.ID);
-  const { data: relationshipTypes = [] } = useTaskRelationshipTypesQuery();
   const createRelationship = useCreateTaskRelationshipMutation();
 
   const [newRelState, setNewRelState] = useState<NewRelState>(null);
@@ -77,28 +50,19 @@ export function TaskRelationshipsDrawer() {
     groupRelationshipsByType(filteredRelationships),
   );
 
-  const typesByBehavior = useMemo(() => {
-    const map = new Map<RelationshipBehavior, TaskRelationshipType[]>();
-    for (const t of relationshipTypes) {
-      const list = map.get(t.Behavior as RelationshipBehavior) ?? [];
-      list.push(t);
-      map.set(t.Behavior as RelationshipBehavior, list);
-    }
-    return map;
-  }, [relationshipTypes]);
-
-  // IDs of tasks already linked with the selected type+direction (for dedup)
+  // IDs of tasks already linked with the selected type+direction (for dedup),
+  // plus the current task itself so it can't be linked to itself.
   const newRelExcludeIds = useMemo(() => {
     if (!newRelState || newRelState.step !== "task") return new Set<number>();
     const { typeId, direction } = newRelState;
-    const excluded = new Set<number>();
+    const excluded = new Set<number>([task.ID]);
     for (const rel of data ?? []) {
       if (rel.Type.ID === typeId && rel.Direction === direction) {
         excluded.add(rel.Other.ID);
       }
     }
     return excluded;
-  }, [newRelState, data]);
+  }, [newRelState, data, task.ID]);
 
   const handleCategorySelect = (typeId: number, direction: "from" | "to") => {
     setNewRelState({ step: "task", typeId, direction });
@@ -152,66 +116,17 @@ export function TaskRelationshipsDrawer() {
               }
             />
           ) : (
-            <Popover
+            <SelectRelationshipTypeAndDirection
               open={newRelState?.step === "category"}
               onOpenChange={(open) => setNewRelState(open ? { step: "category" } : null)}
-            >
-              <PopoverTrigger asChild>
+              onSelect={handleCategorySelect}
+              trigger={
                 <Button className="hover:cursor-pointer">
                   <PlusIcon />
                   Link
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-60 p-0" align="start">
-                <Command>
-                  <CommandList>
-                    {RELATIONSHIP_BEHAVIORS.filter((b) => typesByBehavior.has(b)).map((behavior) => (
-                      <CommandGroup key={behavior} heading={BEHAVIOR_GROUP_LABEL[behavior]}>
-                        {typesByBehavior.get(behavior)!.flatMap((type) => [
-                          <CommandItem
-                            key={`${type.ID}-from`}
-                            value={type.FromName}
-                            onSelect={() => handleCategorySelect(type.ID, "from")}
-                            className="flex items-center gap-2"
-                          >
-                            <Badge
-                              variant="outline"
-                              className={stageBadgeClass(type.Color)}
-                            >
-                              <DynamicIcon
-                                name={type.Icon as IconName}
-                                className={stageStrokeClass(type.Color)}
-                                fallback={() => <LinkIcon className="size-3" />}
-                              />
-                              {type.FromName}
-                            </Badge>
-                          </CommandItem>,
-                          <CommandItem
-                            key={`${type.ID}-to`}
-                            value={type.ToName}
-                            onSelect={() => handleCategorySelect(type.ID, "to")}
-                            className="flex items-center gap-2"
-                          >
-                            <Badge
-                              variant="outline"
-                              className={stageBadgeClass(type.Color)}
-                            >
-                              <DynamicIcon
-                                name={type.Icon as IconName}
-                                className={stageStrokeClass(type.Color)}
-                                fallback={() => <LinkIcon className="size-3" />}
-                              />
-                              {type.ToName}
-                            </Badge>
-                          </CommandItem>,
-                        ])}
-                      </CommandGroup>
-                    ))}
-                    <CommandEmpty>No relationship types found.</CommandEmpty>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+              }
+            />
           )}
         </div>
         <div

@@ -17,6 +17,8 @@ import { SelectTaskPriority } from "@/features/task/properties/select-task-prior
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
+import { pluralize } from "@/utils/pluralize";
 
 type Props = {
   selectedTasks: Task[];
@@ -30,10 +32,6 @@ function sharedValue<K extends keyof Task>(
   if (tasks.length === 0) return undefined;
   const first = tasks[0][key];
   return tasks.every((t) => t[key] === first) ? first : undefined;
-}
-
-function pluralize(count: number, word: string) {
-  return `${count} ${word}${count !== 1 ? "s" : ""}`;
 }
 
 export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
@@ -136,6 +134,8 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
           }
         />
       </div>
+
+      <AddRelationshipButton taskIds={selectedTasks.map((t) => t.ID)} />
 
       <Popover>
         <PopoverTrigger asChild>

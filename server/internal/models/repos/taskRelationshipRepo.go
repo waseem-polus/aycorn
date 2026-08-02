@@ -2,6 +2,7 @@ package repos
 
 import (
 	"database/sql"
+	"strings"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
 )
@@ -294,6 +295,36 @@ func (repo *TaskRelationshipRepo) Create(fromTaskID, toTaskID, typeID int) error
 		fromTaskID, toTaskID, typeID,
 	)
 	return err
+}
+
+// CreateMany inserts one row per (fromTask, toTask) pair, all sharing typeID,
+// in a single statement. INSERT OR IGNORE relies on the existing
+// UNIQUE(fromTask, toTask, relationshipType) constraint to silently skip
+// pairs that are already linked, rather than erroring the whole batch.
+func (repo *TaskRelationshipRepo) CreateMany(pairs [][2]int, typeID int) (int, error) {
+	if len(pairs) == 0 {
+		return 0, nil
+	}
+
+	placeholders := make([]string, len(pairs))
+	args := make([]any, 0, len(pairs)*3)
+	for i, pair := range pairs {
+		placeholders[i] = "(?, ?, ?)"
+		args = append(args, pair[0], pair[1], typeID)
+	}
+
+	query := "INSERT OR IGNORE INTO task_relationship (fromTask, toTask, relationshipType) VALUES " +
+		strings.Join(placeholders, ", ") + ";"
+
+	res, err := repo.DB.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
 }
 
 func (repo *TaskRelationshipRepo) Delete(id int) error {

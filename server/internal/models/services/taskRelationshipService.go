@@ -125,3 +125,38 @@ func (s *TaskRelationshipService) CreateRelationship(fromTaskID, toTaskID, typeI
 	}
 	return err
 }
+
+// BulkCreateRelationships links every task in taskIDs to targetTaskID, using
+// direction to decide which side each selected task lands on (mirrors the
+// single-create fromTaskId/toTaskId resolution used by the relationships
+// drawer). A taskID equal to targetTaskID is dropped as a self-link before
+// insertion; both that and any exact-duplicate triple (already linked) count
+// toward Skipped rather than Failed.
+func (s *TaskRelationshipService) BulkCreateRelationships(typeID int, direction string, targetTaskID int, taskIDs []int) (models.BulkResult, error) {
+	taskIDs = dedupeInts(taskIDs)
+	total := len(taskIDs)
+	if total == 0 {
+		return models.BulkResult{}, nil
+	}
+
+	pairs := make([][2]int, 0, total)
+	for _, taskID := range taskIDs {
+		if taskID == targetTaskID {
+			continue
+		}
+		if direction == "from" {
+			pairs = append(pairs, [2]int{taskID, targetTaskID})
+		} else {
+			pairs = append(pairs, [2]int{targetTaskID, taskID})
+		}
+	}
+
+	affected, err := s.TaskRelationshipRepo.CreateMany(pairs, typeID)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: total - affected,
+	}, nil
+}

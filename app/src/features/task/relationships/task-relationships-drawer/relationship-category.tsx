@@ -8,7 +8,7 @@ import {
   stageStrokeClass,
 } from "@/features/stage/stage-palette";
 import { RelationshipTaskRow } from "@/features/task/relationships/task-relationships-drawer/relationship-task-row";
-import { SelectRelationshipTask } from "@/features/task/relationships/task-relationships-drawer/select-relationship-task";
+import { SelectRelationshipTask } from "@/features/task/relationships/select-relationship-task";
 import { useCreateTaskRelationshipMutation } from "@/features/task/relationships/queries/useCreateTaskRelationshipMutation";
 import type { RelationshipSection } from "@/features/task/relationships/relationships-grouping";
 import type { TaskWithProject } from "@/types/types";
@@ -24,8 +24,12 @@ export function RelationshipCategorySection({
   const createRelationship = useCreateTaskRelationshipMutation();
 
   const excludeTaskIds = useMemo(
-    () => new Set(category.relationships.map((rel) => rel.Other.ID)),
-    [category.relationships],
+    () =>
+      new Set([
+        currentTask.ID,
+        ...category.relationships.map((rel) => rel.Other.ID),
+      ]),
+    [category.relationships, currentTask.ID],
   );
 
   const handleAdd = (task: TaskWithProject) => {

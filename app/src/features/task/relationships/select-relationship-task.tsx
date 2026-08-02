@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import {
   Command,
   CommandEmpty,
@@ -13,14 +13,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TaskContext } from "@/contexts/task/TaskContext";
 import { useAllTasksForRelationshipQuery } from "@/features/task/relationships/queries/useAllTasksForRelationshipQuery";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import type { Project, Stage, TaskWithProject } from "@/types/types";
-import TaskPriorityIcon from "../../properties/icons/TaskPriorityIcon";
-import TaskTypeBadge from "../../properties/task-type-badge";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import TaskTypeBadge from "../properties/task-type-badge";
 
 type Props = {
   open: boolean;
@@ -37,7 +36,6 @@ export function SelectRelationshipTask({
   onSelect,
   trigger,
 }: Props) {
-  const { state: currentTask } = useContext(TaskContext);
   const { data: tasks = [], isLoading: tasksLoading } =
     useAllTasksForRelationshipQuery(open);
   const { data: projects = [] } = useAllProjectsQuery();
@@ -54,9 +52,7 @@ export function SelectRelationshipTask({
   );
 
   const tasksByProject = useMemo(() => {
-    const filtered = tasks.filter(
-      (t) => t.ID !== currentTask.ID && !excludeTaskIds.has(t.ID),
-    );
+    const filtered = tasks.filter((t) => !excludeTaskIds.has(t.ID));
     const groups = new Map<number, TaskWithProject[]>();
     for (const task of filtered) {
       const list = groups.get(task.ProjectID) ?? [];
@@ -64,7 +60,7 @@ export function SelectRelationshipTask({
       groups.set(task.ProjectID, list);
     }
     return groups;
-  }, [tasks, currentTask.ID, excludeTaskIds]);
+  }, [tasks, excludeTaskIds]);
 
   const handleSelect = (task: TaskWithProject) => {
     onOpenChange(false);

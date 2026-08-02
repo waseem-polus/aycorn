@@ -251,3 +251,33 @@ func (app *app) createTaskRelationship(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+type bulkCreateRelationshipBody struct {
+	TypeID       int    `json:"typeId"`
+	Direction    string `json:"direction"`
+	TargetTaskID int    `json:"targetTaskId"`
+	TaskIDs      []int  `json:"taskIds"`
+}
+
+func (app *app) bulkCreateTaskRelationships(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var body bulkCreateRelationshipBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if body.Direction != "from" && body.Direction != "to" {
+		http.Error(w, "direction must be \"from\" or \"to\"", http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskRelationshipService.BulkCreateRelationships(body.TypeID, body.Direction, body.TargetTaskID, body.TaskIDs)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
