@@ -69,7 +69,7 @@ export function RelationshipTaskRow({
             onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                deleteRelationship.mutate(relationshipId)
+                deleteRelationship.mutate({ relationshipId, otherTaskId: task.ID })
             }}
         >
         <XIcon className="size-3.5" />

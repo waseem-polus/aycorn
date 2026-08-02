@@ -1,7 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useContext } from "react";
-import { TaskContext } from "@/contexts/task/TaskContext";
 import { queryClient } from "@/main";
 
 type CreateRelationshipInput = {
@@ -11,8 +9,6 @@ type CreateRelationshipInput = {
 };
 
 export function useCreateTaskRelationshipMutation() {
-  const { state: task } = useContext(TaskContext);
-
   return useMutation({
     mutationFn: async (input: CreateRelationshipInput) => {
       const res = await fetch("/api/task-relationship", {
@@ -22,8 +18,9 @@ export function useCreateTaskRelationshipMutation() {
       });
       if (!res.ok) throw new Error(await res.text());
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["taskRelationships", task.ID] });
+    onSuccess: (_data, input) => {
+      queryClient.invalidateQueries({ queryKey: ["taskRelationships", input.fromTaskId] });
+      queryClient.invalidateQueries({ queryKey: ["taskRelationships", input.toTaskId] });
     },
     onError: (err) => toast.error(err.message || "Failed to add relationship."),
   });
