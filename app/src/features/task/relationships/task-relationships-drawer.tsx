@@ -63,8 +63,19 @@ export function TaskRelationshipsDrawer() {
   const createRelationship = useCreateTaskRelationshipMutation();
 
   const [newRelState, setNewRelState] = useState<NewRelState>(null);
+  const [search, setSearch] = useState("");
 
-  const categories = toRelationshipSections(groupRelationshipsByType(data ?? []));
+  const filteredRelationships = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return data ?? [];
+    return (data ?? []).filter((rel) =>
+      rel.Other.Name.toLowerCase().includes(query),
+    );
+  }, [data, search]);
+
+  const categories = toRelationshipSections(
+    groupRelationshipsByType(filteredRelationships),
+  );
 
   const typesByBehavior = useMemo(() => {
     const map = new Map<RelationshipBehavior, TaskRelationshipType[]>();
@@ -116,7 +127,11 @@ export function TaskRelationshipsDrawer() {
       <div className="flex flex-col gap-2 flex-1 min-h-0">
         <div className="flex gap-2 shrink-0">
           <InputGroup>
-            <InputGroupInput placeholder="Search linked tasks..." />
+            <InputGroupInput
+              placeholder="Search linked tasks..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
@@ -212,7 +227,9 @@ export function TaskRelationshipsDrawer() {
           ) : categories.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-12 text-muted-foreground">
               <LinkIcon className="size-6" />
-              <p className="text-sm">No linked tasks yet</p>
+              <p className="text-sm">
+                {search.trim() ? "No matching linked tasks" : "No linked tasks yet"}
+              </p>
             </div>
           ) : (
             categories.map((category) => (
