@@ -15,19 +15,6 @@ const DIRECTION_ORDER: Record<
   link: ["from", "to"],
 };
 
-// Nicer copy that only makes sense for the 3 seeded system types (one per
-// behavior). Gated on Type.IsSystem below — never on Behavior alone — so a
-// custom type sharing a behavior with a system type falls through to its own
-// FromName/ToName instead of colliding with the system type's copy.
-const SYSTEM_LABELS: Record<
-  RelationshipBehavior,
-  Record<TaskRelationship["Direction"], string>
-> = {
-  blocking: { to: "Blocked By", from: "Blocks" },
-  subtask: { from: "Parents", to: "Subtasks" },
-  link: { from: "Mentions", to: "Mentioned By" },
-};
-
 export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
 
@@ -35,7 +22,6 @@ const labelForGroup = (
   type: TaskRelationshipType,
   direction: TaskRelationship["Direction"],
 ): string => {
-  if (type.IsSystem) return SYSTEM_LABELS[type.Behavior][direction];
   return capitalize(direction === "from" ? type.FromName : type.ToName);
 };
 

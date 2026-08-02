@@ -20,42 +20,9 @@ import {
   type RelationshipSection,
 } from "@/features/task/relationships/relationships-grouping";
 
-// The "N of M ..." progress copy only applies to the 2 system-type sections
-// it was written for. Gated on IsSystem (not Behavior alone) so a custom type
-// sharing the "blocking"/"subtask" behavior doesn't inherit wording that
-// assumes it's the system type.
 const sectionLabel = (section: RelationshipSection) => {
   const total = section.relationships.length;
-  const done = section.relationships.filter((rel) => rel.Other.IsDone).length;
 
-  if (
-    section.type.IsSystem &&
-    section.type.Behavior === "blocking" &&
-    section.direction === "to"
-  ) {
-    return (
-      <>
-        <span className="font-semibold">{done}</span>
-        <span className="font-light"> of </span>
-        <span className="font-semibold">{total}</span>
-        <span className="font-light"> blockers resolved</span>
-      </>
-    );
-  }
-  if (
-    section.type.IsSystem &&
-    section.type.Behavior === "subtask" &&
-    section.direction === "to"
-  ) {
-    return (
-      <>
-        <span className="font-semibold">{done}</span>
-        <span className="font-light"> of </span>
-        <span className="font-semibold">{total}</span>
-        <span className="font-light"> subtasks done</span>
-      </>
-    );
-  }
   return (
     <>
       <span className="font-light">{section.label}</span> {total}
