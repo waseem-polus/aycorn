@@ -25,11 +25,20 @@ func scanProject(scanner interface {
 	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
 }
 
-// All returns either the open or the archived projects, most recently updated
-// first — the order the projects page renders cards in.
-func (repo *ProjectRepo) All(archived bool) ([]models.Project, error) {
-	query := projectSelect + " WHERE p.archived = ? ORDER BY p.timeModified DESC;"
-	rows, err := repo.DB.Query(query, archived)
+// All returns projects most recently updated first — the order the projects page
+// renders cards in. A nil archived filter returns both open and archived, which
+// is what callers outside the projects page (task pickers, the upcoming page)
+// want: archiving is a projects-page concern only.
+func (repo *ProjectRepo) All(archived *bool) ([]models.Project, error) {
+	query := projectSelect
+	args := []any{}
+	if archived != nil {
+		query += " WHERE p.archived = ?"
+		args = append(args, *archived)
+	}
+	query += " ORDER BY p.timeModified DESC;"
+
+	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

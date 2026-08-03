@@ -10,7 +10,12 @@ import (
 )
 
 func (app *app) getAllProjects(w http.ResponseWriter, r *http.Request) {
-	archived := r.URL.Query().Get("archived") == "true"
+	// No `archived` param means "both" — only the projects page splits the two.
+	var archived *bool
+	if raw := r.URL.Query().Get("archived"); raw != "" {
+		value := raw == "true"
+		archived = &value
+	}
 
 	projects, err := app.projectService.GetAllProjects(archived)
 	if err != nil {

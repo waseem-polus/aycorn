@@ -42,11 +42,22 @@ export type ProjectTaskTypeSettings = {
 export type Project = {
   ID: number;
   Name: string;
+  // Server-derived from the pinned_project table. Never sent back through the
+  // project PUT — pin changes go through the pinned bulk endpoint.
   Pinned: boolean;
+  Archived: boolean;
+  Folder: number;
   Workflow: number;
   WorkflowName: string;
   TimeCreated: string;
   TimeModified: string;
+};
+
+export type ProjectFolder = {
+  ID: number;
+  Name: string;
+  IsDefault: boolean;
+  SortOrder: number;
 };
 
 export type Workflow = {

@@ -151,7 +151,7 @@ func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.Tas
 	}, nil
 }
 
-func (s *ProjectService) GetAllProjects(archived bool) ([]models.Project, error) {
+func (s *ProjectService) GetAllProjects(archived *bool) ([]models.Project, error) {
 	projects, err := s.ProjectRepo.All(archived)
 	if err != nil {
 		return nil, err
