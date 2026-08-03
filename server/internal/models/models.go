@@ -3,13 +3,25 @@ package models
 import "time"
 
 type Project struct {
-	ID           int
-	Name         string
+	ID   int
+	Name string
+	// Pinned is derived from the pinned_project table on read. It is never
+	// written through UpdateProject — pin changes go through the pinned bulk
+	// endpoint so membership and pin order stay in one place.
 	Pinned       bool
+	Archived     bool
+	Folder       int
 	Workflow     int
 	WorkflowName string
 	TimeCreated  *time.Time
 	TimeModified *time.Time
+}
+
+type ProjectFolder struct {
+	ID        int    `json:"ID"`
+	Name      string `json:"Name"`
+	IsDefault bool   `json:"IsDefault"`
+	SortOrder int    `json:"SortOrder"`
 }
 
 type Checklist struct {

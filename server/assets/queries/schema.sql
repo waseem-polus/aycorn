@@ -47,21 +47,50 @@ BEGIN
       WHERE id = NEW.workflow;
 END;
 
+-- Added in migration 00008: folders for grouping projects on the projects page.
+CREATE TABLE project_folder (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT    NOT NULL DEFAULT '',
+    isDefault    INTEGER NOT NULL DEFAULT 0 CHECK(isDefault IN (0, 1)),
+    sortOrder    INTEGER NOT NULL DEFAULT 0,
+    timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TRIGGER project_folder_timeModified
+AFTER UPDATE ON project_folder
+FOR EACH ROW
+BEGIN
+    UPDATE project_folder SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
+END;
+
 CREATE TABLE project (
     id INTEGER PRIMARY KEY,
     name VARCHAR,
-    pinned BOOLEAN,
     workflow INTEGER,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Added in migration 00008.
+    folder INTEGER REFERENCES project_folder(id) ON DELETE RESTRICT,
+    archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0, 1)),
 
     FOREIGN KEY (workflow) REFERENCES workflow(id)
 );
 
+-- Added in migration 00008: pin membership *and* pin order. Row existence ==
+-- pinned; there is no `pinned` column on project. Pin order drives the sidebar.
+CREATE TABLE pinned_project (
+    project   INTEGER PRIMARY KEY REFERENCES project(id) ON DELETE CASCADE,
+    sortIndex INTEGER NOT NULL
+);
+
+-- Narrowed in migration 00008: only a content change bumps timeModified, so
+-- filing into a folder or archiving doesn't reshuffle the "last updated" sort.
 CREATE TRIGGER setProjectTimeModified
 AFTER UPDATE ON project
 FOR EACH ROW
 WHEN NEW.timeModified IS OLD.timeModified
+ AND (NEW.name IS NOT OLD.name OR NEW.workflow IS NOT OLD.workflow)
 BEGIN
     UPDATE project SET timeModified = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;

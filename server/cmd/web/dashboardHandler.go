@@ -20,7 +20,7 @@ type statistic struct {
 }
 
 func (app *app) getDashboard(w http.ResponseWriter, r *http.Request) {
-	projects, err := app.projectRepo.All()
+	projects, err := app.projectRepo.All(false)
 	if err != nil {
 		respondErr(w, err)
 		return

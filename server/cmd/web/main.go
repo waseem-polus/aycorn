@@ -113,8 +113,10 @@ type app struct {
 	taskTypeRepo         *repos.TaskTypeRepo
 	taskTypeCategoryRepo *repos.TaskTypeCategoryRepo
 	taskRelationshipRepo *repos.TaskRelationshipRepo
+	projectFolderRepo    *repos.ProjectFolderRepo
 
 	projectService          *services.ProjectService
+	projectFolderService    *services.ProjectFolderService
 	checklistService        *services.ChecklistService
 	taskService             *services.TaskService
 	workflowService         *services.WorkflowService
@@ -185,6 +187,7 @@ func main() {
 	taskTypeRepo := &repos.TaskTypeRepo{DB: db}
 	taskTypeCategoryRepo := &repos.TaskTypeCategoryRepo{DB: db}
 	taskRelationshipRepo := &repos.TaskRelationshipRepo{DB: db}
+	projectFolderRepo := &repos.ProjectFolderRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -193,6 +196,10 @@ func main() {
 		WorkflowRepo:  workflowRepo,
 		StageRepo:     stageRepo,
 		TaskTypeRepo:  taskTypeRepo,
+		FolderRepo:    projectFolderRepo,
+	}
+	projectFolderService := &services.ProjectFolderService{
+		FolderRepo: projectFolderRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
@@ -225,8 +232,10 @@ func main() {
 		taskTypeRepo:         taskTypeRepo,
 		taskTypeCategoryRepo: taskTypeCategoryRepo,
 		taskRelationshipRepo: taskRelationshipRepo,
+		projectFolderRepo:    projectFolderRepo,
 
 		projectService:          projectService,
+		projectFolderService:    projectFolderService,
 		checklistService:        checklistService,
 		taskService:             taskService,
 		workflowService:         workflowService,

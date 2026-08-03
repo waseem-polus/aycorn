@@ -15,6 +15,7 @@ type ProjectService struct {
 	WorkflowRepo  *repos.WorkflowRepo
 	StageRepo     *repos.StageRepo
 	TaskTypeRepo  *repos.TaskTypeRepo
+	FolderRepo    *repos.ProjectFolderRepo
 }
 
 type projectDetails struct {
@@ -150,8 +151,8 @@ func (s *ProjectService) GetProjectDetails(projectId int, taskFilters *repos.Tas
 	}, nil
 }
 
-func (s *ProjectService) GetAllProjects() ([]models.Project, error) {
-	projects, err := s.ProjectRepo.All()
+func (s *ProjectService) GetAllProjects(archived bool) ([]models.Project, error) {
+	projects, err := s.ProjectRepo.All(archived)
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +170,17 @@ func (s *ProjectService) GetPinnedProjects() ([]models.Project, error) {
 }
 
 func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
+	// Folder is a recent addition, and callers that only mean to rename send the
+	// project without it. Treat the zero value as "leave it where it is" rather
+	// than letting it through to fail the FK.
+	if project.Folder == 0 {
+		existing, err := s.ProjectRepo.FindOne(project.ID)
+		if err != nil {
+			return false, err
+		}
+		project.Folder = existing.Folder
+	}
+
 	success, err := s.ProjectRepo.UpdateProject(project)
 	if err != nil {
 		return false, err
@@ -178,7 +190,12 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 }
 
 func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
-	id, err := s.ProjectRepo.CreateProject(workflowId)
+	folderId, err := s.FolderRepo.DefaultID()
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := s.ProjectRepo.CreateProject(workflowId, folderId)
 	if err != nil {
 		return 0, err
 	}
@@ -209,6 +226,129 @@ func (s *ProjectService) BulkSetPinned(ids []int, pinned bool) (models.BulkResul
 		Success: affected,
 		Skipped: len(ids) - affected, // non-existent ids: retrying won't help
 	}, nil
+}
+
+func (s *ProjectService) BulkSetArchived(ids []int, archived bool) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+	affected, err := s.ProjectRepo.UpdateManyArchived(ids, archived)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected, // missing, or already in the target state
+	}, nil
+}
+
+func (s *ProjectService) BulkSetFolder(ids []int, folderId int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+
+	// Fail loudly on a bad folder rather than silently unfiling projects.
+	if _, err := s.FolderRepo.FindOne(folderId); err != nil {
+		return models.BulkResult{}, err
+	}
+
+	affected, err := s.ProjectRepo.UpdateManyFolder(ids, folderId)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected,
+	}, nil
+}
+
+var ErrInvalidPinnedOrder = errors.New("pinned order must be a permutation of the pinned projects")
+
+// ReorderPinnedProjects rewrites the sidebar order atomically. It requires the
+// full set, since ReorderPinned only rewrites the indices it is handed and a
+// partial list would leave duplicate sortIndex values behind.
+func (s *ProjectService) ReorderPinnedProjects(ids []int) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+
+	current, err := s.ProjectRepo.PinnedIDs()
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	if len(ids) != len(current) {
+		return models.BulkResult{}, ErrInvalidPinnedOrder
+	}
+
+	pinned := make(map[int]struct{}, len(current))
+	for _, id := range current {
+		pinned[id] = struct{}{}
+	}
+	for _, id := range ids {
+		if _, ok := pinned[id]; !ok {
+			return models.BulkResult{}, ErrInvalidPinnedOrder
+		}
+	}
+
+	if err := s.ProjectRepo.ReorderPinned(ids); err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{Success: len(ids)}, nil
+}
+
+// DuplicateProjectConfig creates a new project carrying the source project's
+// configuration. Nothing is cloned: workflows and task types are reusable across
+// projects by design, so the copy points at the same workflow row and enables
+// the same task type ids.
+//
+// The steps are kept separate so a future duplicateChecklists step can be added
+// without touching the existing ones.
+func (s *ProjectService) DuplicateProjectConfig(sourceId int) (int, error) {
+	source, err := s.ProjectRepo.FindOne(sourceId)
+	if err != nil {
+		return 0, err
+	}
+
+	newId, err := s.applyWorkflow(source)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.applyTaskTypes(sourceId, newId); err != nil {
+		return 0, err
+	}
+
+	// Future: if err := s.applyChecklists(sourceId, newId); err != nil { ... }
+
+	if _, err := s.ProjectRepo.UpdateProject(&models.Project{
+		ID:       newId,
+		Name:     source.Name + " (copy)",
+		Workflow: source.Workflow,
+		Folder:   source.Folder,
+	}); err != nil {
+		return 0, err
+	}
+
+	return newId, nil
+}
+
+// applyWorkflow creates the new project against the source's workflow. This is
+// the seam where a variant that clones the workflow instead of sharing it would
+// live.
+func (s *ProjectService) applyWorkflow(source *models.Project) (int, error) {
+	id, err := s.CreateProject(source.Workflow)
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
+}
+
+func (s *ProjectService) applyTaskTypes(sourceId int, targetId int) error {
+	typeIds, err := s.TaskTypeRepo.EnabledIDsForProject(sourceId)
+	if err != nil {
+		return err
+	}
+	return s.TaskTypeRepo.SetEnabledForProject(targetId, typeIds)
 }
 
 func (s *ProjectService) BulkDeleteProjects(ids []int) (models.BulkResult, error) {
