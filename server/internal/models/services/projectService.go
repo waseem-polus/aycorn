@@ -189,10 +189,13 @@ func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
 	return success, nil
 }
 
-func (s *ProjectService) CreateProject(workflowId int) (int64, error) {
-	folderId, err := s.FolderRepo.DefaultID()
-	if err != nil {
-		return 0, err
+func (s *ProjectService) CreateProject(workflowId int, folderId int) (int64, error) {
+	if folderId == 0 {
+		var err error
+		folderId, err = s.FolderRepo.DefaultID()
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	id, err := s.ProjectRepo.CreateProject(workflowId, folderId)
@@ -336,7 +339,7 @@ func (s *ProjectService) DuplicateProjectConfig(sourceId int) (int, error) {
 // the seam where a variant that clones the workflow instead of sharing it would
 // live.
 func (s *ProjectService) applyWorkflow(source *models.Project) (int, error) {
-	id, err := s.CreateProject(source.Workflow)
+	id, err := s.CreateProject(source.Workflow, 0)
 	if err != nil {
 		return 0, err
 	}

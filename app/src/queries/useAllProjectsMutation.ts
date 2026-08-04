@@ -10,7 +10,7 @@ export function useAllProjectsMutation() {
   };
 
   const createProject = useMutation({
-    mutationFn: async (body: { workflowId: number }) => {
+    mutationFn: async (body: { workflowId: number; folder?: number }) => {
       const res = await fetch(`/api/project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

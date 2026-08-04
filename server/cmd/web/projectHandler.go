@@ -156,13 +156,14 @@ func (app *app) postProject(w http.ResponseWriter, r *http.Request) {
 
 	var body struct {
 		WorkflowID int `json:"workflowId"`
+		Folder     int `json:"folder"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.WorkflowID == 0 {
 		http.Error(w, "workflowId required", http.StatusBadRequest)
 		return
 	}
 
-	id, err := app.projectService.CreateProject(body.WorkflowID)
+	id, err := app.projectService.CreateProject(body.WorkflowID, body.Folder)
 	if err != nil {
 		respondErr(w, err)
 		return

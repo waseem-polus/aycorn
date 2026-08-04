@@ -9,6 +9,7 @@ import {
   ChevronsUpDown,
   GripVertical,
   MoreHorizontal,
+  Plus,
   Trash2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ import { EditableHeader } from "@/components/EditableHeader";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { DeleteProjectFolderDialog } from "@/features/projects/delete-project-folder-dialog";
 import { useProjectFolderMutation } from "@/features/projects/queries/useProjectFolderMutation";
+import { CreateProjectMenu } from "@/features/projects/create-project-menu";
 import { folderName } from "@/features/projects/folder-name";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectFolder } from "@/types/types";
@@ -92,6 +94,10 @@ export function ProjectFolderSection({
         { onError: () => toast.error("Failed to rename folder.") },
       );
     }
+  };
+
+  const handleProjectCreated = () => {
+    if (collapsed) expandFolders([folder.ID]);
   };
 
   return (
@@ -165,6 +171,23 @@ export function ProjectFolderSection({
           )}
 
           <div className="flex items-center gap-0.5 shrink-0">
+            <CreateProjectMenu
+              folderId={folder.ID}
+              onCreated={handleProjectCreated}
+              renderTrigger={({ onClick, disabled }) => (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  onClick={onClick}
+                  disabled={disabled}
+                  aria-label="Add project to folder"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              )}
+            />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
