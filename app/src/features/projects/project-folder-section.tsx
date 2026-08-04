@@ -5,6 +5,8 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   ChevronDown,
   ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   GripVertical,
   MoreHorizontal,
   Trash2Icon,
@@ -15,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EditableHeader } from "@/components/EditableHeader";
@@ -25,33 +28,19 @@ import { folderName } from "@/features/projects/folder-name";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectFolder } from "@/types/types";
 
-const COLLAPSED_STORAGE_KEY = (id: number) => `project_folder_collapsed_${id}`;
-
-function readCollapsed(id: number): boolean {
-  try {
-    return localStorage.getItem(COLLAPSED_STORAGE_KEY(id)) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function writeCollapsed(id: number, collapsed: boolean) {
-  try {
-    if (collapsed) {
-      localStorage.setItem(COLLAPSED_STORAGE_KEY(id), "true");
-    } else {
-      localStorage.removeItem(COLLAPSED_STORAGE_KEY(id));
-    }
-  } catch {
-    // ignore
-  }
-}
-
 type Props = {
   folder: ProjectFolder;
   allFolders: ProjectFolder[];
   projects: Project[];
   isDropTarget: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  archivedView: boolean;
+  visibleFolderIds: number[];
+  emptyFolderIds: number[];
+  nonEmptyFolderIds: number[];
+  collapseFolders: (ids: number[]) => void;
+  expandFolders: (ids: number[]) => void;
   renderProjectCard: (project: Project) => React.ReactNode;
 };
 
@@ -60,9 +49,16 @@ export function ProjectFolderSection({
   allFolders,
   projects,
   isDropTarget,
+  collapsed,
+  onToggleCollapsed,
+  archivedView,
+  visibleFolderIds,
+  emptyFolderIds,
+  nonEmptyFolderIds,
+  collapseFolders,
+  expandFolders,
   renderProjectCard,
 }: Props) {
-  const [collapsed, setCollapsed] = useState(() => readCollapsed(folder.ID));
   const [isEditingName, setIsEditingName] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);
@@ -86,12 +82,6 @@ export function ProjectFolderSection({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  };
-
-  const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    writeCollapsed(folder.ID, next);
   };
 
   const handleSaveName = (newName: string) => {
@@ -128,7 +118,7 @@ export function ProjectFolderSection({
           </button>
 
           <button
-            onClick={toggleCollapsed}
+            onClick={onToggleCollapsed}
             className="text-muted-foreground hover:text-foreground p-0.5 rounded hover:bg-accent"
             aria-label={collapsed ? "Expand folder" : "Collapse folder"}
           >
@@ -174,31 +164,67 @@ export function ProjectFolderSection({
             </button>
           )}
 
-          {!folder.IsDefault && (
-            <div className="flex items-center gap-0.5 shrink-0">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    aria-label="Folder options"
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => setDeleteOpen(true)}
-                  >
-                    <Trash2Icon />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  aria-label="Folder options"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  disabled={visibleFolderIds.length === 0}
+                  onClick={() => collapseFolders(visibleFolderIds)}
+                >
+                  <ChevronsDownUp />
+                  Collapse all
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={visibleFolderIds.length === 0}
+                  onClick={() => expandFolders(visibleFolderIds)}
+                >
+                  <ChevronsUpDown />
+                  Expand all
+                </DropdownMenuItem>
+                {!archivedView && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      disabled={emptyFolderIds.length === 0}
+                      onClick={() => collapseFolders(emptyFolderIds)}
+                    >
+                      <ChevronsDownUp />
+                      Collapse empty
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={nonEmptyFolderIds.length === 0}
+                      onClick={() => expandFolders(nonEmptyFolderIds)}
+                    >
+                      <ChevronsUpDown />
+                      Expand non-empty
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {!folder.IsDefault && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setDeleteOpen(true)}
+                    >
+                      <Trash2Icon />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Card grid */}

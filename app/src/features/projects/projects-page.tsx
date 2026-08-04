@@ -39,6 +39,7 @@ import { ProjectCard } from "@/features/projects/project-card";
 import { ProjectFolderSection } from "@/features/projects/project-folder-section";
 import { ProjectsBulkActionsToolbar } from "@/features/projects/projects-bulk-actions-toolbar";
 import { NewProjectButton } from "@/features/projects/new-project-button";
+import { useFolderCollapse } from "@/features/projects/hooks/useFolderCollapse";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import type { Project, ProjectFolder } from "@/types/types";
@@ -119,6 +120,8 @@ export function ProjectsPage() {
   const { bulkSetFolder } = useAllProjectsMutation();
   const { createFolder, reorderFolders } = useProjectFolderMutation();
   const { wrapDragStart, wrapDragEnd } = useSharedSelection();
+  const { isCollapsed, toggle: toggleFolderCollapsed, collapseIds, expandIds } =
+    useFolderCollapse();
 
   const [orderedFolders, setOrderedFolders] = useState<ProjectFolder[]>([]);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -310,14 +313,38 @@ export function ProjectsPage() {
     (projectsFetching && projects.length === 0) ||
     (foldersFetching && folders.length === 0);
 
-  const visibleFolders = orderedFolders.filter(
-    (f) => !search || filteredByFolder.has(f.ID),
-  );
+  // Archived tab only ever shows folders that actually hold an archived
+  // project — an empty folder there is never reachable, so hide it rather
+  // than rendering a dead "No projects in this folder" placeholder.
+  const visibleFolders = orderedFolders.filter((f) => {
+    if (search) return filteredByFolder.has(f.ID);
+    if (archivedView) return (projectsByFolder.get(f.ID)?.length ?? 0) > 0;
+    return true;
+  });
 
   const totalFilteredCount = useMemo(
     () =>
       Array.from(filteredByFolder.values()).reduce((n, ps) => n + ps.length, 0),
     [filteredByFolder],
+  );
+
+  const visibleFolderIds = useMemo(
+    () => visibleFolders.map((f) => f.ID),
+    [visibleFolders],
+  );
+  const emptyFolderIds = useMemo(
+    () =>
+      visibleFolders
+        .filter((f) => (projectsByFolder.get(f.ID)?.length ?? 0) === 0)
+        .map((f) => f.ID),
+    [visibleFolders, projectsByFolder],
+  );
+  const nonEmptyFolderIds = useMemo(
+    () =>
+      visibleFolders
+        .filter((f) => (projectsByFolder.get(f.ID)?.length ?? 0) > 0)
+        .map((f) => f.ID),
+    [visibleFolders, projectsByFolder],
   );
 
   return (
@@ -406,6 +433,14 @@ export function ProjectsPage() {
                       dragOverFolderId === folder.ID &&
                       activeDragId?.startsWith("proj-") === true
                     }
+                    collapsed={isCollapsed(folder.ID)}
+                    onToggleCollapsed={() => toggleFolderCollapsed(folder.ID)}
+                    archivedView={archivedView}
+                    visibleFolderIds={visibleFolderIds}
+                    emptyFolderIds={emptyFolderIds}
+                    nonEmptyFolderIds={nonEmptyFolderIds}
+                    collapseFolders={collapseIds}
+                    expandFolders={expandIds}
                     renderProjectCard={(project) => (
                       <DraggableProjectCard
                         key={project.ID}
