@@ -20,12 +20,7 @@ import {
   stageCalendarBadgeClass,
 } from "@/features/stage/stage-palette";
 
-const ASSIGNABLE_TYPES: Exclude<StageType, "open">[] = [
-  "todo",
-  "doing",
-  "done",
-  "blocked",
-];
+const ASSIGNABLE_TYPES: Exclude<StageType, "open">[] = ["todo", "doing", "done"];
 
 const triggerClass = (type: StageType) =>
   cn(

@@ -51,7 +51,7 @@ export function PageContent({
     <div
       className={cn(
         "flex flex-col gap-4 p-3 sm:p-6 md:gap-6 flex-1 min-h-0 w-full overflow-y-auto",
-        fullWidth ? "" : "max-w-7xl",
+        fullWidth ? "" : "max-w-352",
       )}
     >
       {children}

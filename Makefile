@@ -22,13 +22,9 @@ build: build-app build-server
 
 build-app:
 	cd $(APP_DIR) && npm run build
-	mkdir -p $(UI_DIST)
-	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
 build-app-dev:
 	cd $(APP_DIR) && npx vite build --mode development
-	mkdir -p $(UI_DIST)
-	cp -r $(APP_DIR)/dist/. $(UI_DIST)/
 
 # Run TypeScript type check without building
 typecheck:
@@ -55,9 +51,9 @@ stop:
 # Run 'aycorn' afterwards to start the new version. The next start automatically
 # snapshots the DB before applying any schema migration, so upgrades can't lose data.
 upgrade:
+	$(MAKE) stop
 	$(MAKE) install
 	@echo "Upgraded to $$(aycorn --version)"
-	$(MAKE) stop
 
 # Snapshot / restore the DEV database (server/app.db) via the binary's subcommands.
 # These operate on the dev DB only (AYCORN_DB=./app.db); the installed binary's
@@ -70,4 +66,4 @@ restore:
 
 clean:
 	rm -f $(BINARY)
-	rm -rf $(UI_DIST) $(APP_DIR)/dist dist-release
+	rm -rf $(UI_DIST) dist-release

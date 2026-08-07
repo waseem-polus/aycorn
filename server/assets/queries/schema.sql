@@ -22,7 +22,7 @@ CREATE TABLE stage (
     color VARCHAR NOT NULL,
     icon VARCHAR NOT NULL,
     position INTEGER NOT NULL,
-    type TEXT NOT NULL CHECK(type IN ('open', 'todo', 'doing', 'done', 'blocked')),
+    type TEXT NOT NULL CHECK(type IN ('open', 'todo', 'doing', 'done')),
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     timeModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -236,4 +236,41 @@ BEGIN
         ELSE NEW.timeCompleted
     END
     WHERE id = NEW.id;
+END;
+
+CREATE TABLE task_relationship_type (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    fromName     TEXT    NOT NULL,
+    toName       TEXT    NOT NULL,
+    behavior     TEXT    NOT NULL CHECK(behavior IN ('blocking', 'subtask', 'link')),
+    icon         TEXT    NOT NULL DEFAULT 'link',
+    color        TEXT    NOT NULL DEFAULT 'gray',
+    isSystem     INTEGER NOT NULL DEFAULT 0 CHECK(isSystem IN (0, 1)),
+    timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE TRIGGER task_relationship_type_timeModified
+AFTER UPDATE ON task_relationship_type
+FOR EACH ROW
+BEGIN
+    UPDATE task_relationship_type SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
+END;
+
+CREATE TABLE task_relationship (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    fromTask         INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,
+    toTask           INTEGER NOT NULL REFERENCES task(id) ON DELETE CASCADE,
+    relationshipType INTEGER NOT NULL REFERENCES task_relationship_type(id) ON DELETE RESTRICT,
+    timeCreated      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified     TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    CHECK (fromTask <> toTask),
+    UNIQUE (fromTask, toTask, relationshipType)
+);
+
+CREATE TRIGGER task_relationship_timeModified
+AFTER UPDATE ON task_relationship
+FOR EACH ROW
+BEGIN
+    UPDATE task_relationship SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
 END;

@@ -15,22 +15,20 @@ export function NewTaskEditorDrawer({
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
-  const { state: task, setState: setTask } = useContext(TaskContext);
+  const { setState: setTask } = useContext(TaskContext);
   const { Project, Checklists, Stages } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
 
+  // Always build from the defaults, never from whatever the (long-lived)
+  // context happens to hold — a leftover value would be baked into the new task.
   const handleAddTask = useCallback(
     () =>
       create.mutate(
         {
-          ...task,
+          ...defaultTaskContextValue.state,
           Checklist: Checklists[0]?.ID,
           Stage:
-            task.Stage !== 0
-              ? task.Stage
-              : (Stages.find((s) => s.Type === "open")?.ID ??
-                Stages[0]?.ID ??
-                0),
+            Stages.find((s) => s.Type === "open")?.ID ?? Stages[0]?.ID ?? 0,
         },
         {
           onSuccess: (newTask: ChecklistTask) => {
@@ -38,7 +36,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, task, Checklists, Stages, setTask],
+    [create, Checklists, Stages, setTask],
   );
 
   return (

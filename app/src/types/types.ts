@@ -1,7 +1,7 @@
 import type { Value } from "platejs";
 
 export const PRIORITIES = ["Urgent", "High", "Medium", "Low"] as const;
-export const STAGE_TYPES = ["open", "todo", "doing", "done", "blocked"] as const;
+export const STAGE_TYPES = ["open", "todo", "doing", "done"] as const;
 
 export type Priority = (typeof PRIORITIES)[number];
 export type StageType = (typeof STAGE_TYPES)[number];
@@ -142,6 +142,43 @@ export type TaskFilter = {
   Priority: Task["Priority"][];
   Type: number[];
   Stage: Stage["ID"][];
+};
+
+export const RELATIONSHIP_BEHAVIORS = ["blocking", "subtask", "link"] as const;
+export type RelationshipBehavior = (typeof RELATIONSHIP_BEHAVIORS)[number];
+
+export type TaskRelationshipType = {
+  ID: number;
+  FromName: string;
+  ToName: string;
+  Behavior: RelationshipBehavior;
+  Icon: string;
+  Color: string;
+  IsSystem: boolean;
+  UsageCount: number;
+};
+
+export type RelatedTask = {
+  ID: number;
+  Name: string;
+  ProjectID: number;
+  ProjectName: string;
+  ChecklistName: string;
+  Priority: Priority;
+  IsDone: boolean;
+  Stage: Stage;
+  Type: TaskType;
+};
+
+export type TaskRelationship = {
+  ID: number;
+  Type: TaskRelationshipType;
+  Direction: "from" | "to";
+  Other: RelatedTask;
+};
+
+export type TaskRelationshipsResult = {
+  Relationships: TaskRelationship[];
 };
 
 export type BulkResult = {

@@ -13,7 +13,6 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { format, formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -29,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Project } from "@/types/types";
+import { DataTablePagination } from "@/components/data-table-pagination";
 import { BulkActionsToolbar } from "@/components/projects/table/bulk-actions-toolbar";
 import { ProjectNameCell } from "@/components/projects/table/project-name-cell";
 import { ProjectRowActions } from "@/components/projects/table/project-row-actions";
@@ -209,7 +209,7 @@ export function ProjectsDataTable({
   };
 
   const selectedProjects = table
-    .getFilteredSelectedRowModel()
+    .getSelectedRowModel()
     .rows.map((r) => r.original);
 
   return (
@@ -308,36 +308,16 @@ export function ProjectsDataTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
-        <div>
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} selected
-        </div>
-        <div className="flex items-center gap-4">
-          <span>
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {Math.max(table.getPageCount(), 1)}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </div>
+      <DataTablePagination
+        pageIndex={table.getState().pagination.pageIndex}
+        pageCount={table.getPageCount()}
+        canPreviousPage={table.getCanPreviousPage()}
+        canNextPage={table.getCanNextPage()}
+        selectedCount={table.getSelectedRowModel().rows.length}
+        totalCount={table.getCoreRowModel().rows.length}
+        onPreviousPage={() => table.previousPage()}
+        onNextPage={() => table.nextPage()}
+      />
 
       <BulkActionsToolbar
         selectedProjects={selectedProjects}

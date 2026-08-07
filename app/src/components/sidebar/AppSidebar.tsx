@@ -14,6 +14,7 @@ import {
   CalendarClockIcon,
   ChartAreaIcon,
   FolderIcon,
+  LinkIcon,
   SettingsIcon,
   Squirrel,
   TagsIcon,
@@ -29,6 +30,13 @@ const data = {
       icon: FolderIcon,
     },
     {
+      title: "Upcoming",
+      url: "/upcoming",
+      icon: CalendarClockIcon,
+    },
+  ],
+  navConfigure: [
+    {
       title: "Workflows",
       url: "/workflows",
       icon: WorkflowIcon,
@@ -37,21 +45,20 @@ const data = {
       title: "Task Types",
       url: "/task-types",
       icon: TagsIcon,
-      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
     {
-      title: "Upcoming",
-      url: "/upcoming",
-      icon: CalendarClockIcon,
+      title: "Task Links",
+      url: "/task-links",
+      icon: LinkIcon,
       badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
+  ],
+  navSecondary: [
     {
       title: "Usage",
       url: "/usage",
       icon: ChartAreaIcon,
     },
-  ],
-  navSecondary: [
     {
       title: "Settings",
       url: "/settings",
@@ -80,6 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavMain items={data.navConfigure} label="Configuration" />
         <NavPinnedProjects />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>

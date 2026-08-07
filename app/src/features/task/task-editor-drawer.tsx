@@ -1,4 +1,8 @@
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Collapsible,
   CollapsibleContent,
@@ -10,7 +14,10 @@ import { SelectTaskPriority } from "@/features/task/properties/select-task-prior
 import { DatePickerInput } from "@/components/DatePickerInput";
 import { useContext, useRef, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { EditableTaskName } from "@/features/task/header/editable-task-name";
+import {
+  EditableTaskName,
+  type EditableTaskNameHandle,
+} from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -30,8 +37,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TaskPlannedDates } from "@/features/task/properties/task-planned-dates";
 import { extractPlainText } from "@/features/task/task-utils";
+import { TaskRelationshipsCard } from "@/features/task/relationships/task-relationships-card";
+import { TaskRelationshipBadges } from "@/features/task/relationships/task-relationship-badges";
+import { Separator } from "@/components/ui/separator";
+import RelativePlannedDateBadge from "./properties/relative-planned-date-badge";
 
 export default function TaskEditorDrawer({
   children,
@@ -45,12 +55,20 @@ export default function TaskEditorDrawer({
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const editorRef = useRef<PlateEditor | null>(null);
   const [editorReady, setEditorReady] = useState(false);
+  const nameRef = useRef<EditableTaskNameHandle>(null);
+  // The body as it was last persisted (or as the editor normalised it on mount).
+  // Only used to decide whether the close-flush has anything to write.
+  const savedBodyRef = useRef<Value | null>(null);
 
   const { state: task, setState: setTask } = useContext(TaskContext);
-  const { Project } = useContext(ProjectContext);
+  const { Project, Stages } = useContext(ProjectContext);
   const { update, updateBody } = useTaskMutation(Project.ID);
 
   const handleTaskChanges = (updatedTask: Task) => {
+    // The task row doesn't exist yet (create still in flight), or the context
+    // has already been reset by a close. Either way a PUT would target id 0 and
+    // silently update nothing — the local state change is enough.
+    if (updatedTask.ID === 0) return;
     update.mutate(updatedTask);
   };
 
@@ -77,9 +95,31 @@ export default function TaskEditorDrawer({
   const handleEditorValueChange = (value: Value) => {
     setTask({ ...task, Body: value });
     if (task.ID !== 0) {
+      savedBodyRef.current = value;
       updateBody.mutate({ taskId: task.ID, body: value });
     }
   };
+
+  // Closing the drawer is the commit point for anything still pending: the
+  // title (which otherwise only saves on a blur that fires too late) and the
+  // body (whose 250ms debounce would never fire). Must run before the wrapper's
+  // onOpenChange, which is what resets the task context on the new-task drawer.
+  const commitPendingEdits = () => {
+    nameRef.current?.commit();
+
+    const editor = editorRef.current;
+    if (!editor || task.ID === 0) return;
+    // Compare against the editor's own baseline rather than the fetched body:
+    // the plugins normalise on mount (an empty body gains a trailing
+    // paragraph), so comparing to the raw fetched value would write on every
+    // close even when the body was never touched.
+    const body = editor.children;
+    if (JSON.stringify(body) !== JSON.stringify(savedBodyRef.current)) {
+      updateBody.mutate({ taskId: task.ID, body });
+    }
+  };
+
+  const stage = Stages.find((s) => s.ID === task.Stage)!;
 
   return (
     <Drawer
@@ -88,6 +128,7 @@ export default function TaskEditorDrawer({
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {
+        if (!open) commitPendingEdits();
         setOpen(open);
         onOpenChange(open);
         setPropertiesOpen(!isMobile || task.ID === 0);
@@ -98,12 +139,13 @@ export default function TaskEditorDrawer({
       }}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
+      <DrawerContent className="md:min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
         <TaskEditorHeader
           setOpen={setOpen}
           onCopyAsMarkdown={handleCopyAsMarkdown}
           onCopyAsPlainText={handleCopyAsPlainText}
           isEditorReady={editorReady}
+          taskStage={stage}
         />
         <div
           className="flex-1 min-h-0 overflow-y-auto"
@@ -112,7 +154,7 @@ export default function TaskEditorDrawer({
         >
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
-              <EditableTaskName onChange={handleTaskChanges} />
+              <EditableTaskName ref={nameRef} onChange={handleTaskChanges} />
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
@@ -129,28 +171,35 @@ export default function TaskEditorDrawer({
               </CollapsibleTrigger>
             </div>
             {!propertiesOpen && (
-              <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
-                <Badge variant="outline">
-                  <LandPlotIcon className="size-2" />
-                  {task.ChecklistName}
-                </Badge>
-                <Badge
-                  variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={
-                    task.Assignee !== "" ? "" : "text-muted-foreground"
-                  }
-                >
-                  <User className="size-2" />
-                  {task.Assignee !== "" ? task.Assignee : "Not Assigned"}
-                </Badge>
-                <TaskPlannedDates
-                  start={task.TimePlannedStart}
-                  end={task.TimePlannedEnd}
-                  hasStartTime={task.HasTimePlannedStart}
-                  hasEndTime={task.HasTimePlannedEnd}
-                  excludeYear
-                />
-              </div>
+                <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
+
+                    <Badge variant="secondary">
+                        <LandPlotIcon className="size-2" />
+                        {task.ChecklistName}
+                    </Badge>
+
+                    <Badge
+                        variant={task.Assignee !== "" ? "secondary" : "outline"}
+                        className={task.Assignee !== "" ? "" : "text-muted-foreground"}
+                    >
+                        <User className="size-2" />
+                        {task.Assignee !== "" ? task.Assignee : "—"}
+                    </Badge>
+
+                    <RelativePlannedDateBadge
+                        start={task.TimePlannedStart}
+                        end={task.TimePlannedEnd}
+                        overdue={
+                            task.TimePlannedStart !== null
+                            && new Date(task.TimePlannedEnd ?? task.TimePlannedStart) < new Date()
+                            && stage.Type !== "done"
+                        }
+                    />
+
+                    <Separator orientation="vertical" className="h-4! sm:mx-2" />
+
+                    <TaskRelationshipBadges taskId={task.ID} />
+                </div>
             )}
             <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
               <section className="flex flex-col gap-2">
@@ -177,6 +226,10 @@ export default function TaskEditorDrawer({
                 <TaskProperty label="Date" htmlFor="date">
                   <DatePickerInput onChange={handleTaskChanges} />
                 </TaskProperty>
+
+                <Separator orientation="horizontal" className="my-2"/>
+
+                <TaskRelationshipsCard />
               </section>
             </CollapsibleContent>
           </Collapsible>
@@ -190,10 +243,11 @@ export default function TaskEditorDrawer({
                 onDebounceChange={handleEditorValueChange}
                 onEditorReady={(editor) => {
                   editorRef.current = editor;
+                  savedBodyRef.current = editor.children;
                   setEditorReady(true);
                 }}
                 debounceDuration={250}
-                initialValue={data === "" ? [] : data}
+                initialValue={data}
               />
             </div>
           ) : (

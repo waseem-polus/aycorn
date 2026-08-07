@@ -12,12 +12,15 @@ import {
 } from "@/components/ui/item";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { GripVertical, LandPlot, User } from "lucide-react";
+import { UnresolvedBlockersBadge } from "@/features/task/relationships/unresolved-blockers-badge";
 import type { ChecklistTask } from "@/types/types";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { SubtaskProgressBar } from "@/features/task/relationships/subtask-progress-bar";
+import { useSubtaskProgress } from "@/features/task/relationships/queries/useSubtaskProgress";
 
 type DragListeners = Record<string, (e: React.SyntheticEvent) => void>;
 
@@ -51,6 +54,8 @@ export function KanbanItem({
   const itemClassName = (itemProps?.className as string | undefined) ?? "";
 
   const { Checklists } = useContext(ProjectContext);
+
+  const subtaskProgress = useSubtaskProgress(task.ID);
 
   return (
     <TaskProvider defaultState={task} key={task.ID}>
@@ -88,15 +93,13 @@ export function KanbanItem({
                 <GripVertical className="size-4" />
               </button>
             </ItemHeader>
-            <ItemContent>
+            <ItemContent className="flex flex-col gap-4">
               <ItemTitle
                 className={task.Name === "" ? "text-muted-foreground" : ""}
               >
-                {task.Name !== "" ? task.Name : "New Task"}
+                {task.Name !== "" ? task.Name : "Untitled Task"}
               </ItemTitle>
-            </ItemContent>
 
-            <ItemFooter>
               <span className="w-full flex flex-col gap-1">
                 {Checklists.length > 1 && (
                   <Badge variant="outline">
@@ -120,8 +123,16 @@ export function KanbanItem({
                   hasEndTime={false}
                   excludeYear
                 />
+
+                <UnresolvedBlockersBadge taskId={task.ID} />
               </span>
-            </ItemFooter>
+            </ItemContent>
+
+            {subtaskProgress && (
+                <ItemFooter>
+                    <SubtaskProgressBar done={subtaskProgress.done} total={subtaskProgress.total} />
+                </ItemFooter>
+            )}
           </a>
         </Item>
       </TaskEditorDrawer>

@@ -5,6 +5,7 @@ import { SelectTaskPriority } from "@/features/task/properties/select-task-prior
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
+import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
@@ -14,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { pluralize } from "@/utils/pluralize";
 
 const sharedValue = <K extends keyof Task>(
   tasks: TaskWithProject[],
@@ -54,9 +56,7 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
       {
         onSuccess: (result) => {
           if (result.success > 0)
-            toast(
-              `Updated ${result.success} ${result.success === 1 ? "task" : "tasks"}.`,
-            );
+            toast(`Updated ${pluralize(result.success, "task")}.`);
           clearSelection();
         },
       },
@@ -68,7 +68,7 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
       count={selectedIds.size}
       onClear={clearSelection}
       delete={{
-        title: `Delete ${selectedIds.size} ${selectedIds.size === 1 ? "task" : "tasks"}?`,
+        title: `Delete ${pluralize(selectedIds.size, "task")}?`,
         description: "This cannot be undone.",
         onConfirm: handleBulkDelete,
         busy: bulkDelete.isPending,
@@ -109,6 +109,7 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
           }
         />
       </div>
+      <AddRelationshipButton taskIds={selectedIdNumbers} />
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label="More properties">

@@ -34,25 +34,28 @@ import {
 import { useContext } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
-import TaskTypeBadge from "../properties/task-type-badge";
-import { Separator } from "@/components/ui/separator";
+import type { Stage } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { priorityOutlineBadgeClass } from "../properties/task-priority-palette";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import { cn } from "@/lib/utils";
+import TaskTypeBadge from "../properties/task-type-badge";
 
 export function TaskEditorHeader({
   setOpen = () => {},
   onCopyAsMarkdown,
   onCopyAsPlainText,
+  taskStage,
   isEditorReady = false,
 }: {
   setOpen: (open: boolean) => void;
   onCopyAsMarkdown?: () => void;
   onCopyAsPlainText?: () => void;
+  taskStage: Stage;
   isEditorReady?: boolean;
 }) {
   const { state: task } = useContext(TaskContext);
-  const { Project, Stages } = useContext(ProjectContext);
+  const { Project } = useContext(ProjectContext);
   const { deleteTask } = useTaskMutation(Project.ID);
   const navigate = useNavigate();
 
@@ -70,7 +73,7 @@ export function TaskEditorHeader({
             <Button
               variant="ghost"
               size="icon-sm"
-              className="text-muted-foreground"
+              className="text-muted-foreground hidden sm:flex"
             >
               <ChevronsRightIcon className={isMobile ? "rotate-90" : ""} />
             </Button>
@@ -91,30 +94,28 @@ export function TaskEditorHeader({
             <Maximize2 className="size-3.5" />
           </Button>
 
-          <Separator orientation="vertical" className="mx-3" />
-
           <RelativeTimeWithTooltip
             date={task.TimeModified}
             label="Modified"
-            className="hidden sm:flex"
+            className="hidden sm:flex text-xs ml-1"
           />
         </div>
 
-        <div className="flex gap-2 items-center">
-          <Badge
-            variant="outline"
-            className={priorityOutlineBadgeClass(task.Priority)}
-          >
-            <TaskPriorityIcon variant={task.Priority} />
-            {task.Priority}
-          </Badge>
-          <TaskTypeBadge type={task.Type} />
-          {Stages.find((s) => s.ID === task.Stage) && (
-            <WorkflowStageChip
-              className="rounded-full"
-              stage={Stages.find((s) => s.ID === task.Stage)!}
-            />
-          )}
+        <div className="flex gap-1 sm:gap-2 items-center">
+            <Badge
+              variant="outline"
+              className={cn("sm:hidden", priorityOutlineBadgeClass(task.Priority))}
+            >
+              <TaskPriorityIcon variant={task.Priority} />
+              {task.Priority}
+            </Badge>
+            <TaskTypeBadge type={task.Type} />
+            {taskStage && (
+                <WorkflowStageChip
+                className="rounded-full"
+                stage={taskStage}
+                />
+            )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -158,8 +159,7 @@ export function TaskEditorHeader({
                 <DrawerClose asChild>
                   <DropdownMenuItem
                     onClick={() => {
-                      const taskName =
-                        task.Name === "" ? "New Task" : task.Name;
+                      const taskName = task.Name === "" ? "Untitled Task" : task.Name;
                       deleteTask.mutate(task.ID, {
                         onSuccess: () => toast(`Deleted '${taskName}'`),
                         onError: () => {

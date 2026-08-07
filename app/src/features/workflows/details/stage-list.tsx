@@ -28,12 +28,7 @@ import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
 import { useSharedSelection } from "@/hooks/useSelection";
 
-const ADDABLE_STAGE_TYPES: Exclude<StageType, "open">[] = [
-  "todo",
-  "doing",
-  "done",
-  "blocked",
-];
+const ADDABLE_STAGE_TYPES: Exclude<StageType, "open">[] = ["todo", "doing", "done"];
 
 export function StageList({
   stages,

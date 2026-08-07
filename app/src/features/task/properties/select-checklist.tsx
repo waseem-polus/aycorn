@@ -55,7 +55,7 @@ export function SelectChecklist({
   const displayName = current
     ? current.Name !== ""
       ? current.Name
-      : "New Checklist"
+      : "Untitled Checklist"
     : placeholder;
 
   const trimmedSearch = searchValue.trim().toLowerCase();

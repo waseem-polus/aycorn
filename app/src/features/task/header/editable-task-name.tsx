@@ -1,42 +1,54 @@
-import { useContext } from "react";
+import { forwardRef, useContext, useImperativeHandle, useRef } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
+import { EditableHeader } from "@/components/EditableHeader";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types/types";
+import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function EditableTaskName({
-  onChange = () => {},
-  className = "",
-}: {
-  onChange?: (task: Task) => void;
-  className?: string;
-}) {
+export type EditableTaskNameHandle = {
+  // Persist whatever is currently in the DOM. Blur is not a reliable commit
+  // point — when the drawer is dismissed straight from the focused title, blur
+  // fires *after* the close handler has already reset the task context.
+  commit: () => void;
+};
+
+export const EditableTaskName = forwardRef<
+  EditableTaskNameHandle,
+  { onChange?: (task: Task) => void; className?: string }
+>(function EditableTaskName({ onChange = () => {}, className = "" }, forwardedRef) {
   const { state: task, setState: setTask } = useContext(TaskContext);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  const saveName = (value: string) => {
+    const name = value.trim();
+    if (name === task.Name) return;
+    setTask({ ...task, Name: name });
+    onChange({ ...task, Name: name });
+  };
+
+  useImperativeHandle(forwardedRef, () => ({
+    commit: () => saveName(headingRef.current?.textContent ?? ""),
+  }));
 
   return (
-    <div className="grow flex flex-col text-wrap mb-2">
-      <h1
-        contentEditable
-        suppressContentEditableWarning
-        data-placeholder="New Task..."
+    <div className="grow flex items-start flex-row gap-1 text-wrap mb-2">
+      <Tooltip>
+        <TooltipTrigger className="hidden sm:flex">
+          <TaskPriorityIcon variant={task.Priority} className="size-6 mt-2 shrink" />
+        </TooltipTrigger>
+        <TooltipContent>{task.Priority} Priority</TooltipContent>
+      </Tooltip>
+      <EditableHeader
+        ref={headingRef}
+        value={task.Name}
+        setValue={saveName}
+        placeholder="Untitled Task..."
         className={cn(
-          "ce-placeholder not-focus:hover:bg-accent dark:not-focus:hover:bg-accent/50 outline-0 p-1 border border-transparent font-normal text-2xl md:text-2xl text-wrap min-h-8 leading-tight focus:outline-none focus:border-b-input",
+          "rounded not-focus:hover:no-underline p-1 md:text-2xl min-h-8 focus:border-b-input flex-1",
           className,
         )}
-        onBlur={(e) => {
-          const text = e.currentTarget.textContent ?? "";
-          if (text.trim() !== task.Name) {
-            setTask({ ...task, Name: text });
-            onChange({ ...task, Name: text });
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-          }
-        }}
-      >
-        {task.Name}
-      </h1>
+      />
     </div>
   );
-}
+});
