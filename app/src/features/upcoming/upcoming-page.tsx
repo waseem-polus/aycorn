@@ -23,7 +23,7 @@ import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
-import type { Stage, Project } from "@/types/types";
+import type { Stage } from "@/types/types";
 
 export function UpcomingPage() {
   const filtersApi = useUpcomingFilters();
@@ -34,7 +34,7 @@ export function UpcomingPage() {
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(filters);
   const { data: facets = { assignees: [], checklists: [] } } =
     useTaskFacetsQuery();
-  const { data: projects = [] } = useAllProjectsQuery() as { data: Project[] };
+  const { data: projects = [] } = useAllProjectsQuery();
   const { data: workflows = [] } = useAllWorkflowsQuery();
   const { data: allStagesData = [] } = useAllStagesQuery();
   const { data: taskTypes = [] } = useTaskTypesQuery();

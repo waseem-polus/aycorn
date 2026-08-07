@@ -11,20 +11,34 @@ type ProjectRepo struct {
 	DB *sql.DB
 }
 
+// Pinned has no column of its own — it is membership in pinned_project.
 const projectSelect = `
-SELECT p.id, p.name, p.pinned, p.workflow, w.name, p.timeCreated, p.timeModified
+SELECT p.id, p.name,
+       EXISTS(SELECT 1 FROM pinned_project pp WHERE pp.project = p.id),
+       p.archived, p.folder, p.workflow, w.name, p.timeCreated, p.timeModified
 FROM project p
 JOIN workflow w ON p.workflow = w.id`
 
 func scanProject(scanner interface {
 	Scan(...any) error
 }, p *models.Project) error {
-	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
+	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
 }
 
-func (repo *ProjectRepo) All() ([]models.Project, error) {
-	query := projectSelect + " ORDER BY p.id DESC;"
-	rows, err := repo.DB.Query(query)
+// All returns projects most recently updated first — the order the projects page
+// renders cards in. A nil archived filter returns both open and archived, which
+// is what callers outside the projects page (task pickers, the upcoming page)
+// want: archiving is a projects-page concern only.
+func (repo *ProjectRepo) All(archived *bool) ([]models.Project, error) {
+	query := projectSelect
+	args := []any{}
+	if archived != nil {
+		query += " WHERE p.archived = ?"
+		args = append(args, *archived)
+	}
+	query += " ORDER BY p.timeModified DESC;"
+
+	rows, err := repo.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +86,13 @@ func (repo *ProjectRepo) FindOne(id int) (*models.Project, error) {
 	return &project, nil
 }
 
+// FindPinnedProjects returns the sidebar list, in the user's manual pin order.
+// Archived projects are force-unpinned, so the join alone can't return one.
 func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
-	query := projectSelect + " WHERE p.pinned = TRUE;"
+	query := projectSelect + `
+JOIN pinned_project pin ON pin.project = p.id
+WHERE p.archived = 0
+ORDER BY pin.sortIndex ASC, p.id ASC;`
 	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -102,9 +121,11 @@ func (repo *ProjectRepo) FindPinnedProjects() ([]models.Project, error) {
 	return projects, nil
 }
 
+// UpdateProject deliberately does not write `pinned` or `archived`: pinning
+// lives in pinned_project, and archiving has to force-unpin in the same tx.
 func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
-	query := "UPDATE project SET name = ?, pinned = ?, workflow = ? WHERE id = ?;"
-	res, err := repo.DB.Exec(query, project.Name, project.Pinned, project.Workflow, project.ID)
+	query := "UPDATE project SET name = ?, workflow = ?, folder = ? WHERE id = ?;"
+	res, err := repo.DB.Exec(query, project.Name, project.Workflow, project.Folder, project.ID)
 	if err != nil {
 		return false, err
 	}
@@ -117,9 +138,9 @@ func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
 	return affected > 0, nil
 }
 
-func (repo *ProjectRepo) CreateProject(workflowId int) (int64, error) {
-	query := "INSERT INTO project (name, pinned, workflow) VALUES ('', false, ?);"
-	res, err := repo.DB.Exec(query, workflowId)
+func (repo *ProjectRepo) CreateProject(workflowId int, folderId int) (int64, error) {
+	query := "INSERT INTO project (name, workflow, folder) VALUES ('', ?, ?);"
+	res, err := repo.DB.Exec(query, workflowId, folderId)
 	if err != nil {
 		return 0, err
 	}
@@ -156,15 +177,127 @@ func intIdPlaceholders(ids []int) (string, []any) {
 	return placeholders, args
 }
 
+// UpdateManyPinned pins by inserting into pinned_project and unpins by deleting.
+// Newly pinned projects are appended after the existing pin order. Ids that
+// don't exist, are already in the requested state, or are archived simply don't
+// affect a row — the caller reports them as skipped.
 func (repo *ProjectRepo) UpdateManyPinned(ids []int, pinned bool) (int, error) {
 	if len(ids) == 0 {
 		return 0, nil
 	}
-	placeholders, args := intIdPlaceholders(ids)
-	query := "UPDATE project SET pinned = ? WHERE id IN (" + placeholders + ");"
-	args = append([]any{pinned}, args...)
 
-	res, err := repo.DB.Exec(query, args...)
+	if !pinned {
+		placeholders, args := intIdPlaceholders(ids)
+		res, err := repo.DB.Exec(
+			"DELETE FROM pinned_project WHERE project IN ("+placeholders+");", args...,
+		)
+		if err != nil {
+			return 0, err
+		}
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return 0, err
+		}
+		return int(affected), nil
+	}
+
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	next := 0
+	if err := tx.QueryRow(
+		"SELECT COALESCE(MAX(sortIndex), -1) + 1 FROM pinned_project;",
+	).Scan(&next); err != nil {
+		return 0, err
+	}
+
+	// The guard is in SQL so an archived project is skipped server-side rather
+	// than being filtered out by the caller.
+	stmt, err := tx.Prepare(
+		"INSERT OR IGNORE INTO pinned_project (project, sortIndex)" +
+			" SELECT id, ? FROM project WHERE id = ? AND archived = 0;",
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	pinnedCount := 0
+	for _, id := range ids {
+		res, err := stmt.Exec(next, id)
+		if err != nil {
+			return 0, err
+		}
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return 0, err
+		}
+		if affected > 0 {
+			pinnedCount++
+			next++
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return pinnedCount, nil
+}
+
+// UpdateManyArchived archives or restores projects. Archiving force-unpins in
+// the same transaction, so a project can never be both archived and pinned.
+func (repo *ProjectRepo) UpdateManyArchived(ids []int, archived bool) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	placeholders, args := intIdPlaceholders(ids)
+
+	res, err := tx.Exec(
+		"UPDATE project SET archived = ? WHERE id IN ("+placeholders+") AND archived <> ?;",
+		append(append([]any{archived}, args...), archived)...,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	if archived {
+		if _, err := tx.Exec(
+			"DELETE FROM pinned_project WHERE project IN ("+placeholders+");", args...,
+		); err != nil {
+			return 0, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+func (repo *ProjectRepo) UpdateManyFolder(ids []int, folderId int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
+	res, err := repo.DB.Exec(
+		"UPDATE project SET folder = ? WHERE id IN ("+placeholders+");",
+		append([]any{folderId}, args...)...,
+	)
 	if err != nil {
 		return 0, err
 	}
@@ -173,6 +306,50 @@ func (repo *ProjectRepo) UpdateManyPinned(ids []int, pinned bool) (int, error) {
 		return 0, err
 	}
 	return int(affected), nil
+}
+
+// ReorderPinned rewrites the sidebar pin order. Ids that aren't pinned match no
+// row and are ignored; the service validates the set before calling.
+func (repo *ProjectRepo) ReorderPinned(ids []int) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("UPDATE pinned_project SET sortIndex = ? WHERE project = ?;")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for i, id := range ids {
+		if _, err := stmt.Exec(i, id); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// PinnedIDs returns the currently pinned project ids in pin order.
+func (repo *ProjectRepo) PinnedIDs() ([]int, error) {
+	rows, err := repo.DB.Query(
+		"SELECT project FROM pinned_project ORDER BY sortIndex ASC, project ASC;",
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ids := []int{}
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }
 
 func (repo *ProjectRepo) DeleteMany(ids []int) (int, error) {

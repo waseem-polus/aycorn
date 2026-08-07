@@ -26,11 +26,16 @@ INSERT INTO stage (id, workflow, name, description, color, icon, position, type)
 (14, 3, 'Closed',       'Completed or abandoned',               'purple', 'circle-check',  6, 'done');
 
 
-INSERT INTO project (id, name, pinned, workflow, timeCreated) VALUES
-(1, 'Website Redesign', 1, 3, '2025-01-05 09:00:00'),
-(2, 'Mobile App',       0, 3, '2025-01-10 10:30:00'),
-(3, 'Chores',           0, 1, '2025-02-01 14:15:00'),
-(4, 'Job Hunt',         1, 2, '2025-03-05 10:00:00');
+INSERT INTO project (id, name, workflow, folder, timeCreated) VALUES
+(1, 'Website Redesign', 3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-05 09:00:00'),
+(2, 'Mobile App',       3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-10 10:30:00'),
+(3, 'Chores',           1, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-02-01 14:15:00'),
+(4, 'Job Hunt',         2, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-03-05 10:00:00');
+
+
+INSERT INTO pinned_project (project, sortIndex) VALUES
+(1, 0),
+(4, 1);
 
 
 INSERT INTO checklist (id, project, name, isDefault, timeCreated) VALUES

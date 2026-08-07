@@ -10,7 +10,14 @@ import (
 )
 
 func (app *app) getAllProjects(w http.ResponseWriter, r *http.Request) {
-	projects, err := app.projectService.GetAllProjects()
+	// No `archived` param means "both" — only the projects page splits the two.
+	var archived *bool
+	if raw := r.URL.Query().Get("archived"); raw != "" {
+		value := raw == "true"
+		archived = &value
+	}
+
+	projects, err := app.projectService.GetAllProjects(archived)
 	if err != nil {
 		respondErr(w, err)
 		return
@@ -149,13 +156,14 @@ func (app *app) postProject(w http.ResponseWriter, r *http.Request) {
 
 	var body struct {
 		WorkflowID int `json:"workflowId"`
+		Folder     int `json:"folder"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.WorkflowID == 0 {
 		http.Error(w, "workflowId required", http.StatusBadRequest)
 		return
 	}
 
-	id, err := app.projectService.CreateProject(body.WorkflowID)
+	id, err := app.projectService.CreateProject(body.WorkflowID, body.Folder)
 	if err != nil {
 		respondErr(w, err)
 		return
@@ -183,6 +191,86 @@ func (app *app) bulkSetProjectsPinned(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) bulkSetProjectsArchived(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs      []int `json:"ids"`
+		Archived bool  `json:"archived"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.projectService.BulkSetArchived(body.IDs, body.Archived)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) bulkSetProjectsFolder(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs    []int `json:"ids"`
+		Folder int   `json:"folder"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.projectService.BulkSetFolder(body.IDs, body.Folder)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) putPinnedProjectsOrder(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs []int `json:"ids"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.projectService.ReorderPinnedProjects(body.IDs)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (app *app) postDuplicateProjectConfig(w http.ResponseWriter, r *http.Request) {
+	projectId, err := strconv.Atoi(r.PathValue("projectId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := app.projectService.DuplicateProjectConfig(projectId)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, struct {
+		ID int `json:"id"`
+	}{ID: id})
 }
 
 func (app *app) bulkDeleteProjects(w http.ResponseWriter, r *http.Request) {

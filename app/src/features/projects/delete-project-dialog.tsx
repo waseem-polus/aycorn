@@ -12,17 +12,13 @@ import { useProjectMutation } from "@/queries/useProjectMutation";
 import type { Project } from "@/types/types";
 import { toast } from "sonner";
 
-interface ProjectsListDeleteDialogProps {
+type Props = {
   project: Project;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
-export function ProjectsListDeleteDialog({
-  project,
-  open,
-  onOpenChange,
-}: ProjectsListDeleteDialogProps) {
+export function DeleteProjectDialog({ project, open, onOpenChange }: Props) {
   const { deleteProject } = useProjectMutation(project.ID);
   const displayName = project.Name !== "" ? project.Name : "New Project";
 
@@ -39,10 +35,11 @@ export function ProjectsListDeleteDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
+            disabled={deleteProject.isPending}
             onClick={() =>
               deleteProject.mutate(project.ID, {
-                onSuccess: () => toast(`Deleted ${displayName} successfully.`),
-                onError: () => toast(`Failed deleting project.`),
+                onSuccess: () => toast(`Deleted "${displayName}".`),
+                onError: () => toast.error("Failed deleting project."),
               })
             }
           >

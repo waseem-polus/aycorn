@@ -52,7 +52,9 @@ func httpStatusForError(err error) int {
 		errors.Is(err, services.ErrNoOpenStage),
 		errors.Is(err, services.ErrInvalidStageMapping),
 		errors.Is(err, services.ErrTransferTypeRequired),
-		errors.Is(err, services.ErrInvalidTransferType):
+		errors.Is(err, services.ErrInvalidTransferType),
+		errors.Is(err, services.ErrDefaultProjectFolder),
+		errors.Is(err, services.ErrInvalidPinnedOrder):
 		return http.StatusBadRequest
 	case errors.Is(err, services.ErrStageHasTasks):
 		return http.StatusUnprocessableEntity
