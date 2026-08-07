@@ -14,7 +14,10 @@ import { SelectTaskPriority } from "@/features/task/properties/select-task-prior
 import { DatePickerInput } from "@/components/DatePickerInput";
 import { useContext, useRef, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { EditableTaskName } from "@/features/task/header/editable-task-name";
+import {
+  EditableTaskName,
+  type EditableTaskNameHandle,
+} from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -52,12 +55,20 @@ export default function TaskEditorDrawer({
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const editorRef = useRef<PlateEditor | null>(null);
   const [editorReady, setEditorReady] = useState(false);
+  const nameRef = useRef<EditableTaskNameHandle>(null);
+  // The body as it was last persisted (or as the editor normalised it on mount).
+  // Only used to decide whether the close-flush has anything to write.
+  const savedBodyRef = useRef<Value | null>(null);
 
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project, Stages } = useContext(ProjectContext);
   const { update, updateBody } = useTaskMutation(Project.ID);
 
   const handleTaskChanges = (updatedTask: Task) => {
+    // The task row doesn't exist yet (create still in flight), or the context
+    // has already been reset by a close. Either way a PUT would target id 0 and
+    // silently update nothing — the local state change is enough.
+    if (updatedTask.ID === 0) return;
     update.mutate(updatedTask);
   };
 
@@ -84,7 +95,27 @@ export default function TaskEditorDrawer({
   const handleEditorValueChange = (value: Value) => {
     setTask({ ...task, Body: value });
     if (task.ID !== 0) {
+      savedBodyRef.current = value;
       updateBody.mutate({ taskId: task.ID, body: value });
+    }
+  };
+
+  // Closing the drawer is the commit point for anything still pending: the
+  // title (which otherwise only saves on a blur that fires too late) and the
+  // body (whose 250ms debounce would never fire). Must run before the wrapper's
+  // onOpenChange, which is what resets the task context on the new-task drawer.
+  const commitPendingEdits = () => {
+    nameRef.current?.commit();
+
+    const editor = editorRef.current;
+    if (!editor || task.ID === 0) return;
+    // Compare against the editor's own baseline rather than the fetched body:
+    // the plugins normalise on mount (an empty body gains a trailing
+    // paragraph), so comparing to the raw fetched value would write on every
+    // close even when the body was never touched.
+    const body = editor.children;
+    if (JSON.stringify(body) !== JSON.stringify(savedBodyRef.current)) {
+      updateBody.mutate({ taskId: task.ID, body });
     }
   };
 
@@ -97,6 +128,7 @@ export default function TaskEditorDrawer({
       direction={isMobile ? "bottom" : "right"}
       open={open}
       onOpenChange={(open) => {
+        if (!open) commitPendingEdits();
         setOpen(open);
         onOpenChange(open);
         setPropertiesOpen(!isMobile || task.ID === 0);
@@ -122,7 +154,7 @@ export default function TaskEditorDrawer({
         >
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
-              <EditableTaskName onChange={handleTaskChanges} />
+              <EditableTaskName ref={nameRef} onChange={handleTaskChanges} />
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
@@ -211,6 +243,7 @@ export default function TaskEditorDrawer({
                 onDebounceChange={handleEditorValueChange}
                 onEditorReady={(editor) => {
                   editorRef.current = editor;
+                  savedBodyRef.current = editor.children;
                   setEditorReady(true);
                 }}
                 debounceDuration={250}

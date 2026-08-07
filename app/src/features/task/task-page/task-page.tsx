@@ -90,6 +90,8 @@ export function TaskPage({ projectId }: { projectId: number }) {
   }, [data, isFetching, isPending]);
 
   const handleTaskChanges = (updatedTask: Task) => {
+    // A PUT with id 0 targets no row and silently updates nothing.
+    if (updatedTask.ID === 0) return;
     update.mutate(updatedTask);
   };
 
