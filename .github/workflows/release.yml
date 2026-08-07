@@ -43,12 +43,6 @@ jobs:
         working-directory: app
         run: npm ci && npx vite build
 
-      - name: Copy UI build into server embed directory
-        shell: bash
-        run: |
-          mkdir -p server/ui/dist
-          cp -r app/dist/. server/ui/dist/
-
       - name: Build Go server
         working-directory: server
         env:
