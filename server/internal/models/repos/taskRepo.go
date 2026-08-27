@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
+	"github.com/waseem-polus/aycorn/server/internal/timefmt"
 )
 
 type TaskRepo struct {
@@ -12,21 +13,20 @@ type TaskRepo struct {
 }
 
 type TaskFilters struct {
-	SearchQuery          string
-	ChecklistQuery       []string
-	TypeIDQuery          []int
-	StageQuery           []string
-	PriorityQuery        []string
-	AssigneeQuery        []string
-	ProjectIDQuery       []int
-	PlannedFrom          string
-	PlannedTo            string
-	PlannedFromHasTime   bool
-	PlannedToHasTime     bool
-	CompletedFrom        string
-	CompletedTo          string
-	CompletedFromHasTime bool
-	CompletedToHasTime   bool
+	SearchQuery    string
+	ChecklistQuery []string
+	TypeIDQuery    []int
+	StageQuery     []string
+	PriorityQuery  []string
+	AssigneeQuery  []string
+	ProjectIDQuery []int
+	// Date bounds are canonical timefmt.Layout strings, normalized by the
+	// handler. They are compared directly against the stored values, which use
+	// the same encoding — no DATE() truncation, no per-request branching.
+	PlannedFrom   string
+	PlannedTo     string
+	CompletedFrom string
+	CompletedTo   string
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -159,8 +159,8 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Checkli
 		newTask.Name,
 		newTask.Body,
 		newTask.Checklist,
-		newTask.TimePlannedStart,
-		newTask.TimePlannedEnd,
+		timefmt.Format(newTask.TimePlannedStart),
+		timefmt.Format(newTask.TimePlannedEnd),
 		newTask.HasTimePlannedStart,
 		newTask.HasTimePlannedEnd,
 		newTask.Assignee,
@@ -204,11 +204,11 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		query,
 		task.Name,
 		task.Checklist,
-		task.TimePlannedStart,
-		task.TimePlannedEnd,
+		timefmt.Format(task.TimePlannedStart),
+		timefmt.Format(task.TimePlannedEnd),
 		task.HasTimePlannedStart,
 		task.HasTimePlannedEnd,
-		task.TimeCompleted,
+		timefmt.Format(task.TimeCompleted),
 		task.Assignee,
 		task.Priority,
 		task.Type.ID,
@@ -536,36 +536,24 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 		}
 	}
 
+	// Planned dates use overlap semantics: a task matches when any part of its
+	// planned window intersects the range. Hence the range start is tested
+	// against the task's END (falling back to start for open-ended tasks) and
+	// the range end against the task's START.
 	if taskFilters.PlannedFrom != "" {
-		if taskFilters.PlannedFromHasTime {
-			query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
-		} else {
-			query += " AND COALESCE(DATE(t.timePlannedEnd), DATE(t.timePlannedStart)) >= ?"
-		}
+		query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
 		args = append(args, taskFilters.PlannedFrom)
 	}
 	if taskFilters.PlannedTo != "" {
-		if taskFilters.PlannedToHasTime {
-			query += " AND t.timePlannedStart <= ?"
-		} else {
-			query += " AND DATE(t.timePlannedStart) <= ?"
-		}
+		query += " AND t.timePlannedStart <= ?"
 		args = append(args, taskFilters.PlannedTo)
 	}
 	if taskFilters.CompletedFrom != "" {
-		if taskFilters.CompletedFromHasTime {
-			query += " AND t.timeCompleted >= ?"
-		} else {
-			query += " AND DATE(t.timeCompleted) >= ?"
-		}
+		query += " AND t.timeCompleted >= ?"
 		args = append(args, taskFilters.CompletedFrom)
 	}
 	if taskFilters.CompletedTo != "" {
-		if taskFilters.CompletedToHasTime {
-			query += " AND t.timeCompleted <= ?"
-		} else {
-			query += " AND DATE(t.timeCompleted) <= ?"
-		}
+		query += " AND t.timeCompleted <= ?"
 		args = append(args, taskFilters.CompletedTo)
 	}
 

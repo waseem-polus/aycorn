@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { STAGE_PALETTE } from "@/features/stage/stage-palette";
 import { useDateFormat } from "@/hooks/useDateFormatter";
-import { isSameDay } from "@/utils/date";
+import { isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 

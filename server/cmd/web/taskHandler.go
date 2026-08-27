@@ -2,33 +2,58 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
+	"github.com/waseem-polus/aycorn/server/internal/timefmt"
 )
+
+// normalizedDateParam reads an optional RFC3339 date bound and converts it to
+// the canonical storage encoding, so the repo can compare it directly against
+// stored values. An empty param means "no bound"; a malformed one is a client
+// error, not a silently empty result set.
+func normalizedDateParam(q url.Values, key string) (string, error) {
+	raw := q.Get(key)
+	if raw == "" {
+		return "", nil
+	}
+	normalized, err := timefmt.Normalize(raw)
+	if err != nil {
+		return "", fmt.Errorf("invalid %s: %w", key, err)
+	}
+	return normalized, nil
+}
 
 func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
+	dates := map[string]string{}
+	for _, key := range []string{"plannedFrom", "plannedTo", "completedFrom", "completedTo"} {
+		normalized, err := normalizedDateParam(q, key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		dates[key] = normalized
+	}
+
 	taskFilters := &repos.TaskFilters{
-		SearchQuery:          q.Get("search"),
-		ChecklistQuery:       getQuerySlice(q, "checklist"),
-		TypeIDQuery:          getQuerySliceInt(q, "typeId"),
-		StageQuery:           getQuerySlice(q, "stage"),
-		PriorityQuery:        getQuerySlice(q, "priority"),
-		AssigneeQuery:        getQuerySlice(q, "assignee"),
-		ProjectIDQuery:       getQuerySliceInt(q, "project"),
-		PlannedFrom:          q.Get("plannedFrom"),
-		PlannedTo:            q.Get("plannedTo"),
-		PlannedFromHasTime:   q.Get("plannedFromHasTime") == "true",
-		PlannedToHasTime:     q.Get("plannedToHasTime") == "true",
-		CompletedFrom:        q.Get("completedFrom"),
-		CompletedTo:          q.Get("completedTo"),
-		CompletedFromHasTime: q.Get("completedFromHasTime") == "true",
-		CompletedToHasTime:   q.Get("completedToHasTime") == "true",
+		SearchQuery:    q.Get("search"),
+		ChecklistQuery: getQuerySlice(q, "checklist"),
+		TypeIDQuery:    getQuerySliceInt(q, "typeId"),
+		StageQuery:     getQuerySlice(q, "stage"),
+		PriorityQuery:  getQuerySlice(q, "priority"),
+		AssigneeQuery:  getQuerySlice(q, "assignee"),
+		ProjectIDQuery: getQuerySliceInt(q, "project"),
+		PlannedFrom:    dates["plannedFrom"],
+		PlannedTo:      dates["plannedTo"],
+		CompletedFrom:  dates["completedFrom"],
+		CompletedTo:    dates["completedTo"],
 	}
 
 	tasks, err := app.taskService.GetAllTasks(taskFilters)

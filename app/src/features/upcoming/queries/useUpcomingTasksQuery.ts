@@ -1,6 +1,7 @@
 import type { TaskWithProject } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import { parseApiDate, toApiDate, toApiDayEnd } from "@/utils/date";
 
 // Search is applied client-side for instant feedback; exclude it from the query key
 // so typing doesn't trigger a backend round-trip.
@@ -10,6 +11,34 @@ function toBackendFilters(filters: UpcomingFilters): BackendFilters {
   const { search: _s, ...rest } = filters;
   return rest;
 }
+
+/**
+ * Lower bound of a date range. Sent as-is: when the user picked a whole day
+ * rather than a time, the stored value is already that day's local midnight,
+ * which is exactly where the range should start.
+ */
+const setRangeStart = (url: URL, key: string, value: string | undefined) => {
+  if (!value) return;
+  url.searchParams.set(key, toApiDate(parseApiDate(value)));
+};
+
+/**
+ * Upper bound of a date range. The server compares bounds inclusively against
+ * stored instants, so a whole-day selection has to be extended to that day's
+ * END — a range "through Aug 22" bounded at Aug 22 00:00 would exclude
+ * everything that actually happened on Aug 22. When the user did specify a
+ * time, their instant is the bound.
+ */
+const setRangeEnd = (
+  url: URL,
+  key: string,
+  value: string | undefined,
+  hasTime: boolean | undefined,
+) => {
+  if (!value) return;
+  const date = parseApiDate(value);
+  url.searchParams.set(key, hasTime ? toApiDate(date) : toApiDayEnd(date));
+};
 
 export function useUpcomingTasksQuery(filters: UpcomingFilters) {
   const backendFilters = toBackendFilters(filters);
@@ -26,21 +55,15 @@ export function useUpcomingTasksQuery(filters: UpcomingFilters) {
       const {
         plannedFrom,
         plannedTo,
-        plannedFromHasTime,
         plannedToHasTime,
         completedFrom,
         completedTo,
-        completedFromHasTime,
         completedToHasTime,
       } = backendFilters.dates ?? {};
-      if (plannedFrom) url.searchParams.set("plannedFrom", plannedFrom);
-      if (plannedFrom && plannedFromHasTime) url.searchParams.set("plannedFromHasTime", "true");
-      if (plannedTo) url.searchParams.set("plannedTo", plannedTo);
-      if (plannedTo && plannedToHasTime) url.searchParams.set("plannedToHasTime", "true");
-      if (completedFrom) url.searchParams.set("completedFrom", completedFrom);
-      if (completedFrom && completedFromHasTime) url.searchParams.set("completedFromHasTime", "true");
-      if (completedTo) url.searchParams.set("completedTo", completedTo);
-      if (completedTo && completedToHasTime) url.searchParams.set("completedToHasTime", "true");
+      setRangeStart(url, "plannedFrom", plannedFrom);
+      setRangeEnd(url, "plannedTo", plannedTo, plannedToHasTime);
+      setRangeStart(url, "completedFrom", completedFrom);
+      setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();

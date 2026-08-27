@@ -3,8 +3,8 @@ import type {
   GroupByKey,
   Granularity,
 } from "@/features/upcoming/hooks/useUpcomingFilters";
+import { startOfDay } from "date-fns";
 import {
-  dayOnly,
   formatMonthDay,
   formatMonthShort,
   formatMonthYear,
@@ -12,7 +12,7 @@ import {
 } from "@/utils/date";
 
 const startOfWeek = (date: Date) => {
-  const x = dayOnly(date);
+  const x = startOfDay(date);
   const dow = (x.getDay() + 6) % 7; // Mon = 0
   x.setDate(x.getDate() - dow);
   return x;
@@ -24,7 +24,7 @@ const addDays = (date: Date, n: number) => {
 };
 
 export const dayDiff = (a: Date, b: Date) =>
-  Math.round((dayOnly(a).getTime() - dayOnly(b).getTime()) / 86400000);
+  Math.round((startOfDay(a).getTime() - startOfDay(b).getTime()) / 86400000);
 const weekDiff = (a: Date, b: Date) =>
   Math.round(
     (startOfWeek(a).getTime() - startOfWeek(b).getTime()) / (7 * 86400000),
@@ -114,7 +114,7 @@ function timeBucket(
 
   if (gran === "day") {
     const diff = dayDiff(d, today);
-    const ds = dayOnly(d);
+    const ds = startOfDay(d);
     const label =
       diff === 0
         ? "Today"

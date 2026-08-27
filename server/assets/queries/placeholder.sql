@@ -1,7 +1,7 @@
 INSERT INTO workflow (id, name, description, timeCreated) VALUES
-(1, 'Basic',            'Basic task workflow',                         '2025-01-01 00:00:00'),
-(2, 'Job Board',        'Track job applications from lead to outcome', '2025-03-01 09:00:00'),
-(3, 'Software Project', 'Software development workflow',               '2025-03-15 09:00:00');
+(1, 'Basic',            'Basic task workflow',                         '2025-01-01T00:00:00Z'),
+(2, 'Job Board',        'Track job applications from lead to outcome', '2025-03-01T09:00:00Z'),
+(3, 'Software Project', 'Software development workflow',               '2025-03-15T09:00:00Z');
 
 
 INSERT INTO stage (id, workflow, name, description, color, icon, position, type) VALUES
@@ -27,10 +27,10 @@ INSERT INTO stage (id, workflow, name, description, color, icon, position, type)
 
 
 INSERT INTO project (id, name, workflow, folder, timeCreated) VALUES
-(1, 'Website Redesign', 3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-05 09:00:00'),
-(2, 'Mobile App',       3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-10 10:30:00'),
-(3, 'Chores',           1, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-02-01 14:15:00'),
-(4, 'Job Hunt',         2, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-03-05 10:00:00');
+(1, 'Website Redesign', 3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-05T09:00:00Z'),
+(2, 'Mobile App',       3, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-01-10T10:30:00Z'),
+(3, 'Chores',           1, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-02-01T14:15:00Z'),
+(4, 'Job Hunt',         2, (SELECT id FROM project_folder WHERE isDefault = 1), '2025-03-05T10:00:00Z');
 
 
 INSERT INTO pinned_project (project, sortIndex) VALUES
@@ -39,14 +39,14 @@ INSERT INTO pinned_project (project, sortIndex) VALUES
 
 
 INSERT INTO checklist (id, project, name, isDefault, timeCreated) VALUES
-(1, 1, 'Planning',       1, '2025-01-05 09:15:00'),
-(2, 1, 'Implementation', 0, '2025-01-06 11:00:00'),
-(3, 2, 'MVP Tasks',      1, '2025-01-10 11:00:00'),
-(4, 2, 'QA & Release',   0, '2025-01-15 16:45:00'),
-(5, 3, 'Household',      1, '2025-02-01 15:00:00'),
-(6, 3, 'Errands',        0, '2025-02-05 09:00:00'),
-(7, 4, 'Tech Giants',    1, '2025-03-05 10:15:00'),
-(8, 4, 'Startups',       0, '2025-03-10 11:00:00');
+(1, 1, 'Planning',       1, '2025-01-05T09:15:00Z'),
+(2, 1, 'Implementation', 0, '2025-01-06T11:00:00Z'),
+(3, 2, 'MVP Tasks',      1, '2025-01-10T11:00:00Z'),
+(4, 2, 'QA & Release',   0, '2025-01-15T16:45:00Z'),
+(5, 3, 'Household',      1, '2025-02-01T15:00:00Z'),
+(6, 3, 'Errands',        0, '2025-02-05T09:00:00Z'),
+(7, 4, 'Tech Giants',    1, '2025-03-05T10:15:00Z'),
+(8, 4, 'Startups',       0, '2025-03-10T11:00:00Z');
 
 
 -- Enable all task types for all seeded projects.
@@ -61,34 +61,34 @@ INSERT INTO project_task_type (project, task_type) VALUES
 INSERT INTO task ( id, checklist, stage, name, body, timeCreated, timeCompleted, timePlannedStart, timePlannedEnd, assignee, priority, type ) VALUES
 -- Website Redesign / Planning (project 1, workflow 3)
 -- type: 4=Reminder, 2=Dev, 3=Test
-(1,  1, 14, 'Gather requirements',        '[]', '2025-01-05 09:30:00', '2025-01-06 10:00:00', '2025-01-06 09:00:00', '2025-01-06 10:00:00', 'Alice',   'High',   4),
-(2,  1, 12, 'Create wireframes',          '[]', '2025-01-06 10:30:00', NULL,                  '2025-01-08 12:00:00', '2025-01-08 14:00:00', 'Bob',     'Medium', 2),
+(1,  1, 14, 'Gather requirements',        '[]', '2025-01-05T09:30:00Z', '2025-01-06T10:00:00Z', '2025-01-06T09:00:00Z', '2025-01-06T10:00:00Z', 'Alice',   'High',   4),
+(2,  1, 12, 'Create wireframes',          '[]', '2025-01-06T10:30:00Z', NULL,                  '2025-01-08T12:00:00Z', '2025-01-08T14:00:00Z', 'Bob',     'Medium', 2),
 -- Website Redesign / Implementation
-(3,  2, 11, 'Build landing page',         '[]', '2025-01-07 09:00:00', NULL,                  '2025-01-12 17:00:00', '2025-01-12 18:00:00', 'Charlie', 'High',   2),
-(4,  2, 9,  'CSS styling pass',           '[]', '2025-01-08 13:00:00', NULL,                  NULL,                  NULL,                  'Alice',   'Low',    2),
+(3,  2, 11, 'Build landing page',         '[]', '2025-01-07T09:00:00Z', NULL,                  '2025-01-12T17:00:00Z', '2025-01-12T18:00:00Z', 'Charlie', 'High',   2),
+(4,  2, 9,  'CSS styling pass',           '[]', '2025-01-08T13:00:00Z', NULL,                  NULL,                  NULL,                  'Alice',   'Low',    2),
 -- Mobile App / MVP Tasks (project 2, workflow 3)
-(5,  3, 12, 'Implement login flow',       '[]', '2025-01-10 11:30:00', NULL,                  '2025-01-18 18:00:00', '2025-01-18 19:00:00', 'Diana',   'Urgent', 2),
-(6,  3, 10, 'Local storage setup',        '[]', '2025-01-11 09:45:00', NULL,                  NULL,                  NULL,                  'Evan',    'Medium', 2),
+(5,  3, 12, 'Implement login flow',       '[]', '2025-01-10T11:30:00Z', NULL,                  '2025-01-18T18:00:00Z', '2025-01-18T19:00:00Z', 'Diana',   'Urgent', 2),
+(6,  3, 10, 'Local storage setup',        '[]', '2025-01-11T09:45:00Z', NULL,                  NULL,                  NULL,                  'Evan',    'Medium', 2),
 -- Mobile App / QA & Release
-(7,  4, 11, 'Write test cases',           '[]', '2025-01-15 17:00:00', NULL,                  '2025-01-20 10:00:00', '2025-01-20 12:00:00', 'Frank',   'High',   3),
-(8,  4, 9,  'App Store submission',       '[]', '2025-01-18 14:00:00', NULL,                  NULL,                  NULL,                  'Diana',   'Urgent', 4),
+(7,  4, 11, 'Write test cases',           '[]', '2025-01-15T17:00:00Z', NULL,                  '2025-01-20T10:00:00Z', '2025-01-20T12:00:00Z', 'Frank',   'High',   3),
+(8,  4, 9,  'App Store submission',       '[]', '2025-01-18T14:00:00Z', NULL,                  NULL,                  NULL,                  'Diana',   'Urgent', 4),
 -- Chores / Household (project 3, workflow 1)
-(9,  5, 3,  'Take out the trash',         '[]', '2026-05-12 08:00:00', '2026-05-13 07:30:00', NULL,                  NULL,                  '', 'Low',    4),
-(10, 5, 2,  'Laundry',                    '[]', '2026-05-14 09:00:00', NULL,                  '2026-05-14 18:00:00', '2026-05-14 20:00:00', '', 'Medium', 4),
-(11, 5, 1,  'Clean the kitchen',          '[]', '2026-05-14 10:00:00', NULL,                  '2026-05-17 10:00:00', '2026-05-17 12:00:00', '', 'Medium', 4),
-(12, 5, 3,  'Mow the lawn',               '[]', '2026-05-08 09:00:00', '2026-05-10 13:00:00', '2026-05-10 11:00:00', '2026-05-10 13:00:00', '', 'Low',    4),
+(9,  5, 3,  'Take out the trash',         '[]', '2026-05-12T08:00:00Z', '2026-05-13T07:30:00Z', NULL,                  NULL,                  '', 'Low',    4),
+(10, 5, 2,  'Laundry',                    '[]', '2026-05-14T09:00:00Z', NULL,                  '2026-05-14T18:00:00Z', '2026-05-14T20:00:00Z', '', 'Medium', 4),
+(11, 5, 1,  'Clean the kitchen',          '[]', '2026-05-14T10:00:00Z', NULL,                  '2026-05-17T10:00:00Z', '2026-05-17T12:00:00Z', '', 'Medium', 4),
+(12, 5, 3,  'Mow the lawn',               '[]', '2026-05-08T09:00:00Z', '2026-05-10T13:00:00Z', '2026-05-10T11:00:00Z', '2026-05-10T13:00:00Z', '', 'Low',    4),
 -- Chores / Errands
-(13, 6, 1,  'Grocery shopping',           '[]', '2026-05-14 08:30:00', NULL,                  '2026-05-15 17:00:00', '2026-05-15 18:30:00', '', 'Medium', 4),
-(14, 6, 3,  'Pay credit card bill',       '[]', '2026-05-10 09:00:00', '2026-05-11 14:00:00', NULL,                  NULL,                  '', 'High',   4),
+(13, 6, 1,  'Grocery shopping',           '[]', '2026-05-14T08:30:00Z', NULL,                  '2026-05-15T17:00:00Z', '2026-05-15T18:30:00Z', '', 'Medium', 4),
+(14, 6, 3,  'Pay credit card bill',       '[]', '2026-05-10T09:00:00Z', '2026-05-11T14:00:00Z', NULL,                  NULL,                  '', 'High',   4),
 -- Job Hunt / Tech Giants (project 4, workflow 2)
-(15, 7, 4,  'Google - Senior SWE',        '[]', '2025-03-05 11:00:00', NULL,                  NULL,                  NULL,                  '', 'High',   4),
-(16, 7, 5,  'Meta - Software Engineer',   '[]', '2025-03-06 09:30:00', NULL,                  '2025-03-09 10:00:00', '2025-03-09 11:00:00', '', 'High',   4),
-(17, 7, 6,  'Apple - Frontend Engineer',  '[]', '2025-03-08 14:00:00', NULL,                  '2025-03-15 13:00:00', '2025-03-15 14:00:00', '', 'Urgent', 4),
-(18, 7, 5,  'Stripe - Backend Engineer',  '[]', '2025-03-14 16:00:00', NULL,                  '2025-03-16 09:00:00', '2025-03-16 10:00:00', '', 'Medium', 4),
+(15, 7, 4,  'Google - Senior SWE',        '[]', '2025-03-05T11:00:00Z', NULL,                  NULL,                  NULL,                  '', 'High',   4),
+(16, 7, 5,  'Meta - Software Engineer',   '[]', '2025-03-06T09:30:00Z', NULL,                  '2025-03-09T10:00:00Z', '2025-03-09T11:00:00Z', '', 'High',   4),
+(17, 7, 6,  'Apple - Frontend Engineer',  '[]', '2025-03-08T14:00:00Z', NULL,                  '2025-03-15T13:00:00Z', '2025-03-15T14:00:00Z', '', 'Urgent', 4),
+(18, 7, 5,  'Stripe - Backend Engineer',  '[]', '2025-03-14T16:00:00Z', NULL,                  '2025-03-16T09:00:00Z', '2025-03-16T10:00:00Z', '', 'Medium', 4),
 -- Job Hunt / Startups
-(19, 8, 7,  'Vercel - DevOps',            '[]', '2025-03-10 11:15:00', '2025-03-20 17:00:00', '2025-03-18 16:00:00', '2025-03-18 17:00:00', '', 'Urgent', 4),
-(20, 8, 8,  'Linear - Software Engineer', '[]', '2025-03-12 09:00:00', '2025-03-22 12:00:00', NULL,                  NULL,                  '', 'Medium', 4),
-(21, 8, 6,  'Supabase - Backend',         '[]', '2025-03-15 10:00:00', NULL,                  '2025-03-25 14:00:00', '2025-03-25 15:00:00', '', 'High',   4);
+(19, 8, 7,  'Vercel - DevOps',            '[]', '2025-03-10T11:15:00Z', '2025-03-20T17:00:00Z', '2025-03-18T16:00:00Z', '2025-03-18T17:00:00Z', '', 'Urgent', 4),
+(20, 8, 8,  'Linear - Software Engineer', '[]', '2025-03-12T09:00:00Z', '2025-03-22T12:00:00Z', NULL,                  NULL,                  '', 'Medium', 4),
+(21, 8, 6,  'Supabase - Backend',         '[]', '2025-03-15T10:00:00Z', NULL,                  '2025-03-25T14:00:00Z', '2025-03-25T15:00:00Z', '', 'High',   4);
 
 -- Example task relationships, centered on task 1 ("Gather requirements") so its
 -- card shows a spread of every behavior/direction. relationshipType IDs:

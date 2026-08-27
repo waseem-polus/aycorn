@@ -2,6 +2,7 @@ import {
   defaultTaskContextValue,
   TaskContext,
 } from "@/contexts/task/TaskContext";
+import { toApiDate } from "@/utils/date";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Plus } from "lucide-react";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { ChecklistTask } from "@/types/types";
-import { useDateFormat } from "@/hooks/useDateFormatter";
 
 export function NewTaskEditorDrawer({
   date,
@@ -22,14 +22,13 @@ export function NewTaskEditorDrawer({
   const { Project, Checklists } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
 
-  const { toISO } = useDateFormat();
   const handleAddTask = useCallback(
     () =>
       create.mutate(
         {
           ...task,
           Checklist: Checklists[0]?.ID,
-          TimePlannedStart: toISO(date),
+          TimePlannedStart: toApiDate(date),
         },
         {
           onSuccess: (newTask: ChecklistTask) => {
@@ -37,7 +36,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, task, Checklists, setTask, toISO, date],
+    [create, task, Checklists, setTask, date],
   );
 
   return (

@@ -19,14 +19,5 @@ export function useDateFormat(excludeYear: boolean = false) {
     });
   };
 
-  const toISO = (source: Date | string | null): string => {
-    if (source === null) {
-      return "";
-    }
-
-    const date = typeof source === "string" ? new Date(source) : source;
-    return date.toISOString();
-  };
-
-  return { toFormatted, toFormattedTime, toISO };
+  return { toFormatted, toFormattedTime };
 }

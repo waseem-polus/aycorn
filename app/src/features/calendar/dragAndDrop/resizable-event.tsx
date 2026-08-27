@@ -20,6 +20,7 @@ import {
 } from "@/features/calendar/interfaces";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useTaskMutation } from "@/queries/useTaskMutation";
+import { toApiDate } from "@/utils/date";
 
 interface ResizableEventBlockProps {
   event: Task;
@@ -99,8 +100,8 @@ export function ResizableEvent({
 
       update.mutate({
         ...event,
-        TimePlannedStart: newStart.toISOString(),
-        TimePlannedEnd: newEnd.toISOString(),
+        TimePlannedStart: toApiDate(newStart),
+        TimePlannedEnd: toApiDate(newEnd),
       });
     },
     [

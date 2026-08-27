@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import type { Task } from "@/types/types";
 import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 import { useTaskMutation } from "@/queries/useTaskMutation";
+import { toApiDate } from "@/utils/date";
 
 interface DragDropContextType {
   draggedEvent: Task | null;
@@ -116,8 +117,8 @@ export function DndProvider({ children }: DndProviderProps) {
     (event: Task, newStartDate: Date, newEndDate: Date) => {
       const updatedEvent = {
         ...event,
-        TimePlannedStart: newStartDate.toISOString(),
-        TimePlannedEnd: newEndDate.toISOString(),
+        TimePlannedStart: toApiDate(newStartDate),
+        TimePlannedEnd: toApiDate(newEndDate),
       };
       update.mutate(updatedEvent, {
         onSuccess: () => toast.success("Task updated successfully"),

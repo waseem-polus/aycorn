@@ -1,8 +1,12 @@
 package services
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/waseem-polus/aycorn/server/internal/models"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
+	"github.com/waseem-polus/aycorn/server/internal/timefmt"
 )
 
 type TaskService struct {
@@ -80,15 +84,43 @@ func (s *TaskService) DeleteTask(taskId int) (bool, error) {
 }
 
 var bulkTaskUpdatableColumns = map[string]string{
-	"Stage":            "stage",
-	"Priority":         "priority",
-	"Type":             "type",
-	"Assignee":         "assignee",
-	"Checklist":        "checklist",
+	"Stage":               "stage",
+	"Priority":            "priority",
+	"Type":                "type",
+	"Assignee":            "assignee",
+	"Checklist":           "checklist",
 	"TimePlannedStart":    "timePlannedStart",
 	"TimePlannedEnd":      "timePlannedEnd",
 	"HasTimePlannedStart": "hasTimePlannedStart",
 	"HasTimePlannedEnd":   "hasTimePlannedEnd",
+}
+
+// bulkTaskTimestampColumns are the columns whose bulk values arrive as raw JSON
+// strings and must be normalized before they reach SQL. Unlike the single-task
+// path they never pass through a time.Time, so without this they would be
+// stored in whatever encoding the client happened to send.
+var bulkTaskTimestampColumns = map[string]bool{
+	"timePlannedStart": true,
+	"timePlannedEnd":   true,
+}
+
+var ErrInvalidTimestamp = errors.New("timestamp must be a valid RFC3339 date")
+
+// normalizeBulkTimestamp converts a bulk-update timestamp value to the
+// canonical storage encoding. nil passes through — clearing a date is valid.
+func normalizeBulkTimestamp(val any) (any, error) {
+	if val == nil {
+		return nil, nil
+	}
+	raw, ok := val.(string)
+	if !ok {
+		return nil, ErrInvalidTimestamp
+	}
+	normalized, err := timefmt.Normalize(raw)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidTimestamp, raw)
+	}
+	return normalized, nil
 }
 
 func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {
@@ -99,9 +131,18 @@ func (s *TaskService) BulkUpdate(ids []int, changes map[string]any) (models.Bulk
 
 	filtered := map[string]any{}
 	for jsonKey, dbCol := range bulkTaskUpdatableColumns {
-		if v, ok := changes[jsonKey]; ok {
-			filtered[dbCol] = v
+		v, ok := changes[jsonKey]
+		if !ok {
+			continue
 		}
+		if bulkTaskTimestampColumns[dbCol] {
+			normalized, err := normalizeBulkTimestamp(v)
+			if err != nil {
+				return models.BulkResult{}, err
+			}
+			v = normalized
+		}
+		filtered[dbCol] = v
 	}
 	if len(filtered) == 0 {
 		return models.BulkResult{Skipped: len(ids)}, nil
