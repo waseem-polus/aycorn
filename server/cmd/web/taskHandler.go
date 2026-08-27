@@ -29,6 +29,17 @@ func normalizedDateParam(q url.Values, key string) (string, error) {
 	return normalized, nil
 }
 
+// presenceParam reads an optional date-presence filter. Empty means "no
+// constraint"; anything outside the known set is a client error rather than a
+// silently ignored param.
+func presenceParam(q url.Values, key string) (string, error) {
+	raw := q.Get(key)
+	if raw == "" || raw == "none" || raw == "any" {
+		return raw, nil
+	}
+	return "", fmt.Errorf("invalid %s: %q", key, raw)
+}
+
 func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
@@ -40,6 +51,16 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		dates[key] = normalized
+	}
+
+	presence := map[string]string{}
+	for _, key := range []string{"plannedPresence", "completedPresence"} {
+		value, err := presenceParam(q, key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		presence[key] = value
 	}
 
 	taskFilters := &repos.TaskFilters{
@@ -54,6 +75,9 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 		PlannedTo:      dates["plannedTo"],
 		CompletedFrom:  dates["completedFrom"],
 		CompletedTo:    dates["completedTo"],
+
+		PlannedPresence:   presence["plannedPresence"],
+		CompletedPresence: presence["completedPresence"],
 	}
 
 	tasks, err := app.taskService.GetAllTasks(taskFilters)

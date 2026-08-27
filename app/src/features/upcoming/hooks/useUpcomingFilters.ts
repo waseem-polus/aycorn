@@ -1,5 +1,12 @@
 import { useLocalStorage } from "@/features/calendar/hooks";
 
+/**
+ * How a date dimension is filtered. "all" ignores the dimension entirely,
+ * "none" keeps only tasks missing that date, and "with" keeps only tasks that
+ * have it — narrowed further by a range when one is picked.
+ */
+export type DateFilterMode = "all" | "none" | "with";
+
 export type UpcomingFilters = {
   search: string;
   project: number[];
@@ -9,6 +16,8 @@ export type UpcomingFilters = {
   assignee: string[];
   checklist: number[];
   dates: {
+    plannedMode?: DateFilterMode;
+    completedMode?: DateFilterMode;
     plannedFrom?: string;
     plannedTo?: string;
     plannedFromHasTime?: boolean;
@@ -54,6 +63,8 @@ const DEFAULT_VIEW: UpcomingViewSettings = {
   granularity: "week",
   showEmpty: false,
 };
+
+export type DateModeKey = "plannedMode" | "completedMode";
 
 const FILTER_DIMS = ["project", "stage", "type", "priority", "assignee", "checklist"] as const;
 export type FilterDim = (typeof FILTER_DIMS)[number];
@@ -111,6 +122,29 @@ export function useUpcomingFilters() {
     });
   };
 
+  /**
+   * Leaving "with" mode discards the range that was only meaningful there, so
+   * returning to it starts from a clean picker. Mode and range are cleared in
+   * one functional update — two `setFilters` calls in the same render would
+   * overwrite each other.
+   */
+  const setDateMode = (
+    modeKey: DateModeKey,
+    mode: DateFilterMode,
+    fromKey: string,
+    toKey: string,
+  ) => {
+    setFilters((prev: UpcomingFilters) => {
+      const dates = { ...prev.dates, [modeKey]: mode };
+      if (mode !== "with") {
+        for (const key of [fromKey, toKey, fromKey + "HasTime", toKey + "HasTime"]) {
+          delete dates[key as keyof typeof dates];
+        }
+      }
+      return { ...prev, dates };
+    });
+  };
+
   const resetAll = () => {
     setFilters(EMPTY_FILTERS);
   };
@@ -120,9 +154,9 @@ export function useUpcomingFilters() {
       (acc, dim) => acc + ((filters[dim] as unknown[])?.length ?? 0),
       0,
     );
-    const { plannedFrom, plannedTo, completedFrom, completedTo } = filters.dates ?? {};
-    if (plannedFrom || plannedTo) n++;
-    if (completedFrom || completedTo) n++;
+    const { plannedMode, completedMode } = filters.dates ?? {};
+    if ((plannedMode ?? "all") !== "all") n++;
+    if ((completedMode ?? "all") !== "all") n++;
     return n;
   };
 
@@ -155,6 +189,7 @@ export function useUpcomingFilters() {
     setSearch,
     setDateFilter,
     setHasTimeFilter,
+    setDateMode,
     resetAll,
     activeFilterCount,
     toggleCollapsed,

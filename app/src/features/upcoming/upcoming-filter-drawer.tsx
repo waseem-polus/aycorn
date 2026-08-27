@@ -6,7 +6,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { DateRangeSection } from "@/features/upcoming/upcoming-filter-drawer/date-range-section";
+import { DateFilterSection } from "@/features/upcoming/upcoming-filter-drawer/date-filter-section";
 import { ProjectSection } from "@/features/upcoming/upcoming-filter-drawer/project-section";
 import { StatusSection } from "@/features/upcoming/upcoming-filter-drawer/status-section";
 import { TypeSection } from "@/features/upcoming/upcoming-filter-drawer/type-section";
@@ -62,6 +62,7 @@ export function UpcomingFilterDrawer({
     clearFilterDim: onClearDim,
     setDateFilter: onSetDate,
     setHasTimeFilter: onSetHasTime,
+    setDateMode: onSetDateMode,
     setShowEmpty: onToggleEmpty,
     resetAll: onReset,
     activeFilterCount,
@@ -149,8 +150,14 @@ export function UpcomingFilterDrawer({
 
             <div className="flex flex-col gap-3">
               <span className="text-sm text-muted-foreground">Dates</span>
-              <DateRangeSection
+              <DateFilterSection
                 label="Time Planned"
+                modeKey="plannedMode"
+                modeLabels={{
+                  all: "All Tasks (Planned & Not Planned)",
+                  none: "Not Planned",
+                  with: "Planned",
+                }}
                 fromKey="plannedFrom"
                 toKey="plannedTo"
                 hasFromTimeKey="plannedFromHasTime"
@@ -159,9 +166,16 @@ export function UpcomingFilterDrawer({
                 dates={filters.dates}
                 onSet={onSetDate}
                 onSetHasTime={onSetHasTime}
+                onSetMode={onSetDateMode}
               />
-              <DateRangeSection
+              <DateFilterSection
                 label="Time Completed"
+                modeKey="completedMode"
+                modeLabels={{
+                  all: "All Tasks (Completed & Not Completed)",
+                  none: "Not Completed",
+                  with: "Completed",
+                }}
                 fromKey="completedFrom"
                 toKey="completedTo"
                 hasFromTimeKey="completedFromHasTime"
@@ -170,6 +184,7 @@ export function UpcomingFilterDrawer({
                 dates={filters.dates}
                 onSet={onSetDate}
                 onSetHasTime={onSetHasTime}
+                onSetMode={onSetDateMode}
               />
             </div>
           </div>

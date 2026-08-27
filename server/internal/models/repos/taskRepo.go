@@ -27,6 +27,10 @@ type TaskFilters struct {
 	PlannedTo     string
 	CompletedFrom string
 	CompletedTo   string
+	// Presence filters are "", "none", or "any" — whether the task has the
+	// corresponding date at all, independent of the bounds above.
+	PlannedPresence   string
+	CompletedPresence string
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -534,6 +538,20 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 		for _, v := range taskFilters.AssigneeQuery {
 			args = append(args, v)
 		}
+	}
+
+	switch taskFilters.PlannedPresence {
+	case "none":
+		query += " AND t.timePlannedStart IS NULL AND t.timePlannedEnd IS NULL"
+	case "any":
+		query += " AND (t.timePlannedStart IS NOT NULL OR t.timePlannedEnd IS NOT NULL)"
+	}
+
+	switch taskFilters.CompletedPresence {
+	case "none":
+		query += " AND t.timeCompleted IS NULL"
+	case "any":
+		query += " AND t.timeCompleted IS NOT NULL"
 	}
 
 	// Planned dates use overlap semantics: a task matches when any part of its

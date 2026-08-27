@@ -1,6 +1,9 @@
 import type { TaskWithProject } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type {
+  DateFilterMode,
+  UpcomingFilters,
+} from "@/features/upcoming/hooks/useUpcomingFilters";
 import { parseApiDate, toApiDate, toApiDayEnd } from "@/utils/date";
 
 // Search is applied client-side for instant feedback; exclude it from the query key
@@ -40,6 +43,18 @@ const setRangeEnd = (
   url.searchParams.set(key, hasTime ? toApiDate(date) : toApiDayEnd(date));
 };
 
+/**
+ * Translates a date mode into the server's presence param and reports whether
+ * range bounds still apply. "with" asks for tasks that have the date at all —
+ * an unset range then means "any date" rather than "no filter".
+ */
+const setPresence = (url: URL, key: string, mode: DateFilterMode | undefined) => {
+  const resolved = mode ?? "all";
+  if (resolved === "all") return false;
+  url.searchParams.set(key, resolved === "none" ? "none" : "any");
+  return resolved === "with";
+};
+
 export function useUpcomingTasksQuery(filters: UpcomingFilters) {
   const backendFilters = toBackendFilters(filters);
   return useQuery<TaskWithProject[]>({
@@ -53,6 +68,8 @@ export function useUpcomingTasksQuery(filters: UpcomingFilters) {
       backendFilters.assignee.forEach((a) => url.searchParams.append("assignee", a));
       backendFilters.checklist.forEach((id) => url.searchParams.append("checklist", String(id)));
       const {
+        plannedMode,
+        completedMode,
         plannedFrom,
         plannedTo,
         plannedToHasTime,
@@ -60,10 +77,14 @@ export function useUpcomingTasksQuery(filters: UpcomingFilters) {
         completedTo,
         completedToHasTime,
       } = backendFilters.dates ?? {};
-      setRangeStart(url, "plannedFrom", plannedFrom);
-      setRangeEnd(url, "plannedTo", plannedTo, plannedToHasTime);
-      setRangeStart(url, "completedFrom", completedFrom);
-      setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
+      if (setPresence(url, "plannedPresence", plannedMode)) {
+        setRangeStart(url, "plannedFrom", plannedFrom);
+        setRangeEnd(url, "plannedTo", plannedTo, plannedToHasTime);
+      }
+      if (setPresence(url, "completedPresence", completedMode)) {
+        setRangeStart(url, "completedFrom", completedFrom);
+        setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
+      }
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();
