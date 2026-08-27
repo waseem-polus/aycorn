@@ -24,6 +24,9 @@ export function DroppableArea({
       role="gridcell"
       aria-label="Droppable area"
       tabIndex={-1}
+      // Suppresses PageContent's drag-select rectangle. Nothing in a calendar
+      // grid is bulk-selectable, so rubber-banding over it only looks broken.
+      data-task-card=""
       className={`${className || ""} ${isDragging ? "drop-target" : ""}`}
       onDragOver={(e) => {
         // Prevent default to allow drop

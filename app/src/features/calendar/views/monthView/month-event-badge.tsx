@@ -18,8 +18,11 @@ import type { ChecklistTask } from "@/types/types";
 import { EventBullet } from "@/features/calendar/views/monthView";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
-import { useCallback, useContext } from "react";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useState } from "react";
+import {
+  PassthroughTaskScope,
+  useCalendarHost,
+} from "@/features/calendar/contexts/calendar-host-context";
 
 const eventBadgeVariants = cva(
   "flex w-full h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-grab",
@@ -56,12 +59,8 @@ export function MonthEventBadge({
   className,
   position: propPosition,
 }: IProps) {
-  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
-  const setTaskEditorDrawerOpen = useCallback(
-    (open: boolean) =>
-      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
-    [SetViewSettings, ViewSettings],
-  );
+  const { TaskScope = PassthroughTaskScope } = useCalendarHost();
+  const [open, setOpen] = useState(false);
 
   const { badgeVariant, use24HourFormat } = useCalendar();
 
@@ -110,38 +109,40 @@ export function MonthEventBadge({
 
   return (
     <DraggableEvent event={task} className={marginClass}>
-      <TaskProvider defaultState={task}>
-        <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
-          <button type="button" className={eventBadgeClasses}>
-            <div className="flex items-center gap-1.5 truncate">
-              {!["middle", "last"].includes(position) &&
-                badgeVariant === "dot" && <EventBullet color={taskColor} />}
+      <TaskScope task={task} open={open}>
+        <TaskProvider defaultState={task}>
+          <TaskEditorDrawer onOpenChange={setOpen}>
+            <button type="button" className={eventBadgeClasses}>
+              <div className="flex items-center gap-1.5 truncate">
+                {!["middle", "last"].includes(position) &&
+                  badgeVariant === "dot" && <EventBullet color={taskColor} />}
 
-              {renderBadgeText && (
-                <p className="flex-1 truncate font-semibold">
-                  {eventCurrentDay && (
-                    <span className="text-xs">
-                      Day {eventCurrentDay} of {eventTotalDays}{" "}
-                    </span>
-                  )}
-                  {task.Name}
-                </p>
-              )}
-            </div>
+                {renderBadgeText && (
+                  <p className="flex-1 truncate font-semibold">
+                    {eventCurrentDay && (
+                      <span className="text-xs">
+                        Day {eventCurrentDay} of {eventTotalDays}{" "}
+                      </span>
+                    )}
+                    {task.Name}
+                  </p>
+                )}
+              </div>
 
-            <div className="hidden sm:block">
-              {renderBadgeTime && (
-                <span>
-                  {formatTime(
-                    new Date(getTaskStartDate(task)),
-                    use24HourFormat,
-                  )}
-                </span>
-              )}
-            </div>
-          </button>
-        </TaskEditorDrawer>
-      </TaskProvider>
+              <div className="hidden sm:block">
+                {renderBadgeTime && (
+                  <span>
+                    {formatTime(
+                      new Date(getTaskStartDate(task)),
+                      use24HourFormat,
+                    )}
+                  </span>
+                )}
+              </div>
+            </button>
+          </TaskEditorDrawer>
+        </TaskProvider>
+      </TaskScope>
     </DraggableEvent>
   );
 }

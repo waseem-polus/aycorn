@@ -1,7 +1,7 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { differenceInMinutes, parseISO } from "date-fns";
-import { useCallback, useContext, type HTMLAttributes } from "react";
+import { type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { DraggableEvent } from "@/features/calendar/dragAndDrop/draggable-event";
@@ -15,7 +15,6 @@ import {
 import type { ChecklistTask } from "@/types/types";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 const calendarWeekEventCardVariants = cva(
   "flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-offset-2",
@@ -63,13 +62,6 @@ interface IProps
 export function EventBlock({ event, className }: IProps) {
   const { badgeVariant, use24HourFormat } = useCalendar();
 
-  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
-  const setTaskEditorDrawerOpen = useCallback(
-    (open: boolean) =>
-      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
-    [SetViewSettings, ViewSettings],
-  );
-
   const start = parseISO(getTaskStartDate(event));
   const end = parseISO(getTaskEndDate(event));
   const durationInMinutes = differenceInMinutes(end, start);
@@ -89,7 +81,7 @@ export function EventBlock({ event, className }: IProps) {
     <ResizableEvent event={event}>
       <DraggableEvent event={event}>
         <TaskProvider defaultState={event}>
-          <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
+          <TaskEditorDrawer>
             <button
               type="button"
               className={calendarWeekEventCardClasses}

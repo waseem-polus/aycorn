@@ -12,11 +12,9 @@ import { useDateFormat } from "@/hooks/useDateFormatter";
 export function NewTaskEditorDrawer({
   date,
   startTime,
-  setTaskDrawerOpen,
 }: {
   date: Date;
   startTime: { hour: number; minute: number };
-  setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project, Checklists } = useContext(ProjectContext);
@@ -48,7 +46,6 @@ export function NewTaskEditorDrawer({
   return (
     <TaskEditorDrawer
       onOpenChange={(open) => {
-        setTaskDrawerOpen(open);
         if (!open) {
           setTask(defaultTaskContextValue.state);
         }

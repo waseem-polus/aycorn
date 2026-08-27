@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 import type { Task } from "@/types/types";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 
 interface DragDropContextType {
@@ -29,8 +29,8 @@ const DragDropContext = createContext<DragDropContextType | undefined>(
 );
 
 export function DndProvider({ children }: DndProviderProps) {
-  const { Project } = useContext(ProjectContext);
-  const { update } = useTaskMutation(Project.ID);
+  const { projectId } = useCalendarHost();
+  const { update } = useTaskMutation(projectId ?? 0);
 
   const [dragState, setDragState] = useState<{
     draggedEvent: Task | null;

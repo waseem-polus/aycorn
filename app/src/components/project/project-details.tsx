@@ -1,13 +1,16 @@
 import { ListView } from "@/components/project/views/listView/list-view";
 import { ProjectContentHeader } from "@/components/project/project-details-content-header";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { KanbanView } from "./views/kanbanView/kanban-view";
 import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
+import { CalendarHostProvider } from "@/features/calendar/contexts/calendar-host-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
+import { NewTaskEditorDrawer } from "./views/calendarViews/new-task-editor-drawer";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { WeekView } from "./views/calendarViews/week-view";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
@@ -63,12 +66,25 @@ export function ProjectDetails({
     refetch();
   }, [refetch, Filter]);
 
+  const renderDayCreate = useCallback(
+    (date: Date) => (
+      <TaskProvider>
+        <NewTaskEditorDrawer date={date} setTaskDrawerOpen={setNewTaskOpen} />
+      </TaskProvider>
+    ),
+    [],
+  );
+
   return (
     <div className="flex flex-col gap-4 grow min-h-0 overflow-visible">
       <ProjectContentHeader />
 
       <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
         <CalendarProvider events={[]} users={[]} view="month">
+          <CalendarHostProvider
+            projectId={projectId}
+            renderDayCreate={renderDayCreate}
+          >
           <DndProvider>
             <Tabs value={view} onValueChange={setView} className="h-full">
               <TabsList>
@@ -116,6 +132,7 @@ export function ProjectDetails({
               </TabsContent>
             </Tabs>
           </DndProvider>
+          </CalendarHostProvider>
         </CalendarProvider>
       </div>
 

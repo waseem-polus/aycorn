@@ -6,28 +6,23 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 
 type Props = {
   isFetching: boolean;
   resultCount: number;
   onFilterOpen: () => void;
+  /** View-specific controls: group-by for the list, date navigation for the month. */
+  children?: React.ReactNode;
 };
 
 export function UpcomingToolbar({
   isFetching,
   resultCount,
   onFilterOpen,
+  children,
 }: Props) {
-  const {
-    filters,
-    view,
-    setSearch,
-    setGroupBy,
-    setGranularity,
-    activeFilterCount,
-  } = useUpcomingFiltersContext();
+  const { filters, setSearch, activeFilterCount } = useUpcomingFiltersContext();
   const search = filters.search;
   const filterCount = activeFilterCount();
   return (
@@ -63,14 +58,7 @@ export function UpcomingToolbar({
           )}
         </Button>
       </div>
-      <div className="flex gap-2 justify-end sm:justify-start">
-        <GroupByDropdown
-          groupBy={view.groupBy}
-          granularity={view.granularity}
-          onChange={setGroupBy}
-          onGranularityChange={setGranularity}
-        />
-      </div>
+      <div className="flex gap-2 justify-end sm:justify-start">{children}</div>
     </div>
   );
 }

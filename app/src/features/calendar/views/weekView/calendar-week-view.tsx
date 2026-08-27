@@ -19,8 +19,6 @@ import { RenderGroupedEvents } from "@/features/calendar/views/weekView/render-g
 import { WeekViewMultiDayEventsRow } from "@/features/calendar/views/weekView/week-view-multi-day-events-row";
 import { NewTaskEditorDrawer } from "./new-task-editor-drawer";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { useCallback, useContext } from "react";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
 
 interface IProps {
   singleDayEvents: ChecklistTask[];
@@ -33,17 +31,6 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
   const weekStart = startOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours = Array.from({ length: 24 }, (_, i) => i);
-
-  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
-  const handleOpenModal = useCallback(
-    (open: boolean) => {
-      SetViewSettings({
-        ...ViewSettings,
-        isTaskEditorOpen: open,
-      });
-    },
-    [SetViewSettings, ViewSettings],
-  );
 
   return (
     <motion.div
@@ -175,7 +162,6 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                               <NewTaskEditorDrawer
                                 date={day}
                                 startTime={{ hour, minute: 0 }}
-                                setTaskDrawerOpen={handleOpenModal}
                               />
                             </TaskProvider>
                           </DroppableArea>
@@ -192,7 +178,6 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                               <NewTaskEditorDrawer
                                 date={day}
                                 startTime={{ hour, minute: 30 }}
-                                setTaskDrawerOpen={handleOpenModal}
                               />
                             </TaskProvider>
                           </DroppableArea>

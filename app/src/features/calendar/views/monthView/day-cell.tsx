@@ -15,26 +15,20 @@ import {
   EventBullet,
   MonthEventBadge,
 } from "@/features/calendar/views/monthView";
-import { NewTaskEditorDrawer } from "./new-task-editor-drawer";
-import { TaskProvider } from "@/contexts/task/TaskProvider";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 interface IProps {
   cell: ICalendarCell;
   events: ChecklistTask[];
   eventPositions: Record<string, number>;
-  setTaskDrawerOpen: (open: boolean) => void;
 }
 
 const MAX_VISIBLE_EVENTS = 3;
 
-export function DayCell({
-  cell,
-  events,
-  eventPositions,
-  setTaskDrawerOpen,
-}: IProps) {
+export function DayCell({ cell, events, eventPositions }: IProps) {
   const { day, currentMonth, date } = cell;
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { renderDayCreate } = useCalendarHost();
 
   // Memoize cellEvents and currentCellMonth for performance
   const { cellEvents, currentCellMonth } = useMemo(() => {
@@ -115,14 +109,9 @@ export function DayCell({
               {day}
             </motion.span>
 
-            {!isMobile && (
+            {!isMobile && renderDayCreate && (
               <motion.span className="flex justify-center items-center group">
-                <TaskProvider>
-                  <NewTaskEditorDrawer
-                    date={date}
-                    setTaskDrawerOpen={setTaskDrawerOpen}
-                  ></NewTaskEditorDrawer>
-                </TaskProvider>
+                {renderDayCreate(date)}
               </motion.span>
             )}
           </motion.div>
@@ -172,7 +161,7 @@ export function DayCell({
       showMoreCount,
       renderEventAtPosition,
       isMobile,
-      setTaskDrawerOpen,
+      renderDayCreate,
     ],
   );
 

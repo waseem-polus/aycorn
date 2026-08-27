@@ -1,5 +1,10 @@
 import { queryClient } from "@/main";
-import type { BulkResult, ProjectDetails, Task } from "@/types/types";
+import type {
+  BulkResult,
+  ProjectDetails,
+  Task,
+  TaskWithProject,
+} from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 import type { Value } from "platejs";
 
@@ -25,12 +30,34 @@ const invalidateQueries = (projectId: number) => {
   queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] });
 };
 
+// /upcoming caches a flat task list per filter combination. Patch every cached
+// combination so cross-project surfaces (the upcoming month view's
+// drag-to-reschedule) update instantly instead of waiting on the refetch.
+const patchUpcomingCaches = (ids: Set<number>, changes: Partial<Task>) => {
+  const previous = queryClient.getQueriesData<TaskWithProject[]>({
+    queryKey: ["upcomingTasks"],
+  });
+  queryClient.setQueriesData<TaskWithProject[]>(
+    { queryKey: ["upcomingTasks"] },
+    (old) => old?.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)),
+  );
+  return previous;
+};
+
+type UpcomingSnapshot = ReturnType<typeof patchUpcomingCaches>;
+
+const restoreUpcomingCaches = (previous: UpcomingSnapshot | undefined) => {
+  previous?.forEach(([key, data]) => queryClient.setQueryData(key, data));
+};
+
 export function useTaskMutation(projectId: number) {
   const update = useMutation({
     mutationFn: getSaveTaskQuery(false),
     onMutate: async (task: Task) => {
       await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
       const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
+      const previousUpcoming = patchUpcomingCaches(new Set([task.ID]), task);
       queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
         if (!old) return old;
 
@@ -77,12 +104,13 @@ export function useTaskMutation(projectId: number) {
           Checklists: checklists,
         };
       });
-      return { previous };
+      return { previous, previousUpcoming };
     },
     onError: (_err, _task, context) => {
       if (context?.previous) {
         queryClient.setQueryData(["projectDetails", projectId], context.previous);
       }
+      restoreUpcomingCaches(context?.previousUpcoming);
     },
     onSettled: () => invalidateQueries(projectId),
   });
@@ -131,18 +159,21 @@ export function useTaskMutation(projectId: number) {
     },
     onMutate: async ({ tasks, changes }: { tasks: Task[]; changes: Partial<Task> }) => {
       await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
       const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
       const ids = new Set(tasks.map((t) => t.ID));
+      const previousUpcoming = patchUpcomingCaches(ids, changes);
       queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
         if (!old) return old;
         return { ...old, Tasks: old.Tasks.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)) };
       });
-      return { previous };
+      return { previous, previousUpcoming };
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(["projectDetails", projectId], context.previous);
       }
+      restoreUpcomingCaches(context?.previousUpcoming);
     },
     onSettled: () => invalidateQueries(projectId),
   });

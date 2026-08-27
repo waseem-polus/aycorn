@@ -8,11 +8,6 @@ import type {
 } from "@/types/types";
 import { createContext } from "react";
 
-export type ViewSettings = {
-  isTaskEditorOpen: boolean;
-};
-export const defaultViewSettings: ViewSettings = { isTaskEditorOpen: false };
-
 export type ProjectContextType = {
   Project: Project;
   SetProject: (project: Project) => void;
@@ -31,9 +26,6 @@ export type ProjectContextType = {
 
   Filter: TaskFilter;
   SetFilter: (filter: TaskFilter) => void;
-
-  ViewSettings: ViewSettings;
-  SetViewSettings: (settings: ViewSettings) => void;
 };
 
 export const defaultProjectContextValue: ProjectContextType = {
@@ -77,9 +69,6 @@ export const defaultProjectContextValue: ProjectContextType = {
     Type: [],
     Stage: [],
   },
-
-  ViewSettings: defaultViewSettings,
-  SetViewSettings: () => {},
 };
 
 export const ProjectContext = createContext<ProjectContextType>(

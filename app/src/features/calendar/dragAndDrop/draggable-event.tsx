@@ -27,6 +27,9 @@ export function DraggableEvent({
     <motion.div
       className={`${className || ""} ${isCurrentlyDragged ? "opacity-50 cursor-grabbing" : "cursor-grab"}`}
       draggable
+      // Without this, PageContent's SelectionArea draws a selection rectangle
+      // while the event is being dragged.
+      data-task-card=""
       onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e)}
       onDragStart={(e) => {
         (e as DragEvent).dataTransfer!.setData(
