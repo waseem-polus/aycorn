@@ -18,7 +18,10 @@ import { UpcomingToolbar } from "@/features/upcoming/upcoming-page/toolbar";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { UpcomingListView } from "@/features/upcoming/upcoming-page/list-view";
 import { UpcomingMonthView } from "@/features/upcoming/upcoming-page/month-view";
-import { makeUpcomingTaskScope } from "@/features/upcoming/upcoming-page/upcoming-task-scope";
+import {
+  UpcomingTaskScope,
+  UpcomingTaskScopeProvider,
+} from "@/features/upcoming/upcoming-page/upcoming-task-scope";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { CalendarHostProvider } from "@/features/calendar/contexts/calendar-host-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
@@ -31,9 +34,11 @@ import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTas
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
 import type { Stage } from "@/types/types";
 
+export type UpcomingLayout = "list" | "month";
+
 type Props = {
-  layout: string;
-  setLayout: (layout: string) => void;
+  layout: UpcomingLayout;
+  setLayout: (layout: UpcomingLayout) => void;
 };
 
 export function UpcomingPage({ layout, setLayout }: Props) {
@@ -70,15 +75,12 @@ export function UpcomingPage({ layout, setLayout }: Props) {
     [tasks, filters.search],
   );
 
-  // The calendar views hand back a bare ChecklistTask, so the scope resolves the
-  // owning project through this map rather than narrowing the type.
-  const projectIdByTaskId = useMemo(
-    () => Object.fromEntries(tasks.map((t) => [t.ID, t.ProjectID])),
-    [tasks],
-  );
-  const TaskScope = useMemo(
-    () => makeUpcomingTaskScope(projectIdByTaskId, projectById),
-    [projectIdByTaskId, projectById],
+  const taskScopeLookup = useMemo(
+    () => ({
+      projectIdByTaskId: new Map(tasks.map((t) => [t.ID, t.ProjectID])),
+      projectById,
+    }),
+    [tasks, projectById],
   );
 
   return (
@@ -91,61 +93,68 @@ export function UpcomingPage({ layout, setLayout }: Props) {
             description="Tasks across every project. Read, edit, and clear what's scheduled."
           />
 
-          <CalendarProvider events={[]} users={[]} view="month">
-            <CalendarHostProvider projectId={null} TaskScope={TaskScope}>
-              <DndProvider>
-                <Tabs
-                  value={layout}
-                  onValueChange={setLayout}
-                  className="flex flex-col gap-4 flex-1 min-h-0"
-                >
-                  <TabsList>
-                    <TabsTrigger value="list">
-                      <Rows3Icon />
-                      List
-                    </TabsTrigger>
-                    <TabsTrigger value="month">
-                      <CalendarDaysIcon />
-                      Month
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <UpcomingToolbar
-                    isFetching={isFetching}
-                    resultCount={searched.length}
-                    onFilterOpen={() => setFilterOpen(true)}
+          <UpcomingTaskScopeProvider lookup={taskScopeLookup}>
+            <CalendarProvider events={[]} users={[]} view="month">
+              <CalendarHostProvider
+                projectId={null}
+                TaskScope={UpcomingTaskScope}
+              >
+                <DndProvider>
+                  <Tabs
+                    value={layout}
+                    onValueChange={(value) =>
+                      setLayout(value as UpcomingLayout)
+                    }
+                    className="flex flex-col gap-4 flex-1 min-h-0"
                   >
-                    {layout === "list" && (
-                      <GroupByDropdown
-                        groupBy={view.groupBy}
-                        granularity={view.granularity}
-                        onChange={filtersApi.setGroupBy}
-                        onGranularityChange={filtersApi.setGranularity}
+                    <TabsList>
+                      <TabsTrigger value="list">
+                        <Rows3Icon />
+                        List
+                      </TabsTrigger>
+                      <TabsTrigger value="month">
+                        <CalendarDaysIcon />
+                        Month
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <UpcomingToolbar
+                      isFetching={isFetching}
+                      resultCount={searched.length}
+                      onFilterOpen={() => setFilterOpen(true)}
+                    >
+                      {layout === "list" && (
+                        <GroupByDropdown
+                          groupBy={view.groupBy}
+                          granularity={view.granularity}
+                          onChange={filtersApi.setGroupBy}
+                          onGranularityChange={filtersApi.setGranularity}
+                        />
+                      )}
+                    </UpcomingToolbar>
+
+                    <TabsContent
+                      value="list"
+                      className="flex flex-col flex-1 min-h-0"
+                    >
+                      <UpcomingListView
+                        tasks={searched}
+                        stageById={stageById}
+                        projectById={projectById}
+                        groupingData={groupingData}
                       />
-                    )}
-                  </UpcomingToolbar>
-
-                  <TabsContent
-                    value="list"
-                    className="flex flex-col flex-1 min-h-0"
-                  >
-                    <UpcomingListView
-                      tasks={searched}
-                      stageById={stageById}
-                      projectById={projectById}
-                      groupingData={groupingData}
-                    />
-                  </TabsContent>
-                  <TabsContent
-                    value="month"
-                    className="flex flex-col flex-1 min-h-0"
-                  >
-                    <UpcomingMonthView tasks={searched} />
-                  </TabsContent>
-                </Tabs>
-              </DndProvider>
-            </CalendarHostProvider>
-          </CalendarProvider>
+                    </TabsContent>
+                    <TabsContent
+                      value="month"
+                      className="flex flex-col flex-1 min-h-0"
+                    >
+                      <UpcomingMonthView tasks={searched} />
+                    </TabsContent>
+                  </Tabs>
+                </DndProvider>
+              </CalendarHostProvider>
+            </CalendarProvider>
+          </UpcomingTaskScopeProvider>
 
           {/* Bulk actions toolbar — must be inside PageContent to access SelectionContext */}
           <UpcomingBulkActionsToolbar tasks={tasks} />
@@ -174,11 +183,10 @@ export function UpcomingPage({ layout, setLayout }: Props) {
  * Lives in its own component because `useSharedSelection` needs the
  * `SelectionContext` that `PageContent` provides.
  */
-function ClearSelectionOnLayoutChange({ layout }: { layout: string }) {
+function ClearSelectionOnLayoutChange({ layout }: { layout: UpcomingLayout }) {
   const { clearSelection } = useSharedSelection();
   useEffect(() => {
     clearSelection();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout]);
+  }, [layout, clearSelection]);
   return null;
 }

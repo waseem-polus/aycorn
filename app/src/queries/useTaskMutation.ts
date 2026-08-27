@@ -25,8 +25,12 @@ const getSaveTaskQuery = (isNewTask: boolean) => {
   };
 };
 
-const invalidateQueries = (projectId: number) => {
-  queryClient.invalidateQueries({ queryKey: ["projectDetails", projectId] });
+const invalidateQueries = (projectId: number | null) => {
+  // A cross-project surface has no single project to target, so every cached
+  // project's details could be holding the task we just changed.
+  queryClient.invalidateQueries({
+    queryKey: projectId === null ? ["projectDetails"] : ["projectDetails", projectId],
+  });
   queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] });
 };
 
@@ -34,12 +38,16 @@ const invalidateQueries = (projectId: number) => {
 // combination so cross-project surfaces (the upcoming month view's
 // drag-to-reschedule) update instantly instead of waiting on the refetch.
 const patchUpcomingCaches = (ids: Set<number>, changes: Partial<Task>) => {
+  // Never patch `Body` — the PUT drops it for the same reason: most callers hold
+  // a task whose body was never loaded (see `getSaveTaskQuery`).
+  const safeChanges = { ...changes };
+  delete safeChanges.Body;
   const previous = queryClient.getQueriesData<TaskWithProject[]>({
     queryKey: ["upcomingTasks"],
   });
   queryClient.setQueriesData<TaskWithProject[]>(
     { queryKey: ["upcomingTasks"] },
-    (old) => old?.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)),
+    (old) => old?.map((t) => (ids.has(t.ID) ? { ...t, ...safeChanges } : t)),
   );
   return previous;
 };
@@ -50,15 +58,23 @@ const restoreUpcomingCaches = (previous: UpcomingSnapshot | undefined) => {
   previous?.forEach(([key, data]) => queryClient.setQueryData(key, data));
 };
 
-export function useTaskMutation(projectId: number) {
+/**
+ * `projectId` is `null` on cross-project surfaces (/upcoming), where there is no
+ * single project-details cache to patch. The optimistic writers below bail on a
+ * cache miss, so the `["projectDetails", null]` key they build is inert; only
+ * the upcoming lists and the invalidation above do real work in that case.
+ */
+export function useTaskMutation(projectId: number | null) {
+  const detailsKey = ["projectDetails", projectId];
+
   const update = useMutation({
     mutationFn: getSaveTaskQuery(false),
     onMutate: async (task: Task) => {
-      await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      await queryClient.cancelQueries({ queryKey: detailsKey });
       await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
-      const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
+      const previous = queryClient.getQueryData<ProjectDetails>(detailsKey);
       const previousUpcoming = patchUpcomingCaches(new Set([task.ID]), task);
-      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+      queryClient.setQueryData<ProjectDetails>(detailsKey, (old) => {
         if (!old) return old;
 
         const oldTask = old.Tasks.find((t) => t.ID === task.ID);
@@ -108,7 +124,7 @@ export function useTaskMutation(projectId: number) {
     },
     onError: (_err, _task, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["projectDetails", projectId], context.previous);
+        queryClient.setQueryData(detailsKey, context.previous);
       }
       restoreUpcomingCaches(context?.previousUpcoming);
     },
@@ -158,12 +174,12 @@ export function useTaskMutation(projectId: number) {
       return (await res.json()) as BulkResult;
     },
     onMutate: async ({ tasks, changes }: { tasks: Task[]; changes: Partial<Task> }) => {
-      await queryClient.cancelQueries({ queryKey: ["projectDetails", projectId] });
+      await queryClient.cancelQueries({ queryKey: detailsKey });
       await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
-      const previous = queryClient.getQueryData<ProjectDetails>(["projectDetails", projectId]);
+      const previous = queryClient.getQueryData<ProjectDetails>(detailsKey);
       const ids = new Set(tasks.map((t) => t.ID));
       const previousUpcoming = patchUpcomingCaches(ids, changes);
-      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+      queryClient.setQueryData<ProjectDetails>(detailsKey, (old) => {
         if (!old) return old;
         return { ...old, Tasks: old.Tasks.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)) };
       });
@@ -171,7 +187,7 @@ export function useTaskMutation(projectId: number) {
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["projectDetails", projectId], context.previous);
+        queryClient.setQueryData(detailsKey, context.previous);
       }
       restoreUpcomingCaches(context?.previousUpcoming);
     },

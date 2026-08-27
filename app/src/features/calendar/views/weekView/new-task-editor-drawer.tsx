@@ -8,6 +8,7 @@ import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { ChecklistTask } from "@/types/types";
 import { useDateFormat } from "@/hooks/useDateFormatter";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 export function NewTaskEditorDrawer({
   date,
@@ -19,6 +20,7 @@ export function NewTaskEditorDrawer({
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project, Checklists } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
+  const { onCreateDrawerOpenChange } = useCalendarHost();
 
   const { toISO } = useDateFormat();
   const handleAddTask = useCallback(() => {
@@ -46,6 +48,7 @@ export function NewTaskEditorDrawer({
   return (
     <TaskEditorDrawer
       onOpenChange={(open) => {
+        onCreateDrawerOpenChange?.(open);
         if (!open) {
           setTask(defaultTaskContextValue.state);
         }

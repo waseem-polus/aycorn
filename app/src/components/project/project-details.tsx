@@ -85,53 +85,53 @@ export function ProjectDetails({
             projectId={projectId}
             renderDayCreate={renderDayCreate}
           >
-          <DndProvider>
-            <Tabs value={view} onValueChange={setView} className="h-full">
-              <TabsList>
-                <TabsTrigger value="list">
-                  <Rows3Icon />
-                  List
-                </TabsTrigger>
-                <TabsTrigger value="kanban">
-                  <LayoutDashboardIcon />
-                  Kanban
-                </TabsTrigger>
-                <TabsTrigger value="month">
-                  <CalendarDaysIcon />
-                  Month
-                </TabsTrigger>
-                <TabsTrigger value="week">
-                  <CalendarIcon />
-                  Week
-                </TabsTrigger>
-              </TabsList>
+            <DndProvider>
+              <Tabs value={view} onValueChange={setView} className="h-full">
+                <TabsList>
+                  <TabsTrigger value="list">
+                    <Rows3Icon />
+                    List
+                  </TabsTrigger>
+                  <TabsTrigger value="kanban">
+                    <LayoutDashboardIcon />
+                    Kanban
+                  </TabsTrigger>
+                  <TabsTrigger value="month">
+                    <CalendarDaysIcon />
+                    Month
+                  </TabsTrigger>
+                  <TabsTrigger value="week">
+                    <CalendarIcon />
+                    Week
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent
-                value="list"
-                className="h-full overflow-visible min-h-0"
-              >
-                <ListView setTaskDrawerOpen={setNewTaskOpen} />
-              </TabsContent>
-              <TabsContent
-                value="kanban"
-                className="h-full overflow-visible min-h-0"
-              >
-                <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
-              </TabsContent>
-              <TabsContent
-                value="month"
-                className="h-full overflow-visible min-h-0"
-              >
-                <MonthView setTaskDrawerOpen={setNewTaskOpen} />
-              </TabsContent>
-              <TabsContent
-                value="week"
-                className="h-full overflow-visible min-h-0"
-              >
-                <WeekView setTaskDrawerOpen={setNewTaskOpen} />
-              </TabsContent>
-            </Tabs>
-          </DndProvider>
+                <TabsContent
+                  value="list"
+                  className="h-full overflow-visible min-h-0"
+                >
+                  <ListView setTaskDrawerOpen={setNewTaskOpen} />
+                </TabsContent>
+                <TabsContent
+                  value="kanban"
+                  className="h-full overflow-visible min-h-0"
+                >
+                  <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
+                </TabsContent>
+                <TabsContent
+                  value="month"
+                  className="h-full overflow-visible min-h-0"
+                >
+                  <MonthView setTaskDrawerOpen={setNewTaskOpen} />
+                </TabsContent>
+                <TabsContent
+                  value="week"
+                  className="h-full overflow-visible min-h-0"
+                >
+                  <WeekView setTaskDrawerOpen={setNewTaskOpen} />
+                </TabsContent>
+              </Tabs>
+            </DndProvider>
           </CalendarHostProvider>
         </CalendarProvider>
       </div>

@@ -30,7 +30,7 @@ const DragDropContext = createContext<DragDropContextType | undefined>(
 
 export function DndProvider({ children }: DndProviderProps) {
   const { projectId } = useCalendarHost();
-  const { update } = useTaskMutation(projectId ?? 0);
+  const { update } = useTaskMutation(projectId);
 
   const [dragState, setDragState] = useState<{
     draggedEvent: Task | null;

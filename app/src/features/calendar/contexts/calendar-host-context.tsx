@@ -29,6 +29,12 @@ export type CalendarHost = {
   renderDayCreate?: (date: Date) => ReactNode;
 
   /**
+   * Told whenever a per-day/per-slot create drawer opens or closes, so the host
+   * can pause background refetches that would reset the half-filled form.
+   */
+  onCreateDrawerOpenChange?: (open: boolean) => void;
+
+  /**
    * Wraps a task's editor subtree so cross-project surfaces can supply the
    * per-task `ProjectContext` the editor drawer reads. Defaults to rendering
    * children unchanged, which is what the project page wants — its provider is
@@ -49,11 +55,12 @@ export function CalendarHostProvider({
   children,
   projectId,
   renderDayCreate,
+  onCreateDrawerOpenChange,
   TaskScope,
 }: CalendarHost & { children: ReactNode }) {
   const host = useMemo(
-    () => ({ projectId, renderDayCreate, TaskScope }),
-    [projectId, renderDayCreate, TaskScope],
+    () => ({ projectId, renderDayCreate, onCreateDrawerOpenChange, TaskScope }),
+    [projectId, renderDayCreate, onCreateDrawerOpenChange, TaskScope],
   );
   return (
     <CalendarHostContext.Provider value={host}>
