@@ -11,6 +11,7 @@ import type {
   DateModeKey,
   UpcomingFilters,
 } from "@/features/upcoming/hooks/useUpcomingFilters";
+import { CalendarsIcon, CalendarXIcon, CalendarCheckIcon } from "lucide-react";
 
 type Props = {
   label: string;
@@ -49,7 +50,12 @@ export function DateFilterSection({
   onSetHasTime,
   onSetMode,
 }: Props) {
-  const selectedMode = dates[modeKey] ?? "all";
+    const selectedMode = dates[modeKey] ?? "all";
+    const modeIcon = {
+      "all": () => <CalendarsIcon />,
+      "none": () => <CalendarXIcon />,
+      "with": () => <CalendarCheckIcon />,
+    }
 
   return (
     <div className="flex flex-col gap-2">
@@ -65,6 +71,7 @@ export function DateFilterSection({
         <SelectContent>
           {MODES.map((m) => (
             <SelectItem key={m} value={m}>
+              {modeIcon[m]()}
               {modeLabels[m]}
             </SelectItem>
           ))}
@@ -72,17 +79,19 @@ export function DateFilterSection({
       </Select>
 
       {selectedMode === "with" && (
-        <DateRangeSection
-          label={label}
-          fromKey={fromKey}
-          toKey={toKey}
-          hasFromTimeKey={hasFromTimeKey}
-          hasToTimeKey={hasToTimeKey}
-          mode={mode}
-          dates={dates}
-          onSet={onSet}
-          onSetHasTime={onSetHasTime}
-        />
+        <div className="mb-2">
+            <DateRangeSection
+            label={label}
+            fromKey={fromKey}
+            toKey={toKey}
+            hasFromTimeKey={hasFromTimeKey}
+            hasToTimeKey={hasToTimeKey}
+            mode={mode}
+            dates={dates}
+            onSet={onSet}
+            onSetHasTime={onSetHasTime}
+            />
+        </div>
       )}
     </div>
   );
