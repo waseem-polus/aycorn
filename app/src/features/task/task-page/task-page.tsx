@@ -50,7 +50,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import TaskTypeBadge from "../properties/task-type-badge";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import { Separator } from "@/components/ui/separator";
