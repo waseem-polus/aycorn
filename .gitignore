@@ -1,4 +1,6 @@
 app.db
+app.db-wal
+app.db-shm
 server/backups/
 server/ui/dist/
 server/dev.db

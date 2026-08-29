@@ -158,11 +158,15 @@ func main() {
 		dbExisted = true
 	}
 
-	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	// SQLite allows only one writer at a time; pooling multiple connections
+	// just makes concurrent requests race for the write lock and fail with
+	// SQLITE_BUSY. Serialize onto a single connection instead.
+	db.SetMaxOpenConns(1)
 
 	goose.SetBaseFS(migrations.Files)
 	if err := goose.SetDialect("sqlite3"); err != nil {
