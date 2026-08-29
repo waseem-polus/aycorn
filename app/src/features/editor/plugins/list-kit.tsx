@@ -20,5 +20,24 @@ export const ListKit = [
     render: {
       belowNodes: BlockList,
     },
-  }),
+  }).overrideEditor(({ editor, tf: { normalizeNode } }) => ({
+    transforms: {
+      // @platejs/list's own normalizer clears `listType`/`listStart` off a
+      // node that lost its `indent` (e.g. exiting an empty todo item via
+      // Enter), but leaves `checked` behind. That stale `checked` then makes
+      // toggleListSet/toggleListUnset treat the node as an existing todo,
+      // silently no-opping the next "[] " autoformat attempt on it.
+      normalizeNode([node, path]) {
+        if (
+          Object.hasOwn(node, KEYS.listChecked) &&
+          !node[KEYS.listType as keyof typeof node]
+        ) {
+          editor.tf.unsetNodes(KEYS.listChecked, { at: path });
+          return;
+        }
+
+        normalizeNode([node, path]);
+      },
+    },
+  })),
 ];

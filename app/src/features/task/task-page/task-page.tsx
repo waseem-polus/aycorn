@@ -209,7 +209,6 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
         {!propertiesOpen && (
           <div className="flex flex-wrap items-center gap-1.5 pb-2">
-            <TaskPriorityIcon variant={task.Priority} />
             <TaskTypeBadge type={task.Type} />
             {stage && (
               <WorkflowStageChip className="rounded-full" stage={stage} />

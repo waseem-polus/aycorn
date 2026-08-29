@@ -30,6 +30,7 @@ const insertList = (editor: PlateEditor, type: string) => {
     editor.api.create.block({
       indent: 1,
       listStyleType: type,
+      ...(type === KEYS.listTodo && { checked: false }),
     }),
     { select: true },
   );
@@ -138,6 +139,12 @@ const setList = (
       at: entry[1],
     },
   );
+
+  if (type === KEYS.listTodo) {
+    editor.tf.setNodes({ checked: false }, { at: entry[1] });
+  } else {
+    editor.tf.unsetNodes(KEYS.listChecked, { at: entry[1] });
+  }
 };
 
 const setBlockMap: Record<
@@ -160,8 +167,10 @@ export const setBlockType = (
     const setEntry = (entry: NodeEntry<TElement>) => {
       const [node, path] = entry;
 
-      if (node[KEYS.listType]) {
-        editor.tf.unsetNodes([KEYS.listType, "indent"], { at: path });
+      if (node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)) {
+        editor.tf.unsetNodes([KEYS.listType, "indent", KEYS.listChecked], {
+          at: path,
+        });
       }
       if (type in setBlockMap) {
         return setBlockMap[type](editor, type, entry);

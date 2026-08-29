@@ -111,7 +111,7 @@ export const useSelection = ({
     if (
       !modifierHeld &&
       target instanceof Element &&
-      target.closest("[data-task-card], [data-drag-handle]")
+      target.closest("[data-task-card], [data-drag-handle], [data-slate-editor]")
     ) {
       return false;
     }

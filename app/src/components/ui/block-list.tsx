@@ -43,13 +43,8 @@ function List(props: PlateElementProps) {
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
 
   return (
-    <List
-      className="relative m-0 p-0"
-      style={{ listStyleType }}
-      start={listStart}
-    >
-      {Marker && <Marker {...props} />}
-      {Li ? <Li {...props} /> : <li>{props.children}</li>}
+    <List className="m-0 p-0" style={{ listStyleType }} start={listStart}>
+      {Li ? <Li {...props} Marker={Marker} /> : <li>{props.children}</li>}
     </List>
   );
 }
@@ -72,15 +67,20 @@ function TodoMarker(props: PlateElementProps) {
   );
 }
 
-function TodoLi(props: PlateElementProps) {
+function TodoLi(
+  props: PlateElementProps & { Marker?: React.FC<PlateElementProps> }
+) {
+  const { Marker, ...rest } = props;
+
   return (
     <li
       className={cn(
-        'list-none',
+        'relative list-none',
         (props.element.checked as boolean) &&
           'text-muted-foreground line-through'
       )}
     >
+      {Marker && <Marker {...rest} />}
       {props.children}
     </li>
   );
