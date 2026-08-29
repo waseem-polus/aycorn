@@ -24,10 +24,9 @@ func (app *app) routes() http.Handler {
 
 	mux.HandleFunc("GET /api/project/{projectId}/settings/workflow", app.getProjectWorkflowSettings)
 	mux.HandleFunc("PUT /api/project/{projectId}/settings/workflow", app.switchProjectWorkflow)
-	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types", app.getProjectTaskTypeSettings)
-	mux.HandleFunc("PUT /api/project/{projectId}/settings/task-types", app.putProjectTaskTypes)
-	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types/enabled", app.getProjectTaskTypes)
-	mux.HandleFunc("POST /api/project/{projectId}/settings/task-types/bulk/enable-category", app.postEnableTaskTypeCategory)
+	// Not "/{projectId}/task-types" — that collides with the literal
+	// "GET /api/project/checklist/{projectId}" pattern above.
+	mux.HandleFunc("GET /api/project/{projectId}/task-types/in-use", app.getProjectTaskTypes)
 	mux.HandleFunc("POST /api/project/{projectId}/duplicate", app.postDuplicateProjectConfig)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)

@@ -173,6 +173,10 @@ BEGIN
     UPDATE task_type SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
 END;
 
+-- DEPRECATED. Task types used to be enabled per project; every type is now
+-- available in every project, and no application code reads or writes this
+-- table. It is kept only so the historical enablement data survives one more
+-- release, and will be dropped by a future migration.
 CREATE TABLE project_task_type (
     project   INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     task_type INTEGER NOT NULL REFERENCES task_type(id) ON DELETE CASCADE,

@@ -38,7 +38,7 @@ src/
 - **Server state** is fetched via TanStack Query. Queries are grouped into hooks by feature (e.g., `useTaskQueries`, `useProjectQueries`).
 - **Always wait for server confirmation** before updating UI — no optimistic updates. **Two carve-outs:**
   1. drag-reorder / drag-move (dnd-kit): Reordering must feel instant, so update local order on drop, fire the mutation, and **revert to server state on error**. This applies to single and bulk drag (see `stage-list.tsx`).
-  2. Toggle switches for boolean/membership state (e.g., enabling/disabling a task type per project): The animation is what makes toggles feel responsive, so update local state immediately and revert on error.
+  2. Toggle switches for boolean/membership state: the animation is what makes a toggle feel responsive, so update local state immediately and revert on error.
 - **TanStack queries and mutations must live in a dedicated hook file** under `queries/` (or the feature's `queries/` folder). Never write `useQuery` / `useMutation` inline in a component. Components consume the hook; the hook owns the URL, the cache key, and the invalidations. This keeps fetch logic out of the render tree and makes it reusable across components.
 
 ---
@@ -114,3 +114,11 @@ Add `cursor-text` to the `EditableHeader` className when it lives inside a `curs
 ### Task Types (`features/task-types/`)
 
 Task types belong to categories (`TaskTypeCategory`). The global task types page (`/task-types`) renders a collapsible, reorderable category section per category, each containing a card grid. Task type ordering within categories is deferred.
+
+**Every task type is usable on every task in every project.** There is no per-project enablement — creating a type on `/task-types` makes it immediately available everywhere. Category is the only grouping, and `select-task-type.tsx` renders one `CommandGroup` per category so the picker stays scannable as the list grows. `task_type.category` is nullable, so that selector also renders an "Uncategorized" group; the task types page does not, and silently hides such types.
+
+Two query hooks look similar but answer different questions:
+- `useTaskTypesQuery()` — every type, globally. This is what a picker should use.
+- `useProjectTaskTypesQuery(projectId)` — only the types that a task in that project *already uses*. Availability is not project-scoped, so this exists purely to keep the project's type **filters** from listing options that match nothing.
+
+`Task.Type` is an object in the client cache but a numeric column on the wire. Bulk changes travel as `Partial<Task>` (so optimistic patches stay well-shaped) and are converted at the fetch boundary by `toWireChanges` in `features/task/shared/shared-task-type.ts`, which also exports `sharedTaskType` for the by-ID mixed-selection check both bulk toolbars need.

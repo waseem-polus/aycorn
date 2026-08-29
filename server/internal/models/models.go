@@ -64,21 +64,12 @@ type TaskType struct {
 	Category    int    `json:"Category"`
 }
 
+// TaskTypeGlobal augments a type with how widely it is used: ProjectCount is
+// the number of distinct projects holding a task of this type.
 type TaskTypeGlobal struct {
 	TaskType
 	ProjectCount int `json:"ProjectCount"`
 	TaskCount    int `json:"TaskCount"`
-}
-
-type TaskTypeWithCount struct {
-	TaskType
-	TaskCount int `json:"TaskCount"`
-}
-
-type ProjectTaskTypeSettings struct {
-	AllTypes       []TaskTypeWithCount `json:"AllTypes"`
-	EnabledTypeIDs []int               `json:"EnabledTypeIDs"`
-	Categories     []TaskTypeCategory  `json:"Categories"`
 }
 
 type Task struct {

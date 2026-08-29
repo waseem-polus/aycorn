@@ -49,7 +49,8 @@ INSERT INTO checklist (id, project, name, isDefault, timeCreated) VALUES
 (8, 4, 'Startups',       0, '2025-03-10T11:00:00Z');
 
 
--- Enable all task types for all seeded projects.
+-- Seeds the DEPRECATED project_task_type table so a reset dev DB still matches
+-- production. Nothing reads it; task types are available in every project.
 -- task_type IDs: 1=Task, 2=Dev, 3=Test, 4=Reminder
 INSERT INTO project_task_type (project, task_type) VALUES
 (1, 1), (1, 2), (1, 3), (1, 4),

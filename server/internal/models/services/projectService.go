@@ -14,7 +14,6 @@ type ProjectService struct {
 	ChecklistRepo *repos.ChecklistRepo
 	WorkflowRepo  *repos.WorkflowRepo
 	StageRepo     *repos.StageRepo
-	TaskTypeRepo  *repos.TaskTypeRepo
 	FolderRepo    *repos.ProjectFolderRepo
 }
 
@@ -207,12 +206,6 @@ func (s *ProjectService) CreateProject(workflowId int, folderId int) (int64, err
 		return 0, err
 	}
 
-	if s.TaskTypeRepo != nil {
-		if err := s.TaskTypeRepo.AddDefaultTypeToProject(int(id)); err != nil {
-			return 0, err
-		}
-	}
-
 	return id, nil
 }
 
@@ -300,9 +293,9 @@ func (s *ProjectService) ReorderPinnedProjects(ids []int) (models.BulkResult, er
 }
 
 // DuplicateProjectConfig creates a new project carrying the source project's
-// configuration. Nothing is cloned: workflows and task types are reusable across
-// projects by design, so the copy points at the same workflow row and enables
-// the same task type ids.
+// configuration. Nothing is cloned: workflows are reusable across projects by
+// design, so the copy points at the same workflow row. Task types need no step
+// here at all — every type is available in every project.
 //
 // The steps are kept separate so a future duplicateChecklists step can be added
 // without touching the existing ones.
@@ -314,10 +307,6 @@ func (s *ProjectService) DuplicateProjectConfig(sourceId int) (int, error) {
 
 	newId, err := s.applyWorkflow(source)
 	if err != nil {
-		return 0, err
-	}
-
-	if err := s.applyTaskTypes(sourceId, newId); err != nil {
 		return 0, err
 	}
 
@@ -344,14 +333,6 @@ func (s *ProjectService) applyWorkflow(source *models.Project) (int, error) {
 		return 0, err
 	}
 	return int(id), nil
-}
-
-func (s *ProjectService) applyTaskTypes(sourceId int, targetId int) error {
-	typeIds, err := s.TaskTypeRepo.EnabledIDsForProject(sourceId)
-	if err != nil {
-		return err
-	}
-	return s.TaskTypeRepo.SetEnabledForProject(targetId, typeIds)
 }
 
 func (s *ProjectService) BulkDeleteProjects(ids []int) (models.BulkResult, error) {

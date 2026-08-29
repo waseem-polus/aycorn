@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { Task, TaskWithProject } from "@/types/types";
 import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
 import { SelectTaskPriority } from "@/features/task/properties/select-task-priority";
+import { SelectTaskType } from "@/features/task/properties/select-task-type";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
@@ -14,8 +15,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { toast } from "sonner";
 import { pluralize } from "@/utils/pluralize";
+import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
+import {
+  sharedTaskType,
+  toWireChanges,
+} from "@/features/task/shared/shared-task-type";
 
 const sharedValue = <K extends keyof Task>(
   tasks: TaskWithProject[],
@@ -39,6 +44,11 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
     [tasks, selectedIds],
   );
 
+  const sharedType = useMemo(
+    () => sharedTaskType(selectedTasks),
+    [selectedTasks],
+  );
+
   const selectedIdNumbers = useMemo(
     () => [...selectedIds].map(Number),
     [selectedIds],
@@ -52,11 +62,10 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
 
   const handleBulkUpdate = (changes: Partial<Task>) => {
     bulkUpdate.mutate(
-      { ids: selectedIdNumbers, changes },
+      { ids: selectedIdNumbers, changes: toWireChanges(changes) },
       {
         onSuccess: (result) => {
-          if (result.success > 0)
-            toast(`Updated ${pluralize(result.success, "task")}.`);
+          bulkResultToast(result, `Updated ${pluralize(result.success, "task")}.`);
           clearSelection();
         },
       },
@@ -121,6 +130,11 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
           align="start"
           sideOffset={8}
         >
+          <SelectTaskType
+            value={sharedType}
+            onValueChange={(v) => handleBulkUpdate({ Type: v })}
+            placeholder={sharedType === undefined ? "Mixed types" : "Type"}
+          />
           <TaskAssignee
             value={sharedValue(selectedTasks, "Assignee") ?? ""}
             onValueChange={(v) => handleBulkUpdate({ Assignee: v })}

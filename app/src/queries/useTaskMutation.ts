@@ -6,6 +6,10 @@ import type {
   TaskWithProject,
 } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
+import {
+  isUnchangedBy,
+  toWireChanges,
+} from "@/features/task/shared/shared-task-type";
 import type { Value } from "platejs";
 
 const getSaveTaskQuery = (isNewTask: boolean) => {
@@ -152,11 +156,7 @@ export function useTaskMutation(projectId: number | null) {
       tasks: Task[];
       changes: Partial<Task>;
     }) => {
-      const targets = tasks.filter((t) =>
-        Object.entries(changes).some(
-          ([key, value]) => t[key as keyof Task] !== value,
-        ),
-      );
+      const targets = tasks.filter((t) => !isUnchangedBy(t, changes));
       if (targets.length === 0) {
         return { success: 0, failed: 0, skipped: 0 } as BulkResult;
       }
@@ -164,7 +164,7 @@ export function useTaskMutation(projectId: number | null) {
         method: "PUT",
         body: JSON.stringify({
           ids: targets.map((t) => t.ID),
-          changes,
+          changes: toWireChanges(changes),
         }),
       });
       if (!res.ok) {

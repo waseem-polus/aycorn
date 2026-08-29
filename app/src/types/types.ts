@@ -24,19 +24,11 @@ export type TaskType = {
   Category: number;
 };
 
+/** A task type plus how widely it is used. ProjectCount is the number of
+ *  distinct projects holding a task of this type. */
 export type TaskTypeGlobal = TaskType & {
   ProjectCount: number;
   TaskCount: number;
-};
-
-export type TaskTypeWithCount = TaskType & {
-  TaskCount: number;
-};
-
-export type ProjectTaskTypeSettings = {
-  AllTypes: TaskTypeWithCount[];
-  EnabledTypeIDs: number[];
-  Categories: TaskTypeCategory[];
 };
 
 export type Project = {

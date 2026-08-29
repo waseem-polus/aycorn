@@ -100,7 +100,7 @@ When writing code for this project:
 - **Flag patterns** when a good design pattern applies — don't just write code, name the pattern.
 - **Flag anti-patterns** when you see them in existing code and suggest a better approach.
 - **Flag shared abstractions** when a loading state, hook, or utility is being duplicated and a shared version would be worth extracting.
-- **Flag migration schema implications** whenever a feature changes the allowed values of a hardcoded `CHECK` constraint — `task.priority`, `task.type`, or `stage.type` (see `server/CLAUDE.md`).
+- **Flag migration schema implications** whenever a feature changes the allowed values of a hardcoded `CHECK` constraint — `task.priority` or `stage.type` (see `server/CLAUDE.md`). `task.type` is an FK to `task_type`, not a `CHECK`, so new task types need no migration.
 - **Flag keyboard interaction gaps** if a feature is being implemented without keyboard support.
 - **Flag hardcoded colors** whenever you see a fixed Tailwind color (e.g. `neutral-700`, `emerald-500`, `gray-100`) used for text, background, or border. These break dark mode. Replace them with semantic tokens from `index.css` — e.g. `text-foreground`, `bg-background`, `bg-primary`, `text-muted-foreground`, `border-border`. Check the full token list in `app/src/index.css`.
 - **Flag fan-out bulk calls** when a multi-item action is implemented as `Promise.all` over a single-item endpoint instead of a real bulk handler returning `BulkResult`.

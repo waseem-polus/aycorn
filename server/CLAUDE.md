@@ -79,16 +79,21 @@ stage     (id, workflow→workflow.id ON DELETE CASCADE, name, description,
 project   (id, name, pinned, workflow→workflow.id, timeCreated, timeModified)
 checklist (id, project→project.id, name, timeCreated, timeModified, isDefault)
 task      (id, checklist→checklist.id, stage→stage.id ON DELETE RESTRICT,
+           type→task_type.id,
            name, body, timeCreated, timeModified,
            timePlannedStart, timePlannedEnd, timeCompleted, assignee,
-           priority CHECK in ('Urgent','High','Medium','Low'),
-           type CHECK in ('Dev','Test','Reminder'))
+           priority CHECK in ('Urgent','High','Medium','Low'))
+task_type_category (id, name, isDefault, sortOrder, timeCreated, timeModified)
+task_type (id, name, description, icon, color, isDefault,
+           category→task_type_category.id ON DELETE RESTRICT,
+           timeCreated, timeModified)
 ```
 
 Hierarchy & relationships:
 - `workflow → stage` (a workflow owns an ordered list of stages; deleting a workflow cascades to its stages).
 - `project → checklist → task`. Tasks belong to a **checklist**, not directly to a project.
 - A `project` references one `workflow`. A `task` references one `stage` — that's the task's status. There is no `status` column.
+- Every `task_type` is usable on every task in every project — there is no per-project enablement. `project_task_type` is a **deprecated** leftover of that removed feature: no code reads or writes it, and a future migration will drop it. Don't wire anything new to it.
 
 Trigger-enforced invariants (don't reimplement these in app code — rely on them and flag when a change conflicts):
 - `timeModified` auto-bumps on every update, and cascades up the chain: `stage → workflow`, `task → checklist → project`, `checklist → project`.
@@ -100,4 +105,4 @@ Trigger-enforced invariants (don't reimplement these in app code — rely on the
 
 Migration notes:
 - `body` is a JSON array (Plate.js document format).
-- Workflows/stages are fully implemented (custom workflows no longer need a migration). The remaining hardcoded `CHECK` constraints are **`task.priority`, `task.type`, and `stage.type`** — changing those allowed values still requires a **schema migration**. Flag this whenever a feature touches them.
+- Workflows/stages are fully implemented (custom workflows no longer need a migration). Task types are a first-class table since migration 00003, so `task.type` is an FK, not a `CHECK`. The remaining hardcoded `CHECK` constraints are **`task.priority`** and **`stage.type`** — changing those allowed values still requires a **schema migration**. Flag this whenever a feature touches them.

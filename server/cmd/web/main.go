@@ -195,7 +195,6 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		WorkflowRepo:  workflowRepo,
 		StageRepo:     stageRepo,
-		TaskTypeRepo:  taskTypeRepo,
 		FolderRepo:    projectFolderRepo,
 	}
 	projectFolderService := &services.ProjectFolderService{
@@ -218,7 +217,6 @@ func main() {
 	}
 	taskTypeCategoryService := &services.TaskTypeCategoryService{
 		CategoryRepo: taskTypeCategoryRepo,
-		TaskTypeRepo: taskTypeRepo,
 	}
 	taskRelationshipService := &services.TaskRelationshipService{
 		TaskRelationshipRepo: taskRelationshipRepo,

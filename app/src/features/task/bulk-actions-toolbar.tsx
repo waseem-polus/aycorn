@@ -19,6 +19,7 @@ import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
 import { pluralize } from "@/utils/pluralize";
+import { sharedTaskType } from "@/features/task/shared/shared-task-type";
 
 type Props = {
   selectedTasks: Task[];
@@ -70,12 +71,7 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
     );
 
   const sharedStage = sharedValue(selectedTasks, "Stage");
-  const firstTypeId = selectedTasks[0]?.Type?.ID;
-  const sharedType =
-    selectedTasks.length > 0 &&
-    selectedTasks.every((t) => t.Type?.ID === firstTypeId)
-      ? selectedTasks[0].Type
-      : undefined;
+  const sharedType = sharedTaskType(selectedTasks);
   const sharedPriority = sharedValue(selectedTasks, "Priority");
   const sharedChecklist = sharedValue(selectedTasks, "Checklist");
   const sharedAssignee = sharedValue(selectedTasks, "Assignee");
@@ -163,7 +159,7 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
           <SelectTaskType
             value={sharedType}
             onValueChange={(v) =>
-              applyChange({ Type: v.ID } as unknown as Partial<Task>, "type")
+              applyChange({ Type: v }, "type")
             }
             placeholder={sharedType === undefined ? "Mixed types" : "Type"}
           />

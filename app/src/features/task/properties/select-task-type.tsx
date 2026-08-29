@@ -1,9 +1,9 @@
-import type { Task, TaskType } from "@/types/types";
-import { useContext, useState } from "react";
+import type { Task, TaskType, TaskTypeCategory } from "@/types/types";
+import { useContext, useMemo, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useProjectTaskTypesQuery } from "@/features/task-types/queries/useProjectTaskTypesQuery";
-import { DynamicIcon } from "lucide-react/dynamic";
+import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
+import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
 import {
   Command,
@@ -30,6 +30,51 @@ type Props = {
   placeholder?: string;
 };
 
+type TypeGroup = {
+  key: string;
+  heading: string;
+  types: TaskType[];
+};
+
+/**
+ * Types come back as TaskTypeGlobal (with ProjectCount/TaskCount attached for
+ * the task types page). Strip down to the plain TaskType before writing one
+ * onto a task so the usage counters don't ride along into PUT /api/task.
+ */
+const toTaskType = (t: TaskType): TaskType => ({
+  ID: t.ID,
+  Name: t.Name,
+  Description: t.Description,
+  Icon: t.Icon,
+  Color: t.Color,
+  IsDefault: t.IsDefault,
+  Category: t.Category,
+});
+
+const groupByCategory = (
+  types: TaskType[],
+  categories: TaskTypeCategory[],
+): TypeGroup[] => {
+  const known = new Set(categories.map((c) => c.ID));
+  const groups: TypeGroup[] = [...categories]
+    .sort((a, b) => a.SortOrder - b.SortOrder)
+    .map((c) => ({
+      key: `cat-${c.ID}`,
+      heading: c.Name || "Untitled Category",
+      types: types.filter((t) => t.Category === c.ID),
+    }))
+    .filter((g) => g.types.length > 0);
+
+  // task_type.category is nullable, so a type can legitimately belong to no
+  // category. The task types page never renders those; the selector must, or
+  // they'd be unpickable.
+  const orphans = types.filter((t) => !known.has(t.Category));
+  if (orphans.length > 0) {
+    groups.push({ key: "uncategorized", heading: "Uncategorized", types: orphans });
+  }
+  return groups;
+};
+
 export function SelectTaskType({
   onChange = () => {},
   value,
@@ -37,23 +82,29 @@ export function SelectTaskType({
   placeholder = "Select a type",
 }: Props) {
   const { state: task, setState: setTask } = useContext(TaskContext);
-  const { Project } = useContext(ProjectContext);
   const isControlled = onValueChange !== undefined;
   const [open, setOpen] = useState(false);
 
-  const { data: types = [] } = useProjectTaskTypesQuery(Project.ID);
+  const { data: types = [] } = useTaskTypesQuery();
+  const { data: categories = [] } = useTaskTypeCategoriesQuery();
+
+  const groups = useMemo(
+    () => groupByCategory(types, categories),
+    [types, categories],
+  );
 
   const current = isControlled ? value : task.Type;
   const displayName = current?.ID ? current.Name : placeholder;
 
   const handleSelect = (selected: TaskType) => {
     setOpen(false);
+    const type = toTaskType(selected);
     if (isControlled) {
-      onValueChange(selected);
+      onValueChange(type);
       return;
     }
-    setTask({ ...task, Type: selected });
-    onChange({ ...task, Type: selected });
+    setTask({ ...task, Type: type });
+    onChange({ ...task, Type: type });
   };
 
   return (
@@ -69,11 +120,12 @@ export function SelectTaskType({
           <span className="flex items-center gap-2 min-w-0">
             {current?.ID ? (
               <DynamicIcon
-                name={current.Icon as any}
+                name={current.Icon as IconName}
                 className={cn(
                   "size-4 shrink-0",
                   stageStrokeClass(current.Color),
                 )}
+                fallback={() => <span className="size-4 shrink-0" />}
               />
             ) : (
               <TagsIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -98,42 +150,35 @@ export function SelectTaskType({
               <div className="text-sm text-muted-foreground">
                 No types found.{" "}
                 <Link
-                  to="/project/settings/$projectId"
-                  params={{ projectId: String(Project.ID) }}
-                  search={{ tab: "task-types" }}
-                  className="text-primary hover:underline"
-                  onClick={() => setOpen(false)}
-                >
-                  Enable in project settings
-                </Link>{" "}
-                or{" "}
-                <Link
                   to="/task-types"
                   className="text-primary hover:underline"
                   onClick={() => setOpen(false)}
                 >
-                  create a new one.
+                  Create a new one.
                 </Link>
               </div>
             </CommandEmpty>
-            <CommandGroup>
-              {types.map((tt) => (
-                <CommandItem
-                  key={tt.ID}
-                  value={tt.Name}
-                  onSelect={() => handleSelect(tt)}
-                >
-                  <DynamicIcon
-                    name={tt.Icon as any}
-                    className={cn(
-                      "size-4 shrink-0",
-                      stageStrokeClass(tt.Color),
-                    )}
-                  />
-                  <span>{tt.Name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {groups.map((group) => (
+              <CommandGroup key={group.key} heading={group.heading}>
+                {group.types.map((tt) => (
+                  <CommandItem
+                    key={tt.ID}
+                    value={tt.Name}
+                    onSelect={() => handleSelect(tt)}
+                  >
+                    <DynamicIcon
+                      name={tt.Icon as IconName}
+                      className={cn(
+                        "size-4 shrink-0",
+                        stageStrokeClass(tt.Color),
+                      )}
+                      fallback={() => <span className="size-4 shrink-0" />}
+                    />
+                    <span>{tt.Name}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
           </CommandList>
         </Command>
       </PopoverContent>

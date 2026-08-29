@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyCheckIcon, FoldersIcon } from "lucide-react";
+import { pluralize } from "@/utils/pluralize";
 import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
@@ -71,14 +72,10 @@ export function TaskTypeCard({
       save({ Description: newDescription });
   };
 
-  const projectLabel =
-    type.ProjectCount === 0
-      ? "0 projects"
-      : type.ProjectCount === 1
-        ? "1 project"
-        : `${type.ProjectCount} projects`;
-
-  const taskLabel = type.TaskCount === 1 ? "1 task" : `${type.TaskCount} tasks`;
+  // Projects that hold at least one task of this type. Types themselves are
+  // available everywhere, so this is usage, not availability.
+  const projectLabel = pluralize(type.ProjectCount, "project");
+  const taskLabel = pluralize(type.TaskCount, "task");
 
   return (
     <>
