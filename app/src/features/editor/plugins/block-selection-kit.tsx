@@ -19,6 +19,15 @@ export const hasSelectableClass = ({
 export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({
     options: {
+      areaOptions: {
+        boundaries: `#${editor.meta.uid}`,
+        container: `#${editor.meta.uid}`,
+        features: { singleTap: { allow: false } },
+        behaviour: {
+          scrolling: { speedDivider: 0.8 },
+          startThreshold: 4,
+        },
+      },
       enableContextMenu: true,
       isSelectable: (element) =>
         !getPluginTypes(editor, [KEYS.column, KEYS.codeLine, KEYS.td]).includes(
