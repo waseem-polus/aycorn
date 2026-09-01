@@ -58,7 +58,7 @@ export function ProjectFiltersDrawer() {
           {activeCount > 0 && (
             <Badge
               variant="secondary"
-              className="absolute -top-1.5 -right-1.5 size-4 justify-center rounded-full p-0 text-[10px] tabular-nums"
+              className="absolute -top-1.5 -right-1.5 size-5 justify-center rounded-full p-0 text-xs tabular-nums"
             >
               {activeCount}
             </Badge>

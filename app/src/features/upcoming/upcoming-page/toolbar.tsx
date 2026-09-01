@@ -46,13 +46,16 @@ export function UpcomingToolbar({
 
         <Button
           variant="outline"
-          size={filterCount > 0 ? "default" : "icon"}
+          size={"icon"}
           onClick={onFilterOpen}
-          className="gap-1.5"
+          className="gap-1.5 relative"
         >
           <FilterIcon />
           {filterCount > 0 && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="absolute -top-1.5 -right-1.5 size-5 justify-center rounded-full p-0 text-xs tabular-nums"
+            >
               {filterCount}
             </Badge>
           )}
