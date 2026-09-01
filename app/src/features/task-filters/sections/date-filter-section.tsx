@@ -5,12 +5,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateRangeSection } from "@/features/upcoming/upcoming-filter-drawer/date-range-section";
+import { DateRangeSection } from "@/features/task-filters/sections/date-range-section";
 import type {
   DateFilterMode,
   DateModeKey,
-  UpcomingFilters,
-} from "@/features/upcoming/hooks/useUpcomingFilters";
+  TaskFilterState,
+} from "@/features/task-filters/task-filters";
 import { CalendarsIcon, CalendarXIcon, CalendarCheckIcon } from "lucide-react";
 
 type Props = {
@@ -22,7 +22,7 @@ type Props = {
   toKey: string;
   hasFromTimeKey: string;
   hasToTimeKey: string;
-  dates: UpcomingFilters["dates"];
+  dates: TaskFilterState["dates"];
   mode?: "date" | "datetime";
   onSet: (key: string, value: string) => void;
   onSetHasTime: (key: string, value: boolean) => void;

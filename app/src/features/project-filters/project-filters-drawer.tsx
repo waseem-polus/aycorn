@@ -1,102 +1,86 @@
-import { Switch } from "@/components/ui/switch";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useContext } from "react";
+import { FilterIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { FilterDrawerFrame } from "@/features/task-filters/filter-drawer-frame";
-import { DateFilterSection } from "@/features/task-filters/sections/date-filter-section";
-import { ProjectSection } from "@/features/task-filters/sections/project-section";
-import { StatusSection } from "@/features/task-filters/sections/status-section";
-import { TypeSection } from "@/features/task-filters/sections/type-section";
 import { AssigneeSection } from "@/features/task-filters/sections/assignee-section";
 import { ChecklistSection } from "@/features/task-filters/sections/checklist-section";
+import { DateFilterSection } from "@/features/task-filters/sections/date-filter-section";
 import { PrioritySection } from "@/features/task-filters/sections/priority-section";
-import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
-import type { MultiSelectOptionGroup } from "@/components/ui/multi-select-combobox";
-import type {
-  Project,
-  Stage,
-  TaskFacets,
-  TaskTypeCategory,
-  TaskTypeGlobal,
-  WorkflowSummary,
-} from "@/types/types";
+import { StatusSection } from "@/features/task-filters/sections/status-section";
+import { TypeSection } from "@/features/task-filters/sections/type-section";
+import { useTaskFacetsQuery } from "@/features/task-filters/queries/useTaskFacetsQuery";
+import { useProjectTaskTypesQuery } from "@/features/task-types/queries/useProjectTaskTypesQuery";
+import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
+import { useProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 
-type Props = {
-  open: boolean;
-  projects: Project[];
-  stages: Stage[];
-  workflows: WorkflowSummary[];
-  taskTypes: TaskTypeGlobal[];
-  taskTypeCategories: TaskTypeCategory[];
-  facets: TaskFacets;
-  onClose: () => void;
-};
-
-export function UpcomingFilterDrawer({
-  open,
-  projects,
-  stages,
-  workflows,
-  taskTypes,
-  taskTypeCategories,
-  facets,
-  onClose,
-}: Props) {
+/**
+ * The project page's filter drawer. Same sections as the upcoming page minus
+ * the project picker — this drawer is already scoped to one project.
+ */
+export function ProjectFiltersDrawer() {
+  const { Project, Stages } = useContext(ProjectContext);
   const {
     filters,
-    view,
     toggleFilter: onToggle,
     clearFilterDim: onClearDim,
     setDateFilter: onSetDate,
     setHasTimeFilter: onSetHasTime,
     setDateMode: onSetDateMode,
-    setShowEmpty: onToggleEmpty,
     resetAll: onReset,
     activeFilterCount,
-  } = useUpcomingFiltersContext();
-  const showEmpty = view.showEmpty;
-  const activeCount = activeFilterCount();
+    plannedFilterApplies,
+  } = useProjectFiltersContext();
 
-  const uniqueAssignees = facets.assignees;
+  const { data: facets = { assignees: [], checklists: [] } } = useTaskFacetsQuery(
+    Project.ID,
+  );
+  const { data: taskTypes = [] } = useProjectTaskTypesQuery(Project.ID);
+  const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
 
-  const checklistGroups: MultiSelectOptionGroup[] = projects
-    .map((p) => ({
-      label: p.Name,
-      options: facets.checklists
-        .filter((c) => c.projectId === p.ID)
-        .map((c) => ({ key: c.id, label: c.name })),
-    }))
-    .filter((g) => g.options.length > 0);
+  // A planned filter set while a calendar view is open isn't sent, so it
+  // shouldn't be counted either.
+  const activeCount = activeFilterCount(
+    plannedFilterApplies ? undefined : { ignoreDateModes: ["plannedMode"] },
+  );
 
   return (
     <FilterDrawerFrame
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) onClose();
-      }}
+      trigger={
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label="Filters"
+          className="relative"
+        >
+          <FilterIcon />
+          {activeCount > 0 && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-1.5 -right-1.5 size-4 justify-center rounded-full p-0 text-[10px] tabular-nums"
+            >
+              {activeCount}
+            </Badge>
+          )}
+        </Button>
+      }
       activeCount={activeCount}
       onReset={onReset}
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
-          <span className="text-sm text-muted-foreground">Project</span>
-          <ProjectSection
-            projects={projects}
-            selected={filters.project}
-            onToggle={(k) => onToggle("project", k)}
-            onClear={() => onClearDim("project")}
-          />
           <ChecklistSection
-            groups={checklistGroups}
+            options={facets.checklists.map((c) => ({ key: c.id, label: c.name }))}
             selected={filters.checklist}
             onToggle={(k) => onToggle("checklist", k)}
             onClear={() => onClearDim("checklist")}
           />
         </div>
-
         <div className="flex flex-col gap-3">
           <span className="text-sm text-muted-foreground">Task</span>
           <StatusSection
-            stages={stages}
-            workflows={workflows}
+            stages={Stages}
             selected={filters.stage}
             onToggle={(k) => onToggle("stage", k)}
             onClear={() => onClearDim("stage")}
@@ -109,7 +93,7 @@ export function UpcomingFilterDrawer({
             onClear={() => onClearDim("type")}
           />
           <AssigneeSection
-            assignees={uniqueAssignees}
+            assignees={facets.assignees}
             selected={filters.assignee}
             onToggle={(k) => onToggle("assignee", k)}
             onClear={() => onClearDim("assignee")}
@@ -161,20 +145,6 @@ export function UpcomingFilterDrawer({
           />
         </div>
       </div>
-
-      <Alert className="flex justify-between items-center">
-        <div>
-          <AlertTitle>Show empty groups</AlertTitle>
-          <AlertDescription>
-            Reveal groups that currently have no tasks
-          </AlertDescription>
-        </div>
-        <Switch
-          checked={showEmpty}
-          onCheckedChange={onToggleEmpty}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </Alert>
     </FilterDrawerFrame>
   );
 }

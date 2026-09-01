@@ -138,15 +138,6 @@ export type ProjectDetails = {
   Tasks: ChecklistTask[];
 };
 
-export type TaskFilter = {
-  Name: Task["Name"];
-  Checklist: Task["Checklist"][];
-  Assignee: Task["Assignee"][];
-  Priority: Task["Priority"][];
-  Type: number[];
-  Stage: Stage["ID"][];
-};
-
 export const RELATIONSHIP_BEHAVIORS = ["blocking", "subtask", "link"] as const;
 export type RelationshipBehavior = (typeof RELATIONSHIP_BEHAVIORS)[number];
 

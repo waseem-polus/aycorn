@@ -2,6 +2,8 @@ import { ListView } from "@/components/project/views/listView/list-view";
 import { ProjectContentHeader } from "@/components/project/project-details-content-header";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
+import { ProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { KanbanView } from "./views/kanbanView/kanban-view";
@@ -31,24 +33,22 @@ export function ProjectDetails({
   projectId: number;
 }) {
   const [newTaskOpen, setNewTaskOpen] = useState(false);
-  const {
-    SetProject,
-    SetWorkflow,
-    SetStages,
-    SetChecklists,
-    SetTasks,
-    Filter,
-    Tasks,
-  } = useContext(ProjectContext);
+  const { SetProject, SetWorkflow, SetStages, SetChecklists, SetTasks, Tasks } =
+    useContext(ProjectContext);
+  const filtersApi = useTaskFilters(`project.${projectId}`);
+  // The calendar views already group by planned date, so the planned filter
+  // stays editable in the drawer but is not applied while they are open.
+  const plannedFilterApplies = view !== "month" && view !== "week";
   const selection = useSharedSelection();
   const selectedTasks = useMemo(
     () => Tasks.filter((t) => selection.selectedIds.has(t.ID.toString())),
     [Tasks, selection.selectedIds],
   );
-  const { isPending, data, isFetching, refetch } = useProjectDetailsQuery(
+  const { isPending, data, isFetching } = useProjectDetailsQuery(
     projectId,
-    Filter,
+    filtersApi.filters,
     !newTaskOpen,
+    plannedFilterApplies,
   );
 
   useEffect(() => {
@@ -62,10 +62,6 @@ export function ProjectDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isFetching, isPending, projectId]);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch, Filter]);
-
   const renderDayCreate = useCallback(
     (date: Date) => (
       <TaskProvider>
@@ -76,70 +72,74 @@ export function ProjectDetails({
   );
 
   return (
-    <div className="flex flex-col gap-4 grow min-h-0 overflow-visible">
-      <ProjectContentHeader />
+    <ProjectFiltersContext.Provider
+      value={{ ...filtersApi, plannedFilterApplies }}
+    >
+      <div className="flex flex-col gap-4 grow min-h-0 overflow-visible">
+        <ProjectContentHeader />
 
-      <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
-        <CalendarProvider events={[]} users={[]} view="month">
-          <CalendarHostProvider
-            projectId={projectId}
-            renderDayCreate={renderDayCreate}
-          >
-            <DndProvider>
-              <Tabs value={view} onValueChange={setView} className="h-full">
-                <TabsList>
-                  <TabsTrigger value="list">
-                    <Rows3Icon />
-                    List
-                  </TabsTrigger>
-                  <TabsTrigger value="kanban">
-                    <LayoutDashboardIcon />
-                    Kanban
-                  </TabsTrigger>
-                  <TabsTrigger value="month">
-                    <CalendarDaysIcon />
-                    Month
-                  </TabsTrigger>
-                  <TabsTrigger value="week">
-                    <CalendarIcon />
-                    Week
-                  </TabsTrigger>
-                </TabsList>
+        <div className="flex grow flex-col gap-4 overflow-visible min-h-0">
+          <CalendarProvider events={[]} users={[]} view="month">
+            <CalendarHostProvider
+              projectId={projectId}
+              renderDayCreate={renderDayCreate}
+            >
+              <DndProvider>
+                <Tabs value={view} onValueChange={setView} className="h-full">
+                  <TabsList>
+                    <TabsTrigger value="list">
+                      <Rows3Icon />
+                      List
+                    </TabsTrigger>
+                    <TabsTrigger value="kanban">
+                      <LayoutDashboardIcon />
+                      Kanban
+                    </TabsTrigger>
+                    <TabsTrigger value="month">
+                      <CalendarDaysIcon />
+                      Month
+                    </TabsTrigger>
+                    <TabsTrigger value="week">
+                      <CalendarIcon />
+                      Week
+                    </TabsTrigger>
+                  </TabsList>
 
-                <TabsContent
-                  value="list"
-                  className="h-full overflow-visible min-h-0"
-                >
-                  <ListView setTaskDrawerOpen={setNewTaskOpen} />
-                </TabsContent>
-                <TabsContent
-                  value="kanban"
-                  className="h-full overflow-visible min-h-0"
-                >
-                  <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
-                </TabsContent>
-                <TabsContent
-                  value="month"
-                  className="h-full overflow-visible min-h-0"
-                >
-                  <MonthView setTaskDrawerOpen={setNewTaskOpen} />
-                </TabsContent>
-                <TabsContent
-                  value="week"
-                  className="h-full overflow-visible min-h-0"
-                >
-                  <WeekView setTaskDrawerOpen={setNewTaskOpen} />
-                </TabsContent>
-              </Tabs>
-            </DndProvider>
-          </CalendarHostProvider>
-        </CalendarProvider>
+                  <TabsContent
+                    value="list"
+                    className="h-full overflow-visible min-h-0"
+                  >
+                    <ListView setTaskDrawerOpen={setNewTaskOpen} />
+                  </TabsContent>
+                  <TabsContent
+                    value="kanban"
+                    className="h-full overflow-visible min-h-0"
+                  >
+                    <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
+                  </TabsContent>
+                  <TabsContent
+                    value="month"
+                    className="h-full overflow-visible min-h-0"
+                  >
+                    <MonthView setTaskDrawerOpen={setNewTaskOpen} />
+                  </TabsContent>
+                  <TabsContent
+                    value="week"
+                    className="h-full overflow-visible min-h-0"
+                  >
+                    <WeekView setTaskDrawerOpen={setNewTaskOpen} />
+                  </TabsContent>
+                </Tabs>
+              </DndProvider>
+            </CalendarHostProvider>
+          </CalendarProvider>
+        </div>
+
+        <BulkActionsToolbar
+          selectedTasks={selectedTasks}
+          onClear={selection.clearSelection}
+        />
       </div>
-
-      <BulkActionsToolbar
-        selectedTasks={selectedTasks}
-        onClear={selection.clearSelection}
-      />
-    </div>
+    </ProjectFiltersContext.Provider>
   );
 }

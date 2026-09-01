@@ -4,7 +4,6 @@ import type {
   ChecklistTask,
   Project,
   Stage,
-  TaskFilter,
   Workflow,
 } from "@/types/types";
 import { defaultProjectContextValue, ProjectContext } from "./ProjectContext";
@@ -23,9 +22,6 @@ export function ProjectProvider({
   const [stages, setStages] = useState<Stage[]>([]);
   const [checklists, setChecklists] = useState<ChecklistDetails[]>([]);
   const [tasks, setTasks] = useState<ChecklistTask[]>([]);
-  const [filters, setFilters] = useState<TaskFilter>(
-    defaultProjectContextValue.Filter,
-  );
   return (
     <ProjectContext.Provider
       value={{
@@ -43,9 +39,6 @@ export function ProjectProvider({
 
         Checklists: checklists,
         SetChecklists: setChecklists,
-
-        Filter: filters,
-        SetFilter: setFilters,
       }}
     >
       {children}

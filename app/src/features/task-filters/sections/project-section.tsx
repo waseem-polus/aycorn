@@ -1,10 +1,10 @@
 import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type { TaskFilterState } from "@/features/task-filters/task-filters";
 import type { Project } from "@/types/types";
 
 type Props = {
   projects: Project[];
-  selected: UpcomingFilters["project"];
+  selected: TaskFilterState["project"];
   onToggle: (key: string | number) => void;
   onClear: () => void;
 };

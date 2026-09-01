@@ -1,7 +1,7 @@
 import type { Task } from "@/types/types";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { ChevronDown, GaugeCircle } from "lucide-react";
+import { ChevronDown, GaugeCircle, SignalIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -64,7 +64,7 @@ export function SelectTaskPriority({
             {current ? (
               <TaskPriorityIcon variant={current} />
             ) : (
-              <GaugeCircle className="size-4 shrink-0 text-muted-foreground" />
+                <SignalIcon className="size-4 shrink-0 text-muted-foreground" />
             )}
             <span
               className={cn("truncate", !current && "text-muted-foreground")}

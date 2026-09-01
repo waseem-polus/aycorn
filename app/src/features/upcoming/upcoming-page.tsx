@@ -8,7 +8,7 @@ import {
 } from "@/components/page/Page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
-import { useTaskFacetsQuery } from "@/features/upcoming/queries/useTaskFacetsQuery";
+import { useTaskFacetsQuery } from "@/features/task-filters/queries/useTaskFacetsQuery";
 import { useUpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
 import { applyClientFilters } from "@/features/upcoming/upcoming-grouping";
 import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";

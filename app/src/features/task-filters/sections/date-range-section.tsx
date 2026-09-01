@@ -1,5 +1,5 @@
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type { TaskFilterState } from "@/features/task-filters/task-filters";
 
 type Props = {
   label: string;
@@ -7,7 +7,7 @@ type Props = {
   toKey: string;
   hasFromTimeKey: string;
   hasToTimeKey: string;
-  dates: UpcomingFilters["dates"];
+  dates: TaskFilterState["dates"];
   mode?: "date" | "datetime";
   onSet: (key: string, value: string) => void;
   onSetHasTime: (key: string, value: boolean) => void;

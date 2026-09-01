@@ -3,7 +3,6 @@ import type {
   ChecklistTask,
   Project,
   Stage,
-  TaskFilter,
   Workflow,
 } from "@/types/types";
 import { createContext } from "react";
@@ -23,9 +22,6 @@ export type ProjectContextType = {
 
   Checklists: ChecklistDetails[];
   SetChecklists: (checklists: ChecklistDetails[]) => void;
-
-  Filter: TaskFilter;
-  SetFilter: (filter: TaskFilter) => void;
 };
 
 export const defaultProjectContextValue: ProjectContextType = {
@@ -59,16 +55,6 @@ export const defaultProjectContextValue: ProjectContextType = {
 
   SetChecklists: () => {},
   Checklists: [],
-
-  SetFilter: () => {},
-  Filter: {
-    Name: "",
-    Checklist: [],
-    Assignee: [],
-    Priority: [],
-    Type: [],
-    Stage: [],
-  },
 };
 
 export const ProjectContext = createContext<ProjectContextType>(

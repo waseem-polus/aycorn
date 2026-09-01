@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, TagsIcon } from "lucide-react";
+import { ChevronDown, ShapesIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
@@ -128,7 +128,7 @@ export function SelectTaskType({
                 fallback={() => <span className="size-4 shrink-0" />}
               />
             ) : (
-              <TagsIcon className="size-4 shrink-0 text-muted-foreground" />
+                <ShapesIcon className="size-4 shrink-0 text-muted-foreground" />
             )}
             <span
               className={cn(

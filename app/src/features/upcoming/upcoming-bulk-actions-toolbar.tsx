@@ -114,7 +114,7 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
           placeholder={
             sharedValue(selectedTasks, "TimePlannedStart") === undefined
               ? "Mixed"
-              : "Select a date"
+              : "Select Date"
           }
         />
       </div>

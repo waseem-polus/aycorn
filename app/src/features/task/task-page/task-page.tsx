@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { EMPTY_FILTERS } from "@/features/task-filters/task-filters";
 import { EditableTaskName } from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { SelectTaskStage } from "@/features/stage/select-task-stage";
@@ -32,7 +33,6 @@ import { DatePickerInput } from "@/components/DatePickerInput";
 import { RichEditor } from "@/features/editor/rich-editor";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import { defaultProjectContextValue } from "@/contexts/project/ProjectContext";
 import type { Task } from "@/types/types";
 import type { Value } from "platejs";
 import type { PlateEditor } from "platejs/react";
@@ -73,7 +73,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
   const { isPending, isFetching, data } = useProjectDetailsQuery(
     projectId,
-    defaultProjectContextValue.Filter,
+    EMPTY_FILTERS,
     true,
   );
 

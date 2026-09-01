@@ -18,8 +18,8 @@ func (s *TaskService) GetAllTasks(filters *repos.TaskFilters) ([]models.TaskWith
 	return s.TaskRepo.AllTasks(filters)
 }
 
-func (s *TaskService) GetTaskFacets() (*models.TaskFacets, error) {
-	return s.TaskRepo.TaskFacets()
+func (s *TaskService) GetTaskFacets(projectID *int) (*models.TaskFacets, error) {
+	return s.TaskRepo.TaskFacets(projectID)
 }
 
 func (s *TaskService) GetTask(taskId int) (*models.TaskWithProject, error) {

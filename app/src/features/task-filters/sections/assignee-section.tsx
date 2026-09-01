@@ -1,9 +1,9 @@
 import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type { TaskFilterState } from "@/features/task-filters/task-filters";
 
 type Props = {
   assignees: string[];
-  selected: UpcomingFilters["assignee"];
+  selected: TaskFilterState["assignee"];
   onToggle: (key: string | number) => void;
   onClear: () => void;
 };

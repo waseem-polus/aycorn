@@ -16,7 +16,7 @@ export function DatePickerInput({
   start,
   end,
   onRangeChange,
-  placeholder = "Select a date",
+  placeholder = "Select Date",
 }: Props) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const isControlled = onRangeChange !== undefined;

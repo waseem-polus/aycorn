@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
-	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 )
 
 func (app *app) getAllProjects(w http.ResponseWriter, r *http.Request) {
@@ -59,16 +58,14 @@ func (app *app) getProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	q := r.URL.Query()
-
-	taskFilters := &repos.TaskFilters{
-		SearchQuery:    q.Get("search"),
-		ChecklistQuery: getQuerySlice(q, "checklist"),
-		TypeIDQuery:    getQuerySliceInt(q, "typeId"),
-		StageQuery:     getQuerySlice(q, "stage"),
-		PriorityQuery:  getQuerySlice(q, "priority"),
-		AssigneeQuery:  getQuerySlice(q, "assignee"),
+	// The project comes from the path, so any "project" param in the query is
+	// ignored — GetProjectDetails scopes the task query itself.
+	taskFilters, err := parseTaskFilters(r.URL.Query())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
+	taskFilters.ProjectIDQuery = nil
 
 	projectDetails, err := app.projectService.GetProjectDetails(projectId, taskFilters)
 	if err != nil {

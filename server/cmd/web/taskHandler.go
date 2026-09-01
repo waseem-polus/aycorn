@@ -40,15 +40,15 @@ func presenceParam(q url.Values, key string) (string, error) {
 	return "", fmt.Errorf("invalid %s: %q", key, raw)
 }
 
-func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-
+// parseTaskFilters reads the task filter query params shared by every task
+// listing — the project-scoped one included — so a filter is parsed in exactly
+// one place. A malformed date or presence value is a client error.
+func parseTaskFilters(q url.Values) (*repos.TaskFilters, error) {
 	dates := map[string]string{}
 	for _, key := range []string{"plannedFrom", "plannedTo", "completedFrom", "completedTo"} {
 		normalized, err := normalizedDateParam(q, key)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return nil, err
 		}
 		dates[key] = normalized
 	}
@@ -57,13 +57,12 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 	for _, key := range []string{"plannedPresence", "completedPresence"} {
 		value, err := presenceParam(q, key)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return nil, err
 		}
 		presence[key] = value
 	}
 
-	taskFilters := &repos.TaskFilters{
+	return &repos.TaskFilters{
 		SearchQuery:    q.Get("search"),
 		ChecklistQuery: getQuerySlice(q, "checklist"),
 		TypeIDQuery:    getQuerySliceInt(q, "typeId"),
@@ -78,6 +77,28 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 
 		PlannedPresence:   presence["plannedPresence"],
 		CompletedPresence: presence["completedPresence"],
+	}, nil
+}
+
+// optionalIntParam reads an optional integer query param. Absent means nil; a
+// non-numeric value is a client error rather than a silently ignored filter.
+func optionalIntParam(q url.Values, key string) (*int, error) {
+	raw := q.Get(key)
+	if raw == "" {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil {
+		return nil, fmt.Errorf("invalid %s: %q", key, raw)
+	}
+	return &value, nil
+}
+
+func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
+	taskFilters, err := parseTaskFilters(r.URL.Query())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	tasks, err := app.taskService.GetAllTasks(taskFilters)
@@ -90,7 +111,13 @@ func (app *app) getUpcomingTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) getTaskFacets(w http.ResponseWriter, r *http.Request) {
-	facets, err := app.taskService.GetTaskFacets()
+	projectID, err := optionalIntParam(r.URL.Query(), "project")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	facets, err := app.taskService.GetTaskFacets(projectID)
 	if err != nil {
 		respondErr(w, err)
 		return

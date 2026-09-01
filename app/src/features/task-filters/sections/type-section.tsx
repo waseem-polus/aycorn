@@ -2,13 +2,13 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 import { stageStrokeClass } from "@/features/stage/stage-visual";
 import { cn } from "@/lib/utils";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
-import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
+import type { TaskFilterState } from "@/features/task-filters/task-filters";
+import type { TaskType, TaskTypeCategory } from "@/types/types";
 
 type Props = {
-  taskTypes: TaskTypeGlobal[];
+  taskTypes: TaskType[];
   categories: TaskTypeCategory[];
-  selected: UpcomingFilters["type"];
+  selected: TaskFilterState["type"];
   onToggle: (key: string | number) => void;
   onClear: () => void;
 };
@@ -36,7 +36,7 @@ export function TypeSection({ taskTypes, categories, selected, onToggle, onClear
   return (
     <div className="flex flex-col gap-1.5">
       <MultiSelectCombobox
-        label="Type"
+        label="Task Type"
         icon="shapes"
         groups={groups}
         selected={selected}
