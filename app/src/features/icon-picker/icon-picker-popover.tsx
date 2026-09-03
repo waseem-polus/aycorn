@@ -18,6 +18,7 @@ type IconPickerPopoverProps = {
   /** Optional control rendered to the right of the search input (e.g. a color picker). */
   headerSlot?: ReactNode;
   align?: "start" | "center" | "end";
+  side?: "top" | "bottom" | "left" | "right";
   /**
    * Optional controlled open state. Omit both to let the popover manage its own
    * — needed when something other than the trigger opens it (e.g. a "Change
@@ -38,6 +39,7 @@ export function IconPickerPopover({
   trigger,
   headerSlot,
   align = "start",
+  side = "bottom",
   open: controlledOpen,
   onOpenChange,
 }: IconPickerPopoverProps) {
@@ -118,8 +120,9 @@ export function IconPickerPopover({
       {/* Picking an icon must never reach an ancestor's onClick — the picker
           is used inside cards that navigate on click. */}
       <PopoverContent
-        className="w-[312px] p-2"
+        className="w-78 p-2"
         align={align}
+        side={side}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
         // The color popover in headerSlot portals outside this content and

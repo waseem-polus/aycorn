@@ -102,6 +102,9 @@ export function ProjectCardMenu({
               onColorSelect={onColorSelect}
               onDone={() => setOpen(false)}
             />
+
+            <DropdownMenuSeparator />
+
             <DropdownMenuItem onClick={onTogglePin}>
               {project.Pinned ? (
                 <PinOffIcon className="text-muted-foreground" />

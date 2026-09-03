@@ -36,11 +36,6 @@ export function IconColorPickerMenuItem({
     onDone?.();
   };
 
-  const handleColorSelect = (color: string) => {
-    onColorSelect(color);
-    onDone?.();
-  };
-
   return (
     <IconPickerPopover
       value={iconValue}
@@ -56,12 +51,10 @@ export function IconColorPickerMenuItem({
         </DropdownMenuItem>
       }
       headerSlot={
-        <ColorPicker
-          value={colorValue}
-          onSelect={handleColorSelect}
-          align="end"
-        />
+        <ColorPicker value={colorValue} onSelect={onColorSelect} align="end" />
       }
+      align="start"
+      side="right"
     />
   );
 }
