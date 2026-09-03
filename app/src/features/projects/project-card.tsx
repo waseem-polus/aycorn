@@ -1,7 +1,6 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArchiveIcon, PinIcon } from "lucide-react";
 import { EditableHeader } from "@/components/EditableHeader";
 import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip";
 import {
@@ -22,9 +21,9 @@ import { useProjectMutation } from "@/queries/useProjectMutation";
 import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
 import { ProjectCardMenu } from "@/features/projects/project-card-menu";
 import { DeleteProjectDialog } from "@/features/projects/delete-project-dialog";
-import { stageStrokeClass } from "@/features/stage/stage-palette";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectFolder } from "@/types/types";
+import { ProjectIcon } from "@/features/projects/project-icon";
 
 type Props = {
   project: Project;
@@ -61,6 +60,12 @@ export function ProjectCard({
   const itemClassName = (itemProps?.className as string | undefined) ?? "";
 
   const displayName = project.Name !== "" ? project.Name : "New Project";
+
+  const save = (patch: Partial<Project>) =>
+    updateProject.mutate(
+      { ...project, ...patch },
+      { onError: () => toast.error("Failed to update project.") },
+    );
 
   const handleSaveName = (newName: string) => {
     setIsEditing(false);
@@ -125,10 +130,12 @@ export function ProjectCard({
         }}
       >
         <CardHeader className="relative gap-0.5 px-4 pointer-events-none">
-          <CardTitle className="font-medium min-w-0">
+          <CardTitle className="font-medium min-w-0 flex items-center gap-2">
+            <ProjectIcon project={project} />
+
             {isEditing ? (
               <div
-                className="pointer-events-auto"
+                className="pointer-events-auto flex-1 min-w-0"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
               >
@@ -143,14 +150,6 @@ export function ProjectCard({
               </div>
             ) : (
               <div className="flex items-center gap-1.5 min-w-0">
-                {project.Pinned && (
-                  <PinIcon
-                    className={cn(stageStrokeClass("red"), "size-4 shrink-0")}
-                  />
-                )}
-                {project.Archived && (
-                  <ArchiveIcon className="size-4 shrink-0 text-muted-foreground" />
-                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span
@@ -183,6 +182,8 @@ export function ProjectCard({
               project={project}
               folders={folders}
               onRename={() => setTimeout(() => setIsEditing(true), 100)}
+              onIconSelect={(icon) => save({ Icon: icon })}
+              onColorSelect={(color) => save({ Color: color })}
               onTogglePin={handleTogglePin}
               onToggleArchive={handleToggleArchive}
               onDuplicate={handleDuplicate}

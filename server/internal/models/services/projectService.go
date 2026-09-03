@@ -169,15 +169,23 @@ func (s *ProjectService) GetPinnedProjects() ([]models.Project, error) {
 }
 
 func (s *ProjectService) UpdateProject(project *models.Project) (bool, error) {
-	// Folder is a recent addition, and callers that only mean to rename send the
-	// project without it. Treat the zero value as "leave it where it is" rather
-	// than letting it through to fail the FK.
-	if project.Folder == 0 {
+	// Folder, Icon and Color are later additions, and callers that only mean to
+	// rename send the project without them. Treat the zero value as "leave it as
+	// it is" rather than letting it through to fail the FK or blank a column.
+	if project.Folder == 0 || project.Icon == "" || project.Color == "" {
 		existing, err := s.ProjectRepo.FindOne(project.ID)
 		if err != nil {
 			return false, err
 		}
-		project.Folder = existing.Folder
+		if project.Folder == 0 {
+			project.Folder = existing.Folder
+		}
+		if project.Icon == "" {
+			project.Icon = existing.Icon
+		}
+		if project.Color == "" {
+			project.Color = existing.Color
+		}
 	}
 
 	success, err := s.ProjectRepo.UpdateProject(project)
@@ -317,6 +325,8 @@ func (s *ProjectService) DuplicateProjectConfig(sourceId int) (int, error) {
 		Name:     source.Name + " (copy)",
 		Workflow: source.Workflow,
 		Folder:   source.Folder,
+		Icon:     source.Icon,
+		Color:    source.Color,
 	}); err != nil {
 		return 0, err
 	}
@@ -333,6 +343,41 @@ func (s *ProjectService) applyWorkflow(source *models.Project) (int, error) {
 		return 0, err
 	}
 	return int(id), nil
+}
+
+// bulkProjectUpdatableColumns whitelists the fields a bulk update may set,
+// mapping the JSON key (PascalCase, matching models.Project) to its column.
+// Name, Workflow and Folder are excluded on purpose: they have their own
+// endpoints, and none of them makes sense to set to one shared value.
+var bulkProjectUpdatableColumns = map[string]string{
+	"Icon":  "icon",
+	"Color": "color",
+}
+
+func (s *ProjectService) BulkUpdate(ids []int, changes map[string]any) (models.BulkResult, error) {
+	ids = dedupeInts(ids)
+	if len(ids) == 0 {
+		return models.BulkResult{}, nil
+	}
+
+	filtered := map[string]any{}
+	for jsonKey, dbCol := range bulkProjectUpdatableColumns {
+		if v, ok := changes[jsonKey]; ok {
+			filtered[dbCol] = v
+		}
+	}
+	if len(filtered) == 0 {
+		return models.BulkResult{Skipped: len(ids)}, nil
+	}
+
+	affected, err := s.ProjectRepo.UpdateManyFields(ids, filtered)
+	if err != nil {
+		return models.BulkResult{}, err
+	}
+	return models.BulkResult{
+		Success: affected,
+		Skipped: len(ids) - affected, // non-existent ids: retrying won't help
+	}, nil
 }
 
 func (s *ProjectService) BulkDeleteProjects(ids []int) (models.BulkResult, error) {

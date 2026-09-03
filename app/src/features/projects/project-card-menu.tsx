@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
@@ -22,6 +23,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { IconColorPickerMenuItem } from "@/features/icon-picker/icon-color-picker-menu-item";
 import { folderName } from "@/features/projects/folder-name";
 import type { Project, ProjectFolder } from "@/types/types";
 
@@ -29,6 +31,8 @@ type Props = {
   project: Project;
   folders: ProjectFolder[];
   onRename: () => void;
+  onIconSelect: (iconName: string) => void;
+  onColorSelect: (color: string) => void;
   onTogglePin: () => void;
   onToggleArchive: () => void;
   onDuplicate: () => void;
@@ -42,6 +46,8 @@ export function ProjectCardMenu({
   project,
   folders,
   onRename,
+  onIconSelect,
+  onColorSelect,
   onTogglePin,
   onToggleArchive,
   onDuplicate,
@@ -52,9 +58,12 @@ export function ProjectCardMenu({
 }: Props) {
   // An archived project is out of play: it can only be restored or removed.
   const archived = project.Archived;
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu>
+    // modal={false} so the icon picker's popover, which opens from a menu item,
+    // stays interactive — a modal menu blocks pointer events outside itself.
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         {/* The card navigates on click, and Radix portals still bubble through
             the React tree — without this the menu never opens. */}
@@ -86,6 +95,13 @@ export function ProjectCardMenu({
               <TextCursorInputIcon className="text-muted-foreground" />
               Rename
             </DropdownMenuItem>
+            <IconColorPickerMenuItem
+              iconValue={project.Icon}
+              colorValue={project.Color}
+              onIconSelect={onIconSelect}
+              onColorSelect={onColorSelect}
+              onDone={() => setOpen(false)}
+            />
             <DropdownMenuItem onClick={onTogglePin}>
               {project.Pinned ? (
                 <PinOffIcon className="text-muted-foreground" />

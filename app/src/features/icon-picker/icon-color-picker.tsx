@@ -1,10 +1,4 @@
-import { useState } from "react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -12,8 +6,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { IconPickerPopover } from "@/features/icon-picker/icon-picker-popover";
-import { ColorGrid } from "@/features/color-picker/color-grid";
-import { StageColorSquare } from "@/features/workflows/details/stage-color-square";
+import { ColorPicker } from "@/features/color-picker/color-picker";
 import { cn } from "@/lib/utils";
 
 type IconColorPickerProps = {
@@ -22,6 +15,7 @@ type IconColorPickerProps = {
   onIconSelect: (iconName: string) => void;
   onColorSelect: (color: string) => void;
   iconClassName?: string;
+  buttonSize?: "icon-sm" | "icon" | "icon-lg"
 };
 
 const FALLBACK_ICON = "circle-dashed";
@@ -32,14 +26,8 @@ export function IconColorPicker({
   onIconSelect,
   onColorSelect,
   iconClassName,
+  buttonSize = "icon-sm",
 }: IconColorPickerProps) {
-  const [colorOpen, setColorOpen] = useState(false);
-
-  const handleColorSelect = (color: string) => {
-    onColorSelect(color);
-    setColorOpen(false);
-  };
-
   return (
     <Tooltip>
       <IconPickerPopover
@@ -47,7 +35,7 @@ export function IconColorPicker({
         onSelect={onIconSelect}
         trigger={
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Change icon">
+            <Button variant="ghost" size={buttonSize} aria-label="Change icon">
               <DynamicIcon
                 name={(iconValue || FALLBACK_ICON) as IconName}
                 className={cn("size-4", iconClassName)}
@@ -57,21 +45,7 @@ export function IconColorPicker({
           </TooltipTrigger>
         }
         headerSlot={
-        <Popover open={colorOpen} onOpenChange={setColorOpen}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon-sm" aria-label="Change color">
-                  <StageColorSquare color={colorValue} />
-                </Button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent>{colorValue || "Pick a color"}</TooltipContent>
-          </Tooltip>
-          <PopoverContent className="w-auto p-2" align="end">
-            <ColorGrid value={colorValue} onSelect={handleColorSelect} />
-          </PopoverContent>
-        </Popover>
+          <ColorPicker value={colorValue} onSelect={onColorSelect} align="end" />
         }
       />
       <TooltipContent>

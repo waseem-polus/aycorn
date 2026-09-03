@@ -13,7 +13,7 @@ type ProjectRepo struct {
 
 // Pinned has no column of its own — it is membership in pinned_project.
 const projectSelect = `
-SELECT p.id, p.name,
+SELECT p.id, p.name, p.icon, p.color,
        EXISTS(SELECT 1 FROM pinned_project pp WHERE pp.project = p.id),
        p.archived, p.folder, p.workflow, w.name, p.timeCreated, p.timeModified
 FROM project p
@@ -22,7 +22,7 @@ JOIN workflow w ON p.workflow = w.id`
 func scanProject(scanner interface {
 	Scan(...any) error
 }, p *models.Project) error {
-	return scanner.Scan(&p.ID, &p.Name, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
+	return scanner.Scan(&p.ID, &p.Name, &p.Icon, &p.Color, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
 }
 
 // All returns projects most recently updated first — the order the projects page
@@ -124,8 +124,8 @@ ORDER BY pin.sortIndex ASC, p.id ASC;`
 // UpdateProject deliberately does not write `pinned` or `archived`: pinning
 // lives in pinned_project, and archiving has to force-unpin in the same tx.
 func (repo *ProjectRepo) UpdateProject(project *models.Project) (bool, error) {
-	query := "UPDATE project SET name = ?, workflow = ?, folder = ? WHERE id = ?;"
-	res, err := repo.DB.Exec(query, project.Name, project.Workflow, project.Folder, project.ID)
+	query := "UPDATE project SET name = ?, workflow = ?, folder = ?, icon = ?, color = ? WHERE id = ?;"
+	res, err := repo.DB.Exec(query, project.Name, project.Workflow, project.Folder, project.Icon, project.Color, project.ID)
 	if err != nil {
 		return false, err
 	}
@@ -298,6 +298,37 @@ func (repo *ProjectRepo) UpdateManyFolder(ids []int, folderId int) (int, error) 
 		"UPDATE project SET folder = ? WHERE id IN ("+placeholders+");",
 		append([]any{folderId}, args...)...,
 	)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+// UpdateManyFields sets an arbitrary set of columns on many projects in one
+// statement. The caller (the service) is responsible for whitelisting the
+// column names — nothing here escapes them.
+func (repo *ProjectRepo) UpdateManyFields(ids []int, fields map[string]any) (int, error) {
+	if len(ids) == 0 || len(fields) == 0 {
+		return 0, nil
+	}
+
+	setParts := []string{}
+	setArgs := []any{}
+	for col, val := range fields {
+		setParts = append(setParts, col+" = ?")
+		setArgs = append(setArgs, val)
+	}
+
+	placeholders, idArgs := intIdPlaceholders(ids)
+	query := "UPDATE project SET " + strings.Join(setParts, ", ") +
+		" WHERE id IN (" + placeholders + ");"
+
+	args := append(setArgs, idArgs...)
+	res, err := repo.DB.Exec(query, args...)
 	if err != nil {
 		return 0, err
 	}

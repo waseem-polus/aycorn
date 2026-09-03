@@ -18,6 +18,13 @@ type IconPickerPopoverProps = {
   /** Optional control rendered to the right of the search input (e.g. a color picker). */
   headerSlot?: ReactNode;
   align?: "start" | "center" | "end";
+  /**
+   * Optional controlled open state. Omit both to let the popover manage its own
+   * — needed when something other than the trigger opens it (e.g. a "Change
+   * icon" item in a dropdown menu).
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -31,8 +38,12 @@ export function IconPickerPopover({
   trigger,
   headerSlot,
   align = "start",
+  open: controlledOpen,
+  onOpenChange,
 }: IconPickerPopoverProps) {
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = onOpenChange ?? setUncontrolledOpen;
   const [query, setQuery] = useState("");
   const [cache, setCache] = useState<IconCache | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -104,10 +115,18 @@ export function IconPickerPopover({
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      {/* Picking an icon must never reach an ancestor's onClick — the picker
+          is used inside cards that navigate on click. */}
       <PopoverContent
         className="w-[312px] p-2"
         align={align}
         onKeyDown={handleKeyDown}
+        onClick={(e) => e.stopPropagation()}
+        // The color popover in headerSlot portals outside this content and
+        // autofocuses a swatch. Without this, that focus move reads as "focus
+        // left the popover" and dismisses the grid — which is what happens
+        // when this picker is opened from a dropdown menu item.
+        onFocusOutside={(e) => e.preventDefault()}
       >
         <div className="flex items-center gap-2 mb-2">
           <Input

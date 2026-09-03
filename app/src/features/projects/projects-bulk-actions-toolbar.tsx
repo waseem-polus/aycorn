@@ -1,5 +1,13 @@
-import { useMemo } from "react";
-import { Archive, ArchiveRestore, FolderInput, Pin, PinOff } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Archive,
+  ArchiveRestore,
+  FolderInput,
+  Palette,
+  Pin,
+  PinOff,
+  Shapes,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +16,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { BulkActionsToolbarBase } from "@/components/bulk-actions-toolbar-base";
+import { IconPickerPopover } from "@/features/icon-picker/icon-picker-popover";
+import { ColorGrid } from "@/features/color-picker/color-grid";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
@@ -28,8 +43,14 @@ export function ProjectsBulkActionsToolbar({
   archivedView,
 }: Props) {
   const { selectedIds, clearSelection } = useSharedSelection();
-  const { bulkSetPinned, bulkSetArchived, bulkSetFolder, bulkDelete } =
-    useAllProjectsMutation();
+  const {
+    bulkSetPinned,
+    bulkSetArchived,
+    bulkSetFolder,
+    bulkUpdateProjects,
+    bulkDelete,
+  } = useAllProjectsMutation();
+  const [colorOpen, setColorOpen] = useState(false);
 
   const selectedProjects = useMemo(
     () => projects.filter((p) => selectedIds.has(`proj-${p.ID}`)),
@@ -41,7 +62,8 @@ export function ProjectsBulkActionsToolbar({
   const busy =
     bulkSetPinned.isPending ||
     bulkSetArchived.isPending ||
-    bulkSetFolder.isPending;
+    bulkSetFolder.isPending ||
+    bulkUpdateProjects.isPending;
 
   const noun = (n: number) => `${n} project${n !== 1 ? "s" : ""}`;
 
@@ -90,6 +112,18 @@ export function ProjectsBulkActionsToolbar({
       },
     );
 
+  const handleAppearance = (changes: Partial<Pick<Project, "Icon" | "Color">>) =>
+    bulkUpdateProjects.mutate(
+      { ids, changes },
+      {
+        onSuccess: (result) => {
+          bulkResultToast(result, `Updated ${noun(result.success)}.`);
+          clearSelection();
+        },
+        onError: () => toast.error("Failed updating projects."),
+      },
+    );
+
   const handleDelete = () =>
     bulkDelete.mutate(ids, {
       onSuccess: (result) => {
@@ -122,6 +156,36 @@ export function ProjectsBulkActionsToolbar({
         </Button>
       ) : (
         <>
+          <IconPickerPopover
+            value=""
+            onSelect={(icon) => handleAppearance({ Icon: icon })}
+            align="center"
+            trigger={
+              <Button variant="ghost" size="sm" disabled={busy}>
+                <Shapes />
+                Icon
+              </Button>
+            }
+          />
+
+          <Popover open={colorOpen} onOpenChange={setColorOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" disabled={busy}>
+                <Palette />
+                Color
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="center">
+              <ColorGrid
+                value=""
+                onSelect={(color) => {
+                  setColorOpen(false);
+                  handleAppearance({ Color: color });
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+
           <Button
             variant="ghost"
             size="sm"

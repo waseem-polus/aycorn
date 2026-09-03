@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ProjectIcon } from "@/features/projects/project-icon";
 import { useProjectMutation } from "@/queries/useProjectMutation";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/types";
@@ -104,6 +105,7 @@ export function PinnedProjectItem({ project, isReordering, onDelete }: Props) {
     <SidebarMenuItem>
       <SidebarMenuButton asChild size={isMobile ? "lg" : "default"}>
         <Link to="/project/$projectId" params={{ projectId: String(project.ID) }}>
+          <ProjectIcon project={project} />
           <span className="truncate">{displayName}</span>
         </Link>
       </SidebarMenuButton>

@@ -34,6 +34,8 @@ export type TaskTypeGlobal = TaskType & {
 export type Project = {
   ID: number;
   Name: string;
+  Icon: string;
+  Color: string;
   // Server-derived from the pinned_project table. Never sent back through the
   // project PUT — pin changes go through the pinned bulk endpoint.
   Pinned: boolean;

@@ -3,8 +3,10 @@ package models
 import "time"
 
 type Project struct {
-	ID   int
-	Name string
+	ID    int
+	Name  string
+	Icon  string
+	Color string
 	// Pinned is derived from the pinned_project table on read. It is never
 	// written through UpdateProject — pin changes go through the pinned bulk
 	// endpoint so membership and pin order stay in one place.

@@ -176,7 +176,7 @@ function timeBucket(
 }
 
 export type GroupingData = {
-  projectById: Record<number, { Name: string }>;
+  projectById: Record<number, { Name: string; Icon: string; Color: string }>;
   stageById: Record<number, { Name: string; Icon: string; Color: string }>;
 };
 
@@ -187,12 +187,12 @@ function categoryBucket(
 ): Omit<TaskGroup, "tasks"> {
   switch (dim) {
     case "project": {
-      const name =
-        data.projectById[task.ProjectID]?.Name ?? `Project ${task.ProjectID}`;
+      const project = data.projectById[task.ProjectID];
       return {
         key: "p" + task.ProjectID,
-        label: name,
-        icon: "folder",
+        label: project?.Name ?? `Project ${task.ProjectID}`,
+        icon: project?.Icon || "folder",
+        color: project?.Color,
         order: task.ProjectID,
       };
     }

@@ -1,4 +1,8 @@
-import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import {
+  MultiSelectCombobox,
+  type MultiSelectOption,
+} from "@/components/ui/multi-select-combobox";
+import { ProjectIcon } from "@/features/projects/project-icon";
 import type { TaskFilterState } from "@/features/task-filters/task-filters";
 import type { Project } from "@/types/types";
 
@@ -16,13 +20,14 @@ export function ProjectSection({
   onClear,
 }: Props) {
   const groups = Object.entries(
-    projects.reduce<Record<string, { key: number; label: string }[]>>(
-      (acc, p) => {
-        (acc[p.WorkflowName] ??= []).push({ key: p.ID, label: p.Name });
-        return acc;
-      },
-      {},
-    ),
+    projects.reduce<Record<string, MultiSelectOption[]>>((acc, p) => {
+      (acc[p.WorkflowName] ??= []).push({
+        key: p.ID,
+        label: p.Name,
+        lead: <ProjectIcon project={p} className="size-3.5" />,
+      });
+      return acc;
+    }, {}),
   ).map(([label, options]) => ({ label, options }));
 
   return (

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { BulkResult } from "@/types/types";
+import type { BulkResult, Project } from "@/types/types";
 
 export function useAllProjectsMutation() {
   const queryClient = useQueryClient();
@@ -79,6 +79,30 @@ export function useAllProjectsMutation() {
     onSuccess: invalidate,
   });
 
+  // Whitelisted fields only (Icon, Color) — the server ignores anything else.
+  // Name/Workflow/Folder have their own endpoints.
+  const bulkUpdateProjects = useMutation({
+    mutationFn: async ({
+      ids,
+      changes,
+    }: {
+      ids: number[];
+      changes: Partial<Pick<Project, "Icon" | "Color">>;
+    }) => {
+      const res = await fetch(`/api/project/bulk`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, changes }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || "Failed to update projects");
+      }
+      return (await res.json()) as BulkResult;
+    },
+    onSuccess: invalidate,
+  });
+
   const duplicateProjectConfig = useMutation({
     mutationFn: async (projectId: number) => {
       const res = await fetch(`/api/project/${projectId}/duplicate`, {
@@ -130,6 +154,7 @@ export function useAllProjectsMutation() {
     bulkSetPinned,
     bulkSetArchived,
     bulkSetFolder,
+    bulkUpdateProjects,
     duplicateProjectConfig,
     reorderPinnedProjects,
     bulkDelete,

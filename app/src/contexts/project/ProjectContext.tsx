@@ -29,6 +29,8 @@ export const defaultProjectContextValue: ProjectContextType = {
   Project: {
     ID: 0,
     Name: "",
+    Icon: "folder",
+    Color: "gray",
     WorkflowName: "",
     Pinned: false,
     Archived: false,

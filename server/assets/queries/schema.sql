@@ -73,6 +73,9 @@ CREATE TABLE project (
     -- Added in migration 00008.
     folder INTEGER REFERENCES project_folder(id) ON DELETE RESTRICT,
     archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0, 1)),
+    -- Added in migration 00010.
+    icon TEXT NOT NULL DEFAULT 'folder',
+    color TEXT NOT NULL DEFAULT 'gray',
 
     FOREIGN KEY (workflow) REFERENCES workflow(id)
 );
