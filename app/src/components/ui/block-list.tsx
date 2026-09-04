@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 const config: Record<
   string,
   {
-    Li: React.FC<PlateElementProps>;
+    Li: React.FC<PlateElementProps & { Marker?: React.FC<PlateElementProps> }>;
     Marker: React.FC<PlateElementProps>;
   }
 > = {

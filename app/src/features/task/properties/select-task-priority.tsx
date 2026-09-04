@@ -1,7 +1,7 @@
 import type { Task } from "@/types/types";
 import { useContext, useState } from "react";
 import { TaskContext } from "@/contexts/task/TaskContext";
-import { ChevronDown, GaugeCircle, SignalIcon } from "lucide-react";
+import { ChevronDown, SignalIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
