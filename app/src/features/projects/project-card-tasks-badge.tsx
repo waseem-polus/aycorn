@@ -21,7 +21,7 @@ export function ProjectCardTasksBadge({ project }: { project: Project }) {
     <HoverCard
       open={open}
       onOpenChange={setOpen}
-      openDelay={200}
+      openDelay={500}
       closeDelay={100}
     >
       <HoverCardTrigger asChild>
@@ -35,7 +35,7 @@ export function ProjectCardTasksBadge({ project }: { project: Project }) {
         </Badge>
       </HoverCardTrigger>
       <HoverCardContent
-        side="top"
+        side="bottom"
         align="start"
         className="w-80 p-3 flex flex-col gap-2"
         // The content is portalled, but React events still bubble through the

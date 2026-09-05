@@ -19,7 +19,7 @@ export function ProjectCardWorkflowBadge({ project }: { project: Project }) {
     <HoverCard
       open={open}
       onOpenChange={setOpen}
-      openDelay={200}
+      openDelay={500}
       closeDelay={100}
     >
       <HoverCardTrigger asChild>
@@ -33,11 +33,9 @@ export function ProjectCardWorkflowBadge({ project }: { project: Project }) {
         </Badge>
       </HoverCardTrigger>
       <HoverCardContent
-        side="top"
+        side="bottom"
         align="start"
         className="w-64 p-3 flex flex-col gap-2"
-        // The content is portalled, but React events still bubble through the
-        // component tree into the card's navigate-on-click handler.
         onClick={(e) => e.stopPropagation()}
       >
         <span className="text-sm font-medium">{project.WorkflowName}</span>
