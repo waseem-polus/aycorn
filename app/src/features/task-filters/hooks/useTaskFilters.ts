@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import {
   EMPTY_FILTERS,
@@ -8,16 +9,44 @@ import {
   type TaskFilterState,
 } from "@/features/task-filters/task-filters";
 
+type PersistedFilterState = Omit<TaskFilterState, "search">;
+
+const stripSearch = (state: TaskFilterState): PersistedFilterState => {
+  const rest = { ...state };
+  delete (rest as Partial<TaskFilterState>).search;
+  return rest;
+};
+
+const EMPTY_PERSISTED_FILTERS: PersistedFilterState = stripSearch(EMPTY_FILTERS);
+
 /**
  * Task filter state for one surface. `scope` names the surface — it keys the
  * localStorage entry, so "upcoming" and "project.7" remember their filters
  * independently.
+ *
+ * `search` is deliberately excluded from persistence: a search term left over
+ * from a previous session looks like missing data ("only 1-2 tasks") when the
+ * page is reopened, so it lives in plain component state and resets on mount.
  */
 export function useTaskFilters(scope: string) {
-  const [filters, setFilters] = useLocalStorage<TaskFilterState>(
+  const [persisted, setPersisted] = useLocalStorage<PersistedFilterState>(
     `aycorn.${scope}.filters`,
-    EMPTY_FILTERS,
+    EMPTY_PERSISTED_FILTERS,
   );
+  const [search, setSearchState] = useState("");
+  const filters: TaskFilterState = { ...persisted, search };
+
+  const setFilters = (
+    update: TaskFilterState | ((prev: TaskFilterState) => TaskFilterState),
+  ) => {
+    setPersisted((prev: PersistedFilterState) => {
+      const next =
+        typeof update === "function"
+          ? update({ ...prev, search })
+          : update;
+      return stripSearch(next);
+    });
+  };
 
   const toggleFilter = (dim: FilterDim, key: string | number) => {
     setFilters((prev: TaskFilterState) => {
@@ -34,7 +63,7 @@ export function useTaskFilters(scope: string) {
   };
 
   const setSearch = (search: string) => {
-    setFilters((prev: TaskFilterState) => ({ ...prev, search }));
+    setSearchState(search);
   };
 
   const setDateFilter = (key: string, value: string) => {
@@ -82,7 +111,8 @@ export function useTaskFilters(scope: string) {
   };
 
   const resetAll = () => {
-    setFilters(EMPTY_FILTERS);
+    setPersisted(EMPTY_PERSISTED_FILTERS);
+    setSearchState("");
   };
 
   /**
