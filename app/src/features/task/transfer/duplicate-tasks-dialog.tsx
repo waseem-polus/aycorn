@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -9,8 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import { useTaskTransferMutation } from "@/features/task/transfer/queries/useTaskTransferMutation";
 import { pluralize } from "@/utils/pluralize";
@@ -33,17 +30,11 @@ export function DuplicateTasksDialog({
   taskIds,
   onSuccess,
 }: Props) {
-  const [copyRelationships, setCopyRelationships] = useState(false);
   const { copyTasks } = useTaskTransferMutation();
 
   const count = taskIds.length;
 
-  const handleOpenChange = (next: boolean) => {
-    if (!next) setCopyRelationships(false);
-    onOpenChange(next);
-  };
-
-  const handleConfirm = () => {
+  const handleDuplicate = (copyRelationships: boolean) => {
     copyTasks.mutate(
       { ids: taskIds, copyRelationships },
       {
@@ -52,7 +43,7 @@ export function DuplicateTasksDialog({
             result,
             `Duplicated ${pluralize(result.success, "task")}.`,
           );
-          handleOpenChange(false);
+          onOpenChange(false);
           onSuccess?.();
         },
         onError: (err) =>
@@ -62,31 +53,35 @@ export function DuplicateTasksDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Duplicate {pluralize(count, "task")}?</DialogTitle>
+          <DialogTitle>Duplicate Task With Links</DialogTitle>
           <DialogDescription>
-            The {count === 1 ? "copy stays" : "copies stay"} in the same
-            checklist and stage, named "… (copy)".
+            Duplicate {pluralize(count, "task")} and{" "}
+            {count > 1 ? "their" : "its"} links in this project?
           </DialogDescription>
         </DialogHeader>
 
-        <Label className="flex items-center gap-2 font-normal">
-          <Checkbox
-            checked={copyRelationships}
-            onCheckedChange={(checked) => setCopyRelationships(checked === true)}
-          />
-          Also copy task links
-        </Label>
-
-        <DialogFooter className="flex flex-row justify-end">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+        <DialogFooter className="flex flex-row sm:justify-between w-full">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button disabled={copyTasks.isPending} onClick={handleConfirm}>
-            Duplicate
-          </Button>
+          <span className="flex gap-2">
+            <Button
+              variant="secondary"
+              disabled={copyTasks.isPending}
+              onClick={() => handleDuplicate(false)}
+            >
+              Duplicate Without Links
+            </Button>
+            <Button
+              disabled={copyTasks.isPending}
+              onClick={() => handleDuplicate(true)}
+            >
+              Duplicate
+            </Button>
+          </span>
         </DialogFooter>
       </DialogContent>
     </Dialog>
