@@ -7,6 +7,7 @@ import {
   Card,
   CardAction,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,6 +25,8 @@ import { DeleteProjectDialog } from "@/features/projects/delete-project-dialog";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectFolder } from "@/types/types";
 import { ProjectIcon } from "@/features/projects/project-icon";
+import { ProjectCardWorkflowBadge } from "@/features/projects/project-card-workflow-badge";
+import { ProjectCardTasksBadge } from "@/features/projects/project-card-tasks-badge";
 
 type Props = {
   project: Project;
@@ -168,13 +171,12 @@ export function ProjectCard({
           </CardTitle>
 
           <CardDescription className="text-xs truncate">
-            {project.WorkflowName}
+            <RelativeTimeWithTooltip
+              date={project.TimeModified}
+              label="Updated"
+              className="text-xs"
+            />
           </CardDescription>
-          <RelativeTimeWithTooltip
-            date={project.TimeModified}
-            label="Updated"
-            className="text-xs"
-          />
 
           <CardAction className="pointer-events-auto flex items-center gap-0.5">
             {children}
@@ -205,6 +207,10 @@ export function ProjectCard({
             />
           </CardAction>
         </CardHeader>
+        <CardFooter className="px-3 flex gap-1">
+          <ProjectCardWorkflowBadge project={project} />
+          <ProjectCardTasksBadge project={project} />
+        </CardFooter>
       </Card>
 
       <DeleteProjectDialog

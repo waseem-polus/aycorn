@@ -43,6 +43,9 @@ export type Project = {
   Folder: number;
   Workflow: number;
   WorkflowName: string;
+  // Server-derived task rollups. Like Pinned, they are read-only.
+  TaskCount: number;
+  DoneTaskCount: number;
   TimeCreated: string;
   TimeModified: string;
 };

@@ -15,8 +15,13 @@ type Project struct {
 	Folder       int
 	Workflow     int
 	WorkflowName string
-	TimeCreated  *time.Time
-	TimeModified *time.Time
+	// TaskCount and DoneTaskCount are derived on read (see projectSelect).
+	// Like Pinned and WorkflowName they are never written through
+	// UpdateProject.
+	TaskCount     int
+	DoneTaskCount int
+	TimeCreated   *time.Time
+	TimeModified  *time.Time
 }
 
 type ProjectFolder struct {

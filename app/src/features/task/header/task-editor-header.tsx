@@ -119,7 +119,6 @@ export function TaskEditorHeader({
             isEditorReady={isEditorReady}
             onMoved={() => setOpen(false)}
             triggerClassName="size-7 flex"
-            contentClassName="mr-2"
           />
         </div>
       </div>

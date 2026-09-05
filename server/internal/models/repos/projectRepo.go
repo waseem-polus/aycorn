@@ -12,17 +12,29 @@ type ProjectRepo struct {
 }
 
 // Pinned has no column of its own — it is membership in pinned_project.
+// The task counts are correlated subqueries rather than aggregate joins: a
+// GROUP BY here would collide with FindPinnedProjects' extra join and with the
+// WHERE clause All appends. A task belongs to a project only through its
+// checklist — there is no task.project column.
 const projectSelect = `
 SELECT p.id, p.name, p.icon, p.color,
        EXISTS(SELECT 1 FROM pinned_project pp WHERE pp.project = p.id),
-       p.archived, p.folder, p.workflow, w.name, p.timeCreated, p.timeModified
+       p.archived, p.folder, p.workflow, w.name,
+       (SELECT COUNT(*) FROM task t
+          JOIN checklist c ON c.id = t.checklist
+         WHERE c.project = p.id),
+       (SELECT COUNT(*) FROM task t
+          JOIN checklist c ON c.id = t.checklist
+          JOIN stage s ON s.id = t.stage
+         WHERE c.project = p.id AND s.type = 'done'),
+       p.timeCreated, p.timeModified
 FROM project p
 JOIN workflow w ON p.workflow = w.id`
 
 func scanProject(scanner interface {
 	Scan(...any) error
 }, p *models.Project) error {
-	return scanner.Scan(&p.ID, &p.Name, &p.Icon, &p.Color, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TimeCreated, &p.TimeModified)
+	return scanner.Scan(&p.ID, &p.Name, &p.Icon, &p.Color, &p.Pinned, &p.Archived, &p.Folder, &p.Workflow, &p.WorkflowName, &p.TaskCount, &p.DoneTaskCount, &p.TimeCreated, &p.TimeModified)
 }
 
 // All returns projects most recently updated first — the order the projects page

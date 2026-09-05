@@ -72,7 +72,7 @@ export function TaskActionsMenu({
             <Ellipsis className="size-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className={cn("min-w-48", contentClassName)}>
+        <DropdownMenuContent align="end" className={cn("min-w-48", contentClassName)}>
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={transfer.duplicate}>
               <CopyCheckIcon className="text-muted-foreground" />
