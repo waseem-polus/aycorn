@@ -7,6 +7,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { useUpcomingBulkMutation } from "@/features/upcoming/queries/useUpcomingBulkMutation";
 import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
+import { MoveCopyMenu } from "@/features/task/transfer/move-copy-menu";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
@@ -119,6 +120,7 @@ export function UpcomingBulkActionsToolbar({ tasks }: Props) {
         />
       </div>
       <AddRelationshipButton taskIds={selectedIdNumbers} />
+      <MoveCopyMenu tasks={selectedTasks} onDone={clearSelection} />
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label="More properties">

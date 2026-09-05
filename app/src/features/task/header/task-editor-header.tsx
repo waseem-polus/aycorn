@@ -6,31 +6,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { TaskActionsMenu } from "@/features/task/header/task-actions-menu";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useTaskMutation } from "@/queries/useTaskMutation";
-import {
-  ChevronsRightIcon,
-  ClipboardIcon,
-  CopyCheckIcon,
-  Ellipsis,
-  Maximize2,
-  PinIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { ChevronsRightIcon, Maximize2 } from "lucide-react";
 import { useContext } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -60,6 +42,18 @@ export function TaskEditorHeader({
   const navigate = useNavigate();
 
   const isMobile = useIsMobile();
+
+  const handleDelete = () => {
+    const taskName = task.Name === "" ? "Untitled Task" : task.Name;
+    setOpen(false);
+    deleteTask.mutate(task.ID, {
+      onSuccess: () => toast(`Deleted '${taskName}'`),
+      onError: () => {
+        toast(`Failed deleting '${taskName}'`);
+        setOpen(true);
+      },
+    });
+  };
 
   return (
     <DrawerHeader className="p-2 sm:border-b">
@@ -102,81 +96,31 @@ export function TaskEditorHeader({
         </div>
 
         <div className="flex gap-1 sm:gap-2 items-center">
-            <Badge
-              variant="outline"
-              className={cn("sm:hidden", priorityOutlineBadgeClass(task.Priority))}
-            >
-              <TaskPriorityIcon variant={task.Priority} />
-              {task.Priority}
-            </Badge>
-            <TaskTypeBadge type={task.Type} />
-            {taskStage && (
-                <WorkflowStageChip
-                className="rounded-full"
-                stage={taskStage}
-                />
+          <Badge
+            variant="outline"
+            className={cn(
+              "sm:hidden",
+              priorityOutlineBadgeClass(task.Priority),
             )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7 data-[state=open]:bg-muted text-muted-foreground flex"
-              >
-                <Ellipsis className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-2">
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <PinIcon className="text-muted-foreground" />
-                  Pin
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CopyCheckIcon className="text-muted-foreground" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <ClipboardIcon className="text-muted-foreground" />
-                    Copy as
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem
-                      disabled={!isEditorReady}
-                      onClick={onCopyAsMarkdown}
-                    >
-                      Markdown
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onCopyAsPlainText}>
-                      Plain text
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DrawerClose asChild>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      const taskName = task.Name === "" ? "Untitled Task" : task.Name;
-                      deleteTask.mutate(task.ID, {
-                        onSuccess: () => toast(`Deleted '${taskName}'`),
-                        onError: () => {
-                          toast(`Failed deleting '${taskName}'`);
-                          setOpen(true);
-                        },
-                      });
-                    }}
-                    variant="destructive"
-                  >
-                    <Trash2Icon className="text-muted-foreground" />
-                    Delete
-                  </DropdownMenuItem>
-                </DrawerClose>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          >
+            <TaskPriorityIcon variant={task.Priority} />
+            {task.Priority}
+          </Badge>
+          <TaskTypeBadge type={task.Type} />
+          {taskStage && (
+            <WorkflowStageChip className="rounded-full" stage={taskStage} />
+          )}
+          <TaskActionsMenu
+            task={task}
+            projectId={Project.ID}
+            onDelete={handleDelete}
+            onCopyAsMarkdown={onCopyAsMarkdown}
+            onCopyAsPlainText={onCopyAsPlainText}
+            isEditorReady={isEditorReady}
+            onMoved={() => setOpen(false)}
+            triggerClassName="size-7 flex"
+            contentClassName="mr-2"
+          />
         </div>
       </div>
     </DrawerHeader>

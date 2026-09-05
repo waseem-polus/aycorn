@@ -208,7 +208,7 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
 	}
-	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo}
+	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo, StageRepo: stageRepo}
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,

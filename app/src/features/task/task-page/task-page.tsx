@@ -7,16 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ChevronDown,
-  ClipboardIcon,
-  CopyCheckIcon,
-  EllipsisIcon,
-  LandPlotIcon,
-  PinIcon,
-  Trash2Icon,
-  User,
-} from "lucide-react";
+import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
@@ -39,17 +30,7 @@ import type { PlateEditor } from "platejs/react";
 import { serializeMd } from "@platejs/markdown";
 import { toast } from "sonner";
 import { extractPlainText } from "@/features/task/task-utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { TaskActionsMenu } from "@/features/task/header/task-actions-menu";
 import TaskTypeBadge from "../properties/task-type-badge";
 import { WorkflowStageChip } from "@/features/workflows/shared/workflow-stage-chip";
 import { Separator } from "@/components/ui/separator";
@@ -157,53 +138,15 @@ export function TaskPage({ projectId }: { projectId: number }) {
               />
             </Button>
           </CollapsibleTrigger>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="shrink-0 self-start data-[state=open]:bg-muted text-muted-foreground"
-              >
-                <EllipsisIcon className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <PinIcon className="text-muted-foreground" />
-                  Pin
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CopyCheckIcon className="text-muted-foreground" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <ClipboardIcon className="text-muted-foreground" />
-                    Copy as
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem
-                      disabled={!editorReady}
-                      onClick={handleCopyAsMarkdown}
-                    >
-                      Markdown
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopyAsPlainText}>
-                      Plain text
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={handleDelete} variant="destructive">
-                  <Trash2Icon className="text-muted-foreground" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TaskActionsMenu
+            task={task}
+            projectId={projectId}
+            onDelete={handleDelete}
+            onCopyAsMarkdown={handleCopyAsMarkdown}
+            onCopyAsPlainText={handleCopyAsPlainText}
+            isEditorReady={editorReady}
+            triggerClassName="shrink-0 self-start"
+          />
         </div>
 
         {!propertiesOpen && (

@@ -53,7 +53,12 @@ function RouteComponent() {
 
   return (
     <ProjectProvider>
-      <TaskProvider defaultState={task}>
+      {/*
+        TaskProvider seeds its state once, so a task that moves to another
+        project would keep pointing at the old project's stage and checklist.
+        Keying on the project remounts it with the refetched task.
+      */}
+      <TaskProvider key={task.ProjectID} defaultState={task}>
         <Page>
           <TaskPageHeader projectId={task.ProjectID} />
           <PageContent>

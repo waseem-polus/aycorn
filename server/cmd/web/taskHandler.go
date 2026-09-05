@@ -259,6 +259,57 @@ func (app *app) bulkDeleteTasks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// bulkMoveTasks repoints a selection at another project. `stage` is optional:
+// omit it when the destination project shares the source workflow (the tasks
+// keep their stages); send one when it doesn't, and it applies to every task.
+func (app *app) bulkMoveTasks(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs       []int `json:"ids"`
+		Checklist int   `json:"checklist"`
+		Stage     *int  `json:"stage"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskService.BulkMove(body.IDs, body.Checklist, body.Stage)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
+// bulkCopyTasks creates a new task per selected one. Both `checklist` and
+// `stage` are optional; omitting `checklist` keeps every copy in its source's
+// own project, which is the same-project "Duplicate".
+func (app *app) bulkCopyTasks(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body := struct {
+		IDs               []int `json:"ids"`
+		Checklist         *int  `json:"checklist"`
+		Stage             *int  `json:"stage"`
+		CopyRelationships bool  `json:"copyRelationships"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := app.taskService.BulkCopy(body.IDs, body.Checklist, body.Stage, body.CopyRelationships)
+	if err != nil {
+		respondErr(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
+}
+
 func (app *app) deleteTask(w http.ResponseWriter, r *http.Request) {
 	taskId, err := strconv.Atoi(r.PathValue("taskId"))
 	if err != nil {

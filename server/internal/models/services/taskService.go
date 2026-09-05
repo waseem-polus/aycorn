@@ -12,6 +12,9 @@ import (
 type TaskService struct {
 	TaskRepo     *repos.TaskRepo
 	TaskTypeRepo *repos.TaskTypeRepo
+	// StageRepo backs the move/copy validation in taskTransferService.go:
+	// stages are workflow-scoped, so a cross-project transfer has to check them.
+	StageRepo *repos.StageRepo
 }
 
 func (s *TaskService) GetAllTasks(filters *repos.TaskFilters) ([]models.TaskWithProject, error) {

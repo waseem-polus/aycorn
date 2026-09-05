@@ -18,6 +18,7 @@ import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
+import { MoveCopyMenu } from "@/features/task/transfer/move-copy-menu";
 import { pluralize } from "@/utils/pluralize";
 import { sharedTaskType } from "@/features/task/shared/shared-task-type";
 
@@ -130,6 +131,13 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
       </div>
 
       <AddRelationshipButton taskIds={selectedTasks.map((t) => t.ID)} />
+
+      <MoveCopyMenu
+        tasks={selectedTasks}
+        excludeProjectId={Project.ID}
+        onDone={onClear}
+        disabled={busy}
+      />
 
       <Popover>
         <PopoverTrigger asChild>
