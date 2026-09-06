@@ -170,14 +170,6 @@ export function ProjectCard({
             )}
           </CardTitle>
 
-          <CardDescription className="text-xs truncate">
-            <RelativeTimeWithTooltip
-              date={project.TimeModified}
-              label="Updated"
-              className="text-xs"
-            />
-          </CardDescription>
-
           <CardAction className="pointer-events-auto flex items-center gap-0.5">
             {children}
             <ProjectCardMenu
@@ -207,9 +199,16 @@ export function ProjectCard({
             />
           </CardAction>
         </CardHeader>
-        <CardFooter className="px-3 flex gap-1">
-          <ProjectCardWorkflowBadge project={project} />
-          <ProjectCardTasksBadge project={project} />
+        <CardFooter className="px-3 flex gap-1 justify-between">
+          <div className="flex gap-1">
+            <ProjectCardWorkflowBadge project={project} />
+            <ProjectCardTasksBadge project={project} />
+          </div>
+          <RelativeTimeWithTooltip
+            date={project.TimeModified}
+            label="Updated"
+            className="text-xs"
+          />
         </CardFooter>
       </Card>
 
