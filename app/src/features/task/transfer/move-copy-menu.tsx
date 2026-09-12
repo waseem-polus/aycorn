@@ -1,4 +1,4 @@
-import { CopyCheckIcon, CopyPlusIcon, FolderInputIcon } from "lucide-react";
+import { CopyIcon, CopyPlusIcon, FolderInputIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -53,7 +53,7 @@ export function MoveCopyMenu({
                 aria-label="Move or copy"
                 disabled={disabled || transfer.busy}
               >
-                <FolderInputIcon />
+                <CopyIcon />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -61,7 +61,7 @@ export function MoveCopyMenu({
         </Tooltip>
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={transfer.duplicate}>
-            <CopyCheckIcon className="text-muted-foreground" />
+            <CopyIcon className="text-muted-foreground" />
             Duplicate
           </DropdownMenuItem>
           <DropdownMenuItem onClick={transfer.openCopy}>

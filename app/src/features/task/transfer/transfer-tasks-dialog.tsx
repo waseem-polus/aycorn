@@ -17,8 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +30,7 @@ import { useProjectWorkflowSettingsQuery } from "@/features/settings/project-wor
 import { useProjectChecklistsQuery } from "@/features/task/transfer/queries/useProjectChecklistsQuery";
 import { useTaskTransferMutation } from "@/features/task/transfer/queries/useTaskTransferMutation";
 import { SelectDestinationProject } from "@/features/task/transfer/select-destination-project";
+import { TaskProperty } from "@/features/task/properties/task-property";
 import { pluralize } from "@/utils/pluralize";
 import type { Stage } from "@/types/types";
 
@@ -84,7 +83,6 @@ export function TransferTasksDialog({
   // derived, so a destination change re-derives instead of racing an effect.
   const [checklistPick, setChecklistPick] = useState<number | null>(null);
   const [stagePick, setStagePick] = useState<number | null>(null);
-  const [copyRelationships, setCopyRelationships] = useState(false);
 
   const { moveTasks, copyTasks } = useTaskTransferMutation();
   const pending = moveTasks.isPending || copyTasks.isPending;
@@ -148,16 +146,16 @@ export function TransferTasksDialog({
       setDestProjectId(null);
       setChecklistPick(null);
       setStagePick(null);
-      setCopyRelationships(false);
     }
     onOpenChange(next);
   };
 
   const count = tasks.length;
   const destName = destSettings?.Project.Name ?? "";
-  const ready = loaded && checklistId !== null && (!needsStage || stageId !== null);
+  const ready =
+    loaded && checklistId !== null && (!needsStage || stageId !== null);
 
-  const handleConfirm = () => {
+  const handleConfirm = (copyRelationships: boolean) => {
     if (!ready || checklistId === null) return;
     const ids = tasks.map((t) => t.ID);
     const stage = needsStage && stageId !== null ? stageId : undefined;
@@ -203,29 +201,28 @@ export function TransferTasksDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {verb} {pluralize(count, "task")} to another project
+            {verb} {pluralize(count, "Task")}
+            {mode === "copy" && " With Links"}
           </DialogTitle>
           <DialogDescription>
-            The name, description, type, assignee, priority and dates come
-            across as they are. Checklists and stages belong to a project, so
-            those need a destination.
+            {verb} {pluralize(count, "task")}{" "}
+            {mode === "copy" && `and ${count > 1 ? "their " : "its "}links `}
+            to another project?
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Project</Label>
+        <div className="flex flex-col gap-2">
+          <TaskProperty label="Project" htmlFor="project">
             <SelectDestinationProject
               value={destProjectId}
               onValueChange={handleDestinationChange}
               excludeProjectId={excludeProjectId}
               autoFocus
             />
-          </div>
+          </TaskProperty>
 
           {destProjectId !== null && (
-            <div className="flex flex-col gap-1.5">
-              <Label>Checklist</Label>
+            <TaskProperty label="Checklist" htmlFor="checklist">
               <Select
                 value={checklistId?.toString() ?? ""}
                 onValueChange={(val) => setChecklistPick(Number(val))}
@@ -249,31 +246,32 @@ export function TransferTasksDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </TaskProperty>
           )}
 
           {needsStage && (
-            <div className="flex flex-col gap-1.5">
-              <Label>Stage</Label>
-              <Select
-                value={stageId?.toString() ?? ""}
-                onValueChange={(val) => setStagePick(Number(val))}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pick a stage..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {destStages.map((stage) => (
-                    <SelectItem key={stage.ID} value={stage.ID.toString()}>
-                      <span className="flex items-center gap-2">
-                        <StageIcon stage={stage} className="shrink-0" />
-                        <span className="truncate">{stageName(stage)}</span>
-                        <StageTypeBadge type={stage.Type} />
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-2">
+              <TaskProperty label="Stage" htmlFor="stage">
+                <Select
+                  value={stageId?.toString() ?? ""}
+                  onValueChange={(val) => setStagePick(Number(val))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pick a stage..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {destStages.map((stage) => (
+                      <SelectItem key={stage.ID} value={stage.ID.toString()}>
+                        <span className="flex items-center gap-2">
+                          <StageIcon stage={stage} className="shrink-0" />
+                          <span className="truncate">{stageName(stage)}</span>
+                          <StageTypeBadge type={stage.Type} />
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TaskProperty>
               <div className="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                 <CircleAlert className="size-3.5 mt-0.5 shrink-0" />
                 <span>
@@ -285,37 +283,42 @@ export function TransferTasksDialog({
             </div>
           )}
 
-          {mode === "copy" && (
-            <Label className="flex items-center gap-2 font-normal">
-              <Checkbox
-                checked={copyRelationships}
-                onCheckedChange={(checked) =>
-                  setCopyRelationships(checked === true)
-                }
-              />
-              Also copy task links
-            </Label>
-          )}
-
           {count === 1 && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <p className="text-xs text-muted-foreground truncate">
-                  {verb === "Move" ? "Moving" : "Copying"}: {tasks[0].Name || "Untitled Task"}
+                  {verb === "Move" ? "Moving" : "Copying"}:{" "}
+                  {tasks[0].Name || "Untitled Task"}
                 </p>
               </TooltipTrigger>
-              <TooltipContent>{tasks[0].Name || "Untitled Task"}</TooltipContent>
+              <TooltipContent>
+                {tasks[0].Name || "Untitled Task"}
+              </TooltipContent>
             </Tooltip>
           )}
         </div>
 
-        <DialogFooter className="flex flex-row justify-end">
+        <DialogFooter className="flex flex-row sm:justify-between">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button disabled={!ready || pending} onClick={handleConfirm}>
-            {verb} {pluralize(count, "task")}
-          </Button>
+          <span className="flex gap-2">
+            {mode === "copy" && (
+              <Button
+                variant="secondary"
+                disabled={!ready || pending}
+                onClick={() => handleConfirm(false)}
+              >
+                Copy Without Links
+              </Button>
+            )}
+            <Button
+              disabled={!ready || pending}
+              onClick={() => handleConfirm(true)}
+            >
+              {verb} {pluralize(count, "task")}
+            </Button>
+          </span>
         </DialogFooter>
       </DialogContent>
     </Dialog>
