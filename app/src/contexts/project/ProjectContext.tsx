@@ -36,6 +36,8 @@ export const defaultProjectContextValue: ProjectContextType = {
     Archived: false,
     Folder: 0,
     Workflow: 0,
+    TaskCount: 0,
+    DoneTaskCount: 0,
     TimeCreated: "",
     TimeModified: "",
   },

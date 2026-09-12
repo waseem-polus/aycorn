@@ -6,7 +6,6 @@ import { RelativeTimeWithTooltip } from "@/components/relative-time-with-tooltip
 import {
   Card,
   CardAction,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
