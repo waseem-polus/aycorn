@@ -171,6 +171,7 @@ export const useSelection = ({
           <ViselectArea
             className={cn("select-none", className)}
             selectables=".selectable"
+            selectionContainerClass="selection-area-container"
             onBeforeStart={handleBeforeStart}
             onStart={handleStart}
             onMove={handleMove}
