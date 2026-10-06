@@ -1,3 +1,4 @@
+import { getDefaultChecklistId } from "@/features/checklists/default-checklist";
 import {
   defaultTaskContextValue,
   TaskContext,
@@ -32,7 +33,7 @@ export function NewTaskEditorDrawer({
     create.mutate(
       {
         ...task,
-        Checklist: Checklists[0]?.ID,
+        Checklist: getDefaultChecklistId(Checklists),
         TimePlannedStart: toApiDate(startDateTime),
         TimePlannedEnd: toApiDate(endDateTime),
       },

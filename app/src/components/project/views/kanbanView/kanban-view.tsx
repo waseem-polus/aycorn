@@ -172,6 +172,7 @@ export function KanbanView({
               stage={stage}
               getItemProps={getItemProps}
               lastDrop={lastDrop}
+              setTaskDrawerOpen={setTaskDrawerOpen}
             />
           ))}
         </div>

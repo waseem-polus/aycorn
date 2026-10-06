@@ -9,11 +9,19 @@ import { Plus } from "lucide-react";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { ChecklistTask } from "@/types/types";
+import { Slot } from "@radix-ui/react-slot";
+import { getDefaultChecklistId } from "@/features/checklists/default-checklist";
 
 export function NewTaskEditorDrawer({
   setTaskDrawerOpen,
+  stageId,
+  children,
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
+  // Creates the task in this stage instead of the workflow's open stage.
+  stageId?: number;
+  // Custom trigger; defaults to a "New Task" button.
+  children?: React.ReactNode;
 }) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const { Project, Checklists, Stages } = useContext(ProjectContext);
@@ -24,13 +32,14 @@ export function NewTaskEditorDrawer({
       create.mutate(
         {
           ...task,
-          Checklist: Checklists[0]?.ID,
+          Checklist: getDefaultChecklistId(Checklists),
           Stage:
-            task.Stage !== 0
+            stageId ??
+            (task.Stage !== 0
               ? task.Stage
               : (Stages.find((s) => s.Type === "open")?.ID ??
                 Stages[0]?.ID ??
-                0),
+                0)),
         },
         {
           onSuccess: (newTask: ChecklistTask) => {
@@ -38,7 +47,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, task, Checklists, Stages, setTask],
+    [create, task, Checklists, Stages, setTask, stageId],
   );
 
   return (
@@ -50,10 +59,14 @@ export function NewTaskEditorDrawer({
         }
       }}
     >
-      <Button className="hover:cursor-pointer" onClick={handleAddTask}>
-        <Plus />
-        New Task
-      </Button>
+      <Slot onClick={handleAddTask}>
+        {children ?? (
+          <Button className="hover:cursor-pointer">
+            <Plus />
+            New Task
+          </Button>
+        )}
+      </Slot>
     </TaskEditorDrawer>
   );
 }
