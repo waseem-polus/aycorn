@@ -23,23 +23,23 @@ export function NewTaskEditorDrawer({
   // Custom trigger; defaults to a "New Task" button.
   children?: React.ReactNode;
 }) {
-  const { state: task, setState: setTask } = useContext(TaskContext);
+  const { setState: setTask } = useContext(TaskContext);
   const { Project, Checklists, Stages } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
 
+  // Always build from the defaults, never from whatever the (long-lived)
+  // context happens to hold — a leftover value would be baked into the new task.
   const handleAddTask = useCallback(
     () =>
       create.mutate(
         {
-          ...task,
+          ...defaultTaskContextValue.state,
           Checklist: getDefaultChecklistId(Checklists),
           Stage:
             stageId ??
-            (task.Stage !== 0
-              ? task.Stage
-              : (Stages.find((s) => s.Type === "open")?.ID ??
-                Stages[0]?.ID ??
-                0)),
+            Stages.find((s) => s.Type === "open")?.ID ??
+            Stages[0]?.ID ??
+            0,
         },
         {
           onSuccess: (newTask: ChecklistTask) => {
@@ -47,7 +47,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, task, Checklists, Stages, setTask, stageId],
+    [create, Checklists, Stages, setTask, stageId],
   );
 
   return (

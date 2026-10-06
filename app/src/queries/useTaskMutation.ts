@@ -11,6 +11,7 @@ import {
   toWireChanges,
 } from "@/features/task/shared/shared-task-type";
 import type { Value } from "platejs";
+import { toast } from "sonner";
 
 const getSaveTaskQuery = (isNewTask: boolean) => {
   const method = isNewTask ? "POST" : "PUT";
@@ -25,7 +26,18 @@ const getSaveTaskQuery = (isNewTask: boolean) => {
       method: method,
       body: JSON.stringify(payload),
     });
-    return await res.json();
+    if (!res.ok) {
+      const message = await res.text();
+      throw new Error(message || "Failed to save task");
+    }
+    const result = await res.json();
+    // The PUT responds with whether a row was actually updated. A `false` means
+    // the id doesn't exist, so the edit was silently dropped — surface it
+    // instead of letting the caller believe the save landed.
+    if (!isNewTask && result !== true) {
+      throw new Error("Task not saved");
+    }
+    return result;
   };
 };
 
@@ -141,6 +153,7 @@ export function useTaskMutation(projectId: number | null) {
     onError: (_err, _task, context) => {
       restoreCaches(context?.previous);
       restoreCaches(context?.previousUpcoming);
+      toast.error("Failed to save task");
     },
     onSettled: () => invalidateQueries(projectId),
   });

@@ -18,11 +18,13 @@ export function NewTaskEditorDrawer({
   date: Date;
   startTime: { hour: number; minute: number };
 }) {
-  const { state: task, setState: setTask } = useContext(TaskContext);
+  const { setState: setTask } = useContext(TaskContext);
   const { Project, Checklists } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
   const { onCreateDrawerOpenChange } = useCalendarHost();
 
+  // Always build from the defaults, never from whatever the (long-lived)
+  // context happens to hold — a leftover value would be baked into the new task.
   const handleAddTask = useCallback(() => {
     const startDateTime = new Date(date);
     startDateTime.setHours(startTime.hour, startTime.minute);
@@ -32,7 +34,7 @@ export function NewTaskEditorDrawer({
 
     create.mutate(
       {
-        ...task,
+        ...defaultTaskContextValue.state,
         Checklist: getDefaultChecklistId(Checklists),
         TimePlannedStart: toApiDate(startDateTime),
         TimePlannedEnd: toApiDate(endDateTime),
@@ -43,7 +45,7 @@ export function NewTaskEditorDrawer({
         },
       },
     );
-  }, [create, task, Checklists, setTask, date, startTime]);
+  }, [create, Checklists, setTask, date, startTime]);
 
   return (
     <TaskEditorDrawer
