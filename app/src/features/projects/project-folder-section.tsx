@@ -282,7 +282,6 @@ export function ProjectFolderSection({
       <DeleteProjectFolderDialog
         folder={folder}
         allFolders={allFolders}
-        projectCount={projects.length}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />

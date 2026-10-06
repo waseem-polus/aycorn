@@ -56,16 +56,31 @@ const patchUpcomingCaches = (ids: Set<number>, changes: Partial<Task>) => {
   return previous;
 };
 
-type UpcomingSnapshot = ReturnType<typeof patchUpcomingCaches>;
+// The project page caches its details per filter combination
+// (["projectDetails", projectId, filters, ...]), so the optimistic writers must
+// match by prefix — an exact ["projectDetails", projectId] lookup never hits.
+const patchDetailsCaches = (
+  projectId: number | null,
+  updater: (old: ProjectDetails) => ProjectDetails,
+) => {
+  const filter = { queryKey: ["projectDetails", projectId] };
+  const previous = queryClient.getQueriesData<ProjectDetails>(filter);
+  queryClient.setQueriesData<ProjectDetails>(filter, (old) =>
+    old ? updater(old) : old,
+  );
+  return previous;
+};
 
-const restoreUpcomingCaches = (previous: UpcomingSnapshot | undefined) => {
+type CacheSnapshot = ReturnType<typeof queryClient.getQueriesData>;
+
+const restoreCaches = (previous: CacheSnapshot | undefined) => {
   previous?.forEach(([key, data]) => queryClient.setQueryData(key, data));
 };
 
 /**
  * `projectId` is `null` on cross-project surfaces (/upcoming), where there is no
- * single project-details cache to patch. The optimistic writers below bail on a
- * cache miss, so the `["projectDetails", null]` key they build is inert; only
+ * single project-details cache to patch. The `["projectDetails", null]` prefix
+ * the optimistic writers build matches no cached query, so it is inert; only
  * the upcoming lists and the invalidation above do real work in that case.
  */
 export function useTaskMutation(projectId: number | null) {
@@ -76,11 +91,8 @@ export function useTaskMutation(projectId: number | null) {
     onMutate: async (task: Task) => {
       await queryClient.cancelQueries({ queryKey: detailsKey });
       await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
-      const previous = queryClient.getQueryData<ProjectDetails>(detailsKey);
       const previousUpcoming = patchUpcomingCaches(new Set([task.ID]), task);
-      queryClient.setQueryData<ProjectDetails>(detailsKey, (old) => {
-        if (!old) return old;
-
+      const previous = patchDetailsCaches(projectId, (old) => {
         const oldTask = old.Tasks.find((t) => t.ID === task.ID);
         let checklists = old.Checklists;
 
@@ -127,10 +139,8 @@ export function useTaskMutation(projectId: number | null) {
       return { previous, previousUpcoming };
     },
     onError: (_err, _task, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(detailsKey, context.previous);
-      }
-      restoreUpcomingCaches(context?.previousUpcoming);
+      restoreCaches(context?.previous);
+      restoreCaches(context?.previousUpcoming);
     },
     onSettled: () => invalidateQueries(projectId),
   });
@@ -176,20 +186,17 @@ export function useTaskMutation(projectId: number | null) {
     onMutate: async ({ tasks, changes }: { tasks: Task[]; changes: Partial<Task> }) => {
       await queryClient.cancelQueries({ queryKey: detailsKey });
       await queryClient.cancelQueries({ queryKey: ["upcomingTasks"] });
-      const previous = queryClient.getQueryData<ProjectDetails>(detailsKey);
       const ids = new Set(tasks.map((t) => t.ID));
       const previousUpcoming = patchUpcomingCaches(ids, changes);
-      queryClient.setQueryData<ProjectDetails>(detailsKey, (old) => {
-        if (!old) return old;
-        return { ...old, Tasks: old.Tasks.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)) };
-      });
+      const previous = patchDetailsCaches(projectId, (old) => ({
+        ...old,
+        Tasks: old.Tasks.map((t) => (ids.has(t.ID) ? { ...t, ...changes } : t)),
+      }));
       return { previous, previousUpcoming };
     },
     onError: (_err, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(detailsKey, context.previous);
-      }
-      restoreUpcomingCaches(context?.previousUpcoming);
+      restoreCaches(context?.previous);
+      restoreCaches(context?.previousUpcoming);
     },
     onSettled: () => invalidateQueries(projectId),
   });

@@ -28,7 +28,8 @@ export function useChecklistMutation(projectId: number) {
       return await res.json();
     },
     onSuccess: (newChecklist: Checklist) => {
-      queryClient.setQueryData<ProjectDetails>(["projectDetails", projectId], (old) => {
+      // Prefix match: project details are cached per filter combination.
+      queryClient.setQueriesData<ProjectDetails>({ queryKey: ["projectDetails", projectId] }, (old) => {
         if (!old) return old;
         const details: ChecklistDetails = {
           ...newChecklist,

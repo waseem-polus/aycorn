@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useProjectFolderMutation } from "@/features/projects/queries/useProjectFolderMutation";
+import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { folderName } from "@/features/projects/folder-name";
 import { cn } from "@/lib/utils";
 import type { ProjectFolder } from "@/types/types";
@@ -18,7 +19,6 @@ import { toast } from "sonner";
 type Props = {
   folder: ProjectFolder;
   allFolders: ProjectFolder[];
-  projectCount: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -26,16 +26,23 @@ type Props = {
 export function DeleteProjectFolderDialog({
   folder,
   allFolders,
-  projectCount,
   open,
   onOpenChange,
 }: Props) {
   const [transferId, setTransferId] = useState<number | null>(null);
   const { deleteFolder } = useProjectFolderMutation();
+  // Counted from the unfiltered list (open + archived, no search): the projects
+  // page only shows one archive state, and its search hides matches, so the
+  // section's visible count can be 0 while the folder still holds projects.
+  const { data: allProjects } = useAllProjectsQuery(undefined, {
+    enabled: open,
+  });
 
   const candidates = allFolders.filter((f) => f.ID !== folder.ID);
   const displayName = folderName(folder);
-  const hasProjects = projectCount > 0;
+  const countLoaded = allProjects !== undefined;
+  const hasProjects =
+    allProjects?.some((p) => p.Folder === folder.ID) ?? false;
 
   const handleOpenChange = (next: boolean) => {
     if (!next) setTransferId(null);
@@ -48,9 +55,11 @@ export function DeleteProjectFolderDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete "{displayName}"?</AlertDialogTitle>
           <AlertDialogDescription>
-            {hasProjects
-              ? "This folder has projects. Choose a folder to move them to before deleting."
-              : "This folder is empty and will be permanently deleted."}
+            {!countLoaded
+              ? "Checking for projects in this folder..."
+              : hasProjects
+                ? "This folder has projects (including any archived ones). Choose a folder to move them to before deleting."
+                : "This folder is empty and will be permanently deleted."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -92,7 +101,9 @@ export function DeleteProjectFolderDialog({
           <AlertDialogAction
             variant="destructive"
             disabled={
-              (hasProjects && transferId === null) || deleteFolder.isPending
+              !countLoaded ||
+              (hasProjects && transferId === null) ||
+              deleteFolder.isPending
             }
             onClick={() =>
               deleteFolder.mutate(

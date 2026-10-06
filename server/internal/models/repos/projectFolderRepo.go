@@ -81,9 +81,36 @@ func (repo *ProjectFolderRepo) Update(f *models.ProjectFolder) (bool, error) {
 	return affected > 0, err
 }
 
-func (repo *ProjectFolderRepo) Delete(id int) error {
-	_, err := repo.DB.Exec("DELETE FROM project_folder WHERE id = ?;", id)
-	return err
+// CountProjects counts every project filed in the folder, archived included.
+func (repo *ProjectFolderRepo) CountProjects(id int) (int, error) {
+	var count int
+	err := repo.DB.QueryRow(
+		"SELECT COUNT(*) FROM project WHERE folder = ?;", id,
+	).Scan(&count)
+	return count, err
+}
+
+// DeleteAndReassign moves the folder's projects to transferID and deletes the
+// folder in one transaction, so a failed delete can't leave the projects
+// already moved. A transferID of 0 skips the reassign (an empty folder).
+func (repo *ProjectFolderRepo) DeleteAndReassign(id int, transferID int) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if transferID != 0 {
+		if _, err := tx.Exec(
+			"UPDATE project SET folder = ? WHERE folder = ?;", transferID, id,
+		); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.Exec("DELETE FROM project_folder WHERE id = ?;", id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (repo *ProjectFolderRepo) Reorder(ids []int) error {
@@ -101,11 +128,4 @@ func (repo *ProjectFolderRepo) Reorder(ids []int) error {
 		}
 	}
 	return tx.Commit()
-}
-
-func (repo *ProjectFolderRepo) ReassignProjects(fromFolderID int, toFolderID int) error {
-	_, err := repo.DB.Exec(
-		"UPDATE project SET folder = ? WHERE folder = ?;", toFolderID, fromFolderID,
-	)
-	return err
 }

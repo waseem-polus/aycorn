@@ -4,8 +4,12 @@ import type { Project } from "@/types/types";
 // `archived` splits the projects page's Open/Archived views. Leave it undefined
 // to get both — that's what surfaces outside the projects page want, since
 // archiving only hides a project from that page.
-export function useAllProjectsQuery(archived?: boolean) {
+export function useAllProjectsQuery(
+  archived?: boolean,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
   return useQuery<Project[]>({
+    enabled,
     queryKey: ["allProjects", archived ?? "all"],
     queryFn: async () => {
       const query = archived === undefined ? "" : `?archived=${archived}`;

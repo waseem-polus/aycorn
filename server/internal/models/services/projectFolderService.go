@@ -1,13 +1,19 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
 	"github.com/waseem-polus/aycorn/server/internal/models/repos"
 )
 
-var ErrDefaultProjectFolder = errors.New("the default project folder cannot be deleted")
+var (
+	ErrDefaultProjectFolder = errors.New("the default project folder cannot be deleted")
+	// ErrInvalidTransferFolder means the folder still holds projects and the
+	// transfer target is missing, nonexistent, or the folder being deleted.
+	ErrInvalidTransferFolder = errors.New("a different, existing folder is required to move this folder's projects to")
+)
 
 type ProjectFolderService struct {
 	FolderRepo *repos.ProjectFolderRepo
@@ -48,10 +54,24 @@ func (s *ProjectFolderService) Delete(id int, transferFolderID int) error {
 		return ErrDefaultProjectFolder
 	}
 
-	if err := s.FolderRepo.ReassignProjects(id, transferFolderID); err != nil {
+	count, err := s.FolderRepo.CountProjects(id)
+	if err != nil {
 		return err
 	}
-	return s.FolderRepo.Delete(id)
+	if count == 0 {
+		return s.FolderRepo.DeleteAndReassign(id, 0)
+	}
+
+	if transferFolderID == 0 || transferFolderID == id {
+		return ErrInvalidTransferFolder
+	}
+	if _, err := s.FolderRepo.FindOne(transferFolderID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrInvalidTransferFolder
+		}
+		return err
+	}
+	return s.FolderRepo.DeleteAndReassign(id, transferFolderID)
 }
 
 func (s *ProjectFolderService) Reorder(ids []int) error {
