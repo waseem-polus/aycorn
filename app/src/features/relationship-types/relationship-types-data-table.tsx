@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import type { TaskRelationshipType } from "@/types/types";
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { SortableHeader } from "@/components/projects/table/sortable-header";
+import { SortableHeader } from "@/components/data-table-sortable-header";
 import {
   BEHAVIOR_FROM_NAME_PLACEHOLDER,
   BEHAVIOR_TO_NAME_PLACEHOLDER,

@@ -133,6 +133,8 @@ func (app *app) bulkDeleteTaskTypes(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// getProjectTaskTypes lists the types the project's tasks already use, for the
+// project's type filters. Every type is usable in every project.
 func (app *app) getProjectTaskTypes(w http.ResponseWriter, r *http.Request) {
 	projectId, err := strconv.Atoi(r.PathValue("projectId"))
 	if err != nil {
@@ -140,58 +142,10 @@ func (app *app) getProjectTaskTypes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	types, err := app.taskTypeService.GetEnabledForProject(projectId)
+	types, err := app.taskTypeService.GetInUseForProject(projectId)
 	if err != nil {
 		respondErr(w, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, types)
-}
-
-func (app *app) getProjectTaskTypeSettings(w http.ResponseWriter, r *http.Request) {
-	projectId, err := strconv.Atoi(r.PathValue("projectId"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	settings, err := app.taskTypeService.GetProjectSettings(projectId)
-	if err != nil {
-		respondErr(w, err)
-		return
-	}
-	writeJSON(w, http.StatusOK, settings)
-}
-
-func (app *app) putProjectTaskTypes(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	projectId, err := strconv.Atoi(r.PathValue("projectId"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	body := struct {
-		EnabledTypeIDs []int `json:"enabledTypeIds"`
-		DisableTypeID  *int  `json:"disableTypeId"`
-		RouteToTypeID  *int  `json:"routeToTypeId"`
-	}{}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if body.DisableTypeID != nil && body.RouteToTypeID != nil {
-		if err := app.taskTypeService.SetProjectTypesWithRoute(projectId, body.EnabledTypeIDs, *body.DisableTypeID, *body.RouteToTypeID); err != nil {
-			respondErr(w, err)
-			return
-		}
-	} else {
-		if err := app.taskTypeService.SetProjectTypes(projectId, body.EnabledTypeIDs); err != nil {
-			respondErr(w, err)
-			return
-		}
-	}
-	writeJSON(w, http.StatusOK, true)
 }

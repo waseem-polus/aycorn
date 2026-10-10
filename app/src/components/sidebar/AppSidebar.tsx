@@ -28,6 +28,7 @@ const data = {
       title: "Projects",
       url: "/",
       icon: FolderIcon,
+      badge: <Badge className="text-xs py-0.5 -rotate-2">Updated!</Badge>,
     },
     {
       title: "Upcoming",
@@ -50,7 +51,6 @@ const data = {
       title: "Task Links",
       url: "/task-links",
       icon: LinkIcon,
-      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
   ],
   navSecondary: [

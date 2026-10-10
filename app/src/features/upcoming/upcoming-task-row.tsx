@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { dayOnly } from "@/utils/date";
+import { startOfDay } from "date-fns";
 import UpcomingRowProjectChecklist from "./upcoming-task-row/upcoming-row-project-checklist";
 import { useSharedSelection, selectedItemClasses } from "@/hooks/useSelection";
 
@@ -34,7 +34,7 @@ function UpcomingTaskRowInner({ task, stageById, project }: Props) {
   const overdue = !!(
     task.TimePlannedStart &&
     !task.TimeCompleted &&
-    new Date(task.TimePlannedStart) < dayOnly(new Date())
+    new Date(task.TimePlannedStart) < startOfDay(new Date())
   );
   const itemProps = getItemProps(id);
 

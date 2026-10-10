@@ -6,6 +6,7 @@ import { Editor, EditorContainer } from "@/components/ui/editor";
 import { BaseCalloutKit } from "@/features/editor/plugins/callout-base-kit";
 import { CalloutKit } from "@/features/editor/plugins/callout-kit";
 import { IndentKit } from "@/features/editor/plugins/indent-kit";
+import { BaseLinkKit } from "@/features/editor/plugins/link-base-kit";
 import { BaseToggleKit } from "@/features/editor/plugins/toggle-base-kit";
 import { ToggleKit } from "@/features/editor/plugins/toggle-kit";
 import { SlashKit } from "@/features/editor/plugins/slash-kit";
@@ -28,6 +29,7 @@ import { CursorOverlayKit } from "./plugins/cursor-overlay-kit";
 import { cn } from "@/lib/utils";
 import { TrailingBlockKit } from "./plugins/trailing-block-kit";
 import { ExitBreakKit } from "./plugins/exit-break-kit";
+import { LinkKit } from "./plugins/link-kit";
 
 const DEFAULT_VALUE = [{ type: "p", children: [{ text: "" }] }];
 
@@ -59,11 +61,13 @@ export function RichEditor({
       ...BasicNodesKit,
       ...BaseCalloutKit,
       ...CalloutKit,
+      ...BaseLinkKit,
       ...BaseToggleKit,
       ...AutoformatKit,
       ...CodeBlockKit,
       ...EmojiKit,
       ...IndentKit,
+      ...LinkKit,
       ...ListKit,
       ...MarkdownKit,
       ...MathKit,

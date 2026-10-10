@@ -113,8 +113,10 @@ type app struct {
 	taskTypeRepo         *repos.TaskTypeRepo
 	taskTypeCategoryRepo *repos.TaskTypeCategoryRepo
 	taskRelationshipRepo *repos.TaskRelationshipRepo
+	projectFolderRepo    *repos.ProjectFolderRepo
 
 	projectService          *services.ProjectService
+	projectFolderService    *services.ProjectFolderService
 	checklistService        *services.ChecklistService
 	taskService             *services.TaskService
 	workflowService         *services.WorkflowService
@@ -156,11 +158,15 @@ func main() {
 		dbExisted = true
 	}
 
-	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	// SQLite allows only one writer at a time; pooling multiple connections
+	// just makes concurrent requests race for the write lock and fail with
+	// SQLITE_BUSY. Serialize onto a single connection instead.
+	db.SetMaxOpenConns(1)
 
 	goose.SetBaseFS(migrations.Files)
 	if err := goose.SetDialect("sqlite3"); err != nil {
@@ -185,6 +191,7 @@ func main() {
 	taskTypeRepo := &repos.TaskTypeRepo{DB: db}
 	taskTypeCategoryRepo := &repos.TaskTypeCategoryRepo{DB: db}
 	taskRelationshipRepo := &repos.TaskRelationshipRepo{DB: db}
+	projectFolderRepo := &repos.ProjectFolderRepo{DB: db}
 
 	projectService := &services.ProjectService{
 		ProjectRepo:   projectRepo,
@@ -192,13 +199,16 @@ func main() {
 		ChecklistRepo: checklistRepo,
 		WorkflowRepo:  workflowRepo,
 		StageRepo:     stageRepo,
-		TaskTypeRepo:  taskTypeRepo,
+		FolderRepo:    projectFolderRepo,
+	}
+	projectFolderService := &services.ProjectFolderService{
+		FolderRepo: projectFolderRepo,
 	}
 	checklistService := &services.ChecklistService{
 		ChecklistRepo: checklistRepo,
 		TaskRepo:      taskRepo,
 	}
-	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo}
+	taskService := &services.TaskService{TaskRepo: taskRepo, TaskTypeRepo: taskTypeRepo, StageRepo: stageRepo}
 	workflowService := &services.WorkflowService{
 		WorkflowRepo: workflowRepo,
 		ProjectRepo:  projectRepo,
@@ -211,7 +221,6 @@ func main() {
 	}
 	taskTypeCategoryService := &services.TaskTypeCategoryService{
 		CategoryRepo: taskTypeCategoryRepo,
-		TaskTypeRepo: taskTypeRepo,
 	}
 	taskRelationshipService := &services.TaskRelationshipService{
 		TaskRelationshipRepo: taskRelationshipRepo,
@@ -225,8 +234,10 @@ func main() {
 		taskTypeRepo:         taskTypeRepo,
 		taskTypeCategoryRepo: taskTypeCategoryRepo,
 		taskRelationshipRepo: taskRelationshipRepo,
+		projectFolderRepo:    projectFolderRepo,
 
 		projectService:          projectService,
+		projectFolderService:    projectFolderService,
 		checklistService:        checklistService,
 		taskService:             taskService,
 		workflowService:         workflowService,

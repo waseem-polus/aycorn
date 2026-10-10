@@ -152,7 +152,7 @@
   --hljs-title: oklch(0.44 0.18 290);
   --hljs-built_in: oklch(0.44 0.16 210);
   --hljs-attr: oklch(0.44 0.16 210);
-  --hljs-meta: oklch(0.50 0.12 40);
+  --hljs-meta: oklch(0.5 0.12 40);
   --hljs-type: oklch(0.48 0.14 100);
 }
 
@@ -162,32 +162,53 @@
   --hljs-comment: oklch(0.55 0.02 220);
   --hljs-number: oklch(0.72 0.14 60);
   --hljs-title: oklch(0.72 0.14 300);
-  --hljs-built_in: oklch(0.70 0.14 200);
-  --hljs-attr: oklch(0.70 0.14 200);
+  --hljs-built_in: oklch(0.7 0.14 200);
+  --hljs-attr: oklch(0.7 0.14 200);
   --hljs-meta: oklch(0.68 0.12 60);
   --hljs-type: oklch(0.72 0.12 80);
 }
 
 .hljs-keyword,
 .hljs-operator,
-.hljs-selector-tag { color: var(--hljs-keyword); }
+.hljs-selector-tag {
+  color: var(--hljs-keyword);
+}
 .hljs-string,
 .hljs-template-string,
 .hljs-template-tag,
-.hljs-regexp { color: var(--hljs-string); }
+.hljs-regexp {
+  color: var(--hljs-string);
+}
 .hljs-comment,
-.hljs-doctag { color: var(--hljs-comment); font-style: italic; }
-.hljs-number { color: var(--hljs-number); }
+.hljs-doctag {
+  color: var(--hljs-comment);
+  font-style: italic;
+}
+.hljs-number {
+  color: var(--hljs-number);
+}
 .hljs-title,
 .hljs-title\.class_,
-.hljs-title\.function_ { color: var(--hljs-title); }
-.hljs-built_in { color: var(--hljs-built_in); }
-.hljs-literal { color: var(--hljs-keyword); }
-.hljs-type { color: var(--hljs-type); }
+.hljs-title\.function_ {
+  color: var(--hljs-title);
+}
+.hljs-built_in {
+  color: var(--hljs-built_in);
+}
+.hljs-literal {
+  color: var(--hljs-keyword);
+}
+.hljs-type {
+  color: var(--hljs-type);
+}
 .hljs-attr,
 .hljs-variable,
-.hljs-selector-attr { color: var(--hljs-attr); }
-.hljs-meta { color: var(--hljs-meta); }
+.hljs-selector-attr {
+  color: var(--hljs-attr);
+}
+.hljs-meta {
+  color: var(--hljs-meta);
+}
 
 @layer components {
   .ce-placeholder:empty:before {
@@ -201,5 +222,13 @@
     border: 1px solid var(--primary);
     border-radius: var(--radius-xs);
     pointer-events: none;
+  }
+
+  /* viselect wraps .selection-area in a clipping div with an inline z-index: 1
+     style, which caps how high .selection-area's own z-index can stack.
+     Override the clipping div's z-index (needs !important to beat the
+     inline style) so the selection rectangle stacks above sticky headers. */
+  .selection-area-container {
+    z-index: 50 !important;
   }
 }

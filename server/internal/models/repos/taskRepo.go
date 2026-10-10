@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	models "github.com/waseem-polus/aycorn/server/internal/models"
+	"github.com/waseem-polus/aycorn/server/internal/timefmt"
 )
 
 type TaskRepo struct {
@@ -12,21 +13,24 @@ type TaskRepo struct {
 }
 
 type TaskFilters struct {
-	SearchQuery          string
-	ChecklistQuery       []string
-	TypeIDQuery          []int
-	StageQuery           []string
-	PriorityQuery        []string
-	AssigneeQuery        []string
-	ProjectIDQuery       []int
-	PlannedFrom          string
-	PlannedTo            string
-	PlannedFromHasTime   bool
-	PlannedToHasTime     bool
-	CompletedFrom        string
-	CompletedTo          string
-	CompletedFromHasTime bool
-	CompletedToHasTime   bool
+	SearchQuery    string
+	ChecklistQuery []string
+	TypeIDQuery    []int
+	StageQuery     []string
+	PriorityQuery  []string
+	AssigneeQuery  []string
+	ProjectIDQuery []int
+	// Date bounds are canonical timefmt.Layout strings, normalized by the
+	// handler. They are compared directly against the stored values, which use
+	// the same encoding — no DATE() truncation, no per-request branching.
+	PlannedFrom   string
+	PlannedTo     string
+	CompletedFrom string
+	CompletedTo   string
+	// Presence filters are "", "none", or "any" — whether the task has the
+	// corresponding date at all, independent of the bounds above.
+	PlannedPresence   string
+	CompletedPresence string
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -68,45 +72,7 @@ func (repo *TaskRepo) InProject(projectId int, taskFilters *TaskFilters) ([]mode
 	`
 	args := []any{projectId}
 
-	if taskFilters.SearchQuery != "" {
-		query += " AND t.name LIKE ?"
-		args = append(args, "%"+taskFilters.SearchQuery+"%")
-	}
-
-	if len(taskFilters.ChecklistQuery) > 0 {
-		query += " AND t.checklist IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.ChecklistQuery)), ",") + ")"
-		for _, v := range taskFilters.ChecklistQuery {
-			args = append(args, v)
-		}
-	}
-
-	if len(taskFilters.TypeIDQuery) > 0 {
-		query += " AND t.type IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.TypeIDQuery)), ",") + ")"
-		for _, v := range taskFilters.TypeIDQuery {
-			args = append(args, v)
-		}
-	}
-
-	if len(taskFilters.StageQuery) > 0 {
-		query += " AND t.stage IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.StageQuery)), ",") + ")"
-		for _, v := range taskFilters.StageQuery {
-			args = append(args, v)
-		}
-	}
-
-	if len(taskFilters.PriorityQuery) > 0 {
-		query += " AND t.priority IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.PriorityQuery)), ",") + ")"
-		for _, v := range taskFilters.PriorityQuery {
-			args = append(args, v)
-		}
-	}
-
-	if len(taskFilters.AssigneeQuery) > 0 {
-		query += " AND t.assignee IN (" + strings.TrimRight(strings.Repeat("?,", len(taskFilters.AssigneeQuery)), ",") + ")"
-		for _, v := range taskFilters.AssigneeQuery {
-			args = append(args, v)
-		}
-	}
+	query, args = appendTaskFilterClauses(query, args, taskFilters)
 
 	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"
 
@@ -159,8 +125,8 @@ func (repo *TaskRepo) CreateTask(newTask *models.ChecklistTask) (*models.Checkli
 		newTask.Name,
 		newTask.Body,
 		newTask.Checklist,
-		newTask.TimePlannedStart,
-		newTask.TimePlannedEnd,
+		timefmt.Format(newTask.TimePlannedStart),
+		timefmt.Format(newTask.TimePlannedEnd),
 		newTask.HasTimePlannedStart,
 		newTask.HasTimePlannedEnd,
 		newTask.Assignee,
@@ -204,11 +170,11 @@ func (repo *TaskRepo) UpdateTask(task *models.ChecklistTask) (bool, error) {
 		query,
 		task.Name,
 		task.Checklist,
-		task.TimePlannedStart,
-		task.TimePlannedEnd,
+		timefmt.Format(task.TimePlannedStart),
+		timefmt.Format(task.TimePlannedEnd),
 		task.HasTimePlannedStart,
 		task.HasTimePlannedEnd,
-		task.TimeCompleted,
+		timefmt.Format(task.TimeCompleted),
 		task.Assignee,
 		task.Priority,
 		task.Type.ID,
@@ -489,6 +455,145 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 	`
 	args := []any{}
 
+	query, args = appendTaskFilterClauses(query, args, taskFilters)
+
+	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"
+
+	rows, err := repo.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tasks := []models.TaskWithProject{}
+	for rows.Next() {
+		t := models.TaskWithProject{}
+		if err := rows.Scan(
+			&t.Checklist,
+			&t.ChecklistName,
+			&t.ProjectID,
+			&t.ID,
+			&t.Name,
+			&t.TimeCreated,
+			&t.TimeModified,
+			&t.TimePlannedStart,
+			&t.TimePlannedEnd,
+			&t.HasTimePlannedStart,
+			&t.HasTimePlannedEnd,
+			&t.TimeCompleted,
+			&t.Assignee,
+			&t.Priority,
+			&t.Stage,
+			&t.Type.ID,
+			&t.Type.Name,
+			&t.Type.Description,
+			&t.Type.Icon,
+			&t.Type.Color,
+			&t.Type.IsDefault,
+		); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, rows.Err()
+}
+
+// TaskFacets lists the distinct assignees and the checklists that hold tasks.
+// A non-nil projectID scopes both to that project, so a project-local filter
+// drawer only offers options that can actually match something there.
+func (repo *TaskRepo) TaskFacets(projectID *int) (*models.TaskFacets, error) {
+	facets := &models.TaskFacets{
+		Assignees:  []string{},
+		Checklists: []models.ChecklistFacet{},
+	}
+
+	assigneeQuery := `
+		SELECT DISTINCT t.assignee
+		FROM task t
+		WHERE t.assignee IS NOT NULL AND t.assignee <> ''
+	`
+	checklistQuery := `
+		SELECT c.id, c.name, c.project
+		FROM checklist c
+		WHERE EXISTS (SELECT 1 FROM task t WHERE t.checklist = c.id)
+	`
+	assigneeArgs := []any{}
+	checklistArgs := []any{}
+	if projectID != nil {
+		assigneeQuery += " AND t.checklist IN (SELECT c.id FROM checklist c WHERE c.project = ?)"
+		assigneeArgs = append(assigneeArgs, *projectID)
+		checklistQuery += " AND c.project = ?"
+		checklistArgs = append(checklistArgs, *projectID)
+	}
+	assigneeQuery += " ORDER BY t.assignee"
+	checklistQuery += " ORDER BY c.project, c.name"
+
+	assigneeRows, err := repo.DB.Query(assigneeQuery, assigneeArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer assigneeRows.Close()
+	for assigneeRows.Next() {
+		var a string
+		if err := assigneeRows.Scan(&a); err != nil {
+			return nil, err
+		}
+		facets.Assignees = append(facets.Assignees, a)
+	}
+	if err := assigneeRows.Err(); err != nil {
+		return nil, err
+	}
+
+	checklistRows, err := repo.DB.Query(checklistQuery, checklistArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer checklistRows.Close()
+	for checklistRows.Next() {
+		cf := models.ChecklistFacet{}
+		if err := checklistRows.Scan(&cf.ID, &cf.Name, &cf.ProjectID); err != nil {
+			return nil, err
+		}
+		facets.Checklists = append(facets.Checklists, cf)
+	}
+	return facets, checklistRows.Err()
+}
+
+func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
+	query := "SELECT COALESCE(t.body, '') FROM task t WHERE t.id = ?;"
+	rows, err := repo.DB.Query(query, taskId)
+	if err != nil {
+		return "[]", err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return "[]", rows.Err()
+	}
+
+	taskBody := "[]"
+	err = rows.Scan(&taskBody)
+	if err != nil {
+		return "[]", err
+	}
+
+	// A valid body is always a serialized Plate document (a JSON array). Rows
+	// damaged by the historical body-clobber bug hold "" or the JSON-encoded
+	// empty string (`""`), neither of which parses into a document. Normalize
+	// anything that isn't array-shaped to an empty document.
+	if !strings.HasPrefix(strings.TrimSpace(taskBody), "[") {
+		return "[]", nil
+	}
+
+	return taskBody, nil
+}
+
+// appendTaskFilterClauses appends the shared task-filter predicates and their
+// args to a query. Callers own the SELECT, the base WHERE (which must already
+// end in a condition, e.g. "WHERE 1=1") and the ORDER BY. Both the
+// project-scoped and the global task queries go through here, so a filter
+// added once applies to every task listing.
+func appendTaskFilterClauses(query string, args []any, taskFilters *TaskFilters) (string, []any) {
 	if taskFilters.SearchQuery != "" {
 		query += " AND t.name LIKE ?"
 		args = append(args, "%"+taskFilters.SearchQuery+"%")
@@ -536,152 +641,40 @@ func (repo *TaskRepo) AllTasks(taskFilters *TaskFilters) ([]models.TaskWithProje
 		}
 	}
 
+	switch taskFilters.PlannedPresence {
+	case "none":
+		query += " AND t.timePlannedStart IS NULL AND t.timePlannedEnd IS NULL"
+	case "any":
+		query += " AND (t.timePlannedStart IS NOT NULL OR t.timePlannedEnd IS NOT NULL)"
+	}
+
+	switch taskFilters.CompletedPresence {
+	case "none":
+		query += " AND t.timeCompleted IS NULL"
+	case "any":
+		query += " AND t.timeCompleted IS NOT NULL"
+	}
+
+	// Planned dates use overlap semantics: a task matches when any part of its
+	// planned window intersects the range. Hence the range start is tested
+	// against the task's END (falling back to start for open-ended tasks) and
+	// the range end against the task's START.
 	if taskFilters.PlannedFrom != "" {
-		if taskFilters.PlannedFromHasTime {
-			query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
-		} else {
-			query += " AND COALESCE(DATE(t.timePlannedEnd), DATE(t.timePlannedStart)) >= ?"
-		}
+		query += " AND COALESCE(t.timePlannedEnd, t.timePlannedStart) >= ?"
 		args = append(args, taskFilters.PlannedFrom)
 	}
 	if taskFilters.PlannedTo != "" {
-		if taskFilters.PlannedToHasTime {
-			query += " AND t.timePlannedStart <= ?"
-		} else {
-			query += " AND DATE(t.timePlannedStart) <= ?"
-		}
+		query += " AND t.timePlannedStart <= ?"
 		args = append(args, taskFilters.PlannedTo)
 	}
 	if taskFilters.CompletedFrom != "" {
-		if taskFilters.CompletedFromHasTime {
-			query += " AND t.timeCompleted >= ?"
-		} else {
-			query += " AND DATE(t.timeCompleted) >= ?"
-		}
+		query += " AND t.timeCompleted >= ?"
 		args = append(args, taskFilters.CompletedFrom)
 	}
 	if taskFilters.CompletedTo != "" {
-		if taskFilters.CompletedToHasTime {
-			query += " AND t.timeCompleted <= ?"
-		} else {
-			query += " AND DATE(t.timeCompleted) <= ?"
-		}
+		query += " AND t.timeCompleted <= ?"
 		args = append(args, taskFilters.CompletedTo)
 	}
 
-	query += " ORDER BY t.timePlannedStart, t.timePlannedEnd, t.timeCreated DESC"
-
-	rows, err := repo.DB.Query(query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	tasks := []models.TaskWithProject{}
-	for rows.Next() {
-		t := models.TaskWithProject{}
-		if err := rows.Scan(
-			&t.Checklist,
-			&t.ChecklistName,
-			&t.ProjectID,
-			&t.ID,
-			&t.Name,
-			&t.TimeCreated,
-			&t.TimeModified,
-			&t.TimePlannedStart,
-			&t.TimePlannedEnd,
-			&t.HasTimePlannedStart,
-			&t.HasTimePlannedEnd,
-			&t.TimeCompleted,
-			&t.Assignee,
-			&t.Priority,
-			&t.Stage,
-			&t.Type.ID,
-			&t.Type.Name,
-			&t.Type.Description,
-			&t.Type.Icon,
-			&t.Type.Color,
-			&t.Type.IsDefault,
-		); err != nil {
-			return nil, err
-		}
-		tasks = append(tasks, t)
-	}
-	return tasks, rows.Err()
-}
-
-func (repo *TaskRepo) TaskFacets() (*models.TaskFacets, error) {
-	facets := &models.TaskFacets{
-		Assignees:  []string{},
-		Checklists: []models.ChecklistFacet{},
-	}
-
-	assigneeRows, err := repo.DB.Query(`
-		SELECT DISTINCT assignee
-		FROM task
-		WHERE assignee IS NOT NULL AND assignee <> ''
-		ORDER BY assignee
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer assigneeRows.Close()
-	for assigneeRows.Next() {
-		var a string
-		if err := assigneeRows.Scan(&a); err != nil {
-			return nil, err
-		}
-		facets.Assignees = append(facets.Assignees, a)
-	}
-	if err := assigneeRows.Err(); err != nil {
-		return nil, err
-	}
-
-	checklistRows, err := repo.DB.Query(`
-		SELECT c.id, c.name, c.project
-		FROM checklist c
-		WHERE EXISTS (SELECT 1 FROM task t WHERE t.checklist = c.id)
-		ORDER BY c.project, c.name
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer checklistRows.Close()
-	for checklistRows.Next() {
-		cf := models.ChecklistFacet{}
-		if err := checklistRows.Scan(&cf.ID, &cf.Name, &cf.ProjectID); err != nil {
-			return nil, err
-		}
-		facets.Checklists = append(facets.Checklists, cf)
-	}
-	return facets, checklistRows.Err()
-}
-
-func (repo *TaskRepo) GetTaskBody(taskId int) (string, error) {
-	query := "SELECT COALESCE(t.body, '') FROM task t WHERE t.id = ?;"
-	rows, err := repo.DB.Query(query, taskId)
-	if err != nil {
-		return "[]", err
-	}
-	defer rows.Close()
-
-	if !rows.Next() {
-		return "[]", rows.Err()
-	}
-
-	taskBody := "[]"
-	err = rows.Scan(&taskBody)
-	if err != nil {
-		return "[]", err
-	}
-
-	// A valid body is always a serialized Plate document (a JSON array). Rows
-	// damaged by the historical body-clobber bug hold "" or the JSON-encoded
-	// empty string (`""`), neither of which parses into a document. Normalize
-	// anything that isn't array-shaped to an empty document.
-	if !strings.HasPrefix(strings.TrimSpace(taskBody), "[") {
-		return "[]", nil
-	}
-
-	return taskBody, nil
+	return query, args
 }

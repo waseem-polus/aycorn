@@ -16,6 +16,14 @@ import { Switch } from "@/components/ui/switch";
 import { useDateFormat } from "@/hooks/useDateFormatter";
 import type { DateRange } from "react-day-picker";
 import { isSameDay } from "date-fns";
+import {
+  clearTimeFromISO,
+  getTimeFromISO,
+  parseLocalDate,
+  setTimeOnDate,
+  toApiDate,
+  toYMD,
+} from "@/utils/date";
 
 type Props = {
   from?: string | null;
@@ -30,39 +38,6 @@ type Props = {
     hasFromTime?: boolean,
     hasToTime?: boolean,
   ) => void;
-};
-
-const parseLocalDate = (s: string): Date => {
-  if (s.includes("T")) return new Date(s);
-  const [y, m, d] = s.split("-").map(Number);
-  return new Date(y, m - 1, d);
-};
-
-const toYMD = (d: Date): string => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
-
-const getTimeFromISO = (iso: string | null): string => {
-  if (!iso || !iso.includes("T")) return "";
-  return new Date(iso).toTimeString().slice(0, 5);
-};
-
-const setTimeOnDate = (isoDate: string | null, time: string): string | null => {
-  if (!isoDate || !time) return isoDate;
-  const d = parseLocalDate(isoDate);
-  const [hours, minutes] = time.split(":").map(Number);
-  d.setHours(hours, minutes);
-  return d.toISOString();
-};
-
-const clearTimeFromISO = (iso: string | null): string | null => {
-  if (!iso) return iso;
-  const d = new Date(iso);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
 };
 
 export function DateRangePicker({
@@ -114,10 +89,10 @@ export function DateRangePicker({
     const existingTimeTo = getTimeFromISO(to ?? null);
 
     const newFrom = selected?.from
-      ? setTimeOnDate(selected.from.toISOString(), existingTimeFrom)
+      ? setTimeOnDate(toApiDate(selected.from), existingTimeFrom)
       : null;
     const newTo = selected?.to
-      ? setTimeOnDate(selected.to.toISOString(), existingTimeTo)
+      ? setTimeOnDate(toApiDate(selected.to), existingTimeTo)
       : null;
 
     const newHasToTime = selected?.to ? hasToTime : false;

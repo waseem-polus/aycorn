@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useCallback, useContext, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   Modal,
   ModalContent,
@@ -14,7 +14,6 @@ import type { ChecklistTask } from "@/types/types";
 import { getTaskColor, getTaskStartDate } from "@/features/calendar/interfaces";
 import { stageCalendarCellClass } from "@/features/stage/stage-palette";
 import { EventBullet } from "@/features/calendar/views/monthView";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 
@@ -35,13 +34,6 @@ export function EventListDialog({
   const cellEvents = tasks;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
   const { badgeVariant, use24HourFormat } = useCalendar();
-
-  const { SetViewSettings, ViewSettings } = useContext(ProjectContext);
-  const setTaskEditorDrawerOpen = useCallback(
-    (open: boolean) =>
-      SetViewSettings({ ...ViewSettings, isTaskEditorOpen: open }),
-    [SetViewSettings, ViewSettings],
-  );
 
   const defaultTrigger = (
     <span className="cursor-pointer">
@@ -74,7 +66,7 @@ export function EventListDialog({
           {cellEvents.length > 0 ? (
             cellEvents.map((task) => (
               <TaskProvider defaultState={task} key={task.ID}>
-                <TaskEditorDrawer onOpenChange={setTaskEditorDrawerOpen}>
+                <TaskEditorDrawer>
                   <div
                     className={cn(
                       "flex items-center gap-2 p-2 border rounded-md hover:bg-muted cursor-pointer",

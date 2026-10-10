@@ -24,29 +24,37 @@ export type TaskType = {
   Category: number;
 };
 
+/** A task type plus how widely it is used. ProjectCount is the number of
+ *  distinct projects holding a task of this type. */
 export type TaskTypeGlobal = TaskType & {
   ProjectCount: number;
   TaskCount: number;
 };
 
-export type TaskTypeWithCount = TaskType & {
-  TaskCount: number;
-};
-
-export type ProjectTaskTypeSettings = {
-  AllTypes: TaskTypeWithCount[];
-  EnabledTypeIDs: number[];
-  Categories: TaskTypeCategory[];
-};
-
 export type Project = {
   ID: number;
   Name: string;
+  Icon: string;
+  Color: string;
+  // Server-derived from the pinned_project table. Never sent back through the
+  // project PUT — pin changes go through the pinned bulk endpoint.
   Pinned: boolean;
+  Archived: boolean;
+  Folder: number;
   Workflow: number;
   WorkflowName: string;
+  // Server-derived task rollups. Like Pinned, they are read-only.
+  TaskCount: number;
+  DoneTaskCount: number;
   TimeCreated: string;
   TimeModified: string;
+};
+
+export type ProjectFolder = {
+  ID: number;
+  Name: string;
+  IsDefault: boolean;
+  SortOrder: number;
 };
 
 export type Workflow = {
@@ -133,15 +141,6 @@ export type ProjectDetails = {
   Stages: Stage[];
   Checklists: ChecklistDetails[];
   Tasks: ChecklistTask[];
-};
-
-export type TaskFilter = {
-  Name: Task["Name"];
-  Checklist: Task["Checklist"][];
-  Assignee: Task["Assignee"][];
-  Priority: Task["Priority"][];
-  Type: number[];
-  Stage: Stage["ID"][];
 };
 
 export const RELATIONSHIP_BEHAVIORS = ["blocking", "subtask", "link"] as const;

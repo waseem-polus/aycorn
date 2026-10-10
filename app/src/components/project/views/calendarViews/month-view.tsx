@@ -42,7 +42,6 @@ export function MonthView({
           <CalendarMonthView
             singleDayEvents={singleDayEvents}
             multiDayEvents={multiDayEvents}
-            setTaskDrawerOpen={setTaskDrawerOpen}
           />
         </Suspense>
       </div>

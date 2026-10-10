@@ -3,15 +3,9 @@ import type {
   ChecklistTask,
   Project,
   Stage,
-  TaskFilter,
   Workflow,
 } from "@/types/types";
 import { createContext } from "react";
-
-export type ViewSettings = {
-  isTaskEditorOpen: boolean;
-};
-export const defaultViewSettings: ViewSettings = { isTaskEditorOpen: false };
 
 export type ProjectContextType = {
   Project: Project;
@@ -28,12 +22,6 @@ export type ProjectContextType = {
 
   Checklists: ChecklistDetails[];
   SetChecklists: (checklists: ChecklistDetails[]) => void;
-
-  Filter: TaskFilter;
-  SetFilter: (filter: TaskFilter) => void;
-
-  ViewSettings: ViewSettings;
-  SetViewSettings: (settings: ViewSettings) => void;
 };
 
 export const defaultProjectContextValue: ProjectContextType = {
@@ -41,9 +29,15 @@ export const defaultProjectContextValue: ProjectContextType = {
   Project: {
     ID: 0,
     Name: "",
+    Icon: "folder",
+    Color: "gray",
     WorkflowName: "",
     Pinned: false,
+    Archived: false,
+    Folder: 0,
     Workflow: 0,
+    TaskCount: 0,
+    DoneTaskCount: 0,
     TimeCreated: "",
     TimeModified: "",
   },
@@ -65,19 +59,6 @@ export const defaultProjectContextValue: ProjectContextType = {
 
   SetChecklists: () => {},
   Checklists: [],
-
-  SetFilter: () => {},
-  Filter: {
-    Name: "",
-    Checklist: [],
-    Assignee: [],
-    Priority: [],
-    Type: [],
-    Stage: [],
-  },
-
-  ViewSettings: defaultViewSettings,
-  SetViewSettings: () => {},
 };
 
 export const ProjectContext = createContext<ProjectContextType>(

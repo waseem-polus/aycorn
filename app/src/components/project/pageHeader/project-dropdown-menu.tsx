@@ -18,6 +18,7 @@ import {
   WorkflowIcon,
 } from "lucide-react";
 import { useProjectMutation } from "@/queries/useProjectMutation";
+import { toast } from "sonner";
 
 type ProjectDropdownMenuProps = {
   children?: ReactElement;
@@ -33,9 +34,13 @@ export function ProjectDropdownMenu({
   const navigate = useNavigate();
   const { Project } = useContext(ProjectContext);
 
-  const { updateProject } = useProjectMutation(Project.ID);
+  // Pinning is membership in pinned_project, not a column on project, so it
+  // can't go through updateProject.
+  const { setPinned } = useProjectMutation(Project.ID);
   const togglePin = () =>
-    updateProject.mutate({ ...Project, Pinned: !Project.Pinned });
+    setPinned.mutate(!Project.Pinned, {
+      onError: () => toast.error("Failed to update pin."),
+    });
 
   return (
     <DropdownMenu>

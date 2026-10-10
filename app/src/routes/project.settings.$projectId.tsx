@@ -9,9 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyPanel } from "@/features/settings/empty-panel";
 import { useProjectWorkflowSettingsQuery } from "@/features/settings/project-workflow/queries/useProjectWorkflowSettingsQuery";
 import { ProjectWorkflowTab } from "@/features/settings/project-workflow/project-workflow-tab";
-import { ProjectTaskTypesTab } from "@/features/settings/project-task-types/project-task-types-tab";
 import { createFileRoute } from "@tanstack/react-router";
-import { LandPlotIcon, TagsIcon, WorkflowIcon } from "lucide-react";
+import { LandPlotIcon, WorkflowIcon } from "lucide-react";
 
 export const Route = createFileRoute("/project/settings/$projectId")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -52,10 +51,6 @@ function RouteComponent() {
               <WorkflowIcon />
               Workflow
             </TabsTrigger>
-            <TabsTrigger value="task-types">
-              <TagsIcon />
-              Task Types
-            </TabsTrigger>
             <TabsTrigger value="checklists">
               <LandPlotIcon />
               Checklists
@@ -66,10 +61,6 @@ function RouteComponent() {
 
           <TabsContent value="workflow">
             <ProjectWorkflowTab projectId={id} />
-          </TabsContent>
-
-          <TabsContent value="task-types">
-            <ProjectTaskTypesTab projectId={id} />
           </TabsContent>
 
           <TabsContent value="checklists">

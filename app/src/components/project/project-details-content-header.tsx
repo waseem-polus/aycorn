@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { EditableProjectName } from "@/components/project/editable-project-name";
+import { ProjectIconPicker } from "@/features/projects/project-icon-picker";
 import { ProjectDropdownMenu } from "@/components/project/pageHeader/project-dropdown-menu";
 import { DeleteProjectDialog } from "@/components/project/pageHeader/delete-project-dialog";
 import { Ellipsis } from "lucide-react";
@@ -13,6 +14,8 @@ export function ProjectContentHeader() {
   return (
     <>
       <div className="flex items-center gap-2">
+        <ProjectIconPicker />
+
         <EditableProjectName ref={editableRef} />
 
         <ProjectDropdownMenu

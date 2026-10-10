@@ -1,15 +1,7 @@
 import { useContext, useEffect } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
-
-const EMPTY_FILTER = {
-  Name: "",
-  Checklist: [],
-  Assignee: [],
-  Priority: [],
-  Type: [],
-  Stage: [],
-};
+import { EMPTY_FILTERS } from "@/features/task-filters/task-filters";
 
 export function UpcomingProjectDetailsLoader({
   projectId,
@@ -19,7 +11,7 @@ export function UpcomingProjectDetailsLoader({
   open: boolean;
 }) {
   const { SetProject, SetStages, SetChecklists, SetWorkflow } = useContext(ProjectContext);
-  const { data } = useProjectDetailsQuery(projectId, EMPTY_FILTER, open);
+  const { data } = useProjectDetailsQuery(projectId, EMPTY_FILTERS, open);
 
   useEffect(() => {
     if (!data) return;

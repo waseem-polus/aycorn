@@ -20,60 +20,11 @@ func (s *TaskTypeService) GetAll(filter string) ([]models.TaskTypeGlobal, error)
 	return s.TaskTypeRepo.AllWithCounts(filter)
 }
 
-func (s *TaskTypeService) GetEnabledForProject(projectId int) ([]models.TaskType, error) {
-	return s.TaskTypeRepo.EnabledForProject(projectId)
-}
-
-func (s *TaskTypeService) GetProjectSettings(projectId int) (*models.ProjectTaskTypeSettings, error) {
-	allTypes, err := s.TaskTypeRepo.AllWithProjectTaskCounts(projectId)
-	if err != nil {
-		return nil, err
-	}
-
-	enabledIDs, err := s.TaskTypeRepo.EnabledIDsForProject(projectId)
-	if err != nil {
-		return nil, err
-	}
-
-	categories, err := s.CategoryRepo.All()
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.ProjectTaskTypeSettings{
-		AllTypes:       allTypes,
-		EnabledTypeIDs: enabledIDs,
-		Categories:     categories,
-	}, nil
-}
-
-func (s *TaskTypeService) ensureDefaultIncluded(enabledIDs []int) ([]int, error) {
-	defaultID, err := s.TaskTypeRepo.DefaultTypeID()
-	if err != nil {
-		return nil, err
-	}
-	for _, id := range enabledIDs {
-		if id == defaultID {
-			return enabledIDs, nil
-		}
-	}
-	return append(enabledIDs, defaultID), nil
-}
-
-func (s *TaskTypeService) SetProjectTypes(projectId int, enabledIDs []int) error {
-	ids, err := s.ensureDefaultIncluded(enabledIDs)
-	if err != nil {
-		return err
-	}
-	return s.TaskTypeRepo.SetEnabledForProject(projectId, ids)
-}
-
-func (s *TaskTypeService) SetProjectTypesWithRoute(projectId int, enabledIDs []int, fromTypeID int, toTypeID int) error {
-	ids, err := s.ensureDefaultIncluded(enabledIDs)
-	if err != nil {
-		return err
-	}
-	return s.TaskTypeRepo.SetEnabledForProjectWithRoute(projectId, ids, fromTypeID, toTypeID)
+// GetInUseForProject lists the types the project's tasks already use. Every
+// type is usable in every project, so this exists only to keep the project's
+// type filters free of options that would match nothing.
+func (s *TaskTypeService) GetInUseForProject(projectId int) ([]models.TaskType, error) {
+	return s.TaskTypeRepo.InUseForProject(projectId)
 }
 
 func (s *TaskTypeService) Create(tt *models.TaskType) (*models.TaskType, error) {

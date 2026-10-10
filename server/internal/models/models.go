@@ -3,13 +3,32 @@ package models
 import "time"
 
 type Project struct {
-	ID           int
-	Name         string
+	ID    int
+	Name  string
+	Icon  string
+	Color string
+	// Pinned is derived from the pinned_project table on read. It is never
+	// written through UpdateProject — pin changes go through the pinned bulk
+	// endpoint so membership and pin order stay in one place.
 	Pinned       bool
+	Archived     bool
+	Folder       int
 	Workflow     int
 	WorkflowName string
-	TimeCreated  *time.Time
-	TimeModified *time.Time
+	// TaskCount and DoneTaskCount are derived on read (see projectSelect).
+	// Like Pinned and WorkflowName they are never written through
+	// UpdateProject.
+	TaskCount     int
+	DoneTaskCount int
+	TimeCreated   *time.Time
+	TimeModified  *time.Time
+}
+
+type ProjectFolder struct {
+	ID        int    `json:"ID"`
+	Name      string `json:"Name"`
+	IsDefault bool   `json:"IsDefault"`
+	SortOrder int    `json:"SortOrder"`
 }
 
 type Checklist struct {
@@ -52,21 +71,12 @@ type TaskType struct {
 	Category    int    `json:"Category"`
 }
 
+// TaskTypeGlobal augments a type with how widely it is used: ProjectCount is
+// the number of distinct projects holding a task of this type.
 type TaskTypeGlobal struct {
 	TaskType
 	ProjectCount int `json:"ProjectCount"`
 	TaskCount    int `json:"TaskCount"`
-}
-
-type TaskTypeWithCount struct {
-	TaskType
-	TaskCount int `json:"TaskCount"`
-}
-
-type ProjectTaskTypeSettings struct {
-	AllTypes       []TaskTypeWithCount `json:"AllTypes"`
-	EnabledTypeIDs []int               `json:"EnabledTypeIDs"`
-	Categories     []TaskTypeCategory  `json:"Categories"`
 }
 
 type Task struct {

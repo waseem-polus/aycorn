@@ -18,7 +18,9 @@ import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { TaskAssignee } from "@/features/task/properties/task-assignee";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { AddRelationshipButton } from "@/features/task/relationships/bulk-add-relationship-button";
+import { MoveCopyMenu } from "@/features/task/transfer/move-copy-menu";
 import { pluralize } from "@/utils/pluralize";
+import { sharedTaskType } from "@/features/task/shared/shared-task-type";
 
 type Props = {
   selectedTasks: Task[];
@@ -70,12 +72,7 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
     );
 
   const sharedStage = sharedValue(selectedTasks, "Stage");
-  const firstTypeId = selectedTasks[0]?.Type?.ID;
-  const sharedType =
-    selectedTasks.length > 0 &&
-    selectedTasks.every((t) => t.Type?.ID === firstTypeId)
-      ? selectedTasks[0].Type
-      : undefined;
+  const sharedType = sharedTaskType(selectedTasks);
   const sharedPriority = sharedValue(selectedTasks, "Priority");
   const sharedChecklist = sharedValue(selectedTasks, "Checklist");
   const sharedAssignee = sharedValue(selectedTasks, "Assignee");
@@ -101,14 +98,14 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
         <SelectTaskStage
           value={sharedStage}
           onValueChange={(v) => applyChange({ Stage: v }, "stage")}
-          placeholder={sharedStage === undefined ? "Mixed" : "Stage"}
+          placeholder={"Stage"}
         />
       </div>
       <div className="w-32">
         <SelectTaskPriority
           value={sharedPriority}
           onValueChange={(v) => applyChange({ Priority: v }, "priority")}
-          placeholder={sharedPriority === undefined ? "Mixed" : "Priority"}
+          placeholder={"Priority"}
         />
       </div>
       <div className="w-80">
@@ -129,13 +126,18 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
               "date",
             )
           }
-          placeholder={
-            sharedStart === undefined ? "Mixed dates" : "Select a date"
-          }
+          placeholder={"Select Date"}
         />
       </div>
 
       <AddRelationshipButton taskIds={selectedTasks.map((t) => t.ID)} />
+
+      <MoveCopyMenu
+        tasks={selectedTasks}
+        excludeProjectId={Project.ID}
+        onDone={onClear}
+        disabled={busy}
+      />
 
       <Popover>
         <PopoverTrigger asChild>
@@ -156,23 +158,17 @@ export function BulkActionsToolbar({ selectedTasks, onClear }: Props) {
           <TaskAssignee
             value={sharedAssignee ?? ""}
             onValueChange={(v) => applyChange({ Assignee: v }, "assignee")}
-            placeholder={
-              sharedAssignee === undefined ? "Mixed assignees" : "Assignee"
-            }
+            placeholder={"Assignee"}
           />
           <SelectTaskType
             value={sharedType}
-            onValueChange={(v) =>
-              applyChange({ Type: v.ID } as unknown as Partial<Task>, "type")
-            }
-            placeholder={sharedType === undefined ? "Mixed types" : "Type"}
+            onValueChange={(v) => applyChange({ Type: v }, "type")}
+            placeholder={"Task Type"}
           />
           <SelectChecklist
             value={sharedChecklist}
             onValueChange={(v) => applyChange({ Checklist: v }, "checklist")}
-            placeholder={
-              sharedChecklist === undefined ? "Mixed checklists" : "Checklist"
-            }
+            placeholder={"Checklist"}
           />
         </PopoverContent>
       </Popover>

@@ -97,28 +97,3 @@ func (app *app) putTaskTypeCategoryReorder(w http.ResponseWriter, r *http.Reques
 	}
 	writeJSON(w, http.StatusOK, true)
 }
-
-func (app *app) postEnableTaskTypeCategory(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	projectID, err := strconv.Atoi(r.PathValue("projectId"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	body := struct {
-		CategoryID int `json:"categoryId"`
-	}{}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	result, err := app.taskTypeCategoryService.EnableForProject(projectID, body.CategoryID, app.taskTypeService)
-	if err != nil {
-		respondErr(w, err)
-		return
-	}
-	writeJSON(w, http.StatusOK, result)
-}

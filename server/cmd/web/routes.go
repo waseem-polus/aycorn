@@ -16,19 +16,29 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("GET /api/project/pinned", app.getPinnedProjects)
 	mux.HandleFunc("GET /api/project/checklist/{projectId}", app.getProjectChecklists)
 
+	mux.HandleFunc("PUT /api/project/bulk", app.bulkUpdateProjects)
 	mux.HandleFunc("PUT /api/project/bulk/pinned", app.bulkSetProjectsPinned)
+	mux.HandleFunc("PUT /api/project/bulk/archived", app.bulkSetProjectsArchived)
+	mux.HandleFunc("PUT /api/project/bulk/folder", app.bulkSetProjectsFolder)
 	mux.HandleFunc("POST /api/project/bulk/delete", app.bulkDeleteProjects)
+	mux.HandleFunc("PUT /api/project/pinned/order", app.putPinnedProjectsOrder)
 
 	mux.HandleFunc("GET /api/project/{projectId}/settings/workflow", app.getProjectWorkflowSettings)
 	mux.HandleFunc("PUT /api/project/{projectId}/settings/workflow", app.switchProjectWorkflow)
-	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types", app.getProjectTaskTypeSettings)
-	mux.HandleFunc("PUT /api/project/{projectId}/settings/task-types", app.putProjectTaskTypes)
-	mux.HandleFunc("GET /api/project/{projectId}/settings/task-types/enabled", app.getProjectTaskTypes)
-	mux.HandleFunc("POST /api/project/{projectId}/settings/task-types/bulk/enable-category", app.postEnableTaskTypeCategory)
+	// Not "/{projectId}/task-types" — that collides with the literal
+	// "GET /api/project/checklist/{projectId}" pattern above.
+	mux.HandleFunc("GET /api/project/{projectId}/task-types/in-use", app.getProjectTaskTypes)
+	mux.HandleFunc("POST /api/project/{projectId}/duplicate", app.postDuplicateProjectConfig)
 	mux.HandleFunc("GET /api/project/{projectId}", app.getProject)
 	mux.HandleFunc("PUT /api/project/{projectId}", app.putProject)
 	mux.HandleFunc("DELETE /api/project/{projectId}", app.deleteProject)
 	mux.HandleFunc("POST /api/project", app.postProject)
+
+	mux.HandleFunc("GET /api/project-folder", app.getAllProjectFolders)
+	mux.HandleFunc("POST /api/project-folder", app.postProjectFolder)
+	mux.HandleFunc("PUT /api/project-folder/reorder", app.putProjectFolderReorder)
+	mux.HandleFunc("PUT /api/project-folder/{id}", app.putProjectFolder)
+	mux.HandleFunc("DELETE /api/project-folder/{id}", app.deleteProjectFolder)
 
 	mux.HandleFunc("GET /api/tasks", app.getUpcomingTasks)
 	mux.HandleFunc("GET /api/tasks/facets", app.getTaskFacets)
@@ -39,6 +49,8 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PUT /api/task", app.putTask)
 	mux.HandleFunc("PUT /api/task/bulk", app.bulkUpdateTasks)
 	mux.HandleFunc("POST /api/task/bulk/delete", app.bulkDeleteTasks)
+	mux.HandleFunc("POST /api/task/bulk/move", app.bulkMoveTasks)
+	mux.HandleFunc("POST /api/task/bulk/copy", app.bulkCopyTasks)
 	mux.HandleFunc("DELETE /api/task/{taskId}", app.deleteTask)
 	mux.HandleFunc("GET /api/task/relationships/{taskId}", app.getTaskRelationships)
 

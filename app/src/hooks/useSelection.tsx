@@ -111,7 +111,7 @@ export const useSelection = ({
     if (
       !modifierHeld &&
       target instanceof Element &&
-      target.closest("[data-task-card], [data-drag-handle]")
+      target.closest("[data-task-card], [data-drag-handle], [data-slate-editor]")
     ) {
       return false;
     }
@@ -171,6 +171,7 @@ export const useSelection = ({
           <ViselectArea
             className={cn("select-none", className)}
             selectables=".selectable"
+            selectionContainerClass="selection-area-container"
             onBeforeStart={handleBeforeStart}
             onStart={handleStart}
             onMove={handleMove}

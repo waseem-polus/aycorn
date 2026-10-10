@@ -4,6 +4,7 @@ import { useLocalStorage } from "@/features/calendar/hooks";
 import type { IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { Task } from "@/types/types";
+import { toApiDate, parseApiDate } from "@/utils/date";
 
 interface ICalendarContext {
   selectedDate: Date;
@@ -156,10 +157,10 @@ export function CalendarProvider({
     const updated = {
       ...event,
       TimePlannedStart: event.TimePlannedStart
-        ? new Date(event.TimePlannedStart).toISOString()
+        ? toApiDate(parseApiDate(event.TimePlannedStart))
         : event.TimeCreated,
       TimePlannedEnd: event.TimePlannedEnd
-        ? new Date(event.TimePlannedEnd).toISOString()
+        ? toApiDate(parseApiDate(event.TimePlannedEnd))
         : event.TimePlannedStart,
     };
 

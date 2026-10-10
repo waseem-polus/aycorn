@@ -1,17 +1,22 @@
 import type { TaskWithProject } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import type { UpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
+import type { TaskFilterState } from "@/features/task-filters/task-filters";
+import {
+  setPresence,
+  setRangeEnd,
+  setRangeStart,
+} from "@/features/task-filters/date-params";
 
 // Search is applied client-side for instant feedback; exclude it from the query key
 // so typing doesn't trigger a backend round-trip.
-type BackendFilters = Omit<UpcomingFilters, "search">;
+type BackendFilters = Omit<TaskFilterState, "search">;
 
-function toBackendFilters(filters: UpcomingFilters): BackendFilters {
+function toBackendFilters(filters: TaskFilterState): BackendFilters {
   const { search: _s, ...rest } = filters;
   return rest;
 }
 
-export function useUpcomingTasksQuery(filters: UpcomingFilters) {
+export function useUpcomingTasksQuery(filters: TaskFilterState) {
   const backendFilters = toBackendFilters(filters);
   return useQuery<TaskWithProject[]>({
     queryKey: ["upcomingTasks", backendFilters],
@@ -24,23 +29,23 @@ export function useUpcomingTasksQuery(filters: UpcomingFilters) {
       backendFilters.assignee.forEach((a) => url.searchParams.append("assignee", a));
       backendFilters.checklist.forEach((id) => url.searchParams.append("checklist", String(id)));
       const {
+        plannedMode,
+        completedMode,
         plannedFrom,
         plannedTo,
-        plannedFromHasTime,
         plannedToHasTime,
         completedFrom,
         completedTo,
-        completedFromHasTime,
         completedToHasTime,
       } = backendFilters.dates ?? {};
-      if (plannedFrom) url.searchParams.set("plannedFrom", plannedFrom);
-      if (plannedFrom && plannedFromHasTime) url.searchParams.set("plannedFromHasTime", "true");
-      if (plannedTo) url.searchParams.set("plannedTo", plannedTo);
-      if (plannedTo && plannedToHasTime) url.searchParams.set("plannedToHasTime", "true");
-      if (completedFrom) url.searchParams.set("completedFrom", completedFrom);
-      if (completedFrom && completedFromHasTime) url.searchParams.set("completedFromHasTime", "true");
-      if (completedTo) url.searchParams.set("completedTo", completedTo);
-      if (completedTo && completedToHasTime) url.searchParams.set("completedToHasTime", "true");
+      if (setPresence(url, "plannedPresence", plannedMode)) {
+        setRangeStart(url, "plannedFrom", plannedFrom);
+        setRangeEnd(url, "plannedTo", plannedTo, plannedToHasTime);
+      }
+      if (setPresence(url, "completedPresence", completedMode)) {
+        setRangeStart(url, "completedFrom", completedFrom);
+        setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
+      }
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();

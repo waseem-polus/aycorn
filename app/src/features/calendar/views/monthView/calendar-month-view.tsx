@@ -14,7 +14,6 @@ import { DayCell } from "@/features/calendar/views/monthView";
 interface IProps {
   singleDayEvents: ChecklistTask[];
   multiDayEvents: ChecklistTask[];
-  setTaskDrawerOpen: (open: boolean) => void;
 }
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -22,7 +21,6 @@ const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export function CalendarMonthView({
   singleDayEvents,
   multiDayEvents,
-  setTaskDrawerOpen,
 }: IProps) {
   const { selectedDate } = useCalendar();
 
@@ -69,7 +67,6 @@ export function CalendarMonthView({
               cell={cell}
               events={allEvents}
               eventPositions={eventPositions}
-              setTaskDrawerOpen={setTaskDrawerOpen}
             />
           ))}
         </div>

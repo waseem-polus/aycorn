@@ -1,28 +1,28 @@
+import { getDefaultChecklistId } from "@/features/checklists/default-checklist";
 import {
   defaultTaskContextValue,
   TaskContext,
 } from "@/contexts/task/TaskContext";
+import { toApiDate } from "@/utils/date";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import type { ChecklistTask } from "@/types/types";
-import { useDateFormat } from "@/hooks/useDateFormatter";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 export function NewTaskEditorDrawer({
   date,
   startTime,
-  setTaskDrawerOpen,
 }: {
   date: Date;
   startTime: { hour: number; minute: number };
-  setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { setState: setTask } = useContext(TaskContext);
   const { Project, Checklists } = useContext(ProjectContext);
   const { create } = useTaskMutation(Project.ID);
+  const { onCreateDrawerOpenChange } = useCalendarHost();
 
-  const { toISO } = useDateFormat();
   // Always build from the defaults, never from whatever the (long-lived)
   // context happens to hold — a leftover value would be baked into the new task.
   const handleAddTask = useCallback(() => {
@@ -35,9 +35,9 @@ export function NewTaskEditorDrawer({
     create.mutate(
       {
         ...defaultTaskContextValue.state,
-        Checklist: Checklists[0]?.ID,
-        TimePlannedStart: toISO(startDateTime),
-        TimePlannedEnd: toISO(endDateTime),
+        Checklist: getDefaultChecklistId(Checklists),
+        TimePlannedStart: toApiDate(startDateTime),
+        TimePlannedEnd: toApiDate(endDateTime),
       },
       {
         onSuccess: (newTask: ChecklistTask) => {
@@ -45,12 +45,12 @@ export function NewTaskEditorDrawer({
         },
       },
     );
-  }, [create, Checklists, setTask, toISO, date, startTime]);
+  }, [create, Checklists, setTask, date, startTime]);
 
   return (
     <TaskEditorDrawer
       onOpenChange={(open) => {
-        setTaskDrawerOpen(open);
+        onCreateDrawerOpenChange?.(open);
         if (!open) {
           setTask(defaultTaskContextValue.state);
         }

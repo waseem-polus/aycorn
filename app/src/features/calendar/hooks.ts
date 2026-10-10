@@ -34,6 +34,15 @@ export const useLocalStorage = <T>(
 
   const [storedValue, setStoredValue] = useState<T>(readValue);
 
+  // The scope-owning component (e.g. a project page) doesn't unmount when its
+  // `key` changes (only the route param does), so without this the lazy
+  // initializer above would keep serving the previous key's stale value.
+  const [prevKey, setPrevKey] = useState(key);
+  if (key !== prevKey) {
+    setPrevKey(key);
+    setStoredValue(readValue());
+  }
+
   const setValue = (value: SetStateAction<T>) => {
     setStoredValue((prev) => {
       try {

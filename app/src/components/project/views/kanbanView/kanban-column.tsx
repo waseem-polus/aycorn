@@ -14,6 +14,8 @@ import { KanbanItem } from "./kanban-item";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { TaskProvider } from "@/contexts/task/TaskProvider";
+import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 
 type DragListeners = Record<string, (e: SyntheticEvent) => void>;
 
@@ -21,6 +23,7 @@ export function KanbanColumn({
   stage,
   getItemProps,
   lastDrop,
+  setTaskDrawerOpen,
 }: {
   stage: Stage;
   getItemProps?: (
@@ -28,6 +31,7 @@ export function KanbanColumn({
     opts?: { listeners?: DragListeners },
   ) => Record<string, unknown>;
   lastDrop?: { taskIds: Set<number>; animClass: string } | null;
+  setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { setNodeRef, isOver } = useDropZone(stage.ID);
 
@@ -63,9 +67,20 @@ export function KanbanColumn({
                 </Tooltip>
             </div>
 
-            <Button variant="ghost" size="icon-sm">
-                <PlusIcon />
-            </Button>
+            <TaskProvider>
+                <NewTaskEditorDrawer
+                    stageId={stage.ID}
+                    setTaskDrawerOpen={setTaskDrawerOpen}
+                >
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`New task in ${stage.Name}`}
+                    >
+                        <PlusIcon />
+                    </Button>
+                </NewTaskEditorDrawer>
+            </TaskProvider>
           </div>
       <ItemGroup
         className={cn(

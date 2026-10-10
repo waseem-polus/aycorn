@@ -11,7 +11,6 @@ var ErrDefaultTaskTypeCategory = errors.New("the default task type category cann
 
 type TaskTypeCategoryService struct {
 	CategoryRepo *repos.TaskTypeCategoryRepo
-	TaskTypeRepo *repos.TaskTypeRepo
 }
 
 func (s *TaskTypeCategoryService) GetAll() ([]models.TaskTypeCategory, error) {
@@ -55,36 +54,4 @@ func (s *TaskTypeCategoryService) Delete(id int, transferCategoryID int) error {
 
 func (s *TaskTypeCategoryService) Reorder(ids []int) error {
 	return s.CategoryRepo.Reorder(ids)
-}
-
-func (s *TaskTypeCategoryService) EnableForProject(projectID int, categoryID int, taskTypeService *TaskTypeService) (*models.BulkResult, error) {
-	typeIDs, err := s.TaskTypeRepo.IDsByCategory(categoryID)
-	if err != nil {
-		return nil, err
-	}
-
-	enabledIDs, err := s.TaskTypeRepo.EnabledIDsForProject(projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Merge: add category type IDs not already enabled.
-	enabledSet := make(map[int]bool, len(enabledIDs))
-	for _, id := range enabledIDs {
-		enabledSet[id] = true
-	}
-
-	added := 0
-	for _, id := range typeIDs {
-		if !enabledSet[id] {
-			enabledIDs = append(enabledIDs, id)
-			added++
-		}
-	}
-
-	if err := taskTypeService.SetProjectTypes(projectID, enabledIDs); err != nil {
-		return nil, err
-	}
-
-	return &models.BulkResult{Success: added}, nil
 }
