@@ -1,7 +1,6 @@
 import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
-import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
+import { priorityOptionSource } from "@/features/task-filters/option-groups";
 import type { TaskFilterState } from "@/features/task-filters/task-filters";
-import { PRIORITIES } from "@/types/types";
 
 type Props = {
   selected: TaskFilterState["priority"];
@@ -15,11 +14,7 @@ export function PrioritySection({ selected, onToggle, onClear }: Props) {
       <MultiSelectCombobox
         label="Priority"
         icon="signal"
-        options={PRIORITIES.map((p) => ({
-          key: p,
-          label: p,
-          lead: <TaskPriorityIcon variant={p} className="size-3.5" />,
-        }))}
+        {...priorityOptionSource()}
         selected={selected}
         onToggle={onToggle}
         onClear={onClear}

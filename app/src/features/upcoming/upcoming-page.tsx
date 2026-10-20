@@ -43,11 +43,14 @@ type Props = {
 
 export function UpcomingPage({ layout, setLayout }: Props) {
   const filtersApi = useUpcomingFilters();
-  const { filters, view } = filtersApi;
+  const { filters, view, conditions } = filtersApi;
 
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const { data: tasks = [], isFetching } = useUpcomingTasksQuery(filters);
+  const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
+    filters,
+    conditions.wire,
+  );
   const { data: facets = { assignees: [], checklists: [] } } =
     useTaskFacetsQuery();
   const { data: projects = [] } = useAllProjectsQuery();

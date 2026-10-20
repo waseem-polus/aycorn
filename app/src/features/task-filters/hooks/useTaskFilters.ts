@@ -1,5 +1,11 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useLocalStorage } from "@/features/calendar/hooks";
+import { createRoot } from "@/features/task-filters/conditions/condition-tree-ops";
+import {
+  UNDO_TOAST_MS,
+  useConditionTree,
+} from "@/features/task-filters/conditions/hooks/useConditionTree";
 import {
   EMPTY_FILTERS,
   FILTER_DIMS,
@@ -27,6 +33,10 @@ const EMPTY_PERSISTED_FILTERS: PersistedFilterState = stripSearch(EMPTY_FILTERS)
  * `search` is deliberately excluded from persistence: a search term left over
  * from a previous session looks like missing data ("only 1-2 tasks") when the
  * page is reopened, so it lives in plain component state and resets on mount.
+ *
+ * `conditions` is the advanced condition tree, persisted alongside under the
+ * same scope. The server ANDs it with the basic filters, and it counts toward
+ * `activeFilterCount` and is cleared by `resetAll` like any other filter.
  */
 export function useTaskFilters(scope: string) {
   const [persisted, setPersisted] = useLocalStorage<PersistedFilterState>(
@@ -34,6 +44,7 @@ export function useTaskFilters(scope: string) {
     EMPTY_PERSISTED_FILTERS,
   );
   const [search, setSearchState] = useState("");
+  const conditions = useConditionTree(scope);
   const filters: TaskFilterState = { ...persisted, search };
 
   const setFilters = (
@@ -110,9 +121,27 @@ export function useTaskFilters(scope: string) {
     });
   };
 
+  /**
+   * Clears basic filters, search and conditions. A condition tree can take a
+   * while to build, so when one is discarded the reset is offered back.
+   */
   const resetAll = () => {
+    const basicSnapshot = persisted;
+    const conditionSnapshot = conditions.root;
     setPersisted(EMPTY_PERSISTED_FILTERS);
     setSearchState("");
+    if (conditionSnapshot.children.length === 0) return;
+    conditions.replaceRoot(createRoot());
+    toast("Filters reset", {
+      duration: UNDO_TOAST_MS,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setPersisted(basicSnapshot);
+          conditions.replaceRoot(conditionSnapshot);
+        },
+      },
+    });
   };
 
   /**
@@ -130,7 +159,7 @@ export function useTaskFilters(scope: string) {
       if (ignored.includes(modeKey)) continue;
       if ((filters.dates?.[modeKey] ?? "all") !== "all") n++;
     }
-    return n;
+    return n + conditions.completeCount;
   };
 
   return {
@@ -143,6 +172,7 @@ export function useTaskFilters(scope: string) {
     setDateMode,
     resetAll,
     activeFilterCount,
+    conditions,
     EMPTY_FILTERS,
   };
 }

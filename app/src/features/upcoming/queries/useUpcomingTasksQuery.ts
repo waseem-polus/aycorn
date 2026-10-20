@@ -1,7 +1,9 @@
 import type { TaskWithProject } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import type { TaskFilterState } from "@/features/task-filters/task-filters";
+import type { WireGroup } from "@/features/task-filters/conditions/condition-types";
 import {
+  setConditions,
   setPresence,
   setRangeEnd,
   setRangeStart,
@@ -16,10 +18,13 @@ function toBackendFilters(filters: TaskFilterState): BackendFilters {
   return rest;
 }
 
-export function useUpcomingTasksQuery(filters: TaskFilterState) {
+export function useUpcomingTasksQuery(
+  filters: TaskFilterState,
+  conditions: WireGroup | null,
+) {
   const backendFilters = toBackendFilters(filters);
   return useQuery<TaskWithProject[]>({
-    queryKey: ["upcomingTasks", backendFilters],
+    queryKey: ["upcomingTasks", backendFilters, conditions],
     queryFn: async () => {
       const url = new URL("/api/tasks", window.location.origin);
       backendFilters.project.forEach((id) => url.searchParams.append("project", String(id)));
@@ -46,6 +51,7 @@ export function useUpcomingTasksQuery(filters: TaskFilterState) {
         setRangeStart(url, "completedFrom", completedFrom);
         setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
       }
+      setConditions(url, conditions);
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();

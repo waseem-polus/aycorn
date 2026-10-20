@@ -1,27 +1,21 @@
 import { useState } from "react";
-import { Check, ChevronDown, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { OptionCommandList } from "@/components/ui/option-command-list";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 export type MultiSelectOption = {
   key: string | number;
   label: string;
   sublabel?: string;
+  /** A second, muted line under the label. */
+  description?: string;
   lead?: React.ReactNode;
 };
 
@@ -50,30 +44,10 @@ export function MultiSelectCombobox({
   onClear,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
 
-  const ql = query.trim().toLowerCase();
   const allOptions = groups
     ? groups.flatMap((g) => g.options)
     : (options ?? []);
-
-  const matchFn = (o: MultiSelectOption) =>
-    String(o.label).toLowerCase().includes(ql) ||
-    (o.sublabel ?? "").toLowerCase().includes(ql);
-
-  const shownGroups = groups
-    ? groups
-        .map((g) => ({
-          ...g,
-          options: ql ? g.options.filter(matchFn) : g.options,
-        }))
-        .filter((g) => g.options.length > 0)
-    : null;
-  const shownFlat = !groups
-    ? ql
-      ? allOptions.filter(matchFn)
-      : allOptions
-    : null;
 
   const count = selected.length;
 
@@ -81,10 +55,7 @@ export function MultiSelectCombobox({
     <div className="flex flex-col gap-1.5">
       <Popover
         open={open}
-        onOpenChange={(v) => {
-          setOpen(v);
-          if (!v) setQuery("");
-        }}
+        onOpenChange={setOpen}
       >
         <PopoverTrigger asChild>
           <Button
@@ -124,73 +95,13 @@ export function MultiSelectCombobox({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-60 p-0" align="start" data-vaul-no-drag>
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder={`Search ${label.toLowerCase()}…`}
-              value={query}
-              onValueChange={setQuery}
-            />
-            <CommandList onWheel={(e) => e.stopPropagation()}>
-              <CommandEmpty>No matches.</CommandEmpty>
-              {shownGroups ? (
-                shownGroups.map((g) => (
-                  <CommandGroup key={g.label} heading={g.label}>
-                    {g.options.map((o) => {
-                      const isSelected = selected.includes(o.key);
-                      return (
-                        <CommandItem
-                          key={o.key}
-                          value={String(o.key)}
-                          onSelect={() => onToggle(o.key)}
-                        >
-                          <Check
-                            className={cn(
-                              "size-4 shrink-0",
-                              isSelected ? "opacity-100" : "opacity-0",
-                            )}
-                          />
-                          {o.lead}
-                          <span className="flex-1 truncate">{o.label}</span>
-                          {o.sublabel && (
-                            <span className="text-xs text-muted-foreground shrink-0">
-                              {o.sublabel}
-                            </span>
-                          )}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                ))
-              ) : (
-                <CommandGroup>
-                  {(shownFlat ?? []).map((o) => {
-                    const isSelected = selected.includes(o.key);
-                    return (
-                      <CommandItem
-                        key={o.key}
-                        value={String(o.key)}
-                        onSelect={() => onToggle(o.key)}
-                      >
-                        <Check
-                          className={cn(
-                            "size-4 shrink-0",
-                            isSelected ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                        {o.lead}
-                        <span className="flex-1 truncate">{o.label}</span>
-                        {o.sublabel && (
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {o.sublabel}
-                          </span>
-                        )}
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
+          <OptionCommandList
+            options={options}
+            groups={groups}
+            selected={selected}
+            onSelect={onToggle}
+            searchPlaceholder={`Search ${label.toLowerCase()}…`}
+          />
         </PopoverContent>
       </Popover>
 

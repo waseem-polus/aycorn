@@ -62,6 +62,11 @@ func parseTaskFilters(q url.Values) (*repos.TaskFilters, error) {
 		presence[key] = value
 	}
 
+	conditions, err := repos.ParseTaskConditions(q.Get("conditions"))
+	if err != nil {
+		return nil, err
+	}
+
 	return &repos.TaskFilters{
 		SearchQuery:    q.Get("search"),
 		ChecklistQuery: getQuerySlice(q, "checklist"),
@@ -77,6 +82,7 @@ func parseTaskFilters(q url.Values) (*repos.TaskFilters, error) {
 
 		PlannedPresence:   presence["plannedPresence"],
 		CompletedPresence: presence["completedPresence"],
+		Conditions:        conditions,
 	}, nil
 }
 

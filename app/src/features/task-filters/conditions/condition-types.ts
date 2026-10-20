@@ -1,0 +1,73 @@
+/**
+ * The condition tree: nested AND/OR groups of property/operator/value
+ * conditions. This is the in-browser editing shape (ids on every node, values
+ * kept in the picker's own units); `toWire` turns it into the server's JSON.
+ */
+
+export type MatchMode = "all" | "any";
+
+export type PropertyKey =
+  | "project"
+  | "checklist"
+  | "stage"
+  | "type"
+  | "assignee"
+  | "priority"
+  | "title"
+  | "timePlanned"
+  | "timeCompleted";
+
+export type OperatorKey =
+  | "is"
+  | "is_not"
+  | "is_empty"
+  | "is_not_empty"
+  | "before"
+  | "after"
+  | "on"
+  | "between"
+  | "is_set"
+  | "is_not_set"
+  | "contains"
+  | "does_not_contain";
+
+export type ConditionValue =
+  | { kind: "ids"; ids: (string | number)[] }
+  /** A local calendar day, `yyyy-MM-dd`. */
+  | { kind: "date"; date: string }
+  | { kind: "range"; from: string; to: string }
+  | { kind: "text"; text: string }
+  | null;
+
+export type Condition = {
+  kind: "condition";
+  id: string;
+  property: PropertyKey | null;
+  operator: OperatorKey | null;
+  value: ConditionValue;
+};
+
+export type ConditionGroup = {
+  kind: "group";
+  id: string;
+  match: MatchMode;
+  children: ConditionNode[];
+};
+
+export type ConditionNode = Condition | ConditionGroup;
+
+/** The localStorage envelope. Bump `version` when the shape changes. */
+export type StoredConditions = { version: 1; root: ConditionGroup };
+
+/** Server wire format — also the payload a saved filter will store. */
+export type WireCondition = {
+  property: PropertyKey;
+  operator: OperatorKey;
+  values?: (string | number)[];
+  at?: string;
+  from?: string;
+  to?: string;
+  text?: string;
+};
+
+export type WireGroup = { match: MatchMode; children: (WireGroup | WireCondition)[] };

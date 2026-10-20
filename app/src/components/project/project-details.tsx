@@ -49,6 +49,7 @@ export function ProjectDetails({
     filtersApi.filters,
     !newTaskOpen,
     plannedFilterApplies,
+    filtersApi.conditions.wire,
   );
 
   useEffect(() => {

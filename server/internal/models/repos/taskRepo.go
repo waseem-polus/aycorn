@@ -31,6 +31,9 @@ type TaskFilters struct {
 	// corresponding date at all, independent of the bounds above.
 	PlannedPresence   string
 	CompletedPresence string
+	// Conditions is the advanced condition tree, ANDed onto every filter
+	// above. Nil when the request has none.
+	Conditions *TaskConditionGroup
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -674,6 +677,12 @@ func appendTaskFilterClauses(query string, args []any, taskFilters *TaskFilters)
 	if taskFilters.CompletedTo != "" {
 		query += " AND t.timeCompleted <= ?"
 		args = append(args, taskFilters.CompletedTo)
+	}
+
+	if taskFilters.Conditions != nil {
+		fragment, conditionArgs := compileTaskConditions(taskFilters.Conditions)
+		query += " AND " + fragment
+		args = append(args, conditionArgs...)
 	}
 
 	return query, args

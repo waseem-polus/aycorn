@@ -14,7 +14,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      // Modal dialogs and drawers set pointer-events: none on <body>; keep
+      // toasts clickable over them so an Undo action still works.
+      className="toaster group pointer-events-auto"
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,

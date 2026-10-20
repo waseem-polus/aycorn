@@ -44,12 +44,23 @@ export function FilterDrawerFrame({
       onOpenChange={onOpenChange}
     >
       {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
-      <DrawerContent className="flex flex-col">
+      <DrawerContent
+        className="md:min-w-xl flex flex-col"
+        // Clicking a toast (e.g. Undo after clearing conditions) isn't a
+        // click away from the drawer.
+        onInteractOutside={(e) => {
+          if ((e.target as Element | null)?.closest("[data-sonner-toaster]")) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DrawerHeader>
           <DrawerTitle className="flex gap-2 items-center">
             <SlidersHorizontal className="size-4 text-muted-foreground shrink-0" />
             Filters
-            {activeCount > 0 && <Badge variant="secondary">{activeCount}</Badge>}
+            {activeCount > 0 && (
+              <Badge variant="secondary">{activeCount}</Badge>
+            )}
           </DrawerTitle>
         </DrawerHeader>
 
@@ -58,7 +69,11 @@ export function FilterDrawerFrame({
         </div>
 
         <DrawerFooter>
-          <Button variant="outline" disabled={activeCount === 0} onClick={onReset}>
+          <Button
+            variant="outline"
+            disabled={activeCount === 0}
+            onClick={onReset}
+          >
             <RotateCcw className="size-3.5" />
             {activeCount > 0
               ? `Reset ${activeCount} filter${activeCount > 1 ? "s" : ""}`
