@@ -1,5 +1,5 @@
 import { OPERATORS } from "@/features/task-filters/conditions/condition-operators";
-import { PROPERTIES } from "@/features/task-filters/conditions/condition-properties";
+import { operatorsFor } from "@/features/task-filters/conditions/condition-properties";
 import type {
   Condition,
   ConditionGroup,
@@ -25,7 +25,7 @@ export const createCondition = (property: PropertyKey | null = null): Condition 
   kind: "condition",
   id: newId(),
   property,
-  operator: property ? PROPERTIES[property].operators[0] : null,
+  operator: property ? operatorsFor(property)[0] : null,
   value: null,
 });
 
@@ -210,7 +210,7 @@ export const setMatch = (root: ConditionGroup, groupId: string, match: MatchMode
 export const setProperty = (root: ConditionGroup, id: string, property: PropertyKey) =>
   updateNode(root, id, (n) =>
     n.kind === "condition" && n.property !== property
-      ? { ...n, property, operator: PROPERTIES[property].operators[0], value: null }
+      ? { ...n, property, operator: operatorsFor(property)[0], value: null }
       : n,
   );
 

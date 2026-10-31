@@ -54,8 +54,16 @@ type TaskCondition struct {
 	At   string
 	From string
 	To   string
-	// Text is the substring for contains / does_not_contain.
+	// Text is the operand for the text operators (contains, equals, …).
 	Text string
+	// LinkType and Direction pick one direction of one relationship type for
+	// the taskLink property: "from" means this task is the relationship's
+	// fromTask (e.g. it Blocks), "to" that it is the toTask (Blocked By).
+	LinkType  int
+	Direction string
+	// LinkMatch is "any" or "none" when a taskLink condition tests for any
+	// linked task at all rather than specific ones in Values.
+	LinkMatch string
 }
 
 type conditionValueKind int
@@ -65,6 +73,12 @@ const (
 	conditionValueString
 	conditionValueDate
 	conditionValueText
+	// conditionValuePresence properties take no value at all: only the
+	// is_empty / is_not_empty checks against emptyExpr.
+	conditionValuePresence
+	// conditionValueLink is the per-direction task link: task ids, or the
+	// "any" / "none" sentinels.
+	conditionValueLink
 )
 
 // taskConditionProperty describes how one filterable property maps to SQL.
@@ -84,15 +98,45 @@ type taskConditionProperty struct {
 	// allowed restricts string values to a fixed set (e.g. the priority
 	// CHECK constraint).
 	allowed []string
+	// flagOps are extra value-less operators specific to this property,
+	// mapped straight to their predicate (e.g. project is_archived).
+	flagOps map[string]string
 }
 
+// textOperators are shared by every text property. Comparisons are
+// case-insensitive: LIKE is for ASCII in SQLite, and equals uses NOCASE.
+var textOperators = []string{"contains", "does_not_contain", "equals", "not_equals"}
+
+// taskLinkExists is the subquery behind every taskLink condition; the two
+// %s are this task's side and the linked task's side of the relationship.
+const taskLinkExists = "EXISTS (SELECT 1 FROM task_relationship r WHERE r.%s = t.id AND r.relationshipType = ?%s)"
+
 var taskConditionProperties = map[string]taskConditionProperty{
-	"project": {kind: conditionValueInt, column: "c.project"},
+	"project": {
+		kind:   conditionValueInt,
+		column: "c.project",
+		flagOps: map[string]string{
+			"is_archived":     "EXISTS (SELECT 1 FROM project p WHERE p.id = c.project AND p.archived = 1)",
+			"is_not_archived": "EXISTS (SELECT 1 FROM project p WHERE p.id = c.project AND p.archived = 0)",
+		},
+	},
+	"projectName": {
+		kind:   conditionValueText,
+		column: "COALESCE((SELECT p.name FROM project p WHERE p.id = c.project), '')",
+	},
+	"checklistName": {kind: conditionValueText, column: "COALESCE(c.name, '')"},
 	// Task listings INNER JOIN checklist, so a task without a checklist is
 	// never listed and "checklist is empty" could never match.
 	"checklist": {kind: conditionValueInt, column: "t.checklist"},
 	"stage":     {kind: conditionValueInt, column: "t.stage"},
 	"type":      {kind: conditionValueInt, column: "t.type"},
+	// A stage's category. Mirrors the stage.type CHECK constraint — a new
+	// category needs a migration there and an entry here.
+	"stageType": {
+		kind:    conditionValueString,
+		column:  "(SELECT s.type FROM stage s WHERE s.id = t.stage)",
+		allowed: []string{"open", "todo", "doing", "done"},
+	},
 	"assignee": {
 		kind:      conditionValueString,
 		column:    "t.assignee",
@@ -119,6 +163,12 @@ var taskConditionProperties = map[string]taskConditionProperty{
 		end:       "t.timeCompleted",
 		emptyExpr: "t.timeCompleted IS NULL",
 	},
+	// Whether the task has any link at all, in either direction, of any type.
+	"taskLinks": {
+		kind:      conditionValuePresence,
+		emptyExpr: "NOT EXISTS (SELECT 1 FROM task_relationship r WHERE r.fromTask = t.id OR r.toTask = t.id)",
+	},
+	"taskLink": {kind: conditionValueLink},
 }
 
 // wireConditionNode is the raw JSON shape; a node is a group when it has a
@@ -133,6 +183,9 @@ type wireConditionNode struct {
 	From     string              `json:"from"`
 	To       string              `json:"to"`
 	Text     string              `json:"text"`
+	// taskLink only.
+	LinkType  *int   `json:"linkType"`
+	Direction string `json:"direction"`
 }
 
 // ParseTaskConditions decodes and validates a condition tree. An empty string
@@ -201,6 +254,10 @@ func parseCondition(w wireConditionNode) (*TaskCondition, error) {
 	cond := &TaskCondition{Property: w.Property, Operator: w.Operator}
 	invalidOp := fmt.Errorf("operator %q is not valid for %s", w.Operator, w.Property)
 
+	if _, ok := prop.flagOps[w.Operator]; ok {
+		return cond, nil
+	}
+
 	switch w.Operator {
 	case "is_empty", "is_not_empty", "is_set", "is_not_set":
 		isDate := prop.kind == conditionValueDate
@@ -247,8 +304,28 @@ func parseCondition(w wireConditionNode) (*TaskCondition, error) {
 			return nil, invalidOp
 		}
 
+	case conditionValuePresence:
+		return nil, invalidOp
+
+	case conditionValueLink:
+		if w.Operator != "is" && w.Operator != "is_not" {
+			return nil, invalidOp
+		}
+		if w.LinkType == nil {
+			return nil, errors.New("taskLink needs a linkType")
+		}
+		if w.Direction != "from" && w.Direction != "to" {
+			return nil, fmt.Errorf("taskLink direction %q must be from or to", w.Direction)
+		}
+		cond.LinkType, cond.Direction = *w.LinkType, w.Direction
+		match, ids, err := linkConditionValues(w.Values)
+		if err != nil {
+			return nil, fmt.Errorf("taskLink: %w", err)
+		}
+		cond.LinkMatch, cond.Values = match, ids
+
 	case conditionValueText:
-		if w.Operator != "contains" && w.Operator != "does_not_contain" {
+		if !containsString(textOperators, w.Operator) {
 			return nil, invalidOp
 		}
 		if w.Text == "" {
@@ -289,6 +366,22 @@ func typedConditionValues(raw []any, prop taskConditionProperty) ([]any, error) 
 		}
 	}
 	return out, nil
+}
+
+// linkConditionValues accepts either one "any" / "none" sentinel on its own
+// or one or more task ids — mixing them has no sensible meaning.
+func linkConditionValues(raw []any) (string, []any, error) {
+	if len(raw) == 0 {
+		return "", nil, errors.New("needs at least one value")
+	}
+	if s, ok := raw[0].(string); ok {
+		if len(raw) != 1 || (s != "any" && s != "none") {
+			return "", nil, errors.New(`"any" and "none" must be the only value`)
+		}
+		return s, nil, nil
+	}
+	ids, err := typedConditionValues(raw, taskConditionProperty{kind: conditionValueInt})
+	return "", ids, err
 }
 
 func containsString(list []string, s string) bool {
@@ -333,6 +426,13 @@ func compileTaskConditions(group *TaskConditionGroup) (string, []any) {
 func compileTaskCondition(cond *TaskCondition) (string, []any) {
 	prop := taskConditionProperties[cond.Property]
 
+	if predicate, ok := prop.flagOps[cond.Operator]; ok {
+		return predicate, nil
+	}
+	if prop.kind == conditionValueLink {
+		return compileTaskLink(cond)
+	}
+
 	switch cond.Operator {
 	case "is":
 		return prop.column + " IN (" + conditionPlaceholders(len(cond.Values)) + ")", cond.Values
@@ -365,10 +465,42 @@ func compileTaskCondition(cond *TaskCondition) (string, []any) {
 		return prop.column + ` LIKE ? ESCAPE '\'`, []any{likeContains(cond.Text)}
 	case "does_not_contain":
 		return prop.column + ` NOT LIKE ? ESCAPE '\'`, []any{likeContains(cond.Text)}
+	case "equals":
+		return prop.column + " = ? COLLATE NOCASE", []any{cond.Text}
+	case "not_equals":
+		return prop.column + " <> ? COLLATE NOCASE", []any{cond.Text}
 	}
 
 	// Unreachable for a tree from ParseTaskConditions.
 	return "1=1", nil
+}
+
+// compileTaskLink renders one direction of one relationship type. "is" asks
+// for a link to any of the given tasks (or to any task at all for the "any"
+// sentinel); "is not" negates it, so tasks with no such link match. "none" is
+// the negation of "any".
+func compileTaskLink(cond *TaskCondition) (string, []any) {
+	self, other := "fromTask", "toTask"
+	if cond.Direction == "to" {
+		self, other = "toTask", "fromTask"
+	}
+
+	args := []any{cond.LinkType}
+	targets := ""
+	if cond.LinkMatch == "" {
+		targets = " AND r." + other + " IN (" + conditionPlaceholders(len(cond.Values)) + ")"
+		args = append(args, cond.Values...)
+	}
+	exists := fmt.Sprintf(taskLinkExists, self, targets)
+
+	positive := cond.Operator == "is"
+	if cond.LinkMatch == "none" {
+		positive = !positive
+	}
+	if positive {
+		return exists, args
+	}
+	return "NOT " + exists, args
 }
 
 func conditionPlaceholders(n int) string {

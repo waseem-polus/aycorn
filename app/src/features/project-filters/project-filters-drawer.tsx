@@ -13,6 +13,7 @@ import {
   checklistOptionSource,
   priorityOptionSource,
   stageOptionSource,
+  stageTypeOptionSource,
   taskTypeOptionSource,
 } from "@/features/task-filters/option-groups";
 import { AssigneeSection } from "@/features/task-filters/sections/assignee-section";
@@ -65,6 +66,7 @@ export function ProjectFiltersDrawer() {
     type: taskTypeOptionSource(taskTypes, taskTypeCategories),
     assignee: assigneeOptionSource(facets.assignees),
     priority: priorityOptionSource(),
+    stageType: stageTypeOptionSource(),
   };
 
   const taskCount =

@@ -26,6 +26,14 @@ export const OPERATORS: Record<OperatorKey, OperatorMeta> = {
     description: "Doesn't include the text",
     arity: "text",
   },
+  equals: { label: "is", description: "Exactly the text, ignoring case", arity: "text" },
+  not_equals: { label: "is not", description: "Anything but the text, ignoring case", arity: "text" },
+  is_archived: { label: "is archived", description: "The project is archived", arity: "none" },
+  is_not_archived: {
+    label: "is not archived",
+    description: "The project is active",
+    arity: "none",
+  },
 };
 
 /** Operators that test for presence rather than compare a value — listed after a separator in the picker. */
@@ -34,4 +42,10 @@ export const PRESENCE_OPERATORS: OperatorKey[] = [
   "is_not_empty",
   "is_set",
   "is_not_set",
+  "is_archived",
+  "is_not_archived",
 ];
+
+/** The value sentinels for link properties, offered above the task list. */
+export const LINK_ANY = "any";
+export const LINK_NONE = "none";

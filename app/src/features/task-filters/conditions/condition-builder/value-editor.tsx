@@ -3,9 +3,13 @@ import { useConditionBuilder } from "@/features/task-filters/conditions/conditio
 import { DateValueEditor } from "@/features/task-filters/conditions/condition-builder/date-value-editor";
 import { EnumValueEditor } from "@/features/task-filters/conditions/condition-builder/enum-value-editor";
 import { TextValueEditor } from "@/features/task-filters/conditions/condition-builder/text-value-editor";
-import { OPERATORS } from "@/features/task-filters/conditions/condition-operators";
-import { PROPERTIES } from "@/features/task-filters/conditions/condition-properties";
-import type { Condition } from "@/features/task-filters/conditions/condition-types";
+import {
+  LINK_ANY,
+  LINK_NONE,
+  OPERATORS,
+} from "@/features/task-filters/conditions/condition-operators";
+import { resolveProperty } from "@/features/task-filters/conditions/condition-properties";
+import type { Condition, StaticPropertyKey } from "@/features/task-filters/conditions/condition-types";
 
 type Props = {
   condition: Condition;
@@ -14,27 +18,45 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
+const SENTINELS: (string | number)[] = [LINK_ANY, LINK_NONE];
+
+/**
+ * "Any task" and "No task" stand alone: picking one replaces the selection,
+ * and picking a real task drops whichever sentinel was there.
+ */
+const exclusiveLinkIds = (prev: (string | number)[], next: (string | number)[]) => {
+  const added = next.find((k) => !prev.includes(k));
+  if (added === undefined) return next;
+  return SENTINELS.includes(added) ? [added] : next.filter((k) => !SENTINELS.includes(k));
+};
+
 /** Renders the editor the operator needs, or nothing for presence checks. */
 export function ValueEditor({ condition, open, onOpenChange }: Props) {
-  const { tree, sources } = useConditionBuilder();
+  const { tree, sources, linkTypes, linkTaskSource } = useConditionBuilder();
   const { id, property, operator, value } = condition;
   if (!property || !operator) return null;
+  const meta = resolveProperty(property, linkTypes);
 
   switch (OPERATORS[operator].arity) {
     case "none":
       return null;
 
     case "ids": {
-      const source = sources[property];
+      const isLink = meta.valueKind === "link";
+      const source = isLink ? linkTaskSource : sources[property as StaticPropertyKey];
       if (!source) return null;
+      const selected = value?.kind === "ids" ? value.ids : [];
       return (
         <EnumValueEditor
           source={source}
-          plural={PROPERTIES[property].plural}
-          selected={value?.kind === "ids" ? value.ids : []}
+          plural={meta.plural}
+          selected={selected}
           open={open}
           onOpenChange={onOpenChange}
-          onChange={(ids) => tree.setValue(id, ids.length ? { kind: "ids", ids } : null)}
+          onChange={(next) => {
+            const ids = isLink ? exclusiveLinkIds(selected, next) : next;
+            tree.setValue(id, ids.length ? { kind: "ids", ids } : null);
+          }}
         />
       );
     }

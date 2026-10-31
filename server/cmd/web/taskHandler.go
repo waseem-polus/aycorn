@@ -83,6 +83,7 @@ func parseTaskFilters(q url.Values) (*repos.TaskFilters, error) {
 		PlannedPresence:   presence["plannedPresence"],
 		CompletedPresence: presence["completedPresence"],
 		Conditions:        conditions,
+		ExcludeArchived:   q.Get("excludeArchived") == "true",
 	}, nil
 }
 

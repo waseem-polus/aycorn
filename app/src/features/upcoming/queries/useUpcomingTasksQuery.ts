@@ -2,6 +2,7 @@ import type { TaskWithProject } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import type { TaskFilterState } from "@/features/task-filters/task-filters";
 import type { WireGroup } from "@/features/task-filters/conditions/condition-types";
+import { controlsArchived } from "@/features/task-filters/conditions/condition-wire";
 import {
   setConditions,
   setPresence,
@@ -52,6 +53,8 @@ export function useUpcomingTasksQuery(
         setRangeEnd(url, "completedTo", completedTo, completedToHasTime);
       }
       setConditions(url, conditions);
+      // Archived projects' tasks are hidden here unless a condition decides.
+      if (!controlsArchived(conditions)) url.searchParams.set("excludeArchived", "true");
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error(await res.text());
       return res.json();

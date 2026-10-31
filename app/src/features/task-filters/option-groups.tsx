@@ -4,16 +4,21 @@ import type {
   MultiSelectOptionGroup,
 } from "@/components/ui/multi-select-combobox";
 import { ProjectIcon } from "@/features/projects/project-icon";
+import { stageBulletClass } from "@/features/stage/stage-palette";
 import { StageIcon, stageStrokeClass } from "@/features/stage/stage-visual";
+import { LINK_ANY, LINK_NONE } from "@/features/task-filters/conditions/condition-operators";
+import { STAGE_TYPE_COLORS } from "@/features/workflows/shared/stage-type-rules";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 import { cn } from "@/lib/utils";
 import {
   PRIORITIES,
+  STAGE_TYPES,
   type ChecklistFacet,
   type Project,
   type Stage,
   type TaskType,
   type TaskTypeCategory,
+  type TaskWithProject,
 } from "@/types/types";
 
 /**
@@ -119,3 +124,56 @@ export const checklistOptionSource = (
       .filter((g) => g.options.length > 0),
   };
 };
+
+const STAGE_TYPE_LABELS: Record<(typeof STAGE_TYPES)[number], string> = {
+  open: "Open",
+  todo: "To do",
+  doing: "Doing",
+  done: "Done",
+};
+
+/** The fixed stage categories every workflow's stages fall into. */
+export const stageTypeOptionSource = (): OptionSource => ({
+  options: STAGE_TYPES.map((type) => ({
+    key: type,
+    label: STAGE_TYPE_LABELS[type],
+    lead: (
+      <span
+        className={cn("size-2 shrink-0 rounded-full", stageBulletClass(STAGE_TYPE_COLORS[type]))}
+      />
+    ),
+  })),
+});
+
+/**
+ * Every task, grouped by project, for link conditions — preceded by the
+ * "Any task" / "No task" sentinels. Links cross projects, so this is never
+ * scoped to the current one.
+ */
+export const linkTaskOptionSource = (
+  tasks: TaskWithProject[],
+  projects: Project[],
+): OptionSource => ({
+  groups: [
+    {
+      label: "",
+      options: [
+        { key: LINK_ANY, label: "Any task", description: "Linked to at least one task" },
+        { key: LINK_NONE, label: "No task", description: "Not linked to any task" },
+      ],
+    },
+    ...projects
+      .map((p) => ({
+        label: p.Name,
+        options: tasks
+          .filter((t) => t.ProjectID === p.ID)
+          .map((t) => ({
+            key: t.ID,
+            label: t.Name || "Untitled task",
+            sublabel: t.ChecklistName,
+            lead: <TaskPriorityIcon variant={t.Priority} className="size-3.5" />,
+          })),
+      }))
+      .filter((g) => g.options.length > 0),
+  ],
+});

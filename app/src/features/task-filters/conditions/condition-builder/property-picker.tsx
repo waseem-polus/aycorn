@@ -4,10 +4,13 @@ import { OptionCommandList } from "@/components/ui/option-command-list";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
+import { PropertyIcon } from "@/features/task-filters/conditions/condition-builder/property-icon";
 import {
-  PROPERTIES,
-  PROPERTY_KEYS,
+  linkPropertyKeys,
   PROPERTY_SECTIONS,
+  resolveProperty,
+  STATIC_PROPERTIES,
+  STATIC_PROPERTY_KEYS,
 } from "@/features/task-filters/conditions/condition-properties";
 import type { PropertyKey } from "@/features/task-filters/conditions/condition-types";
 
@@ -19,27 +22,30 @@ type Props = {
 };
 
 export function PropertyPicker({ value, open, onOpenChange, onSelect }: Props) {
-  const { sources } = useConditionBuilder();
+  const { sources, linkTypes } = useConditionBuilder();
   // Enum properties need values to pick from; without a source on this
-  // surface they aren't offered.
-  const available = PROPERTY_KEYS.filter(
-    (key) => PROPERTIES[key].valueKind !== "enum" || sources[key],
-  );
+  // surface they aren't offered, nor is anything that requires that source.
+  const staticKeys = STATIC_PROPERTY_KEYS.filter((key) => {
+    const meta = STATIC_PROPERTIES[key];
+    if (meta.valueKind === "enum" && !sources[key]) return false;
+    return !meta.requiresSource || !!sources[meta.requiresSource];
+  });
+  // "Task links" first, then each direction of each relationship type.
+  const available: PropertyKey[] = [...staticKeys, ...linkPropertyKeys(linkTypes)];
+
   const groups = PROPERTY_SECTIONS.map((section) => ({
     label: section,
     options: available
-      .filter((key) => PROPERTIES[key].section === section)
-      .map((key) => {
-        const Icon = PROPERTIES[key].icon;
-        return {
-          key,
-          label: PROPERTIES[key].label,
-          lead: <Icon className="size-4 shrink-0 text-muted-foreground" />,
-        };
-      }),
+      .map((key) => ({ key, meta: resolveProperty(key, linkTypes) }))
+      .filter(({ meta }) => meta.section === section)
+      .map(({ key, meta }) => ({
+        key,
+        label: meta.label,
+        lead: <PropertyIcon icon={meta.icon} className="size-4 shrink-0" />,
+      })),
   })).filter((g) => g.options.length > 0);
 
-  const meta = value ? PROPERTIES[value] : null;
+  const meta = value ? resolveProperty(value, linkTypes) : null;
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -52,7 +58,7 @@ export function PropertyPicker({ value, open, onOpenChange, onSelect }: Props) {
           className="min-w-0 flex-1 justify-between font-normal"
         >
           <span className="flex min-w-0 items-center gap-2">
-            {meta && <meta.icon className="size-4 shrink-0 text-muted-foreground" />}
+            {meta && <PropertyIcon icon={meta.icon} className="size-4 shrink-0" />}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className={meta ? "truncate" : "truncate text-muted-foreground"}>

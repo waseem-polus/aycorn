@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { OptionCommandList } from "@/components/ui/option-command-list";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
+import { PRESENCE_OPERATORS } from "@/features/task-filters/conditions/condition-operators";
 import {
-  OPERATORS,
-  PRESENCE_OPERATORS,
-} from "@/features/task-filters/conditions/condition-operators";
-import { PROPERTIES } from "@/features/task-filters/conditions/condition-properties";
+  operatorCopy,
+  resolveProperty,
+} from "@/features/task-filters/conditions/condition-properties";
 import type {
   OperatorKey,
   PropertyKey,
@@ -22,15 +23,13 @@ type Props = {
   onSelect: (operator: OperatorKey) => void;
 };
 
-const toOption = (key: OperatorKey) => ({
-  key,
-  label: OPERATORS[key].label,
-  description: OPERATORS[key].description,
-});
-
 export function OperatorPicker({ property, value, open, onOpenChange, onSelect }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
-  const operators = property ? PROPERTIES[property].operators : [];
+  const { linkTypes } = useConditionBuilder();
+  const meta = property ? resolveProperty(property, linkTypes) : null;
+  const operators = meta?.operators ?? [];
+  const toOption = (key: OperatorKey) => ({ key, ...operatorCopy(meta!, key) });
+  const label = meta && value ? operatorCopy(meta, value).label : null;
   // Two unlabelled groups: comparisons, then presence checks after a separator.
   const groups = [
     {
@@ -56,11 +55,11 @@ export function OperatorPicker({ property, value, open, onOpenChange, onSelect }
         >
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className={value ? "truncate" : "truncate text-muted-foreground"}>
-                {value ? OPERATORS[value].label : "Operator"}
+              <span className={label ? "truncate" : "truncate text-muted-foreground"}>
+                {label ?? "Operator"}
               </span>
             </TooltipTrigger>
-            {value && <TooltipContent>{OPERATORS[value].label}</TooltipContent>}
+            {label && <TooltipContent>{label}</TooltipContent>}
           </Tooltip>
           <ChevronDown className="size-4 shrink-0 opacity-50" />
         </Button>

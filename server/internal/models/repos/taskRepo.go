@@ -34,6 +34,10 @@ type TaskFilters struct {
 	// Conditions is the advanced condition tree, ANDed onto every filter
 	// above. Nil when the request has none.
 	Conditions *TaskConditionGroup
+	// ExcludeArchived drops tasks whose project is archived. Opt-in per
+	// request: /upcoming asks for it by default, while callers such as the
+	// relationship task picker still see every task.
+	ExcludeArchived bool
 }
 
 // taskTypeSelect is the SELECT fragment for the task_type JOIN columns.
@@ -677,6 +681,10 @@ func appendTaskFilterClauses(query string, args []any, taskFilters *TaskFilters)
 	if taskFilters.CompletedTo != "" {
 		query += " AND t.timeCompleted <= ?"
 		args = append(args, taskFilters.CompletedTo)
+	}
+
+	if taskFilters.ExcludeArchived {
+		query += " AND c.project IN (SELECT p.id FROM project p WHERE p.archived = 0)"
 	}
 
 	if taskFilters.Conditions != nil {

@@ -1,11 +1,16 @@
 import { GripVerticalIcon, SquareDashedIcon } from "lucide-react";
-import { OPERATORS } from "@/features/task-filters/conditions/condition-operators";
-import { PROPERTIES } from "@/features/task-filters/conditions/condition-properties";
+import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
+import { PropertyIcon } from "@/features/task-filters/conditions/condition-builder/property-icon";
+import {
+  operatorCopy,
+  resolveProperty,
+} from "@/features/task-filters/conditions/condition-properties";
 import { countCompleteLeaves } from "@/features/task-filters/conditions/condition-tree-ops";
 import type { ConditionNode } from "@/features/task-filters/conditions/condition-types";
 
 /** The floating card that follows the pointer while a node is dragged. */
 export function DragPreview({ node }: { node: ConditionNode }) {
+  const { linkTypes } = useConditionBuilder();
   const summary = (() => {
     if (node.kind === "group") {
       const n = countCompleteLeaves(node);
@@ -16,13 +21,13 @@ export function DragPreview({ node }: { node: ConditionNode }) {
         </>
       );
     }
-    const meta = node.property ? PROPERTIES[node.property] : null;
+    const meta = node.property ? resolveProperty(node.property, linkTypes) : null;
     return (
       <>
-        {meta && <meta.icon className="size-4 text-muted-foreground" />}
+        {meta && <PropertyIcon icon={meta.icon} className="size-4" />}
         {meta?.label ?? "New condition"}
-        {node.operator && (
-          <span className="text-muted-foreground">{OPERATORS[node.operator].label}</span>
+        {meta && node.operator && (
+          <span className="text-muted-foreground">{operatorCopy(meta, node.operator).label}</span>
         )}
       </>
     );

@@ -3,6 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BasicFiltersAccordion } from "@/features/task-filters/basic-filters-accordion";
 import { summarizeFilters } from "@/features/task-filters/filter-summary";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
+import { controlsArchived } from "@/features/task-filters/conditions/condition-wire";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { FilterDrawerFrame } from "@/features/task-filters/filter-drawer-frame";
 import {
@@ -11,6 +12,7 @@ import {
   priorityOptionSource,
   projectOptionSource,
   stageOptionSource,
+  stageTypeOptionSource,
   taskTypeOptionSource,
 } from "@/features/task-filters/option-groups";
 import { DateFilterSection } from "@/features/task-filters/sections/date-filter-section";
@@ -75,6 +77,7 @@ export function UpcomingFilterDrawer({
     type: taskTypeOptionSource(taskTypes, taskTypeCategories),
     assignee: assigneeOptionSource(facets.assignees),
     priority: priorityOptionSource(),
+    stageType: stageTypeOptionSource(),
   };
 
   const projectCount = filters.project.length + filters.checklist.length;
@@ -207,7 +210,15 @@ export function UpcomingFilterDrawer({
           ]}
         />
 
-        <ConditionBuilder tree={conditions} sources={sources} />
+        <div className="flex flex-col gap-2">
+          <ConditionBuilder tree={conditions} sources={sources} />
+          {!controlsArchived(conditions.wire) && (
+            <p className="text-xs text-muted-foreground">
+              Tasks in archived projects are hidden. Add a “Project is archived” or
+              “is not archived” condition to decide for yourself.
+            </p>
+          )}
+        </div>
       </div>
 
       <Alert className="flex justify-between items-center">

@@ -6,16 +6,33 @@
 
 export type MatchMode = "all" | "any";
 
-export type PropertyKey =
+/** Properties defined once in the registry. */
+export type StaticPropertyKey =
   | "project"
+  | "projectName"
   | "checklist"
+  | "checklistName"
   | "stage"
+  | "stageType"
   | "type"
   | "assignee"
   | "priority"
   | "title"
   | "timePlanned"
-  | "timeCompleted";
+  | "timeCompleted"
+  | "taskLinks";
+
+/** "from" = this task is the relationship's source (Blocks); "to" = its target (Blocked By). */
+export type LinkDirection = "from" | "to";
+
+/**
+ * One direction of one relationship type, e.g. `link:1:to` = "Blocked By".
+ * Relationship types are user-defined, so these properties are generated from
+ * the types that exist rather than listed in the registry.
+ */
+export type LinkPropertyKey = `link:${number}:${LinkDirection}`;
+
+export type PropertyKey = StaticPropertyKey | LinkPropertyKey;
 
 export type OperatorKey =
   | "is"
@@ -29,9 +46,14 @@ export type OperatorKey =
   | "is_set"
   | "is_not_set"
   | "contains"
-  | "does_not_contain";
+  | "does_not_contain"
+  | "equals"
+  | "not_equals"
+  | "is_archived"
+  | "is_not_archived";
 
 export type ConditionValue =
+  /** For link properties: task ids, or the lone "any" / "none" sentinel. */
   | { kind: "ids"; ids: (string | number)[] }
   /** A local calendar day, `yyyy-MM-dd`. */
   | { kind: "date"; date: string }
@@ -61,13 +83,15 @@ export type StoredConditions = { version: 1; root: ConditionGroup };
 
 /** Server wire format — also the payload a saved filter will store. */
 export type WireCondition = {
-  property: PropertyKey;
+  property: StaticPropertyKey | "taskLink";
   operator: OperatorKey;
   values?: (string | number)[];
   at?: string;
   from?: string;
   to?: string;
   text?: string;
+  linkType?: number;
+  direction?: LinkDirection;
 };
 
 export type WireGroup = { match: MatchMode; children: (WireGroup | WireCondition)[] };

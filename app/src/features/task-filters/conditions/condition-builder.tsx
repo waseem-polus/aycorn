@@ -31,6 +31,7 @@ import {
 } from "@/features/task-filters/conditions/condition-tree-ops";
 import type { ConditionGroup } from "@/features/task-filters/conditions/condition-types";
 import type { ConditionTreeAPI } from "@/features/task-filters/conditions/hooks/useConditionTree";
+import { useLinkConditionData } from "@/features/task-filters/conditions/hooks/useLinkConditionData";
 
 type Props = {
   tree: ConditionTreeAPI;
@@ -47,6 +48,7 @@ type DropData = { groupId: string; end?: boolean };
  */
 export function ConditionBuilder({ tree, sources }: Props) {
   const { root } = tree;
+  const { linkTypes, linkTaskSource } = useLinkConditionData();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const activeNode = activeId ? (findNode(root, activeId)?.node ?? null) : null;
@@ -113,7 +115,9 @@ export function ConditionBuilder({ tree, sources }: Props) {
   };
 
   return (
-    <ConditionBuilderContext.Provider value={{ tree, sources, activeId, dropTarget }}>
+    <ConditionBuilderContext.Provider
+      value={{ tree, sources, linkTypes, linkTaskSource, activeId, dropTarget }}
+    >
       <section className="flex flex-col gap-3" data-vaul-no-drag>
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">

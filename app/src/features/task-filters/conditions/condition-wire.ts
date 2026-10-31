@@ -1,11 +1,21 @@
+import { parseLinkPropertyKey } from "@/features/task-filters/conditions/condition-properties";
 import { isComplete } from "@/features/task-filters/conditions/condition-tree-ops";
 import type {
   Condition,
   ConditionGroup,
+  StaticPropertyKey,
   WireCondition,
   WireGroup,
 } from "@/features/task-filters/conditions/condition-types";
 import { parseLocalDate, toApiDayEnd, toApiDayStart } from "@/utils/date";
+
+/** Link properties travel as `taskLink` plus the relationship type and direction. */
+const wireProperty = (c: Condition): Pick<WireCondition, "property" | "linkType" | "direction"> => {
+  const link = parseLinkPropertyKey(c.property!);
+  return link
+    ? { property: "taskLink", linkType: link.typeId, direction: link.direction }
+    : { property: c.property as StaticPropertyKey };
+};
 
 /**
  * Local calendar days become UTC instants here, in the browser, because only
@@ -13,7 +23,7 @@ import { parseLocalDate, toApiDayEnd, toApiDayStart } from "@/utils/date";
  * then just compares instants.
  */
 const toWireCondition = (c: Condition): WireCondition => {
-  const base = { property: c.property!, operator: c.operator! };
+  const base: WireCondition = { ...wireProperty(c), operator: c.operator! };
   const v = c.value;
   if (!v) return base;
   switch (v.kind) {
@@ -57,3 +67,15 @@ const toWireGroup = (group: ConditionGroup): WireGroup | null => {
  * results. Null when nothing applies.
  */
 export const toWire = (root: ConditionGroup): WireGroup | null => toWireGroup(root);
+
+/**
+ * Whether the tree itself decides archived-project visibility. /upcoming hides
+ * archived projects' tasks by default, unless a condition here takes control.
+ */
+export const controlsArchived = (group: WireGroup | null): boolean =>
+  !!group &&
+  group.children.some((c) =>
+    "match" in c
+      ? controlsArchived(c)
+      : c.property === "project" && (c.operator === "is_archived" || c.operator === "is_not_archived"),
+  );
