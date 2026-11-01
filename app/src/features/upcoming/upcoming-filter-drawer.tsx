@@ -7,6 +7,10 @@ import { controlsArchived } from "@/features/task-filters/conditions/condition-w
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { FilterDrawerFrame } from "@/features/task-filters/filter-drawer-frame";
 import {
+  DrawerFilterActions,
+  DrawerFilterTitle,
+} from "@/features/saved-filters/drawer-filter-actions";
+import {
   assigneeOptionSource,
   checklistOptionSource,
   priorityOptionSource,
@@ -53,6 +57,7 @@ export function UpcomingFilterDrawer({
   facets,
   onClose,
 }: Props) {
+  const boardFilter = useUpcomingFiltersContext();
   const {
     filters,
     view,
@@ -65,7 +70,7 @@ export function UpcomingFilterDrawer({
     setShowEmpty: onToggleEmpty,
     resetAll: onReset,
     activeFilterCount,
-  } = useUpcomingFiltersContext();
+  } = boardFilter;
   const showEmpty = view.showEmpty;
   const activeCount = activeFilterCount();
 
@@ -101,6 +106,8 @@ export function UpcomingFilterDrawer({
         if (!v) onClose();
       }}
       activeCount={activeCount}
+      title={<DrawerFilterTitle api={boardFilter} />}
+      footerActions={<DrawerFilterActions api={boardFilter} />}
       onReset={onReset}
     >
       <div className="flex flex-col gap-6">

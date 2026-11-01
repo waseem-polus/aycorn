@@ -2,7 +2,7 @@ import { ListView } from "@/components/project/views/listView/list-view";
 import { ProjectContentHeader } from "@/components/project/project-details-content-header";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
+import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
 import { ProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -35,7 +35,8 @@ export function ProjectDetails({
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const { SetProject, SetWorkflow, SetStages, SetChecklists, SetTasks, Tasks } =
     useContext(ProjectContext);
-  const filtersApi = useTaskFilters(`project.${projectId}`);
+  const board = useMemo(() => ({ surface: "project" as const, projectId }), [projectId]);
+  const filtersApi = useBoardFilter(board);
   // The calendar views already group by planned date, so the planned filter
   // stays editable in the drawer but is not applied while they are open.
   const plannedFilterApplies = view !== "month" && view !== "week";
@@ -47,7 +48,7 @@ export function ProjectDetails({
   const { isPending, data, isFetching } = useProjectDetailsQuery(
     projectId,
     filtersApi.filters,
-    !newTaskOpen,
+    !newTaskOpen && filtersApi.filtersReady,
     plannedFilterApplies,
     filtersApi.conditions.wire,
   );

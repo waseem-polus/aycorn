@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Project struct {
 	ID    int
@@ -181,4 +184,30 @@ type ChecklistFacet struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	ProjectID int    `json:"projectId"`
+}
+
+// SavedFilter is a named, reusable filter. Definition is the client's
+// versioned filter definition, kept as raw JSON: the server validates its
+// envelope but doesn't interpret it.
+type SavedFilter struct {
+	ID           int
+	Name         string
+	Definition   json.RawMessage
+	Pins         []SavedFilterPin
+	TimeCreated  string
+	TimeModified string
+}
+
+// SavedFilterPin places a filter on one board's quick-filter bar.
+type SavedFilterPin struct {
+	Surface   string
+	ProjectID *int
+	Position  int
+}
+
+// FilterBoard names a place a filter can be pinned: the upcoming page, or one
+// project. Future surfaces (views, widgets) extend Surface.
+type FilterBoard struct {
+	Surface   string `json:"surface"`
+	ProjectID *int   `json:"projectId"`
 }

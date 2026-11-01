@@ -1,5 +1,6 @@
 import { ChevronDown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { OptionCommandList } from "@/components/ui/option-command-list";
 import {
@@ -55,15 +56,28 @@ export function EnumValueEditor({
             )}
             {selected.map((key) => {
               const option = options.find((o) => o.key === key);
-              const label = option?.label ?? "Unknown";
+              // A saved filter can carry values from another board (a stage or
+              // checklist of a different project) or ones since deleted. They
+              // still apply — and match nothing here — so say so instead of
+              // hiding them.
+              const label = option?.label ?? "Not on this board";
               return (
-                <Badge key={key} variant="secondary" className="gap-1 py-0.5 pr-1 pl-1.5">
+                <Badge
+                  key={key}
+                  variant={option ? "secondary" : "outline"}
+                  className={cn(
+                    "gap-1 py-0.5 pr-1 pl-1.5",
+                    !option && "border-dashed font-normal text-muted-foreground",
+                  )}
+                >
                   {option?.lead}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="max-w-32 truncate">{label}</span>
                     </TooltipTrigger>
-                    <TooltipContent>{label}</TooltipContent>
+                    <TooltipContent>
+                      {option ? label : "This value doesn't exist on this board, so it matches nothing here."}
+                    </TooltipContent>
                   </Tooltip>
                   <button
                     type="button"

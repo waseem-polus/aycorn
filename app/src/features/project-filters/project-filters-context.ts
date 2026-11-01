@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
+import type { BoardFilterAPI } from "@/features/saved-filters/hooks/useBoardFilter";
 
-export type ProjectFiltersAPI = ReturnType<typeof useTaskFilters> & {
+export type ProjectFiltersAPI = BoardFilterAPI & {
   /**
    * Whether the planned-date filter is applied on the current view. The month
    * and week views already group by planned date, so the filter stays editable

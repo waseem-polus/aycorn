@@ -58,7 +58,10 @@ func httpStatusForError(err error) int {
 		errors.Is(err, services.ErrInvalidPinnedOrder),
 		errors.Is(err, services.ErrInvalidTimestamp),
 		errors.Is(err, services.ErrInvalidDestinationStage),
-		errors.Is(err, services.ErrDestinationChecklistRequired):
+		errors.Is(err, services.ErrDestinationChecklistRequired),
+		errors.Is(err, services.ErrInvalidFilterDefinition),
+		errors.Is(err, services.ErrInvalidFilterBoard),
+		errors.Is(err, services.ErrInvalidFilterOrder):
 		return http.StatusBadRequest
 	case errors.Is(err, services.ErrStageHasTasks),
 		errors.Is(err, services.ErrDestinationStageRequired):

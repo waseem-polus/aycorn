@@ -15,6 +15,7 @@ import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as TaskTypesRouteImport } from './routes/task-types'
 import { Route as TaskLinksRouteImport } from './routes/task-links'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as FiltersRouteImport } from './routes/filters'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkflowWorkflowIdRouteImport } from './routes/workflow.$workflowId'
 import { Route as TaskTaskIdRouteImport } from './routes/task.$taskId'
@@ -51,6 +52,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FiltersRoute = FiltersRouteImport.update({
+  id: '/filters',
+  path: '/filters',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -80,6 +86,7 @@ const ProjectSettingsProjectIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/filters': typeof FiltersRoute
   '/settings': typeof SettingsRoute
   '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/filters': typeof FiltersRoute
   '/settings': typeof SettingsRoute
   '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/filters': typeof FiltersRoute
   '/settings': typeof SettingsRoute
   '/task-links': typeof TaskLinksRoute
   '/task-types': typeof TaskTypesRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/filters'
     | '/settings'
     | '/task-links'
     | '/task-types'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/filters'
     | '/settings'
     | '/task-links'
     | '/task-types'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/filters'
     | '/settings'
     | '/task-links'
     | '/task-types'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FiltersRoute: typeof FiltersRoute
   SettingsRoute: typeof SettingsRoute
   TaskLinksRoute: typeof TaskLinksRoute
   TaskTypesRoute: typeof TaskTypesRoute
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/filters': {
+      id: '/filters'
+      path: '/filters'
+      fullPath: '/filters'
+      preLoaderRoute: typeof FiltersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FiltersRoute: FiltersRoute,
   SettingsRoute: SettingsRoute,
   TaskLinksRoute: TaskLinksRoute,
   TaskTypesRoute: TaskTypesRoute,

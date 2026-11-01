@@ -19,6 +19,7 @@ import {
   Squirrel,
   TagsIcon,
   WorkflowIcon,
+  ListFilterIcon,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 
@@ -51,6 +52,11 @@ const data = {
       title: "Task Links",
       url: "/task-links",
       icon: LinkIcon,
+    },
+    {
+      title: "Filters",
+      url: "/filters",
+      icon: ListFilterIcon,
     },
   ],
   navSecondary: [

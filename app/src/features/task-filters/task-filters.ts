@@ -51,3 +51,16 @@ export const EMPTY_FILTERS: TaskFilterState = {
   checklist: [],
   dates: {},
 };
+
+/** The filter state that's persisted: everything but the transient search. */
+export type PersistedFilterState = Omit<TaskFilterState, "search">;
+
+export const EMPTY_PERSISTED_FILTERS: PersistedFilterState = {
+  project: [],
+  stage: [],
+  type: [],
+  priority: [],
+  assignee: [],
+  checklist: [],
+  dates: {},
+};

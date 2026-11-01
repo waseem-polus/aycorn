@@ -15,6 +15,7 @@ import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer
 import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { UpcomingToolbar } from "@/features/upcoming/upcoming-page/toolbar";
+import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { UpcomingListView } from "@/features/upcoming/upcoming-page/list-view";
 import { UpcomingMonthView } from "@/features/upcoming/upcoming-page/month-view";
@@ -50,6 +51,7 @@ export function UpcomingPage({ layout, setLayout }: Props) {
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
     filters,
     conditions.wire,
+    filtersApi.filtersReady,
   );
   const { data: facets = { assignees: [], checklists: [] } } =
     useTaskFacetsQuery();
@@ -135,6 +137,7 @@ export function UpcomingPage({ layout, setLayout }: Props) {
                         />
                       )}
                     </UpcomingToolbar>
+                    <QuickFilterBar api={filtersApi} />
 
                     <TabsContent
                       value="list"

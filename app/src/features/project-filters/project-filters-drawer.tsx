@@ -9,6 +9,10 @@ import { ConditionBuilder } from "@/features/task-filters/conditions/condition-b
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { FilterDrawerFrame } from "@/features/task-filters/filter-drawer-frame";
 import {
+  DrawerFilterActions,
+  DrawerFilterTitle,
+} from "@/features/saved-filters/drawer-filter-actions";
+import {
   assigneeOptionSource,
   checklistOptionSource,
   priorityOptionSource,
@@ -34,6 +38,7 @@ import { useProjectFiltersContext } from "@/features/project-filters/project-fil
  */
 export function ProjectFiltersDrawer() {
   const { Project, Stages } = useContext(ProjectContext);
+  const boardFilter = useProjectFiltersContext();
   const {
     filters,
     conditions,
@@ -45,7 +50,7 @@ export function ProjectFiltersDrawer() {
     resetAll: onReset,
     activeFilterCount,
     plannedFilterApplies,
-  } = useProjectFiltersContext();
+  } = boardFilter;
 
   const { data: facets = { assignees: [], checklists: [] } } = useTaskFacetsQuery(
     Project.ID,
@@ -105,6 +110,8 @@ export function ProjectFiltersDrawer() {
         </Button>
       }
       activeCount={activeCount}
+      title={<DrawerFilterTitle api={boardFilter} />}
+      footerActions={<DrawerFilterActions api={boardFilter} />}
       onReset={onReset}
     >
       <div className="flex flex-col gap-6">

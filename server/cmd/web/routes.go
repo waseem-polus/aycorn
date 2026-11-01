@@ -66,6 +66,17 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("POST /api/task-relationship/bulk", app.bulkCreateTaskRelationships)
 	mux.HandleFunc("DELETE /api/task-relationship/{id}", app.deleteTaskRelationship)
 
+	mux.HandleFunc("GET /api/filter", app.getAllSavedFilters)
+	mux.HandleFunc("POST /api/filter", app.postSavedFilter)
+	mux.HandleFunc("POST /api/filter/bulk/delete", app.bulkDeleteSavedFilters)
+	mux.HandleFunc("PATCH /api/filter/{id}", app.patchSavedFilter)
+	mux.HandleFunc("DELETE /api/filter/{id}", app.deleteSavedFilter)
+	mux.HandleFunc("POST /api/filter/{id}/duplicate", app.postDuplicateSavedFilter)
+	mux.HandleFunc("PUT /api/filter/{id}/pins", app.putSavedFilterPins)
+	mux.HandleFunc("POST /api/filter-pin", app.postFilterPin)
+	mux.HandleFunc("DELETE /api/filter-pin", app.deleteFilterPin)
+	mux.HandleFunc("PUT /api/filter-pin/order", app.putFilterPinOrder)
+
 	mux.HandleFunc("POST /api/checklist/{projectId}", app.postChecklist)
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
 	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)

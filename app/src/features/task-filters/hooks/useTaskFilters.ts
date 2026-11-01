@@ -1,21 +1,23 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { useLocalStorage } from "@/features/calendar/hooks";
-import { createRoot } from "@/features/task-filters/conditions/condition-tree-ops";
+import { EMPTY_FILTER_STATE } from "@/features/saved-filters/filter-definition";
 import {
   UNDO_TOAST_MS,
   useConditionTree,
 } from "@/features/task-filters/conditions/hooks/useConditionTree";
+import {
+  useFilterSlotState,
+  type FilterSlot,
+} from "@/features/task-filters/hooks/useFilterSlotState";
 import {
   EMPTY_FILTERS,
   FILTER_DIMS,
   type DateFilterMode,
   type DateModeKey,
   type FilterDim,
+  type PersistedFilterState,
   type TaskFilterState,
 } from "@/features/task-filters/task-filters";
-
-type PersistedFilterState = Omit<TaskFilterState, "search">;
 
 const stripSearch = (state: TaskFilterState): PersistedFilterState => {
   const rest = { ...state };
@@ -23,7 +25,7 @@ const stripSearch = (state: TaskFilterState): PersistedFilterState => {
   return rest;
 };
 
-const EMPTY_PERSISTED_FILTERS: PersistedFilterState = stripSearch(EMPTY_FILTERS);
+const SCRATCH: FilterSlot = { kind: "scratch" };
 
 /**
  * Task filter state for one surface. `scope` names the surface — it keys the
@@ -34,17 +36,20 @@ const EMPTY_PERSISTED_FILTERS: PersistedFilterState = stripSearch(EMPTY_FILTERS)
  * from a previous session looks like missing data ("only 1-2 tasks") when the
  * page is reopened, so it lives in plain component state and resets on mount.
  *
+ * `slot` picks which filter is being edited — the board's scratch filter or a
+ * saved filter's draft (see `useFilterSlotState`). The editing API is the
+ * same either way, so the drawers don't know the difference.
+ *
  * `conditions` is the advanced condition tree, persisted alongside under the
  * same scope. The server ANDs it with the basic filters, and it counts toward
  * `activeFilterCount` and is cleared by `resetAll` like any other filter.
  */
-export function useTaskFilters(scope: string) {
-  const [persisted, setPersisted] = useLocalStorage<PersistedFilterState>(
-    `aycorn.${scope}.filters`,
-    EMPTY_PERSISTED_FILTERS,
-  );
+export function useTaskFilters(scope: string, slot: FilterSlot = SCRATCH) {
+  const slotState = useFilterSlotState(scope, slot);
+  const persisted = slotState.state.basic;
+  const setPersisted = slotState.setBasic;
   const [search, setSearchState] = useState("");
-  const conditions = useConditionTree(scope);
+  const conditions = useConditionTree(slotState.state.root, slotState.setRoot);
   const filters: TaskFilterState = { ...persisted, search };
 
   const setFilters = (
@@ -126,21 +131,13 @@ export function useTaskFilters(scope: string) {
    * while to build, so when one is discarded the reset is offered back.
    */
   const resetAll = () => {
-    const basicSnapshot = persisted;
-    const conditionSnapshot = conditions.root;
-    setPersisted(EMPTY_PERSISTED_FILTERS);
+    const snapshot = slotState.state;
+    slotState.replace(EMPTY_FILTER_STATE);
     setSearchState("");
-    if (conditionSnapshot.children.length === 0) return;
-    conditions.replaceRoot(createRoot());
+    if (snapshot.root.children.length === 0) return;
     toast("Filters reset", {
       duration: UNDO_TOAST_MS,
-      action: {
-        label: "Undo",
-        onClick: () => {
-          setPersisted(basicSnapshot);
-          conditions.replaceRoot(conditionSnapshot);
-        },
-      },
+      action: { label: "Undo", onClick: () => slotState.replace(snapshot) },
     });
   };
 
@@ -174,5 +171,10 @@ export function useTaskFilters(scope: string) {
     activeFilterCount,
     conditions,
     EMPTY_FILTERS,
+    /** The slot's whole state, for saving it as a definition. */
+    filterState: slotState.state,
+    replaceFilterState: slotState.replace,
+    hasDraft: slotState.hasDraft,
+    clearDraft: slotState.clearDraft,
   };
 }

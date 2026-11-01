@@ -22,10 +22,12 @@ function toBackendFilters(filters: TaskFilterState): BackendFilters {
 export function useUpcomingTasksQuery(
   filters: TaskFilterState,
   conditions: WireGroup | null,
+  enabled = true,
 ) {
   const backendFilters = toBackendFilters(filters);
   return useQuery<TaskWithProject[]>({
     queryKey: ["upcomingTasks", backendFilters, conditions],
+    enabled,
     queryFn: async () => {
       const url = new URL("/api/tasks", window.location.origin);
       backendFilters.project.forEach((id) => url.searchParams.append("project", String(id)));

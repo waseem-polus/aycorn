@@ -1,5 +1,5 @@
 import { useLocalStorage } from "@/features/calendar/hooks";
-import { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
+import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
 
 export type GroupByKey =
   | "timePlanned"
@@ -19,6 +19,8 @@ export type UpcomingViewSettings = {
   showEmpty: boolean;
 };
 
+const UPCOMING_BOARD = { surface: "upcoming" } as const;
+
 const DEFAULT_VIEW: UpcomingViewSettings = {
   groupBy: "timePlanned",
   granularity: "week",
@@ -30,7 +32,7 @@ const DEFAULT_VIEW: UpcomingViewSettings = {
  * collapse state that only this page has.
  */
 export function useUpcomingFilters() {
-  const filtersApi = useTaskFilters("upcoming");
+  const filtersApi = useBoardFilter(UPCOMING_BOARD);
   const [view, setView] = useLocalStorage<UpcomingViewSettings>(
     "aycorn.upcoming.view",
     DEFAULT_VIEW,

@@ -18,6 +18,10 @@ type Props = {
   trigger?: React.ReactNode;
   activeCount: number;
   onReset: () => void;
+  /** Replaces "Filters" in the header — the active saved filter's name. */
+  title?: React.ReactNode;
+  /** Extra footer actions above Reset, e.g. save / discard a saved filter. */
+  footerActions?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -32,6 +36,8 @@ export function FilterDrawerFrame({
   trigger,
   activeCount,
   onReset,
+  title,
+  footerActions,
   children,
 }: Props) {
   const isMobile = useIsMobile();
@@ -57,7 +63,7 @@ export function FilterDrawerFrame({
         <DrawerHeader>
           <DrawerTitle className="flex gap-2 items-center">
             <SlidersHorizontal className="size-4 text-muted-foreground shrink-0" />
-            Filters
+            {title ?? "Filters"}
             {activeCount > 0 && (
               <Badge variant="secondary">{activeCount}</Badge>
             )}
@@ -69,6 +75,7 @@ export function FilterDrawerFrame({
         </div>
 
         <DrawerFooter>
+          {footerActions}
           <Button
             variant="outline"
             disabled={activeCount === 0}

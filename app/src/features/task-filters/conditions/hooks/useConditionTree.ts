@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useLocalStorage } from "@/features/calendar/hooks";
 import * as ops from "@/features/task-filters/conditions/condition-tree-ops";
 import { toWire } from "@/features/task-filters/conditions/condition-wire";
 import type {
@@ -9,42 +8,27 @@ import type {
   MatchMode,
   OperatorKey,
   PropertyKey,
-  StoredConditions,
 } from "@/features/task-filters/conditions/condition-types";
 
 /** Long enough to notice and reach for Undo; sonner's 4s default is gone before you can. */
 export const UNDO_TOAST_MS = 8000;
 
-const rootOf = (stored: StoredConditions | null): ConditionGroup =>
-  // Anything that isn't the current envelope (an older shape, a hand-edited
-  // value) starts fresh rather than feeding the builder a tree it can't read.
-  stored?.version === 1 && stored.root?.kind === "group" ? stored.root : ops.createRoot();
-
 /**
- * The condition tree for one filter surface, persisted to localStorage under
- * `aycorn.<scope>.conditions` (the same scope as the basic filters).
- *
- * Every edit is a pure tree operation applied inside one functional update,
- * so several edits in the same render compose instead of overwriting each
- * other.
+ * Editing operations for a condition tree. The tree itself lives wherever the
+ * board's filter slot keeps it (see `useFilterSlotState`); `update` applies a
+ * pure tree operation to it as one functional update, so several edits in the
+ * same render compose instead of overwriting each other.
  */
-export function useConditionTree(scope: string) {
-  const [stored, setStored] = useLocalStorage<StoredConditions | null>(
-    `aycorn.${scope}.conditions`,
-    null,
-  );
-  const root = rootOf(stored);
-
+export function useConditionTree(
+  root: ConditionGroup,
+  update: (fn: (root: ConditionGroup) => ConditionGroup) => void,
+) {
   /**
    * The condition whose property picker should open as soon as it renders —
    * set when a condition is added, so building a filter flows from the
    * keyboard without hunting for the new row.
    */
   const [autoOpenId, setAutoOpenId] = useState<string | null>(null);
-
-  const update = (fn: (root: ConditionGroup) => ConditionGroup) => {
-    setStored((prev) => ({ version: 1, root: fn(rootOf(prev)) }));
-  };
 
   const replaceRoot = (next: ConditionGroup) => update(() => next);
 
