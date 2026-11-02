@@ -16,7 +16,6 @@ export type Granularity = "day" | "week" | "month";
 export type UpcomingViewSettings = {
   groupBy: GroupByKey;
   granularity: Granularity;
-  showEmpty: boolean;
 };
 
 const UPCOMING_BOARD = { surface: "upcoming" } as const;
@@ -24,7 +23,6 @@ const UPCOMING_BOARD = { surface: "upcoming" } as const;
 const DEFAULT_VIEW: UpcomingViewSettings = {
   groupBy: "timePlanned",
   granularity: "week",
-  showEmpty: false,
 };
 
 /**
@@ -58,10 +56,6 @@ export function useUpcomingFilters() {
     setView((prev: UpcomingViewSettings) => ({ ...prev, granularity }));
   };
 
-  const setShowEmpty = (showEmpty: boolean) => {
-    setView((prev: UpcomingViewSettings) => ({ ...prev, showEmpty }));
-  };
-
   return {
     ...filtersApi,
     view,
@@ -70,6 +64,5 @@ export function useUpcomingFilters() {
     isCollapsed,
     setGroupBy,
     setGranularity,
-    setShowEmpty,
   };
 }

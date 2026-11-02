@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
@@ -137,10 +138,18 @@ export function FilterChip({
                 }
               }}
             >
-              <SavedFilterLabel filter={filter} edited={edited} />
+              <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
             </button>
           </TooltipTrigger>
-          {shortcut !== null && <TooltipContent>Alt+{shortcut}</TooltipContent>}
+          <TooltipContent className="flex items-center gap-3">
+            {filter.Name}
+            {shortcut !== null && (
+              <KbdGroup>
+                <Kbd>Alt</Kbd>
+                <Kbd>{shortcut}</Kbd>
+              </KbdGroup>
+            )}
+          </TooltipContent>
         </Tooltip>
       )}
 

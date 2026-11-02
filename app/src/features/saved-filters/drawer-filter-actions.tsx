@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { SavePlusIcon, SaveIcon, Undo2Icon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import type { BoardFilterAPI } from "@/features/saved-filters/hooks/useBoardFilter";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import { SaveFilterPopover } from "@/features/saved-filters/save-filter-popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 /** The drawer header title: the active saved filter (with its edited dot), or plain "Filters". */
 export function DrawerFilterTitle({ api }: { api: BoardFilterAPI }) {
@@ -23,10 +19,11 @@ export function DrawerFilterTitle({ api }: { api: BoardFilterAPI }) {
 }
 
 /**
- * Commit controls in the drawer footer. A saved filter with edits offers
- * Save / Discard / Save as new; a non-empty scratch filter offers Save as
- * filter. Shared filters are committed explicitly (not auto-saved) so tweaks
- * on one board don't silently change every board using them.
+ * Commit controls in the drawer footer. A saved filter with edits shows an
+ * unsaved-changes alert offering Save / Discard / Save as new; a non-empty
+ * scratch filter offers Save as filter. Shared filters are committed
+ * explicitly (not auto-saved) so tweaks on one board don't silently change
+ * every board using them.
  */
 export function DrawerFilterActions({ api }: { api: BoardFilterAPI }) {
   const [saveOpen, setSaveOpen] = useState(false);
@@ -44,10 +41,11 @@ export function DrawerFilterActions({ api }: { api: BoardFilterAPI }) {
       trigger={
         <Button
           variant={active ? "outline" : "default"}
+          size={active ? "sm" : "default"}
           className={active ? "" : "w-full"}
         >
           <SavePlusIcon />
-          {active ? "Save as new" : "Save as filter…"}
+          {active ? "Save as new" : "Save as a new filter"}
         </Button>
       }
     />
@@ -56,24 +54,27 @@ export function DrawerFilterActions({ api }: { api: BoardFilterAPI }) {
   if (!active) return saveAsNew;
 
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <Tooltip>
-        <TooltipTrigger>
-          <Button onClick={api.save} size="icon">
-            <SaveIcon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Save changes to the filter</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger>
-          <Button variant="outline" onClick={api.discard} size="icon">
-            <Undo2Icon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Discard unsaved filter changes</TooltipContent>
-      </Tooltip>
-      {saveAsNew}
-    </div>
+    <Alert>
+      <AlertTitle>Unsaved changes</AlertTitle>
+      <AlertDescription>
+        This filter has edits that aren't saved yet
+      </AlertDescription>
+      <div className="flex flex-wrap gap-2 mt-2">
+        <Button size="sm" onClick={api.save}>
+          <SaveIcon />
+          Save
+        </Button>
+        {saveAsNew}
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto"
+          onClick={api.discard}
+        >
+          <Undo2Icon />
+          Discard
+        </Button>
+      </div>
+    </Alert>
   );
 }

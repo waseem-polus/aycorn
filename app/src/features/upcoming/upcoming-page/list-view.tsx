@@ -26,10 +26,9 @@ export function UpcomingListView({
         groupBy: view.groupBy,
         granularity: view.granularity,
         today: new Date(),
-        showEmpty: view.showEmpty,
         data: groupingData,
       }),
-    [tasks, view.groupBy, view.granularity, view.showEmpty, groupingData],
+    [tasks, view.groupBy, view.granularity, groupingData],
   );
 
   return (

@@ -1,5 +1,3 @@
-import { Switch } from "@/components/ui/switch";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BasicFiltersAccordion } from "@/features/task-filters/basic-filters-accordion";
 import { summarizeFilters } from "@/features/task-filters/filter-summary";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
@@ -60,18 +58,15 @@ export function UpcomingFilterDrawer({
   const boardFilter = useUpcomingFiltersContext();
   const {
     filters,
-    view,
     conditions,
     toggleFilter: onToggle,
     clearFilterDim: onClearDim,
     setDateFilter: onSetDate,
     setHasTimeFilter: onSetHasTime,
     setDateMode: onSetDateMode,
-    setShowEmpty: onToggleEmpty,
     resetAll: onReset,
     activeFilterCount,
   } = boardFilter;
-  const showEmpty = view.showEmpty;
   const activeCount = activeFilterCount();
 
   const checklistSource = checklistOptionSource(facets.checklists, projects);
@@ -227,20 +222,6 @@ export function UpcomingFilterDrawer({
           )}
         </div>
       </div>
-
-      <Alert className="flex justify-between items-center">
-        <div>
-          <AlertTitle>Show empty groups</AlertTitle>
-          <AlertDescription>
-            Reveal groups that currently have no tasks
-          </AlertDescription>
-        </div>
-        <Switch
-          checked={showEmpty}
-          onCheckedChange={onToggleEmpty}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </Alert>
     </FilterDrawerFrame>
   );
 }

@@ -271,11 +271,10 @@ export function buildGroups(
     groupBy: GroupByKey;
     granularity: Granularity;
     today: Date;
-    showEmpty: boolean;
     data: GroupingData;
   },
 ): TaskGroup[] {
-  const { groupBy, granularity, today, showEmpty, data } = opts;
+  const { groupBy, granularity, today, data } = opts;
   const isTimeGroup = groupBy === "timePlanned" || groupBy === "timeCompleted";
 
   const map = new Map<string, TaskGroup>();
@@ -290,37 +289,6 @@ export function buildGroups(
       : categoryBucket(t, groupBy, data);
     if (!map.has(b.key)) map.set(b.key, { ...b, tasks: [] });
     map.get(b.key)!.tasks.push(t);
-  }
-
-  // Inject canonical week buckets when showEmpty is on
-  if (showEmpty && groupBy === "timePlanned" && granularity === "week") {
-    const thisWeek = startOfWeek(today);
-    const canon: Omit<TaskGroup, "tasks">[] = [
-      {
-        key: "__overdue",
-        label: "Overdue",
-        icon: "circle-alert",
-        tone: "danger",
-        order: -1e9,
-      },
-      {
-        key: "w" + thisWeek.getTime(),
-        label: "This week",
-        sublabel: fmtWeekRange(thisWeek),
-        icon: "calendar",
-        order: 0,
-      },
-      {
-        key: "w" + addDays(thisWeek, 7).getTime(),
-        label: "Next week",
-        sublabel: fmtWeekRange(addDays(thisWeek, 7)),
-        icon: "calendar",
-        order: 1,
-      },
-    ];
-    for (const c of canon) {
-      if (!map.has(c.key)) map.set(c.key, { ...c, tasks: [] });
-    }
   }
 
   const groups = [...map.values()].sort((a, b) => a.order - b.order);
