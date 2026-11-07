@@ -123,6 +123,8 @@ A board (a project page or `/upcoming`) filters tasks in three layers, all ANDed
 
 Rendering by grouping: `features/views/grouping/task-grouping.ts` (`buildGroups`) buckets any task list for grouped lists (shared `GroupHeader`, collapsed state per view via `useCollapsedGroups`). Boards build columns with `buildBoardColumns` (`features/views/board/board-columns.tsx`) — each column carries the `changes` a drop (or a task created in it) applies, plus a `rejects` guard (e.g. a stage from another workflow on the cross-project `/upcoming` board). `KanbanBoard` is the one board renderer for both surfaces; adding a board grouping = a column builder here + the registry + the server's `viewTypes`.
 
+Calendars (Month/Week) are grouped by a date: the view's `GroupBy` becomes the `CalendarHost`'s `dateField` (`features/calendar/date-field.ts`). Every calendar date read goes through `getTaskStartDate` / `getTaskEndDate(task, dateField)` — never read `TimePlannedStart` directly in a calendar view. Planned is a start→end span; created/modified/completed are 30-minute point events. Only planned calendars are `reschedulable` (drag, resize, day/slot create); the others are read-only but tasks still open. Wrappers use `splitCalendarEvents`, which drops tasks lacking the date. Create affordances come from the host (`renderDayCreate`, `renderSlotCreate`), so `/upcoming`, which supplies neither, never creates into the wrong project.
+
 ### Task Types (`features/task-types/`)
 
 Task types belong to categories (`TaskTypeCategory`). The global task types page (`/task-types`) renders a collapsible, reorderable category section per category, each containing a card grid. Task type ordering within categories is deferred.

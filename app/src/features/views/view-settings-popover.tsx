@@ -24,7 +24,7 @@ import {
   GRANULARITIES,
   GROUP_LABELS,
   viewGroupings,
-  viewTypesFor,
+  VIEW_TYPES,
 } from "@/features/views/view-groupings";
 import type {
   BoardView,
@@ -118,7 +118,7 @@ export function ViewSettingsPopover({
           onValueChange={(type) => type && void api.update(view.ID, { type: type as ViewType })}
           className="w-full"
         >
-          {viewTypesFor(api.board).map((t) => (
+          {VIEW_TYPES.map((t) => (
             <ToggleGroupItem key={t.type} value={t.type} className="flex-1 gap-1.5">
               <DynamicIcon name={t.icon as IconName} className="size-4" />
               {t.label}

@@ -9,6 +9,8 @@ import { CalendarProvider } from "@/features/calendar/contexts/calendar-context"
 import { CalendarHostProvider } from "@/features/calendar/contexts/calendar-host-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { NewTaskEditorDrawer } from "./views/calendarViews/new-task-editor-drawer";
+import { NewTaskEditorDrawer as NewSlotTaskEditorDrawer } from "@/features/calendar/views/weekView/new-task-editor-drawer";
+import { calendarDateField } from "@/features/calendar/date-field";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
@@ -76,6 +78,14 @@ export function ProjectDetails({
     ),
     [],
   );
+  const renderSlotCreate = useCallback(
+    (date: Date, startTime: { hour: number; minute: number }) => (
+      <TaskProvider>
+        <NewSlotTaskEditorDrawer date={date} startTime={startTime} />
+      </TaskProvider>
+    ),
+    [],
+  );
 
   return (
     <ProjectFiltersContext.Provider value={filtersApi}>
@@ -86,7 +96,9 @@ export function ProjectDetails({
           <CalendarProvider events={[]} users={[]} view="month">
             <CalendarHostProvider
               projectId={projectId}
+              dateField={calendarDateField(view?.GroupBy ?? null)}
               renderDayCreate={renderDayCreate}
+              renderSlotCreate={renderSlotCreate}
             >
               <DndProvider>
                 <div className="flex h-full min-h-0 flex-col gap-2">

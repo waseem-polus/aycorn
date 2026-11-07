@@ -1,7 +1,7 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { differenceInMinutes, parseISO } from "date-fns";
-import { type HTMLAttributes } from "react";
+import { useState, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { DraggableEvent } from "@/features/calendar/dragAndDrop/draggable-event";
@@ -15,6 +15,10 @@ import {
 import type { ChecklistTask } from "@/types/types";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import {
+  PassthroughTaskScope,
+  useCalendarHost,
+} from "@/features/calendar/contexts/calendar-host-context";
 
 const calendarWeekEventCardVariants = cva(
   "flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-offset-2",
@@ -61,9 +65,15 @@ interface IProps
 
 export function EventBlock({ event, className }: IProps) {
   const { badgeVariant, use24HourFormat } = useCalendar();
+  const {
+    TaskScope = PassthroughTaskScope,
+    dateField,
+    reschedulable,
+  } = useCalendarHost();
+  const [open, setOpen] = useState(false);
 
-  const start = parseISO(getTaskStartDate(event));
-  const end = parseISO(getTaskEndDate(event));
+  const start = parseISO(getTaskStartDate(event, dateField));
+  const end = parseISO(getTaskEndDate(event, dateField));
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
 
@@ -77,11 +87,11 @@ export function EventBlock({ event, className }: IProps) {
     durationInMinutes < 35 && "py-0 justify-center",
   );
 
-  return (
-    <ResizableEvent event={event}>
-      <DraggableEvent event={event}>
+  const card = (
+    <DraggableEvent event={event}>
+      <TaskScope task={event} open={open}>
         <TaskProvider defaultState={event}>
-          <TaskEditorDrawer>
+          <TaskEditorDrawer onOpenChange={setOpen}>
             <button
               type="button"
               className={calendarWeekEventCardClasses}
@@ -106,14 +116,21 @@ export function EventBlock({ event, className }: IProps) {
 
               {durationInMinutes > 25 && (
                 <p>
-                  {formatTime(start, use24HourFormat)} -{" "}
-                  {formatTime(end, use24HourFormat)}
+                  {formatTime(start, use24HourFormat)}
+                  {reschedulable && ` - ${formatTime(end, use24HourFormat)}`}
                 </p>
               )}
             </button>
           </TaskEditorDrawer>
         </TaskProvider>
-      </DraggableEvent>
-    </ResizableEvent>
+      </TaskScope>
+    </DraggableEvent>
+  );
+
+  // Only planned dates resize; any other date is a moment in the task's history.
+  return reschedulable ? (
+    <ResizableEvent event={event}>{card}</ResizableEvent>
+  ) : (
+    <div className="relative">{card}</div>
   );
 }

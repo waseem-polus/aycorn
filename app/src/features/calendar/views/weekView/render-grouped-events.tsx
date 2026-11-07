@@ -6,6 +6,7 @@ import {
 } from "@/features/calendar/interfaces";
 import type { ChecklistTask } from "@/types/types";
 import { EventBlock } from "@/features/calendar/views/weekView/event-block";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 interface RenderGroupedEventsProps {
   groupedEvents: ChecklistTask[][];
@@ -16,6 +17,7 @@ export function RenderGroupedEvents({
   groupedEvents,
   day,
 }: RenderGroupedEventsProps) {
+  const { dateField } = useCalendarHost();
   return groupedEvents.map((group, groupIndex) =>
     group.map((event) => {
       let style = getEventBlockStyle(
@@ -23,6 +25,7 @@ export function RenderGroupedEvents({
         day,
         groupIndex,
         groupedEvents.length,
+        dateField,
       );
       const hasOverlap = groupedEvents.some(
         (otherGroup, otherIndex) =>
@@ -30,12 +33,12 @@ export function RenderGroupedEvents({
           otherGroup.some((otherEvent) =>
             areIntervalsOverlapping(
               {
-                start: parseISO(getTaskStartDate(event)),
-                end: parseISO(getTaskEndDate(event)),
+                start: parseISO(getTaskStartDate(event, dateField)),
+                end: parseISO(getTaskEndDate(event, dateField)),
               },
               {
-                start: parseISO(getTaskStartDate(otherEvent)),
-                end: parseISO(getTaskEndDate(otherEvent)),
+                start: parseISO(getTaskStartDate(otherEvent, dateField)),
+                end: parseISO(getTaskEndDate(otherEvent, dateField)),
               },
             ),
           ),

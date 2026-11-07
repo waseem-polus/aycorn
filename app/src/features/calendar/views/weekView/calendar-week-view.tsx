@@ -17,8 +17,7 @@ import type { ChecklistTask } from "@/types/types";
 import { CalendarTimeline } from "@/features/calendar/views/weekView/calendar-time-line";
 import { RenderGroupedEvents } from "@/features/calendar/views/weekView/render-grouped-events";
 import { WeekViewMultiDayEventsRow } from "@/features/calendar/views/weekView/week-view-multi-day-events-row";
-import { NewTaskEditorDrawer } from "./new-task-editor-drawer";
-import { TaskProvider } from "@/contexts/task/TaskProvider";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 interface IProps {
   singleDayEvents: ChecklistTask[];
@@ -27,6 +26,7 @@ interface IProps {
 
 export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate, use24HourFormat } = useCalendar();
+  const { dateField, reschedulable, renderSlotCreate } = useCalendarHost();
 
   const weekStart = startOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -126,10 +126,10 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                 {weekDays.map((day, dayIndex) => {
                   const dayEvents = singleDayEvents.filter(
                     (event) =>
-                      isSameDay(parseISO(getTaskStartDate(event)), day) ||
-                      isSameDay(parseISO(getTaskEndDate(event)), day),
+                      isSameDay(parseISO(getTaskStartDate(event, dateField)), day) ||
+                      isSameDay(parseISO(getTaskEndDate(event, dateField)), day),
                   );
-                  const groupedEvents = groupEvents(dayEvents);
+                  const groupedEvents = groupEvents(dayEvents, dateField);
 
                   return (
                     <motion.div
@@ -158,12 +158,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             minute={0}
                             className="absolute inset-x-0 top-0  h-[48px]"
                           >
-                            <TaskProvider>
-                              <NewTaskEditorDrawer
-                                date={day}
-                                startTime={{ hour, minute: 0 }}
-                              />
-                            </TaskProvider>
+                            {reschedulable &&
+                              renderSlotCreate?.(day, { hour, minute: 0 })}
                           </DroppableArea>
 
                           <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
@@ -174,12 +170,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             minute={30}
                             className="absolute inset-x-0 bottom-0 h-[48px]"
                           >
-                            <TaskProvider>
-                              <NewTaskEditorDrawer
-                                date={day}
-                                startTime={{ hour, minute: 30 }}
-                              />
-                            </TaskProvider>
+                            {reschedulable &&
+                              renderSlotCreate?.(day, { hour, minute: 30 })}
                           </DroppableArea>
                         </motion.div>
                       ))}

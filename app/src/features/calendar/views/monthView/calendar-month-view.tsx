@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { staggerContainer, transition } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 import {
   calculateMonthEventPositions,
@@ -23,6 +24,7 @@ export function CalendarMonthView({
   multiDayEvents,
 }: IProps) {
   const { selectedDate } = useCalendar();
+  const { dateField } = useCalendarHost();
 
   const allEvents = [...multiDayEvents, ...singleDayEvents];
 
@@ -34,8 +36,9 @@ export function CalendarMonthView({
         multiDayEvents,
         singleDayEvents,
         selectedDate,
+        dateField,
       ),
-    [multiDayEvents, singleDayEvents, selectedDate],
+    [multiDayEvents, singleDayEvents, selectedDate, dateField],
   );
 
   return (

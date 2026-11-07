@@ -16,6 +16,7 @@ import { stageCalendarCellClass } from "@/features/stage/stage-palette";
 import { EventBullet } from "@/features/calendar/views/monthView";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import TaskEditorDrawer from "@/features/task/task-editor-drawer";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 interface EventListDialogProps {
   date: Date;
@@ -34,6 +35,7 @@ export function EventListDialog({
   const cellEvents = tasks;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
   const { badgeVariant, use24HourFormat } = useCalendar();
+  const { dateField } = useCalendarHost();
 
   const defaultTrigger = (
     <span className="cursor-pointer">
@@ -78,7 +80,7 @@ export function EventListDialog({
                     <div className="flex justify-between items-center w-full">
                       <p className="text-sm font-medium">{task.Name}</p>
                       <p className="text-xs">
-                        {formatTime(getTaskStartDate(task), use24HourFormat)}
+                        {formatTime(getTaskStartDate(task, dateField), use24HourFormat)}
                       </p>
                     </div>
                   </div>

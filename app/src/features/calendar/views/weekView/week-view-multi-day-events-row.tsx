@@ -15,6 +15,7 @@ import {
 } from "@/features/calendar/interfaces";
 import type { ChecklistTask } from "@/types/types";
 import { MonthEventBadge } from "@/features/calendar/views/monthView";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 
 interface IProps {
   selectedDate: Date;
@@ -25,15 +26,16 @@ export function WeekViewMultiDayEventsRow({
   selectedDate,
   multiDayEvents,
 }: IProps) {
-  const weekStart = useMemo(() => startOfWeek(selectedDate), []);
+  const { dateField } = useCalendarHost();
+  const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate]);
   const weekEnd = endOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const processedEvents = useMemo(() => {
     return multiDayEvents
       .map((event) => {
-        const start = parseISO(getTaskStartDate(event));
-        const end = parseISO(getTaskEndDate(event));
+        const start = parseISO(getTaskStartDate(event, dateField));
+        const end = parseISO(getTaskEndDate(event, dateField));
         const adjustedStart = isBefore(start, weekStart) ? weekStart : start;
         const adjustedEnd = isAfter(end, weekEnd) ? weekEnd : end;
         const startIndex = differenceInDays(adjustedStart, weekStart);
@@ -52,7 +54,7 @@ export function WeekViewMultiDayEventsRow({
         if (startDiff !== 0) return startDiff;
         return b.endIndex - b.startIndex - (a.endIndex - a.startIndex);
       });
-  }, [multiDayEvents, weekStart, weekEnd]);
+  }, [multiDayEvents, weekStart, weekEnd, dateField]);
 
   const eventRows = useMemo(() => {
     const rows: (typeof processedEvents)[] = [];
@@ -77,8 +79,8 @@ export function WeekViewMultiDayEventsRow({
 
   const hasEventsInWeek = useMemo(() => {
     return multiDayEvents.some((event) => {
-      const start = parseISO(getTaskStartDate(event));
-      const end = parseISO(getTaskEndDate(event));
+      const start = parseISO(getTaskStartDate(event, dateField));
+      const end = parseISO(getTaskEndDate(event, dateField));
 
       return (
         (start >= weekStart && start <= weekEnd) ||
@@ -86,7 +88,7 @@ export function WeekViewMultiDayEventsRow({
         (start <= weekStart && end >= weekEnd)
       );
     });
-  }, [multiDayEvents, weekStart, weekEnd]);
+  }, [multiDayEvents, weekStart, weekEnd, dateField]);
 
   if (!hasEventsInWeek) {
     return null;

@@ -17,7 +17,8 @@ import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
 import { useUpcomingConditionSources } from "@/features/upcoming/hooks/useUpcomingConditionSources";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { UpcomingListView } from "@/features/upcoming/upcoming-page/list-view";
-import { UpcomingMonthView } from "@/features/upcoming/upcoming-page/month-view";
+import { UpcomingCalendarView } from "@/features/upcoming/upcoming-page/calendar-view";
+import { calendarDateField } from "@/features/calendar/date-field";
 import {
   UpcomingTaskScope,
   UpcomingTaskScopeProvider,
@@ -116,6 +117,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
             <CalendarProvider events={[]} users={[]} view="month">
               <CalendarHostProvider
                 projectId={null}
+                dateField={calendarDateField(activeView?.GroupBy ?? null)}
                 TaskScope={UpcomingTaskScope}
               >
                 <DndProvider>
@@ -162,9 +164,9 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                         workflows={workflows}
                       />
                     )}
-                    {layout === "month" && (
+                    {(layout === "month" || layout === "week") && (
                       <div className="flex flex-col flex-1 min-h-0">
-                        <UpcomingMonthView tasks={searched} />
+                        <UpcomingCalendarView tasks={searched} layout={layout} />
                       </div>
                     )}
                   </div>
@@ -195,7 +197,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
 }
 
 /**
- * Month badges aren't selectable, so a selection carried over from the list tab
+ * Calendar badges aren't selectable, so a selection carried over from the list tab
  * would leave the bulk toolbar floating over a surface with nothing selected.
  * Lives in its own component because `useSharedSelection` needs the
  * `SelectionContext` that `PageContent` provides.

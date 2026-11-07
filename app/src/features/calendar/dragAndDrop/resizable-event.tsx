@@ -9,7 +9,7 @@ import {
 import { motion } from "framer-motion";
 import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
@@ -18,7 +18,7 @@ import {
   getTaskStartDate,
   getTaskEndDate,
 } from "@/features/calendar/interfaces";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 import { useTaskMutation } from "@/queries/useTaskMutation";
 import { toApiDate } from "@/utils/date";
 
@@ -38,8 +38,9 @@ export function ResizableEvent({
   className,
 }: ResizableEventBlockProps) {
   const { use24HourFormat } = useCalendar();
-  const { Project } = useContext(ProjectContext);
-  const { update } = useTaskMutation(Project.ID);
+  // From the host, not ProjectContext: /upcoming has no single project.
+  const { projectId } = useCalendarHost();
+  const { update } = useTaskMutation(projectId);
 
   const [isResizing, setIsResizing] = useState(false);
   const [resizePreview, setResizePreview] = useState<{

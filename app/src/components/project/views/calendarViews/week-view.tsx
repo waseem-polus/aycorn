@@ -1,7 +1,8 @@
 import { CalendarWeekView } from "@/features/calendar/views/weekView/calendar-week-view";
-import { isSameDay, parseISO } from "date-fns";
+import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
+import { splitCalendarEvents } from "@/features/calendar/date-field";
 import { CalendarViewHeader } from "./calendar-views-header";
-import { Suspense, useContext } from "react";
+import { Suspense, useContext, useMemo } from "react";
 import { WeekViewSkeleton } from "@/features/calendar/skeletons/week-view-skeleton";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 
@@ -11,26 +12,11 @@ export function WeekView({
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { Tasks } = useContext(ProjectContext);
-
-  const singleDayEvents = Tasks.filter((task) => {
-    if (task.TimePlannedStart === null) {
-      return false;
-    }
-
-    const startDate = parseISO(task.TimePlannedStart);
-    const endDate = parseISO(task.TimePlannedEnd ?? task.TimePlannedStart);
-    return isSameDay(startDate, endDate);
-  });
-
-  const multiDayEvents = Tasks.filter((task) => {
-    if (task.TimePlannedStart === null) {
-      return false;
-    }
-
-    const startDate = parseISO(task.TimePlannedStart);
-    const endDate = parseISO(task.TimePlannedEnd ?? task.TimePlannedStart);
-    return !isSameDay(startDate, endDate);
-  });
+  const { dateField } = useCalendarHost();
+  const { singleDayEvents, multiDayEvents } = useMemo(
+    () => splitCalendarEvents(Tasks, dateField),
+    [Tasks, dateField],
+  );
 
   return (
     <div className="flex flex-col gap-2">

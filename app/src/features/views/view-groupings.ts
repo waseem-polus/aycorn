@@ -77,16 +77,9 @@ export const viewGroupings = (type: ViewType, board: Board): Groupings => {
       return { options: ["stage", "priority", "type"], optional: false };
     case "month":
     case "week":
-      return { options: ["timePlanned"], optional: false };
+      return { options: DATE_GROUP_KEYS, optional: false };
   }
 };
-
-/**
- * The layouts a board can show today. /upcoming gains Week when its
- * cross-project week renderer lands.
- */
-export const viewTypesFor = (board: Board) =>
-  board.surface === "upcoming" ? VIEW_TYPES.filter((t) => t.type !== "week") : VIEW_TYPES;
 
 export const viewTypeLabel = (type: ViewType) =>
   VIEW_TYPES.find((t) => t.type === type)?.label ?? type;

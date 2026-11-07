@@ -25,7 +25,7 @@ import {
 } from "@/features/calendar/contexts/calendar-host-context";
 
 const eventBadgeVariants = cva(
-  "flex w-full h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs cursor-grab",
+  "flex w-full h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs",
   {
     variants: {
       multiDayPosition: {
@@ -59,13 +59,17 @@ export function MonthEventBadge({
   className,
   position: propPosition,
 }: IProps) {
-  const { TaskScope = PassthroughTaskScope } = useCalendarHost();
+  const {
+    TaskScope = PassthroughTaskScope,
+    dateField,
+    reschedulable,
+  } = useCalendarHost();
   const [open, setOpen] = useState(false);
 
   const { badgeVariant, use24HourFormat } = useCalendar();
 
-  const itemStart = startOfDay(parseISO(getTaskStartDate(task)));
-  const itemEnd = endOfDay(parseISO(getTaskEndDate(task)));
+  const itemStart = startOfDay(parseISO(getTaskStartDate(task, dateField)));
+  const itemEnd = endOfDay(parseISO(getTaskEndDate(task, dateField)));
 
   if (cellDate < itemStart || cellDate > itemEnd) return null;
 
@@ -97,6 +101,7 @@ export function MonthEventBadge({
   const eventBadgeClasses = cn(
     eventBadgeVariants({ multiDayPosition: position }),
     colorClass,
+    reschedulable ? "cursor-grab" : "cursor-pointer",
     className,
   );
 
@@ -133,7 +138,7 @@ export function MonthEventBadge({
                 {renderBadgeTime && (
                   <span>
                     {formatTime(
-                      new Date(getTaskStartDate(task)),
+                      new Date(getTaskStartDate(task, dateField)),
                       use24HourFormat,
                     )}
                   </span>

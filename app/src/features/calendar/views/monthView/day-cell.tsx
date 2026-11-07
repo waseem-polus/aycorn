@@ -28,16 +28,21 @@ const MAX_VISIBLE_EVENTS = 3;
 export function DayCell({ cell, events, eventPositions }: IProps) {
   const { day, currentMonth, date } = cell;
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { renderDayCreate } = useCalendarHost();
+  const { renderDayCreate, dateField, reschedulable } = useCalendarHost();
 
   // Memoize cellEvents and currentCellMonth for performance
   const { cellEvents, currentCellMonth } = useMemo(() => {
-    const cellEvents = getMonthCellEvents(date, events, eventPositions);
+    const cellEvents = getMonthCellEvents(
+      date,
+      events,
+      eventPositions,
+      dateField,
+    );
     const currentCellMonth = startOfDay(
       new Date(date.getFullYear(), date.getMonth(), 1),
     );
     return { cellEvents, currentCellMonth };
-  }, [date, events, eventPositions]);
+  }, [date, events, eventPositions, dateField]);
 
   // Memoize event rendering for each position with animation
   const renderEventAtPosition = useCallback(
@@ -54,7 +59,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         );
       }
       const showBullet = isSameMonth(
-        new Date(getTaskStartDate(event)),
+        new Date(getTaskStartDate(event, dateField)),
         currentCellMonth,
       );
 
@@ -77,7 +82,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         </motion.div>
       );
     },
-    [cellEvents, currentCellMonth, date],
+    [cellEvents, currentCellMonth, date, dateField],
   );
 
   const showMoreCount = cellEvents.length - MAX_VISIBLE_EVENTS;
@@ -109,7 +114,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
               {day}
             </motion.span>
 
-            {!isMobile && renderDayCreate && (
+            {!isMobile && reschedulable && renderDayCreate && (
               <motion.span className="flex justify-center items-center group">
                 {renderDayCreate(date)}
               </motion.span>
@@ -162,6 +167,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
       renderEventAtPosition,
       isMobile,
       renderDayCreate,
+      reschedulable,
     ],
   );
 

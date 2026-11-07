@@ -26,6 +26,7 @@ import {
   subYears,
 } from "date-fns";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import type { CalendarDateField } from "@/features/calendar/date-field";
 import type { ICalendarCell } from "@/features/calendar/interfaces";
 import {
   getTaskStartDate,
@@ -101,21 +102,24 @@ export function getEventsCount(
   ).length;
 }
 
-export function groupEvents(dayEvents: ChecklistTask[]): ChecklistTask[][] {
+export function groupEvents(
+  dayEvents: ChecklistTask[],
+  field: CalendarDateField,
+): ChecklistTask[][] {
   const sortedEvents = dayEvents.sort(
     (a, b) =>
-      parseISO(getTaskStartDate(a)).getTime() -
-      parseISO(getTaskStartDate(b)).getTime(),
+      parseISO(getTaskStartDate(a, field)).getTime() -
+      parseISO(getTaskStartDate(b, field)).getTime(),
   );
   const groups: ChecklistTask[][] = [];
 
   for (const event of sortedEvents) {
-    const eventStart = parseISO(getTaskStartDate(event));
+    const eventStart = parseISO(getTaskStartDate(event, field));
     let placed = false;
 
     for (const group of groups) {
       const lastEventInGroup = group[group.length - 1];
-      const lastEventEnd = parseISO(getTaskEndDate(lastEventInGroup));
+      const lastEventEnd = parseISO(getTaskEndDate(lastEventInGroup, field));
 
       if (eventStart >= lastEventEnd) {
         group.push(event);
@@ -135,8 +139,9 @@ export function getEventBlockStyle(
   day: Date,
   groupIndex: number,
   groupSize: number,
+  field: CalendarDateField,
 ) {
-  const startDate = parseISO(getTaskStartDate(event));
+  const startDate = parseISO(getTaskStartDate(event, field));
   const dayStart = startOfDay(day);
   const eventStart = startDate < dayStart ? dayStart : startDate;
   const startMinutes = differenceInMinutes(eventStart, dayStart);
@@ -185,6 +190,7 @@ export function calculateMonthEventPositions(
   multiDayEvents: ChecklistTask[],
   singleDayEvents: ChecklistTask[],
   selectedDate: Date,
+  field: CalendarDateField,
 ): Record<string, number> {
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
@@ -199,29 +205,29 @@ export function calculateMonthEventPositions(
   const sortedEvents = [
     ...multiDayEvents.sort((a, b) => {
       const aDuration = differenceInDays(
-        parseISO(getTaskEndDate(a)),
-        parseISO(getTaskStartDate(a)),
+        parseISO(getTaskEndDate(a, field)),
+        parseISO(getTaskStartDate(a, field)),
       );
       const bDuration = differenceInDays(
-        parseISO(getTaskEndDate(b)),
-        parseISO(getTaskStartDate(b)),
+        parseISO(getTaskEndDate(b, field)),
+        parseISO(getTaskStartDate(b, field)),
       );
       return (
         bDuration - aDuration ||
-        parseISO(getTaskStartDate(a)).getTime() -
-          parseISO(getTaskStartDate(b)).getTime()
+        parseISO(getTaskStartDate(a, field)).getTime() -
+          parseISO(getTaskStartDate(b, field)).getTime()
       );
     }),
     ...singleDayEvents.sort(
       (a, b) =>
-        parseISO(getTaskStartDate(a)).getTime() -
-        parseISO(getTaskStartDate(b)).getTime(),
+        parseISO(getTaskStartDate(a, field)).getTime() -
+        parseISO(getTaskStartDate(b, field)).getTime(),
     ),
   ];
 
   sortedEvents.forEach((event) => {
-    const eventStart = parseISO(getTaskStartDate(event));
-    const eventEnd = parseISO(getTaskEndDate(event));
+    const eventStart = parseISO(getTaskStartDate(event, field));
+    const eventEnd = parseISO(getTaskEndDate(event, field));
     const eventDays = eachDayOfInterval({
       start: eventStart < monthStart ? monthStart : eventStart,
       end: eventEnd > monthEnd ? monthEnd : eventEnd,
@@ -257,11 +263,12 @@ export function getMonthCellEvents(
   date: Date,
   events: ChecklistTask[],
   eventPositions: Record<string, number>,
+  field: CalendarDateField,
 ) {
   const dayStart = startOfDay(date);
   const eventsForDate = events.filter((event) => {
-    const eventStart = parseISO(getTaskStartDate(event));
-    const eventEnd = parseISO(getTaskEndDate(event));
+    const eventStart = parseISO(getTaskStartDate(event, field));
+    const eventEnd = parseISO(getTaskEndDate(event, field));
     return (
       (dayStart >= eventStart && dayStart <= eventEnd) ||
       isSameDay(dayStart, eventStart) ||
@@ -273,7 +280,10 @@ export function getMonthCellEvents(
     .map((event) => ({
       ...event,
       position: eventPositions[event.ID] ?? -1,
-      isMultiDay: getTaskStartDate(event) !== getTaskEndDate(event),
+      isMultiDay: !isSameDay(
+        parseISO(getTaskStartDate(event, field)),
+        parseISO(getTaskEndDate(event, field)),
+      ),
     }))
     .sort((a, b) => {
       if (a.isMultiDay && !b.isMultiDay) return -1;
