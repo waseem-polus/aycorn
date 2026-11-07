@@ -121,6 +121,8 @@ A board (a project page or `/upcoming`) filters tasks in three layers, all ANDed
 
 `useBoardFilter(board, adhocScope)` combines 2 and 3; pages add the view's source (`useViewSourceWire`) and pass every tree to `appendTaskFilterParams`, which sends one `conditions` param per tree.
 
+Rendering by grouping: `features/views/grouping/task-grouping.ts` (`buildGroups`) buckets any task list for grouped lists (shared `GroupHeader`, collapsed state per view via `useCollapsedGroups`). Boards build columns with `buildBoardColumns` (`features/views/board/board-columns.tsx`) — each column carries the `changes` a drop (or a task created in it) applies, plus a `rejects` guard (e.g. a stage from another workflow on the cross-project `/upcoming` board). `KanbanBoard` is the one board renderer for both surfaces; adding a board grouping = a column builder here + the registry + the server's `viewTypes`.
+
 ### Task Types (`features/task-types/`)
 
 Task types belong to categories (`TaskTypeCategory`). The global task types page (`/task-types`) renders a collapsible, reorderable category section per category, each containing a card grid. Task type ordering within categories is deferred.

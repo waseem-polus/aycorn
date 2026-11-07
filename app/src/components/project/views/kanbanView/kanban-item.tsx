@@ -17,7 +17,11 @@ import type { ChecklistTask } from "@/types/types";
 import { useDraggableItem } from "@/hooks/useDraggableItem";
 import { selectedItemClasses } from "@/hooks/useSelection";
 import { cn } from "@/lib/utils";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import {
+  PassthroughTaskScope,
+  useCalendarHost,
+} from "@/features/calendar/contexts/calendar-host-context";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { SubtaskProgressBar } from "@/features/task/relationships/subtask-progress-bar";
 import { useSubtaskProgress } from "@/features/task/relationships/queries/useSubtaskProgress";
@@ -54,88 +58,96 @@ export function KanbanItem({
   const itemClassName = (itemProps?.className as string | undefined) ?? "";
 
   const { Checklists } = useContext(ProjectContext);
+  // Cross-project boards (/upcoming) give the editor its task's project.
+  const { TaskScope = PassthroughTaskScope } = useCalendarHost();
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const subtaskProgress = useSubtaskProgress(task.ID);
 
   return (
-    <TaskProvider defaultState={task} key={task.ID}>
-      <TaskEditorDrawer>
-        <Item
-          asChild
-          className="border border-border bg-background rounded-lg w-full box-border"
-        >
-          <a
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...itemProps}
-            data-task-card=""
-            className={cn(
-              "overflow-clip select-none",
-              selectedItemClasses(),
-              itemClassName,
-              animClass,
-            )}
+    <TaskScope task={task} open={editorOpen}>
+      <TaskProvider defaultState={task} key={task.ID}>
+        <TaskEditorDrawer onOpenChange={setEditorOpen}>
+          <Item
+            asChild
+            className="border border-border bg-background rounded-lg w-full box-border"
           >
-            <ItemHeader className="flex justify-between items-center gap-1">
-              <div className="flex flex-1 gap-2 justify-between items-center min-w-0">
-                <TaskPriorityIcon variant={task.Priority} />
-                <TaskTypeBadge type={task.Type} />
-              </div>
-              <button
-                type="button"
-                data-drag-handle=""
-                aria-label="Drag to reorder"
-                onTouchStart={onTouchStart}
-                style={{ touchAction: "none" }}
-                className="hidden pointer-coarse:flex cursor-grab active:cursor-grabbing text-muted-foreground -mr-1"
-              >
-                <GripVertical className="size-4" />
-              </button>
-            </ItemHeader>
-            <ItemContent className="flex flex-col gap-4">
-              <ItemTitle
-                className={task.Name === "" ? "text-muted-foreground" : ""}
-              >
-                {task.Name !== "" ? task.Name : "Untitled Task"}
-              </ItemTitle>
-
-              <span className="w-full flex flex-col gap-1">
-                {Checklists.length > 1 && (
-                  <Badge variant="outline">
-                    <LandPlot className="size-2" />
-                    {task.ChecklistName}
-                  </Badge>
-                )}
-                <Badge
-                  variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={
-                    task.Assignee !== "" ? "" : "text-muted-foreground"
-                  }
+            <a
+              ref={setNodeRef}
+              style={style}
+              {...attributes}
+              {...itemProps}
+              data-task-card=""
+              className={cn(
+                "overflow-clip select-none",
+                selectedItemClasses(),
+                itemClassName,
+                animClass,
+              )}
+            >
+              <ItemHeader className="flex justify-between items-center gap-1">
+                <div className="flex flex-1 gap-2 justify-between items-center min-w-0">
+                  <TaskPriorityIcon variant={task.Priority} />
+                  <TaskTypeBadge type={task.Type} />
+                </div>
+                <button
+                  type="button"
+                  data-drag-handle=""
+                  aria-label="Drag to reorder"
+                  onTouchStart={onTouchStart}
+                  style={{ touchAction: "none" }}
+                  className="hidden pointer-coarse:flex cursor-grab active:cursor-grabbing text-muted-foreground -mr-1"
                 >
-                  <User className="size-2" />
-                  {task.Assignee === "" ? "Not Assigned" : task.Assignee}
-                </Badge>
-                <TaskPlannedDates
-                  start={task.TimePlannedStart}
-                  end={task.TimePlannedStart}
-                  hasStartTime={task.HasTimePlannedStart}
-                  hasEndTime={false}
-                  excludeYear
-                />
+                  <GripVertical className="size-4" />
+                </button>
+              </ItemHeader>
+              <ItemContent className="flex flex-col gap-4">
+                <ItemTitle
+                  className={task.Name === "" ? "text-muted-foreground" : ""}
+                >
+                  {task.Name !== "" ? task.Name : "Untitled Task"}
+                </ItemTitle>
 
-                <UnresolvedBlockersBadge taskId={task.ID} />
-              </span>
-            </ItemContent>
+                <span className="w-full flex flex-col gap-1">
+                  {Checklists.length > 1 && (
+                    <Badge variant="outline">
+                      <LandPlot className="size-2" />
+                      {task.ChecklistName}
+                    </Badge>
+                  )}
+                  <Badge
+                    variant={task.Assignee !== "" ? "secondary" : "outline"}
+                    className={
+                      task.Assignee !== "" ? "" : "text-muted-foreground"
+                    }
+                  >
+                    <User className="size-2" />
+                    {task.Assignee === "" ? "Not Assigned" : task.Assignee}
+                  </Badge>
+                  <TaskPlannedDates
+                    start={task.TimePlannedStart}
+                    end={task.TimePlannedStart}
+                    hasStartTime={task.HasTimePlannedStart}
+                    hasEndTime={false}
+                    excludeYear
+                  />
 
-            {subtaskProgress && (
+                  <UnresolvedBlockersBadge taskId={task.ID} />
+                </span>
+              </ItemContent>
+
+              {subtaskProgress && (
                 <ItemFooter>
-                    <SubtaskProgressBar done={subtaskProgress.done} total={subtaskProgress.total} />
+                  <SubtaskProgressBar
+                    done={subtaskProgress.done}
+                    total={subtaskProgress.total}
+                  />
                 </ItemFooter>
-            )}
-          </a>
-        </Item>
-      </TaskEditorDrawer>
-    </TaskProvider>
+              )}
+            </a>
+          </Item>
+        </TaskEditorDrawer>
+      </TaskProvider>
+    </TaskScope>
   );
 }

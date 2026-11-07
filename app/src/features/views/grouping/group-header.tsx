@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
-import type { TaskGroup } from "@/features/upcoming/upcoming-grouping";
+import type { TaskGroup } from "@/features/views/grouping/task-grouping";
 import TaskPriorityIcon from "@/features/task/properties/icons/TaskPriorityIcon";
 import type { Priority } from "@/types/types";
 import { stageStrokeClass } from "@/features/stage/stage-palette";
@@ -15,9 +16,17 @@ type Props = {
   group: TaskGroup;
   collapsed: boolean;
   onToggle: () => void;
+  /** Column captions between the label and the count, matching the rows below. */
+  children?: ReactNode;
 };
 
-export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
+/**
+ * A collapsible group header for a grouped list view: chevron, the group's
+ * marker (priority icon, or its icon in its color), label, sublabel and
+ * task count. Sticky, so the current group stays labelled while scrolling.
+ * Enter/Space toggles it like a click.
+ */
+export function GroupHeader({ group, collapsed, onToggle, children }: Props) {
   const isDanger = group.tone === "danger";
   const isMuted = group.tone === "muted";
 
@@ -40,10 +49,17 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
 
   return (
     <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-2 cursor-pointer select-none sticky top-0 z-10 border-b border-border bg-muted hover:bg-muted",
-      )}
+      role="button"
+      tabIndex={0}
+      aria-expanded={!collapsed}
+      className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none sticky top-0 z-10 border-b border-border bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
     >
       <ChevronRight
         className={cn(
@@ -85,17 +101,8 @@ export function UpcomingGroupHeader({ group, collapsed, onToggle }: Props) {
           </Tooltip>
         )}
       </span>
-      <span className="shrink-0 hidden sm:flex w-1/8 text-xs text-muted-foreground">
-        Stage
-      </span>
-      <span className="shrink-0 hidden md:flex w-1/8 text-xs text-muted-foreground">
-        Type
-      </span>
-      <span
-        className={cn(
-          "text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right w-1/5 lg:w-3/10",
-        )}
-      >
+      {children}
+      <span className="text-xs font-medium rounded-full px-1.5 py-0.5 min-w-5 text-right">
         {group.tasks.length}
       </span>
     </div>

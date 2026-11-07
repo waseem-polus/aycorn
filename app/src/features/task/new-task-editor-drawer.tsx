@@ -8,18 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useCallback, useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import type { ChecklistTask } from "@/types/types";
+import type { ChecklistTask, Task } from "@/types/types";
 import { Slot } from "@radix-ui/react-slot";
 import { getDefaultChecklistId } from "@/features/checklists/default-checklist";
 
 export function NewTaskEditorDrawer({
   setTaskDrawerOpen,
-  stageId,
+  defaults,
   children,
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
-  // Creates the task in this stage instead of the workflow's open stage.
-  stageId?: number;
+  // Fields the new task starts with, e.g. a board column's stage or priority.
+  // Without a Stage it lands in the workflow's open stage.
+  defaults?: Partial<Task>;
   // Custom trigger; defaults to a "New Task" button.
   children?: React.ReactNode;
 }) {
@@ -36,10 +37,10 @@ export function NewTaskEditorDrawer({
           ...defaultTaskContextValue.state,
           Checklist: getDefaultChecklistId(Checklists),
           Stage:
-            stageId ??
             Stages.find((s) => s.Type === "open")?.ID ??
             Stages[0]?.ID ??
             0,
+          ...defaults,
         },
         {
           onSuccess: (newTask: ChecklistTask) => {
@@ -47,7 +48,7 @@ export function NewTaskEditorDrawer({
           },
         },
       ),
-    [create, Checklists, Stages, setTask, stageId],
+    [create, Checklists, Stages, setTask, defaults],
   );
 
   return (

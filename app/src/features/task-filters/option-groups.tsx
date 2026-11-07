@@ -125,7 +125,7 @@ export const checklistOptionSource = (
   };
 };
 
-const STAGE_TYPE_LABELS: Record<(typeof STAGE_TYPES)[number], string> = {
+export const STAGE_TYPE_LABELS: Record<(typeof STAGE_TYPES)[number], string> = {
   open: "Open",
   todo: "To do",
   doing: "Doing",

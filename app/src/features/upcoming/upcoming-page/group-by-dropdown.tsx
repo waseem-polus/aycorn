@@ -4,55 +4,46 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import type {
-  GroupByKey,
-  Granularity,
-} from "@/features/views/view-types";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-const GROUP_OPTIONS: { key: GroupByKey; label: string }[] = [
-  { key: "timePlanned", label: "Time planned" },
-  { key: "timeCompleted", label: "Time completed" },
-  { key: "project", label: "Project" },
-  { key: "stage", label: "Status" },
-  { key: "priority", label: "Priority" },
-  { key: "type", label: "Type" },
-  { key: "assignee", label: "Assignee" },
-  { key: "checklist", label: "Checklist" },
-];
-
-const DATE_GROUP_KEYS: GroupByKey[] = ["timePlanned", "timeCompleted"];
-
-const GRANULARITIES: { value: Granularity; label: string }[] = [
-  { value: "day", label: "Day" },
-  { value: "week", label: "Week" },
-  { value: "month", label: "Month" },
-];
+import {
+  DATE_GROUP_KEYS,
+  GRANULARITIES,
+  GROUP_LABELS,
+} from "@/features/views/view-groupings";
+import type { Granularity, GroupByKey } from "@/features/views/view-types";
+import { cn } from "@/lib/utils";
 
 type Props = {
-  groupBy: GroupByKey;
+  groupBy: GroupByKey | null;
   granularity: Granularity;
-  onChange: (v: GroupByKey) => void;
-  onGranularityChange: (v: Granularity) => void;
+  /** The groupings this view offers (from the view registry). */
+  options: GroupByKey[];
+  /** Whether "No grouping" is offered. */
+  optional: boolean;
+  onChange: (groupBy: GroupByKey | null) => void;
+  onGranularityChange: (granularity: Granularity) => void;
 };
 
+/** The list view's quick grouping control; it edits the shown view's grouping. */
 export function GroupByDropdown({
   groupBy,
   granularity,
+  options,
+  optional,
   onChange,
   onGranularityChange,
 }: Props) {
-  const cur = GROUP_OPTIONS.find((o) => o.key === groupBy) ?? GROUP_OPTIONS[0];
+  const label = groupBy ? GROUP_LABELS[groupBy] : "None";
   return (
     <DropdownMenu>
       <Tooltip>
@@ -60,39 +51,46 @@ export function GroupByDropdown({
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="gap-1.5">
               <Layers2 className="text-muted dark:text-foreground" />
-              <span className="text-muted text-xs dark:text-foreground">
-                Group by
-              </span>{" "}
-              {cur.label}
+              <span className="text-muted text-xs dark:text-foreground">Group by</span>{" "}
+              {label}
               <ChevronDown className="text-muted dark:text-foreground" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent>Group by {cur.label.toLowerCase()}</TooltipContent>
+        <TooltipContent>
+          {groupBy ? `Group by ${label.toLowerCase()}` : "Not grouped"}
+        </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="start" className="min-w-44">
-        {GROUP_OPTIONS.map((o) =>
-          DATE_GROUP_KEYS.includes(o.key) ? (
-            <DropdownMenuSub key={o.key}>
+        {optional && (
+          <>
+            <DropdownMenuItem
+              onClick={() => onChange(null)}
+              className={cn(groupBy === null && "bg-accent")}
+            >
+              No grouping
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {options.map((key) =>
+          DATE_GROUP_KEYS.includes(key) ? (
+            <DropdownMenuSub key={key}>
               <DropdownMenuSubTrigger
-                className={cn(o.key === groupBy && "bg-accent")}
-                onClick={() => onChange(o.key)}
+                className={cn(key === groupBy && "bg-accent")}
+                onClick={() => onChange(key)}
               >
-                {o.label}
+                {GROUP_LABELS[key]}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 {GRANULARITIES.map((g) => (
                   <DropdownMenuItem
                     key={g.value}
                     onClick={() => {
-                      onChange(o.key);
+                      onChange(key);
                       onGranularityChange(g.value);
                     }}
-                    className={cn(
-                      o.key === groupBy &&
-                        g.value === granularity &&
-                        "bg-accent",
-                    )}
+                    className={cn(key === groupBy && g.value === granularity && "bg-accent")}
                   >
                     {g.label}
                   </DropdownMenuItem>
@@ -101,11 +99,11 @@ export function GroupByDropdown({
             </DropdownMenuSub>
           ) : (
             <DropdownMenuItem
-              key={o.key}
-              onClick={() => onChange(o.key)}
-              className={cn(o.key === groupBy && "bg-accent")}
+              key={key}
+              onClick={() => onChange(key)}
+              className={cn(key === groupBy && "bg-accent")}
             >
-              {o.label}
+              {GROUP_LABELS[key]}
             </DropdownMenuItem>
           ),
         )}

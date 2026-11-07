@@ -46,31 +46,35 @@ type Groupings = {
   optional: boolean;
 };
 
+const LIST_GROUPINGS: GroupByKey[] = [
+  "stage",
+  "priority",
+  "type",
+  "assignee",
+  "checklist",
+  "timePlanned",
+  "timeCompleted",
+  "timeCreated",
+  "timeModified",
+];
+
 /**
  * Which groupings each view type offers on a board — the one place the
  * settings UI reads. It lists only what the renderers can draw today; the
- * server's `viewTypes` is the wider set it accepts.
+ * server's `viewTypes` is the set it accepts.
  */
 export const viewGroupings = (type: ViewType, board: Board): Groupings => {
   switch (type) {
     case "list":
-      return board.surface === "upcoming"
-        ? {
-            options: [
-              "timePlanned",
-              "timeCompleted",
-              "project",
-              "stage",
-              "priority",
-              "type",
-              "assignee",
-              "checklist",
-            ],
-            optional: false,
-          }
-        : { options: [], optional: true };
+      return {
+        options:
+          board.surface === "upcoming"
+            ? ["project", "stageType", ...LIST_GROUPINGS]
+            : LIST_GROUPINGS,
+        optional: true,
+      };
     case "board":
-      return { options: ["stage"], optional: false };
+      return { options: ["stage", "priority", "type"], optional: false };
     case "month":
     case "week":
       return { options: ["timePlanned"], optional: false };
@@ -78,13 +82,11 @@ export const viewGroupings = (type: ViewType, board: Board): Groupings => {
 };
 
 /**
- * The layouts a board can show today. /upcoming gains Board and Week as their
- * cross-project renderers land.
+ * The layouts a board can show today. /upcoming gains Week when its
+ * cross-project week renderer lands.
  */
 export const viewTypesFor = (board: Board) =>
-  board.surface === "upcoming"
-    ? VIEW_TYPES.filter((t) => t.type === "list" || t.type === "month")
-    : VIEW_TYPES;
+  board.surface === "upcoming" ? VIEW_TYPES.filter((t) => t.type !== "week") : VIEW_TYPES;
 
 export const viewTypeLabel = (type: ViewType) =>
   VIEW_TYPES.find((t) => t.type === type)?.label ?? type;

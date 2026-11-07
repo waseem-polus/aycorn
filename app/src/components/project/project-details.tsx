@@ -98,7 +98,7 @@ export function ProjectDetails({
                   />
                   {view && (
                     <div className="h-full min-h-0 overflow-visible">
-                      <ViewLayout type={view.Type} setTaskDrawerOpen={setNewTaskOpen} />
+                      <ViewLayout view={view} setTaskDrawerOpen={setNewTaskOpen} />
                     </div>
                   )}
                 </div>

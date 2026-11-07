@@ -5,10 +5,15 @@ import React, { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { ViewHeader } from "../view-header";
 import { useSharedSelection } from "@/hooks/useSelection";
+import type { BoardView } from "@/features/views/view-types";
+import { GroupedTaskList } from "./list-view/grouped-task-list";
 
+/** A project's tasks as rows: flat, or grouped when the view sets a grouping. */
 export function ListView({
+  view,
   setTaskDrawerOpen,
 }: {
+  view: BoardView;
   setTaskDrawerOpen: (open: boolean) => void;
 }) {
   const { Tasks, Stages, Checklists } = useContext(ProjectContext);
@@ -23,25 +28,29 @@ export function ListView({
       <ViewHeader setTaskDrawerOpen={setTaskDrawerOpen} />
 
       <div className="h-full min-h-0 overflow-auto">
-        <ItemGroup className="h-fit box-border rounded-md overflow-visible p-1">
-          {Tasks.length > 0 ? (
-            Tasks.map((task, i) => (
-              <React.Fragment key={task.ID}>
-                <ListViewRow
-                  task={task}
-                  stage={stagesById.get(task.Stage)}
-                  showChecklist={Checklists.length > 1}
-                  itemProps={getItemProps(task.ID.toString())}
-                />
-                {Tasks.length - 1 !== i && <ItemSeparator />}
-              </React.Fragment>
-            ))
-          ) : (
-            <Empty>
-              <EmptyDescription>No Tasks Found</EmptyDescription>
-            </Empty>
-          )}
-        </ItemGroup>
+        {view.GroupBy ? (
+          <GroupedTaskList view={view} groupBy={view.GroupBy} />
+        ) : (
+          <ItemGroup className="h-fit box-border rounded-md overflow-visible p-1">
+            {Tasks.length > 0 ? (
+              Tasks.map((task, i) => (
+                <React.Fragment key={task.ID}>
+                  <ListViewRow
+                    task={task}
+                    stage={stagesById.get(task.Stage)}
+                    showChecklist={Checklists.length > 1}
+                    itemProps={getItemProps(task.ID.toString())}
+                  />
+                  {Tasks.length - 1 !== i && <ItemSeparator />}
+                </React.Fragment>
+              ))
+            ) : (
+              <Empty>
+                <EmptyDescription>No Tasks Found</EmptyDescription>
+              </Empty>
+            )}
+          </ItemGroup>
+        )}
       </div>
     </div>
   );

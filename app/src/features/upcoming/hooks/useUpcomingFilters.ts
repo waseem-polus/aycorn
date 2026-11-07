@@ -1,10 +1,11 @@
-import { useLocalStorage } from "@/features/calendar/hooks";
 import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
+import { useCollapsedGroups } from "@/features/views/hooks/useCollapsedGroups";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import type { BoardView, Granularity, GroupByKey } from "@/features/views/view-types";
 
 export type UpcomingViewSettings = {
-  groupBy: GroupByKey;
+  /** Null for an ungrouped list. */
+  groupBy: GroupByKey | null;
   granularity: Granularity;
 };
 
@@ -21,25 +22,16 @@ export function useUpcomingFilters(view: BoardView | null, views: BoardViewsAPI)
     UPCOMING_BOARD,
     view ? `upcoming.view.${view.ID}` : "upcoming",
   );
-  const [collapsedKeys, setCollapsedKeys] = useLocalStorage<string[]>(
+  const collapsed = useCollapsedGroups(
     view ? `aycorn.upcoming.view.${view.ID}.collapsed` : "aycorn.upcoming.collapsed",
-    [],
   );
 
-  const toggleCollapsed = (key: string) => {
-    setCollapsedKeys((prev: string[]) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
-  };
-
-  const isCollapsed = (key: string) => collapsedKeys.includes(key);
-
   const settings: UpcomingViewSettings = {
-    groupBy: view?.GroupBy ?? "timePlanned",
+    groupBy: view ? view.GroupBy : "timePlanned",
     granularity: view?.GroupOptions.granularity ?? "week",
   };
 
-  const setGroupBy = (groupBy: GroupByKey) => {
+  const setGroupBy = (groupBy: GroupByKey | null) => {
     if (view) void views.update(view.ID, { groupBy });
   };
 
@@ -54,9 +46,7 @@ export function useUpcomingFilters(view: BoardView | null, views: BoardViewsAPI)
   return {
     ...filtersApi,
     view: settings,
-    collapsedKeys,
-    toggleCollapsed,
-    isCollapsed,
+    ...collapsed,
     setGroupBy,
     setGranularity,
   };

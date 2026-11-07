@@ -31,11 +31,13 @@ import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAll
 import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
-import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
+import type { GroupingData } from "@/features/views/grouping/task-grouping";
 import type { Stage } from "@/types/types";
 import { useBoardViews } from "@/features/views/hooks/useBoardViews";
 import { useViewSourceWire } from "@/features/views/hooks/useViewSourceWire";
 import { ViewTabs } from "@/features/views/view-tabs";
+import { viewGroupings } from "@/features/views/view-groupings";
+import { UpcomingBoardView } from "@/features/upcoming/upcoming-page/board-view";
 
 const UPCOMING_BOARD = { surface: "upcoming" } as const;
 
@@ -132,6 +134,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                     >
                       {layout === "list" && (
                         <GroupByDropdown
+                          {...viewGroupings("list", UPCOMING_BOARD)}
                           groupBy={view.groupBy}
                           granularity={view.granularity}
                           onChange={filtersApi.setGroupBy}
@@ -150,6 +153,14 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                           groupingData={groupingData}
                         />
                       </div>
+                    )}
+                    {layout === "board" && (
+                      <UpcomingBoardView
+                        tasks={searched}
+                        groupBy={view.groupBy}
+                        stages={allStages}
+                        workflows={workflows}
+                      />
                     )}
                     {layout === "month" && (
                       <div className="flex flex-col flex-1 min-h-0">
