@@ -1,31 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  UpcomingPage,
-  type UpcomingLayout,
-} from "@/features/upcoming/upcoming-page";
-
-const LAYOUTS = ["list", "month"] as const;
-const DEFAULT_LAYOUT: UpcomingLayout = "list";
-
-const parseLayout = (value: unknown): UpcomingLayout =>
-  LAYOUTS.includes(value as UpcomingLayout)
-    ? (value as UpcomingLayout)
-    : DEFAULT_LAYOUT;
+import { UpcomingPage } from "@/features/upcoming/upcoming-page";
 
 export const Route = createFileRoute("/upcoming")({
   component: RouteComponent,
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { layout: UpcomingLayout } => ({
-    layout: parseLayout(search.layout),
-  }),
+  // A view id; anything else (including the old `?layout=`) falls back to
+  // the first view.
+  validateSearch: (search: Record<string, unknown>): { view?: number } => {
+    const view = Number(search.view);
+    return { view: Number.isInteger(view) && view > 0 ? view : undefined };
+  },
 });
 
 function RouteComponent() {
-  const { layout } = Route.useSearch();
+  const { view } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const setLayout = (newLayout: UpcomingLayout) =>
-    navigate({ search: { layout: newLayout } });
+  const setViewId = (viewId: number) => navigate({ search: { view: viewId } });
 
-  return <UpcomingPage layout={layout} setLayout={setLayout} />;
+  return <UpcomingPage viewId={view} setViewId={setViewId} />;
 }

@@ -33,7 +33,6 @@ export function ProjectFiltersDrawer() {
     setDateMode: onSetDateMode,
     resetAll: onReset,
     activeFilterCount,
-    plannedFilterApplies,
     saveAdhocAsQuickFilter,
   } = useProjectFiltersContext();
 
@@ -43,11 +42,7 @@ export function ProjectFiltersDrawer() {
   const { data: taskTypes = [] } = useProjectTaskTypesQuery(Project.ID);
   const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
 
-  // A planned filter set while a calendar view is open isn't sent, so it
-  // shouldn't be counted either.
-  const activeCount = activeFilterCount(
-    plannedFilterApplies ? undefined : { ignoreDateModes: ["plannedMode"] },
-  );
+  const activeCount = activeFilterCount();
 
   return (
     <FilterDrawerFrame
@@ -72,7 +67,7 @@ export function ProjectFiltersDrawer() {
       activeCount={activeCount}
       onReset={onReset}
       footerActions={
-        activeFilterCount() > 0 && (
+        activeCount > 0 && (
           <SaveAdhocFilterButton onSave={saveAdhocAsQuickFilter} />
         )
       }

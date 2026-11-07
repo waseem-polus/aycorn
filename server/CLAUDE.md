@@ -87,7 +87,14 @@ task_type_category (id, name, isDefault, sortOrder, timeCreated, timeModified)
 task_type (id, name, description, icon, color, isDefault,
            category→task_type_category.id ON DELETE RESTRICT,
            timeCreated, timeModified)
+saved_filter     (id, name, definition JSON, timeCreated, timeModified)
+saved_filter_pin (filter→saved_filter CASCADE, surface, project→project CASCADE, position)
+board_view (id, surface, project→project.id ON DELETE CASCADE, name, icon, color,
+            type, groupBy, groupOptions JSON, source JSON, position,
+            timeCreated, timeModified)
 ```
+
+`board_view` is a user-defined view of a board (`surface` 'upcoming' or 'project'; VIEW is an SQL keyword, hence the name). `type` and `groupBy` deliberately have no `CHECK` — `viewService.go`'s `viewTypes` registry validates them, so a new layout or grouping needs no migration. `CreateProject` seeds every new project's default views (List, Board, Month, Week); a board's last view can't be deleted (409). `source` and `saved_filter.definition` share the client's versioned filter-definition JSON (v3 = condition tree only); the server checks only the envelope. Task listings accept a repeated `conditions` param — one tree per view source / quick filter — each ANDed, with depth/node limits applied per tree.
 
 Hierarchy & relationships:
 - `workflow → stage` (a workflow owns an ordered list of stages; deleting a workflow cascades to its stages).

@@ -115,6 +115,7 @@ type app struct {
 	taskRelationshipRepo *repos.TaskRelationshipRepo
 	projectFolderRepo    *repos.ProjectFolderRepo
 	savedFilterRepo      *repos.SavedFilterRepo
+	viewRepo             *repos.ViewRepo
 	appSettingsRepo      *repos.AppSettingsRepo
 
 	projectService          *services.ProjectService
@@ -127,6 +128,7 @@ type app struct {
 	taskTypeCategoryService *services.TaskTypeCategoryService
 	taskRelationshipService *services.TaskRelationshipService
 	savedFilterService      *services.SavedFilterService
+	viewService             *services.ViewService
 	appSettingsService      *services.AppSettingsService
 }
 
@@ -197,9 +199,13 @@ func main() {
 	taskRelationshipRepo := &repos.TaskRelationshipRepo{DB: db}
 	projectFolderRepo := &repos.ProjectFolderRepo{DB: db}
 	savedFilterRepo := &repos.SavedFilterRepo{DB: db}
+	viewRepo := &repos.ViewRepo{DB: db}
 	appSettingsRepo := &repos.AppSettingsRepo{DB: db}
 
+	viewService := &services.ViewService{ViewRepo: viewRepo, SavedFilterRepo: savedFilterRepo}
+
 	projectService := &services.ProjectService{
+		ViewService:   viewService,
 		ProjectRepo:   projectRepo,
 		TaskRepo:      taskRepo,
 		ChecklistRepo: checklistRepo,
@@ -245,6 +251,7 @@ func main() {
 		taskRelationshipRepo: taskRelationshipRepo,
 		projectFolderRepo:    projectFolderRepo,
 		savedFilterRepo:      savedFilterRepo,
+		viewRepo:             viewRepo,
 		appSettingsRepo:      appSettingsRepo,
 
 		projectService:          projectService,
@@ -257,6 +264,7 @@ func main() {
 		taskTypeCategoryService: taskTypeCategoryService,
 		taskRelationshipService: taskRelationshipService,
 		savedFilterService:      savedFilterService,
+		viewService:             viewService,
 		appSettingsService:      appSettingsService,
 	}
 

@@ -9,13 +9,14 @@ import { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
  * One board's filtering, in two independent layers that the server ANDs:
  *
  * - the ad-hoc drawer filters (spread at the top level, so the drawer, search
- *   and queries use them as before), and
+ *   and queries use them as before), kept under `adhocScope` — each view
+ *   remembers its own — and
  * - `quick`: the pinned quick filters, any number toggled on at once.
  *
  * `saveAdhocAsQuickFilter` promotes the drawer's filters into a quick filter.
  */
-export function useBoardFilter(board: Board) {
-  const adhoc = useTaskFilters(boardScope(board));
+export function useBoardFilter(board: Board, adhocScope: string = boardScope(board)) {
+  const adhoc = useTaskFilters(adhocScope);
   const quick = useQuickFilters(board);
 
   /** Saves the ad-hoc filters as a new quick filter (toggled on) and clears them. */

@@ -2,7 +2,7 @@ import type { TaskWithProject } from "@/types/types";
 import type {
   GroupByKey,
   Granularity,
-} from "@/features/upcoming/hooks/useUpcomingFilters";
+} from "@/features/views/view-types";
 import { startOfDay } from "date-fns";
 import {
   formatMonthDay,

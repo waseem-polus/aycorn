@@ -27,7 +27,7 @@ export function FilterRowActions({ filter }: { filter: SavedFilter }) {
     if (!firstPin) return;
     const board = pinToBoard(firstPin);
     setActiveFilterOnBoard(board, filter.ID);
-    if (board.surface === "upcoming") navigate({ to: "/upcoming", search: { layout: "list" } });
+    if (board.surface === "upcoming") navigate({ to: "/upcoming", search: {} });
     else navigate({ to: "/project/$projectId", params: { projectId: String(board.projectId) } });
   };
 

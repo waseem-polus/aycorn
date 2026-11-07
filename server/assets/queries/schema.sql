@@ -354,3 +354,35 @@ CREATE TABLE app_settings (
 );
 
 INSERT INTO app_settings (id) VALUES (1);
+
+-- A user-defined way of looking at a board's tasks (Notion-style). Named
+-- board_view because VIEW is an SQL keyword. `type` (list / board / month /
+-- week) and `groupBy` are unconstrained on purpose — the service validates
+-- them, so new layouts and groupings need no migration. `source` is the view's
+-- own filter, in the same versioned JSON shape as saved_filter.definition.
+CREATE TABLE board_view (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    surface      TEXT    NOT NULL,
+    project      INTEGER REFERENCES project(id) ON DELETE CASCADE,
+    name         TEXT    NOT NULL,
+    icon         TEXT    NOT NULL DEFAULT 'rows-3',
+    color        TEXT    NOT NULL DEFAULT 'gray',
+    type         TEXT    NOT NULL,
+    groupBy      TEXT,
+    groupOptions TEXT    NOT NULL DEFAULT '{}' CHECK (json_valid(groupOptions)),
+    source       TEXT    NOT NULL CHECK (json_valid(source)),
+    position     INTEGER NOT NULL,
+    timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    CHECK ((surface = 'project') = (project IS NOT NULL))
+);
+
+CREATE INDEX viewBoard ON board_view(surface, project, position);
+
+CREATE TRIGGER board_view_timeModified
+AFTER UPDATE ON board_view
+FOR EACH ROW
+WHEN NEW.timeModified = OLD.timeModified
+BEGIN
+    UPDATE board_view SET timeModified = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id;
+END;

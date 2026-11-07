@@ -212,6 +212,25 @@ type FilterBoard struct {
 	ProjectID *int   `json:"projectId"`
 }
 
+// View is a user-defined way of looking at a board's tasks: a layout Type
+// (list, board, month, week), how they're grouped, and Source — the view's
+// own filter, as the client's versioned definition JSON.
+type View struct {
+	ID           int
+	Surface      string
+	ProjectID    *int
+	Name         string
+	Icon         string
+	Color        string
+	Type         string
+	GroupBy      *string
+	GroupOptions json.RawMessage
+	Source       json.RawMessage
+	Position     int
+	TimeCreated  string
+	TimeModified string
+}
+
 // AppSettings are the app-wide preferences. WeekStartsOn follows date-fns:
 // 0 = Sunday, 1 = Monday.
 type AppSettings struct {

@@ -1,45 +1,50 @@
-import { ListView } from "@/components/project/views/listView/list-view";
 import { ProjectContentHeader } from "@/components/project/project-details-content-header";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
 import { ProjectFiltersContext } from "@/features/project-filters/project-filters-context";
+import { useProjectConditionSources } from "@/features/project-filters/hooks/useProjectConditionSources";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { KanbanView } from "./views/kanbanView/kanban-view";
-import { MonthView } from "./views/calendarViews/month-view";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { CalendarHostProvider } from "@/features/calendar/contexts/calendar-host-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { NewTaskEditorDrawer } from "./views/calendarViews/new-task-editor-drawer";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { WeekView } from "./views/calendarViews/week-view";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
-import {
-  CalendarDaysIcon,
-  CalendarIcon,
-  LayoutDashboardIcon,
-  Rows3Icon,
-} from "lucide-react";
+import { useBoardViews } from "@/features/views/hooks/useBoardViews";
+import { useViewSourceWire } from "@/features/views/hooks/useViewSourceWire";
+import { ViewTabs } from "@/features/views/view-tabs";
+import { ViewLayout } from "@/components/project/project-details/view-layout";
 
 export function ProjectDetails({
-  view,
-  setView,
+  viewId,
+  setViewId,
   projectId,
 }: {
-  view: string;
-  setView: (view: string) => void;
+  /** The view in the URL; any other value shows the project's first view. */
+  viewId: number | undefined;
+  setViewId: (viewId: number) => void;
   projectId: number;
 }) {
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const { SetProject, SetWorkflow, SetStages, SetChecklists, SetTasks, Tasks } =
     useContext(ProjectContext);
   const board = useMemo(() => ({ surface: "project" as const, projectId }), [projectId]);
-  const filtersApi = useBoardFilter(board);
-  // The calendar views already group by planned date, so the planned filter
-  // stays editable in the drawer but is not applied while they are open.
-  const plannedFilterApplies = view !== "month" && view !== "week";
+  const views = useBoardViews(board, viewId);
+  const view = views.active;
+  // Each view remembers its own ad-hoc drawer filters; quick filters are the
+  // board's, so their toggles carry across views.
+  const filtersApi = useBoardFilter(
+    board,
+    view ? `project.${projectId}.view.${view.ID}` : `project.${projectId}`,
+  );
+  const sourceWire = useViewSourceWire(view);
+  const conditions = useMemo(
+    () => [...sourceWire, ...filtersApi.conditionWires],
+    [sourceWire, filtersApi.conditionWires],
+  );
+  const conditionSources = useProjectConditionSources();
   const selection = useSharedSelection();
   const selectedTasks = useMemo(
     () => Tasks.filter((t) => selection.selectedIds.has(t.ID.toString())),
@@ -48,9 +53,8 @@ export function ProjectDetails({
   const { isPending, data, isFetching } = useProjectDetailsQuery(
     projectId,
     filtersApi.filters,
-    !newTaskOpen && filtersApi.filtersReady,
-    plannedFilterApplies,
-    filtersApi.conditionWires,
+    !newTaskOpen && filtersApi.filtersReady && !views.isPending,
+    conditions,
   );
 
   useEffect(() => {
@@ -74,9 +78,7 @@ export function ProjectDetails({
   );
 
   return (
-    <ProjectFiltersContext.Provider
-      value={{ ...filtersApi, plannedFilterApplies }}
-    >
+    <ProjectFiltersContext.Provider value={filtersApi}>
       <div className="flex flex-col gap-4 grow min-h-0 overflow-visible">
         <ProjectContentHeader />
 
@@ -87,51 +89,19 @@ export function ProjectDetails({
               renderDayCreate={renderDayCreate}
             >
               <DndProvider>
-                <Tabs value={view} onValueChange={setView} className="h-full">
-                  <TabsList>
-                    <TabsTrigger value="list">
-                      <Rows3Icon />
-                      List
-                    </TabsTrigger>
-                    <TabsTrigger value="kanban">
-                      <LayoutDashboardIcon />
-                      Kanban
-                    </TabsTrigger>
-                    <TabsTrigger value="month">
-                      <CalendarDaysIcon />
-                      Month
-                    </TabsTrigger>
-                    <TabsTrigger value="week">
-                      <CalendarIcon />
-                      Week
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent
-                    value="list"
-                    className="h-full overflow-visible min-h-0"
-                  >
-                    <ListView setTaskDrawerOpen={setNewTaskOpen} />
-                  </TabsContent>
-                  <TabsContent
-                    value="kanban"
-                    className="h-full overflow-visible min-h-0"
-                  >
-                    <KanbanView setTaskDrawerOpen={setNewTaskOpen} />
-                  </TabsContent>
-                  <TabsContent
-                    value="month"
-                    className="h-full overflow-visible min-h-0"
-                  >
-                    <MonthView setTaskDrawerOpen={setNewTaskOpen} />
-                  </TabsContent>
-                  <TabsContent
-                    value="week"
-                    className="h-full overflow-visible min-h-0"
-                  >
-                    <WeekView setTaskDrawerOpen={setNewTaskOpen} />
-                  </TabsContent>
-                </Tabs>
+                <div className="flex h-full min-h-0 flex-col gap-2">
+                  <ViewTabs
+                    api={views}
+                    selectedId={view?.ID ?? null}
+                    onSelect={setViewId}
+                    sources={conditionSources}
+                  />
+                  {view && (
+                    <div className="h-full min-h-0 overflow-visible">
+                      <ViewLayout type={view.Type} setTaskDrawerOpen={setNewTaskOpen} />
+                    </div>
+                  )}
+                </div>
               </DndProvider>
             </CalendarHostProvider>
           </CalendarProvider>

@@ -6,11 +6,6 @@ import {
 } from "@/features/task-filters/date-params";
 import type { PersistedFilterState } from "@/features/task-filters/task-filters";
 
-type Options = {
-  /** Leave the planned-date filter out (calendar views group by it). */
-  skipPlanned?: boolean;
-};
-
 /**
  * Writes a task listing's filters onto its request URL — shared by every
  * endpoint that runs `parseTaskFilters` on the server, so a new filter
@@ -22,7 +17,6 @@ export const appendTaskFilterParams = (
   url: URL,
   filters: PersistedFilterState,
   conditions: WireGroup[],
-  { skipPlanned = false }: Options = {},
 ) => {
   filters.project.forEach((id) => url.searchParams.append("project", String(id)));
   filters.checklist.forEach((id) => url.searchParams.append("checklist", String(id)));
@@ -41,7 +35,7 @@ export const appendTaskFilterParams = (
     completedTo,
     completedToHasTime,
   } = filters.dates ?? {};
-  if (!skipPlanned && setPresence(url, "plannedPresence", plannedMode)) {
+  if (setPresence(url, "plannedPresence", plannedMode)) {
     setRangeStart(url, "plannedFrom", plannedFrom);
     setRangeEnd(url, "plannedTo", plannedTo, plannedToHasTime);
   }

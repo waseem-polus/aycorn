@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDaysIcon, Rows3Icon } from "lucide-react";
 import {
   Page,
   PageContent,
   PageHeader,
   PageTitle,
 } from "@/components/page/Page";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
 import { useTaskFacetsQuery } from "@/features/task-filters/queries/useTaskFacetsQuery";
 import { useUpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
@@ -35,25 +33,37 @@ import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQue
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/upcoming/upcoming-grouping";
 import type { Stage } from "@/types/types";
+import { useBoardViews } from "@/features/views/hooks/useBoardViews";
+import { useViewSourceWire } from "@/features/views/hooks/useViewSourceWire";
+import { ViewTabs } from "@/features/views/view-tabs";
 
-export type UpcomingLayout = "list" | "month";
+const UPCOMING_BOARD = { surface: "upcoming" } as const;
 
 type Props = {
-  layout: UpcomingLayout;
-  setLayout: (layout: UpcomingLayout) => void;
+  /** The view in the URL; any other value shows the first view. */
+  viewId: number | undefined;
+  setViewId: (viewId: number) => void;
 };
 
-export function UpcomingPage({ layout, setLayout }: Props) {
-  const filtersApi = useUpcomingFilters();
+export function UpcomingPage({ viewId, setViewId }: Props) {
+  const views = useBoardViews(UPCOMING_BOARD, viewId);
+  const activeView = views.active;
+  const layout = activeView?.Type ?? null;
+  const filtersApi = useUpcomingFilters(activeView, views);
   const { filters, view, conditionWires } = filtersApi;
+  const sourceWire = useViewSourceWire(activeView);
+  const conditions = useMemo(
+    () => [...sourceWire, ...conditionWires],
+    [sourceWire, conditionWires],
+  );
 
   const [filterOpen, setFilterOpen] = useState(false);
   const conditionSources = useUpcomingConditionSources();
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
     filters,
-    conditionWires,
-    filtersApi.filtersReady,
+    conditions,
+    filtersApi.filtersReady && !views.isPending,
   );
   const { data: facets = { assignees: [], checklists: [] } } =
     useTaskFacetsQuery();
@@ -107,23 +117,13 @@ export function UpcomingPage({ layout, setLayout }: Props) {
                 TaskScope={UpcomingTaskScope}
               >
                 <DndProvider>
-                  <Tabs
-                    value={layout}
-                    onValueChange={(value) =>
-                      setLayout(value as UpcomingLayout)
-                    }
-                    className="flex flex-col gap-4 flex-1 min-h-0"
-                  >
-                    <TabsList>
-                      <TabsTrigger value="list">
-                        <Rows3Icon />
-                        List
-                      </TabsTrigger>
-                      <TabsTrigger value="month">
-                        <CalendarDaysIcon />
-                        Month
-                      </TabsTrigger>
-                    </TabsList>
+                  <div className="flex flex-col gap-4 flex-1 min-h-0">
+                    <ViewTabs
+                      api={views}
+                      selectedId={activeView?.ID ?? null}
+                      onSelect={setViewId}
+                      sources={conditionSources}
+                    />
 
                     <UpcomingToolbar
                       isFetching={isFetching}
@@ -141,24 +141,22 @@ export function UpcomingPage({ layout, setLayout }: Props) {
                     </UpcomingToolbar>
                     <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
 
-                    <TabsContent
-                      value="list"
-                      className="flex flex-col flex-1 min-h-0"
-                    >
-                      <UpcomingListView
-                        tasks={searched}
-                        stageById={stageById}
-                        projectById={projectById}
-                        groupingData={groupingData}
-                      />
-                    </TabsContent>
-                    <TabsContent
-                      value="month"
-                      className="flex flex-col flex-1 min-h-0"
-                    >
-                      <UpcomingMonthView tasks={searched} />
-                    </TabsContent>
-                  </Tabs>
+                    {layout === "list" && (
+                      <div className="flex flex-col flex-1 min-h-0">
+                        <UpcomingListView
+                          tasks={searched}
+                          stageById={stageById}
+                          projectById={projectById}
+                          groupingData={groupingData}
+                        />
+                      </div>
+                    )}
+                    {layout === "month" && (
+                      <div className="flex flex-col flex-1 min-h-0">
+                        <UpcomingMonthView tasks={searched} />
+                      </div>
+                    )}
+                  </div>
                 </DndProvider>
               </CalendarHostProvider>
             </CalendarProvider>
@@ -166,7 +164,7 @@ export function UpcomingPage({ layout, setLayout }: Props) {
 
           {/* Bulk actions toolbar — must be inside PageContent to access SelectionContext */}
           <UpcomingBulkActionsToolbar tasks={tasks} />
-          <ClearSelectionOnLayoutChange layout={layout} />
+          <ClearSelectionOnViewChange viewId={activeView?.ID ?? null} />
         </PageContent>
       </Page>
 
@@ -191,10 +189,10 @@ export function UpcomingPage({ layout, setLayout }: Props) {
  * Lives in its own component because `useSharedSelection` needs the
  * `SelectionContext` that `PageContent` provides.
  */
-function ClearSelectionOnLayoutChange({ layout }: { layout: UpcomingLayout }) {
+function ClearSelectionOnViewChange({ viewId }: { viewId: number | null }) {
   const { clearSelection } = useSharedSelection();
   useEffect(() => {
     clearSelection();
-  }, [layout, clearSelection]);
+  }, [viewId, clearSelection]);
   return null;
 }

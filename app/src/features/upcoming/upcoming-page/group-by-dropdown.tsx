@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import type {
   GroupByKey,
   Granularity,
-} from "@/features/upcoming/hooks/useUpcomingFilters";
+} from "@/features/views/view-types";
 import {
   Tooltip,
   TooltipContent,

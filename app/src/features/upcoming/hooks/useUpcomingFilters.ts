@@ -1,17 +1,7 @@
 import { useLocalStorage } from "@/features/calendar/hooks";
 import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
-
-export type GroupByKey =
-  | "timePlanned"
-  | "timeCompleted"
-  | "project"
-  | "stage"
-  | "priority"
-  | "type"
-  | "assignee"
-  | "checklist";
-
-export type Granularity = "day" | "week" | "month";
+import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
+import type { BoardView, Granularity, GroupByKey } from "@/features/views/view-types";
 
 export type UpcomingViewSettings = {
   groupBy: GroupByKey;
@@ -20,23 +10,19 @@ export type UpcomingViewSettings = {
 
 const UPCOMING_BOARD = { surface: "upcoming" } as const;
 
-const DEFAULT_VIEW: UpcomingViewSettings = {
-  groupBy: "timePlanned",
-  granularity: "week",
-};
-
 /**
- * The shared task filters scoped to the upcoming page, plus the grouping and
- * collapse state that only this page has.
+ * /upcoming's filters for the view being shown: its ad-hoc drawer filters
+ * (remembered per view), the board's quick filters, and the view's grouping
+ * and collapsed groups. Grouping lives on the view row, so changing it here
+ * saves the view.
  */
-export function useUpcomingFilters() {
-  const filtersApi = useBoardFilter(UPCOMING_BOARD);
-  const [view, setView] = useLocalStorage<UpcomingViewSettings>(
-    "aycorn.upcoming.view",
-    DEFAULT_VIEW,
+export function useUpcomingFilters(view: BoardView | null, views: BoardViewsAPI) {
+  const filtersApi = useBoardFilter(
+    UPCOMING_BOARD,
+    view ? `upcoming.view.${view.ID}` : "upcoming",
   );
   const [collapsedKeys, setCollapsedKeys] = useLocalStorage<string[]>(
-    "aycorn.upcoming.collapsed",
+    view ? `aycorn.upcoming.view.${view.ID}.collapsed` : "aycorn.upcoming.collapsed",
     [],
   );
 
@@ -48,17 +34,26 @@ export function useUpcomingFilters() {
 
   const isCollapsed = (key: string) => collapsedKeys.includes(key);
 
+  const settings: UpcomingViewSettings = {
+    groupBy: view?.GroupBy ?? "timePlanned",
+    granularity: view?.GroupOptions.granularity ?? "week",
+  };
+
   const setGroupBy = (groupBy: GroupByKey) => {
-    setView((prev: UpcomingViewSettings) => ({ ...prev, groupBy }));
+    if (view) void views.update(view.ID, { groupBy });
   };
 
   const setGranularity = (granularity: Granularity) => {
-    setView((prev: UpcomingViewSettings) => ({ ...prev, granularity }));
+    if (view) {
+      void views.update(view.ID, {
+        groupOptions: { ...view.GroupOptions, granularity },
+      });
+    }
   };
 
   return {
     ...filtersApi,
-    view,
+    view: settings,
     collapsedKeys,
     toggleCollapsed,
     isCollapsed,

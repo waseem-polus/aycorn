@@ -111,6 +111,16 @@ Add `cursor-text` to the `EditableHeader` className when it lives inside a `curs
 
 ## Feature Notes
 
+### Views & filters (`features/views/`, `features/saved-filters/`, `features/task-filters/`)
+
+A board (a project page or `/upcoming`) filters tasks in three layers, all ANDed server-side:
+
+1. **The view** (`board_view`): user-defined tabs (`view-tabs.tsx`), each with a layout type, a grouping, and a **data source** condition tree edited in `view-settings-popover.tsx` and auto-saved (debounced). The URL carries `?view=<id>`; anything else falls back to the first view. `view-groupings.ts` is the single registry of which layouts/groupings the UI offers per board — widen it as renderers land.
+2. **Quick filters** (`useQuickFilters`): pinned saved filters that **stack** as toggles (Alt+1…9, Alt+0 clears). Toggles are per board (`aycorn.<scope>.activeFilters`), unsaved edits are local drafts in one map (`aycorn.<scope>.drafts`) committed via Save / Save as new / Discard from the chip's edit popover. Quick filters are always condition trees (definition v3).
+3. **Ad-hoc drawer filters** (`useTaskFilters`): the simple, flat filters, remembered **per view** (`<board>.view.<id>` scope). "Save as quick filter" converts them with `basicToConditions`.
+
+`useBoardFilter(board, adhocScope)` combines 2 and 3; pages add the view's source (`useViewSourceWire`) and pass every tree to `appendTaskFilterParams`, which sends one `conditions` param per tree.
+
 ### Task Types (`features/task-types/`)
 
 Task types belong to categories (`TaskTypeCategory`). The global task types page (`/task-types`) renders a collapsible, reorderable category section per category, each containing a card grid. Task type ordering within categories is deferred.

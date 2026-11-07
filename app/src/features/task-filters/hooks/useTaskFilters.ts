@@ -116,19 +116,13 @@ export function useTaskFilters(scope: string) {
     setSearchState("");
   };
 
-  /**
-   * How many filters are actually narrowing the list. `ignoreDateModes` lets a
-   * surface leave out a date dimension it doesn't apply — the project page's
-   * calendar views group by planned date, so their planned filter isn't sent.
-   */
-  const activeFilterCount = (opts?: { ignoreDateModes?: DateModeKey[] }): number => {
-    const ignored = opts?.ignoreDateModes ?? [];
+  /** How many filters are actually narrowing the list. */
+  const activeFilterCount = (): number => {
     let n = FILTER_DIMS.reduce(
       (acc, dim) => acc + ((filters[dim] as unknown[])?.length ?? 0),
       0,
     );
     for (const modeKey of ["plannedMode", "completedMode"] as DateModeKey[]) {
-      if (ignored.includes(modeKey)) continue;
       if ((filters.dates?.[modeKey] ?? "all") !== "all") n++;
     }
     return n;

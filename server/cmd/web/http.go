@@ -62,12 +62,15 @@ func httpStatusForError(err error) int {
 		errors.Is(err, services.ErrInvalidFilterDefinition),
 		errors.Is(err, services.ErrInvalidFilterBoard),
 		errors.Is(err, services.ErrInvalidFilterOrder),
+		errors.Is(err, services.ErrInvalidView),
+		errors.Is(err, services.ErrInvalidViewOrder),
 		errors.Is(err, services.ErrInvalidSettings):
 		return http.StatusBadRequest
 	case errors.Is(err, services.ErrStageHasTasks),
 		errors.Is(err, services.ErrDestinationStageRequired):
 		return http.StatusUnprocessableEntity
 	case errors.Is(err, services.ErrWorkflowInUse),
+		errors.Is(err, services.ErrLastView),
 		errors.Is(err, services.ErrDuplicateRelationship):
 		return http.StatusConflict
 	case errors.Is(err, services.ErrDefaultTaskType):

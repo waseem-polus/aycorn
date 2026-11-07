@@ -15,6 +15,8 @@ type ProjectService struct {
 	WorkflowRepo  *repos.WorkflowRepo
 	StageRepo     *repos.StageRepo
 	FolderRepo    *repos.ProjectFolderRepo
+	// ViewService seeds a new project's default views.
+	ViewService *ViewService
 }
 
 type projectDetails struct {
@@ -211,6 +213,10 @@ func (s *ProjectService) CreateProject(workflowId int, folderId int) (int64, err
 	}
 
 	if err := s.ChecklistRepo.CreateDefaultChecklist(int(id)); err != nil {
+		return 0, err
+	}
+
+	if err := s.ViewService.SeedProjectViews(int(id)); err != nil {
 		return 0, err
 	}
 
