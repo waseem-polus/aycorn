@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as ops from "@/features/task-filters/conditions/condition-tree-ops";
 import { toWire } from "@/features/task-filters/conditions/condition-wire";
+import { useToday } from "@/features/task-filters/hooks/useToday";
+import { useAppSettingsQuery } from "@/features/settings/queries/useAppSettingsQuery";
 import type {
   ConditionGroup,
   ConditionValue,
@@ -68,8 +70,14 @@ export function useConditionTree(
     offerUndo("Conditions cleared", snapshot);
   };
 
+  const today = useToday();
+  const { weekStartsOn } = useAppSettingsQuery().settings;
   const completeCount = ops.countCompleteLeaves(root);
-  const wire = useMemo(() => toWire(root), [root]);
+  // Relative dates resolve here, so a new day (or week start) re-sends them.
+  const wire = useMemo(
+    () => toWire(root, { today, weekStartsOn }),
+    [root, today, weekStartsOn],
+  );
 
   return {
     root,

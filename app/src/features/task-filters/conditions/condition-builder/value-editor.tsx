@@ -1,6 +1,6 @@
-import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
-import { DateValueEditor } from "@/features/task-filters/conditions/condition-builder/date-value-editor";
+import { DateRangeValueEditor } from "@/features/task-filters/conditions/condition-builder/date-range-value-editor";
+import { DateRefEditor } from "@/features/task-filters/conditions/condition-builder/date-ref-editor";
 import { EnumValueEditor } from "@/features/task-filters/conditions/condition-builder/enum-value-editor";
 import { TextValueEditor } from "@/features/task-filters/conditions/condition-builder/text-value-editor";
 import {
@@ -63,26 +63,25 @@ export function ValueEditor({ condition, open, onOpenChange }: Props) {
 
     case "date":
       return (
-        <DateValueEditor
-          date={value?.kind === "date" ? value.date : ""}
+        <DateRefEditor
+          value={value?.kind === "date" ? value.ref : null}
+          // "after" reads a span's last day, so pinning keeps that day.
+          edge={operator === "after" ? "end" : "start"}
           open={open}
           onOpenChange={onOpenChange}
-          onChange={(date) => tree.setValue(id, { kind: "date", date })}
+          onChange={(ref) => tree.setValue(id, ref ? { kind: "date", ref } : null)}
         />
       );
 
     case "range":
       return (
-        <DateRangePicker
-          mode="date"
-          placeholder="Pick a range"
-          from={value?.kind === "range" ? value.from || null : null}
-          to={value?.kind === "range" ? value.to || null : null}
-          onRangeChange={(from, to) =>
-            tree.setValue(
-              id,
-              from || to ? { kind: "range", from: from ?? "", to: to ?? "" } : null,
-            )
+        <DateRangeValueEditor
+          from={value?.kind === "range" ? value.from : null}
+          to={value?.kind === "range" ? value.to : null}
+          open={open}
+          onOpenChange={onOpenChange}
+          onChange={(from, to) =>
+            tree.setValue(id, from || to ? { kind: "range", from, to } : null)
           }
         />
       );

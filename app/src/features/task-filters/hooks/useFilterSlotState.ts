@@ -7,6 +7,7 @@ import {
   type FilterState,
 } from "@/features/saved-filters/filter-definition";
 import { createRoot } from "@/features/task-filters/conditions/condition-tree-ops";
+import { upgradeGroup } from "@/features/task-filters/conditions/condition-upgrade";
 import type {
   ConditionGroup,
   StoredConditions,
@@ -28,9 +29,11 @@ export const draftStorageKey = (scope: string, filterId: number | "none") =>
   `aycorn.${scope}.draft.${filterId}`;
 
 const rootOf = (stored: StoredConditions | null): ConditionGroup =>
-  // Anything that isn't the current envelope (an older shape, a hand-edited
-  // value) starts fresh rather than feeding the builder a tree it can't read.
-  stored?.version === 1 && stored.root?.kind === "group" ? stored.root : createRoot();
+  // Known envelopes are upgraded; anything else (a hand-edited value) starts
+  // fresh rather than feeding the builder a tree it can't read.
+  (stored?.version === 1 || stored?.version === 2) && stored.root?.kind === "group"
+    ? upgradeGroup(stored.root)
+    : createRoot();
 
 const isFilterState = (value: unknown): value is FilterState =>
   !!value &&
@@ -75,14 +78,17 @@ export function useFilterSlotState(scope: string, slot: FilterSlot) {
     [definitionJson],
   );
 
-  const draft = slot.kind === "saved" && isFilterState(storedDraft) ? storedDraft : null;
+  const draft =
+    slot.kind === "saved" && isFilterState(storedDraft)
+      ? { ...storedDraft, root: upgradeGroup(storedDraft.root) }
+      : null;
   const state: FilterState =
     slot.kind === "scratch"
       ? { basic: { ...EMPTY_PERSISTED_FILTERS, ...scratchBasic }, root: rootOf(scratchConditions) }
       : (draft ?? base);
 
   const updateDraft = (fn: (current: FilterState) => FilterState) =>
-    setDraft((prev) => fn(isFilterState(prev) ? prev : base));
+    setDraft((prev) => fn(isFilterState(prev) ? { ...prev, root: upgradeGroup(prev.root) } : base));
 
   const setBasic = (action: SetStateAction<PersistedFilterState>) => {
     if (slot.kind === "scratch") return setScratchBasic(action);
@@ -91,7 +97,7 @@ export function useFilterSlotState(scope: string, slot: FilterSlot) {
 
   const setRoot = (fn: (root: ConditionGroup) => ConditionGroup) => {
     if (slot.kind === "scratch") {
-      return setScratchConditions((prev) => ({ version: 1, root: fn(rootOf(prev)) }));
+      return setScratchConditions((prev) => ({ version: 2, root: fn(rootOf(prev)) }));
     }
     updateDraft((cur) => ({ ...cur, root: fn(cur.root) }));
   };

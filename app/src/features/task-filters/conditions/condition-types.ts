@@ -52,12 +52,37 @@ export type OperatorKey =
   | "is_archived"
   | "is_not_archived";
 
+export type RelativeUnit = "day" | "week" | "month" | "year";
+
+/**
+ * A date that moves with today. Amounts are signed: negative is the past.
+ * - `offset`: a shifted day, e.g. -3 days = "3 days ago", 0 days = "Today". In
+ *   weeks, months or years it covers that whole calendar period: +2 weeks =
+ *   the week two weeks from now.
+ * - `window`: a run of days from today, today included, e.g. +7 days = "Next 7 days".
+ * - `period`: a whole calendar week, month or year, e.g. 0 weeks = "This week".
+ *   The picker only builds offset 0; other offsets still resolve and label.
+ */
+export type RelativeAnchor =
+  | { type: "offset"; amount: number; unit: RelativeUnit }
+  | { type: "window"; amount: number; unit: RelativeUnit }
+  | { type: "period"; offset: number; unit: Exclude<RelativeUnit, "day"> };
+
+/**
+ * A day or span of days, fixed or relative. Saved as-is — relative refs are
+ * resolved against today only when a filter is sent (see `resolveDateRef`).
+ */
+export type DateRef =
+  /** A local calendar day, `yyyy-MM-dd`. */
+  | { kind: "absolute"; date: string }
+  | { kind: "relative"; anchor: RelativeAnchor };
+
 export type ConditionValue =
   /** For link properties: task ids, or the lone "any" / "none" sentinel. */
   | { kind: "ids"; ids: (string | number)[] }
-  /** A local calendar day, `yyyy-MM-dd`. */
-  | { kind: "date"; date: string }
-  | { kind: "range"; from: string; to: string }
+  | { kind: "date"; ref: DateRef }
+  /** Either end may be unset while the range is being picked. */
+  | { kind: "range"; from: DateRef | null; to: DateRef | null }
   | { kind: "text"; text: string }
   | null;
 
@@ -78,8 +103,12 @@ export type ConditionGroup = {
 
 export type ConditionNode = Condition | ConditionGroup;
 
-/** The localStorage envelope. Bump `version` when the shape changes. */
-export type StoredConditions = { version: 1; root: ConditionGroup };
+/**
+ * The localStorage envelope. Bump `version` when the shape changes, and teach
+ * `upgradeGroup` (condition-upgrade.ts) to read the old one.
+ * v2: date values became `DateRef`s.
+ */
+export type StoredConditions = { version: 1 | 2; root: ConditionGroup };
 
 /** Server wire format — also the payload a saved filter will store. */
 export type WireCondition = {

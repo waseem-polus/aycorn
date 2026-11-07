@@ -19,7 +19,7 @@ import {
   Squirrel,
   TagsIcon,
   WorkflowIcon,
-  ListFilterIcon,
+  FunnelIcon,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 
@@ -29,12 +29,17 @@ const data = {
       title: "Projects",
       url: "/",
       icon: FolderIcon,
-      badge: <Badge className="text-xs py-0.5 -rotate-2">Updated!</Badge>,
     },
     {
       title: "Upcoming",
       url: "/upcoming",
       icon: CalendarClockIcon,
+    },
+    {
+      title: "Saved Filters",
+      url: "/filters",
+      icon: FunnelIcon,
+      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
     },
   ],
   navConfigure: [
@@ -52,11 +57,6 @@ const data = {
       title: "Task Links",
       url: "/task-links",
       icon: LinkIcon,
-    },
-    {
-      title: "Filters",
-      url: "/filters",
-      icon: ListFilterIcon,
     },
   ],
   navSecondary: [

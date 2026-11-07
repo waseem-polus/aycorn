@@ -77,6 +77,9 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("DELETE /api/filter-pin", app.deleteFilterPin)
 	mux.HandleFunc("PUT /api/filter-pin/order", app.putFilterPinOrder)
 
+	mux.HandleFunc("GET /api/settings", app.getAppSettings)
+	mux.HandleFunc("PUT /api/settings", app.putAppSettings)
+
 	mux.HandleFunc("POST /api/checklist/{projectId}", app.postChecklist)
 	mux.HandleFunc("PUT /api/checklist", app.putChecklist)
 	mux.HandleFunc("DELETE /api/checklist/{checklistId}", app.deleteChecklist)

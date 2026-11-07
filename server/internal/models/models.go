@@ -211,3 +211,9 @@ type FilterBoard struct {
 	Surface   string `json:"surface"`
 	ProjectID *int   `json:"projectId"`
 }
+
+// AppSettings are the app-wide preferences. WeekStartsOn follows date-fns:
+// 0 = Sunday, 1 = Monday.
+type AppSettings struct {
+	WeekStartsOn int `json:"weekStartsOn"`
+}

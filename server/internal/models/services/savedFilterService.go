@@ -20,7 +20,7 @@ var (
 // supportedDefinitionVersions are the client definition versions the server
 // accepts. The client upgrades older versions when loading, so a new version
 // is added here alongside its upgrade step.
-var supportedDefinitionVersions = map[int]bool{1: true}
+var supportedDefinitionVersions = map[int]bool{1: true, 2: true}
 
 // maxDefinitionBytes caps a stored definition; real ones are a few KB.
 const maxDefinitionBytes = 64 * 1024

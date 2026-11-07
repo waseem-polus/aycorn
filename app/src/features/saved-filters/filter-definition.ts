@@ -7,6 +7,7 @@ import type {
   ConditionGroup,
   ConditionNode,
 } from "@/features/task-filters/conditions/condition-types";
+import { upgradeGroup } from "@/features/task-filters/conditions/condition-upgrade";
 import {
   EMPTY_PERSISTED_FILTERS,
   type PersistedFilterState,
@@ -33,9 +34,10 @@ type StoredNode = StoredCondition | StoredGroup;
  *
  * Changing the shape: bump `version`, add an upgrade step to
  * `fromDefinition`, and accept the version on the server.
+ * v2: date values became `DateRef`s, so relative dates can be saved.
  */
 export type FilterDefinition = {
-  version: 1;
+  version: 1 | 2;
   basic: PersistedFilterState;
   conditions: StoredGroup;
 };
@@ -56,22 +58,25 @@ const addIds = (node: StoredNode): ConditionNode =>
     : { ...node, id: crypto.randomUUID(), children: node.children.map(addIds) };
 
 export const toDefinition = (state: FilterState): FilterDefinition => ({
-  version: 1,
+  version: 2,
   basic: state.basic,
   conditions: stripIds(state.root) as StoredGroup,
 });
 
-/** Editing state for a stored definition, with fresh node ids (the root keeps its fixed id). */
+/**
+ * Editing state for a stored definition of any version, with fresh node ids
+ * (the root keeps its fixed id).
+ */
 export const fromDefinition = (definition: FilterDefinition): FilterState => {
   const conditions = definition.conditions ?? { kind: "group", match: "all", children: [] };
   return {
     basic: { ...EMPTY_PERSISTED_FILTERS, ...definition.basic },
-    root: {
+    root: upgradeGroup({
       kind: "group",
       id: "root",
       match: conditions.match,
       children: conditions.children.map(addIds),
-    },
+    }),
   };
 };
 
@@ -83,9 +88,12 @@ const stableStringify = (value: unknown): string =>
       : v,
   );
 
+/** Round-trips through the editing shape, so a v1 definition equals its upgraded self. */
+const canonical = (definition: FilterDefinition): string =>
+  stableStringify(toDefinition(fromDefinition(definition)));
+
 export const definitionsEqual = (a: FilterDefinition, b: FilterDefinition) =>
-  stableStringify({ ...a, basic: { ...EMPTY_PERSISTED_FILTERS, ...a.basic } }) ===
-  stableStringify({ ...b, basic: { ...EMPTY_PERSISTED_FILTERS, ...b.basic } });
+  canonical(a) === canonical(b);
 
 /** How many rules a definition applies: selected basic values, date modes, and complete conditions. */
 export const definitionRuleCount = (definition: FilterDefinition): number => {

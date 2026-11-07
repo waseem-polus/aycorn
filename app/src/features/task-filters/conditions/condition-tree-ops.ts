@@ -1,5 +1,6 @@
 import { OPERATORS } from "@/features/task-filters/conditions/condition-operators";
 import { operatorsFor } from "@/features/task-filters/conditions/condition-properties";
+import { isDateRefComplete } from "@/features/task-filters/conditions/relative-dates";
 import type {
   Condition,
   ConditionGroup,
@@ -239,9 +240,9 @@ export const isComplete = (c: Condition): boolean => {
     case "ids":
       return v?.kind === "ids" && v.ids.length > 0;
     case "date":
-      return v?.kind === "date" && !!v.date;
+      return v?.kind === "date" && isDateRefComplete(v.ref);
     case "range":
-      return v?.kind === "range" && !!v.from && !!v.to;
+      return v?.kind === "range" && isDateRefComplete(v.from) && isDateRefComplete(v.to);
     case "text":
       return v?.kind === "text" && v.text.trim() !== "";
   }
