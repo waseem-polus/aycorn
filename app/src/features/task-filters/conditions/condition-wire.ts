@@ -76,14 +76,15 @@ const toWireGroup = (group: ConditionGroup, ctx: DateContext): WireGroup | null 
 export const toWire = (root: ConditionGroup, ctx: DateContext): WireGroup | null =>
   toWireGroup(root, ctx);
 
-/**
- * Whether the tree itself decides archived-project visibility. /upcoming hides
- * archived projects' tasks by default, unless a condition here takes control.
- */
-export const controlsArchived = (group: WireGroup | null): boolean =>
-  !!group &&
+const treeControlsArchived = (group: WireGroup): boolean =>
   group.children.some((c) =>
     "match" in c
-      ? controlsArchived(c)
+      ? treeControlsArchived(c)
       : c.property === "project" && (c.operator === "is_archived" || c.operator === "is_not_archived"),
   );
+
+/**
+ * Whether any of the trees decides archived-project visibility. /upcoming
+ * hides archived projects' tasks by default, unless a condition takes control.
+ */
+export const controlsArchived = (trees: WireGroup[]): boolean => trees.some(treeControlsArchived);

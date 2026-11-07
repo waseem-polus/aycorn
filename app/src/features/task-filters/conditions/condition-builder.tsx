@@ -42,7 +42,7 @@ type Props = {
 type DropData = { groupId: string; end?: boolean };
 
 /**
- * The "Conditions" section of a filter drawer: header, root match toggle,
+ * The "Conditions" editor of a quick filter or view: header, root match toggle,
  * and the tree. Owns drag and drop for the whole tree so nodes can move
  * between groups, not just within one.
  */
@@ -137,9 +137,6 @@ export function ConditionBuilder({ tree, sources }: Props) {
               Clear all
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Combined with the basic filters above using AND.
-          </p>
         </div>
 
         <DndContext
@@ -162,8 +159,9 @@ export function ConditionBuilder({ tree, sources }: Props) {
             depth={1}
             emptyText="No conditions yet. Add one to filter by any property."
           />
-          {/* The drawer is CSS-transformed, which would offset a fixed-position
-              overlay rendered inside it; portal it to the body instead. */}
+          {/* Popovers and drawers are CSS-transformed, which would offset a
+              fixed-position overlay rendered inside them; portal it to the
+              body instead, above the popover layer. */}
           {createPortal(
             <DragOverlay className="z-[60]">
               {activeNode && <DragPreview node={activeNode} />}

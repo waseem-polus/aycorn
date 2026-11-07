@@ -13,33 +13,34 @@ import {
   horizontalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { BookmarkPlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { DeleteSavedFiltersDialog } from "@/features/saved-filters/delete-saved-filters-dialog";
-import type { BoardFilterAPI } from "@/features/saved-filters/hooks/useBoardFilter";
+import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
 import { useQuickFilterShortcuts } from "@/features/saved-filters/hooks/useQuickFilterShortcuts";
 import { AddFilterPopover } from "@/features/saved-filters/quick-filter-bar/add-filter-popover";
-import { FilterChip } from "@/features/saved-filters/quick-filter-bar/filter-chip";
-import { SaveFilterPopover } from "@/features/saved-filters/save-filter-popover";
+import {
+  FilterChip,
+  type ChipEditing,
+} from "@/features/saved-filters/quick-filter-bar/filter-chip";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
-import { cn } from "@/lib/utils";
+import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 
-type Props = { api: BoardFilterAPI };
+type Props = {
+  api: QuickFiltersAPI;
+  /** The values the condition editor offers on this board. */
+  sources: ConditionOptionSources;
+};
 
 /**
- * A board's quick filters: its scratch filter, then the saved filters pinned
- * here. One is active at a time. A roving-focus tablist — ←/→ move, Enter
- * activates — with Alt+0…9 shortcuts and drag to reorder.
+ * A board's quick filters: toggles that stack, each ANDed onto the tasks
+ * shown. A toolbar with roving focus — ←/→ move, Enter/Space toggles — plus
+ * Alt+1…9 to toggle, Alt+0 to turn all off, and drag to reorder.
  */
-export function QuickFilterBar({ api }: Props) {
-  const { pinned, active, savedFilters } = api;
-  const [saveOpen, setSaveOpen] = useState(false);
+export function QuickFilterBar({ api, sources }: Props) {
+  const { pinned, savedFilters } = api;
   const [deleting, setDeleting] = useState<SavedFilter | null>(null);
+  // One editor open at a time, across the bar.
+  const [editing, setEditing] = useState<{ id: number } & NonNullable<ChipEditing> | null>(null);
+  const [focusIndex, setFocusIndex] = useState(0);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -47,20 +48,17 @@ export function QuickFilterBar({ api }: Props) {
 
   useQuickFilterShortcuts(
     pinned.map((f) => f.ID),
-    api.activate,
+    api.toggle,
+    api.clearAll,
   );
 
-  const activeIndex = active
-    ? pinned.findIndex((f) => f.ID === active.ID) + 1
-    : 0;
   const candidates = savedFilters.filter(
     (f) => !pinned.some((p) => p.ID === f.ID),
   );
-  const canSave = api.activeFilterCount() > 0 || !!active;
+  const tabStop = Math.min(focusIndex, Math.max(pinned.length - 1, 0));
 
-  // Index 0 is the scratch chip; pinned filters follow.
   const navigate = (index: number) => (e: KeyboardEvent<HTMLButtonElement>) => {
-    const last = pinned.length;
+    const last = pinned.length - 1;
     const next =
       e.key === "ArrowRight"
         ? Math.min(index + 1, last)
@@ -96,38 +94,19 @@ export function QuickFilterBar({ api }: Props) {
     );
   };
 
+  /** Create-empty-then-edit: the new filter opens with its name selected. */
+  const createFilter = async () => {
+    const created = await api.create("Untitled filter");
+    if (created) setEditing({ id: created.ID, saveAs: false, focusName: true });
+  };
+
   return (
     <div className="flex items-center gap-1.5">
       <div
-        role="tablist"
+        role="toolbar"
         aria-label="Quick filters"
         className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5"
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              ref={(el) => {
-                chipRefs.current[0] = el;
-              }}
-              type="button"
-              role="tab"
-              aria-selected={!active}
-              tabIndex={activeIndex === 0 ? 0 : -1}
-              onClick={() => api.activate(null)}
-              onKeyDown={navigate(0)}
-              className={cn(
-                "flex h-8 shrink-0 items-center rounded-md border px-2.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                !active
-                  ? "border-primary/40 bg-accent text-accent-foreground"
-                  : "bg-background hover:bg-accent/50",
-              )}
-            >
-              {api.scratchLabel}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Alt+0</TooltipContent>
-        </Tooltip>
-
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -142,49 +121,44 @@ export function QuickFilterBar({ api }: Props) {
               <FilterChip
                 key={filter.ID}
                 filter={filter}
-                active={active?.ID === filter.ID}
-                edited={api.hasUnsavedEdits(filter)}
+                api={api}
+                sources={sources}
                 shortcut={i < 9 ? i + 1 : null}
-                focusable={activeIndex === i + 1}
+                focusable={tabStop === i}
                 isFirst={i === 0}
                 isLast={i === pinned.length - 1}
+                editing={
+                  editing?.id === filter.ID
+                    ? { saveAs: editing.saveAs, focusName: editing.focusName }
+                    : null
+                }
+                onEditingChange={(next) =>
+                  setEditing((prev) => {
+                    const current =
+                      prev?.id === filter.ID
+                        ? { saveAs: prev.saveAs, focusName: prev.focusName }
+                        : null;
+                    const resolved = typeof next === "function" ? next(current) : next;
+                    return resolved ? { id: filter.ID, ...resolved } : null;
+                  })
+                }
                 chipRef={(el) => {
-                  chipRefs.current[i + 1] = el;
+                  chipRefs.current[i] = el;
                 }}
-                onNavigate={navigate(i + 1)}
-                onActivate={() => api.activate(filter.ID)}
-                onRename={(name) => api.rename(filter.ID, name)}
-                onSave={api.save}
-                onSaveAsNew={() => setSaveOpen(true)}
-                onDiscard={api.discard}
+                onNavigate={navigate(i)}
+                onFocus={() => setFocusIndex(i)}
                 onMove={(delta) => move(filter.ID, delta)}
-                onUnpin={() => api.unpin(filter.ID)}
                 onDelete={() => setDeleting(filter)}
               />
             ))}
           </SortableContext>
         </DndContext>
       </div>
-
-      <SaveFilterPopover
-        open={saveOpen}
-        onOpenChange={setSaveOpen}
-        onSave={api.saveAsNew}
-        defaultName={active ? `${active.Name} copy` : ""}
-        trigger={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 shrink-0"
-            disabled={!canSave}
-            aria-label="Save as new filter"
-            title="Save as new filter"
-          >
-            <BookmarkPlusIcon />
-          </Button>
-        }
+      <AddFilterPopover
+        candidates={candidates}
+        onAdd={api.pin}
+        onCreate={() => void createFilter()}
       />
-      <AddFilterPopover candidates={candidates} onAdd={api.pin} />
 
       {deleting && (
         <DeleteSavedFiltersDialog

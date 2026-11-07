@@ -31,9 +31,10 @@ type TaskFilters struct {
 	// corresponding date at all, independent of the bounds above.
 	PlannedPresence   string
 	CompletedPresence string
-	// Conditions is the advanced condition tree, ANDed onto every filter
-	// above. Nil when the request has none.
-	Conditions *TaskConditionGroup
+	// Conditions are condition trees, each ANDed onto every filter above and
+	// onto each other. Limits (depth, node count) apply per tree, so stacking
+	// trees never trips them. Empty when the request has none.
+	Conditions []*TaskConditionGroup
 	// ExcludeArchived drops tasks whose project is archived. Opt-in per
 	// request: /upcoming asks for it by default, while callers such as the
 	// relationship task picker still see every task.
@@ -687,8 +688,8 @@ func appendTaskFilterClauses(query string, args []any, taskFilters *TaskFilters)
 		query += " AND c.project IN (SELECT p.id FROM project p WHERE p.archived = 0)"
 	}
 
-	if taskFilters.Conditions != nil {
-		fragment, conditionArgs := compileTaskConditions(taskFilters.Conditions)
+	for _, tree := range taskFilters.Conditions {
+		fragment, conditionArgs := compileTaskConditions(tree)
 		query += " AND " + fragment
 		args = append(args, conditionArgs...)
 	}

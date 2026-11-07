@@ -1,4 +1,3 @@
-import type { WireGroup } from "@/features/task-filters/conditions/condition-types";
 import type { DateFilterMode } from "@/features/task-filters/task-filters";
 import { parseApiDate, toApiDate, toApiDayEnd } from "@/utils/date";
 
@@ -44,13 +43,4 @@ export const setPresence = (
   if (resolved === "all") return false;
   url.searchParams.set(key, resolved === "none" ? "none" : "any");
   return resolved === "with";
-};
-
-/**
- * The condition tree travels as one JSON-encoded param on the same GET as
- * the basic filters; the server ANDs the two. Omitted when nothing applies.
- */
-export const setConditions = (url: URL, conditions: WireGroup | null) => {
-  if (!conditions) return;
-  url.searchParams.set("conditions", JSON.stringify(conditions));
 };

@@ -5,6 +5,7 @@ import { TaskSearch } from "@/features/project-filters/task-search";
 import { ProjectChecklists } from "@/components/project/views/project-checklists";
 import { useProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
+import { useProjectConditionSources } from "@/features/project-filters/hooks/useProjectConditionSources";
 
 export function ViewHeaderControls({
   setTaskDrawerOpen,
@@ -14,6 +15,7 @@ export function ViewHeaderControls({
   children?: React.ReactNode;
 }) {
   const filtersApi = useProjectFiltersContext();
+  const conditionSources = useProjectConditionSources();
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2 flex-col sm:flex-row">
@@ -29,7 +31,7 @@ export function ViewHeaderControls({
           {children}
         </div>
       </div>
-      <QuickFilterBar api={filtersApi} />
+      <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
     </div>
   );
 }

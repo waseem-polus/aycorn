@@ -50,7 +50,7 @@ export function ProjectDetails({
     filtersApi.filters,
     !newTaskOpen && filtersApi.filtersReady,
     plannedFilterApplies,
-    filtersApi.conditions.wire,
+    filtersApi.conditionWires,
   );
 
   useEffect(() => {

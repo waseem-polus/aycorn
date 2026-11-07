@@ -17,7 +17,7 @@ export const UNDO_TOAST_MS = 8000;
 
 /**
  * Editing operations for a condition tree. The tree itself lives wherever the
- * board's filter slot keeps it (see `useFilterSlotState`); `update` applies a
+ * owner keeps it (a quick filter draft, a view source); `update` applies a
  * pure tree operation to it as one functional update, so several edits in the
  * same render compose instead of overwriting each other.
  */

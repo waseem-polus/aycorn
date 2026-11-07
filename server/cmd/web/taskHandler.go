@@ -62,9 +62,17 @@ func parseTaskFilters(q url.Values) (*repos.TaskFilters, error) {
 		presence[key] = value
 	}
 
-	conditions, err := repos.ParseTaskConditions(q.Get("conditions"))
-	if err != nil {
-		return nil, err
+	// Each `conditions` param is one tree (a view's source, a quick filter);
+	// they stack, so every tree must match.
+	var conditions []*repos.TaskConditionGroup
+	for _, raw := range q["conditions"] {
+		tree, err := repos.ParseTaskConditions(raw)
+		if err != nil {
+			return nil, err
+		}
+		if tree != nil {
+			conditions = append(conditions, tree)
+		}
 	}
 
 	return &repos.TaskFilters{

@@ -1,14 +1,15 @@
-import { useState, type KeyboardEvent, type Ref } from "react";
+import { useRef, useState, type KeyboardEvent, type Ref } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  BookmarkPlusIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PinOffIcon,
   SaveIcon,
+  SavePlusIcon,
+  SlidersHorizontalIcon,
   Trash2Icon,
   Undo2Icon,
 } from "lucide-react";
@@ -23,60 +24,76 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverAnchor } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
+import { QuickFilterEditPopover } from "@/features/saved-filters/quick-filter-bar/quick-filter-edit-popover";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
+import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { cn } from "@/lib/utils";
+
+/** Which part of a chip's editor is open: the editor, optionally with its Save as new form. */
+export type ChipEditing = { saveAs: boolean; focusName: boolean } | null;
 
 type Props = {
   filter: SavedFilter;
-  active: boolean;
-  edited: boolean;
+  api: QuickFiltersAPI;
+  sources: ConditionOptionSources;
   /** 1-based Alt shortcut, or null past 9. */
   shortcut: number | null;
   focusable: boolean;
   isFirst: boolean;
   isLast: boolean;
+  editing: ChipEditing;
+  /** Takes an updater too, for changes that land after an await. */
+  onEditingChange: (next: ChipEditing | ((prev: ChipEditing) => ChipEditing)) => void;
   chipRef: Ref<HTMLButtonElement>;
   onNavigate: (e: KeyboardEvent<HTMLButtonElement>) => void;
-  onActivate: () => void;
-  onRename: (name: string) => void;
-  onSave: () => void;
-  onSaveAsNew: () => void;
-  onDiscard: () => void;
+  /** Makes this chip the toolbar's tab stop. */
+  onFocus: () => void;
   onMove: (delta: -1 | 1) => void;
-  onUnpin: () => void;
   onDelete: () => void;
 };
 
 /**
- * One pinned filter on the quick-filter bar: a tab that activates it, drags
- * to reorder (the whole chip, after 4px), and carries a ⋯ menu. F2 renames in
- * place, Delete unpins.
+ * One pinned quick filter: a toggle (any number can be on at once), drag to
+ * reorder (the whole chip, after 4px), and a ⋯ menu. Edit opens the filter's
+ * conditions in a popover anchored to the chip. F2 renames in place, Delete
+ * unpins.
  */
 export function FilterChip({
   filter,
-  active,
-  edited,
+  api,
+  sources,
   shortcut,
   focusable,
   isFirst,
   isLast,
+  editing,
+  onEditingChange,
   chipRef,
   onNavigate,
-  onActivate,
-  onRename,
-  onSave,
-  onSaveAsNew,
-  onDiscard,
+  onFocus,
   onMove,
-  onUnpin,
   onDelete,
 }: Props) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(filter.Name);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: filter.ID });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: filter.ID });
+  const active = api.isActive(filter.ID);
+  const edited = api.isEdited(filter);
 
   const startRename = () => {
     setName(filter.Name);
@@ -84,135 +101,184 @@ export function FilterChip({
   };
   const commitRename = () => {
     setRenaming(false);
-    if (name.trim() && name.trim() !== filter.Name) onRename(name.trim());
+    if (name.trim() && name.trim() !== filter.Name) void api.rename(filter.ID, name.trim());
+  };
+
+  /** Editing previews live, so it turns the filter on. */
+  const openEditor = (saveAs = false) => {
+    api.setActive(filter.ID, true);
+    onEditingChange({ saveAs, focusName: false });
+  };
+
+  // A menu item asks for the editor, which opens once the menu has finished
+  // closing — opened sooner, the menu's teardown (returning focus to its
+  // trigger) reads as an interaction outside the editor and dismisses it.
+  const pendingEditor = useRef<{ saveAs: boolean } | null>(null);
+  const requestEditor = (saveAs = false) => {
+    pendingEditor.current = { saveAs };
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      data-task-card=""
-      style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn(
-        "group flex h-8 shrink-0 items-center rounded-md border text-sm transition-colors",
-        active ? "border-primary/40 bg-accent text-accent-foreground" : "bg-background hover:bg-accent/50",
-        isDragging && "z-10 opacity-80 shadow-md",
-      )}
-    >
-      {renaming ? (
-        <Input
-          autoFocus
-          value={name}
-          aria-label="Filter name"
-          className="h-7 w-40 border-0 shadow-none focus-visible:ring-0"
-          onChange={(e) => setName(e.target.value)}
-          onBlur={commitRename}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === "Enter") commitRename();
-            if (e.key === "Escape") setRenaming(false);
-          }}
-        />
-      ) : (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              {...attributes}
-              {...listeners}
-              ref={chipRef}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              tabIndex={focusable ? 0 : -1}
-              className="flex h-full min-w-0 max-w-48 cursor-pointer items-center rounded-l-md pl-2.5 pr-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              onClick={onActivate}
-              onDoubleClick={startRename}
+    // The editor is a sibling of the toggle, not inside it: portal'd clicks
+    // bubble through the React tree and would toggle the filter.
+    <Popover open={!!editing} onOpenChange={(open) => !open && onEditingChange(null)}>
+      <PopoverAnchor asChild>
+        <div
+          ref={setNodeRef}
+          data-task-card=""
+          style={{ transform: CSS.Translate.toString(transform), transition }}
+          className={cn(
+            "group flex h-8 shrink-0 items-center rounded-md border text-sm transition-colors",
+            active
+              ? "border-primary/40 bg-accent text-accent-foreground"
+              : "bg-background hover:bg-accent/50",
+            isDragging && "z-10 opacity-80 shadow-md",
+          )}
+        >
+          {renaming ? (
+            <Input
+              autoFocus
+              value={name}
+              aria-label="Filter name"
+              className="h-7 w-40 border-0 shadow-none focus-visible:ring-0"
+              onChange={(e) => setName(e.target.value)}
+              onBlur={commitRename}
               onKeyDown={(e) => {
-                if (e.key === "F2") {
-                  e.preventDefault();
-                  startRename();
-                } else if (e.key === "Delete") {
-                  e.preventDefault();
-                  onUnpin();
-                } else {
-                  onNavigate(e);
-                }
+                e.stopPropagation();
+                if (e.key === "Enter") commitRename();
+                if (e.key === "Escape") setRenaming(false);
+              }}
+            />
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  {...attributes}
+                  {...listeners}
+                  ref={chipRef}
+                  type="button"
+                  aria-pressed={active}
+                  tabIndex={focusable ? 0 : -1}
+                  className="flex h-full min-w-0 max-w-48 cursor-pointer items-center rounded-l-md pl-2.5 pr-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => api.toggle(filter.ID)}
+                  onFocus={onFocus}
+                  onDoubleClick={startRename}
+                  onKeyDown={(e) => {
+                    if (e.key === "F2") {
+                      e.preventDefault();
+                      startRename();
+                    } else if (e.key === "Delete") {
+                      e.preventDefault();
+                      void api.unpin(filter.ID);
+                    } else {
+                      onNavigate(e);
+                    }
+                  }}
+                >
+                  <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="flex items-center gap-3">
+                {filter.Name}
+                {shortcut !== null && (
+                  <KbdGroup>
+                    <Kbd>Alt</Kbd>
+                    <Kbd>{shortcut}</Kbd>
+                  </KbdGroup>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                tabIndex={-1}
+                aria-label={`${filter.Name} actions`}
+                className={cn(
+                  "size-6 shrink-0 mr-0.5 text-muted-foreground",
+                  !active &&
+                    !edited &&
+                    "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                )}
+              >
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              // Focus goes to the editor, not back to the menu trigger.
+              onCloseAutoFocus={(e) => {
+                const pending = pendingEditor.current;
+                if (!pending) return;
+                pendingEditor.current = null;
+                e.preventDefault();
+                openEditor(pending.saveAs);
               }}
             >
-              <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="flex items-center gap-3">
-            {filter.Name}
-            {shortcut !== null && (
-              <KbdGroup>
-                <Kbd>Alt</Kbd>
-                <Kbd>{shortcut}</Kbd>
-              </KbdGroup>
-            )}
-          </TooltipContent>
-        </Tooltip>
-      )}
+              <DropdownMenuItem onSelect={() => requestEditor()}>
+                <SlidersHorizontalIcon />
+                Edit…
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={startRename}>
+                <PencilIcon />
+                Rename
+                <DropdownMenuShortcut>F2</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              {edited && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => void api.save(filter.ID)}>
+                    <SaveIcon />
+                    Save changes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => requestEditor(true)}>
+                    <SavePlusIcon />
+                    Save as new…
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => api.discard(filter.ID)}>
+                    <Undo2Icon />
+                    Discard changes
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled={isFirst} onSelect={() => onMove(-1)}>
+                <ArrowLeftIcon />
+                Move left
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={isLast} onSelect={() => onMove(1)}>
+                <ArrowRightIcon />
+                Move right
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => void api.unpin(filter.ID)}>
+                <PinOffIcon />
+                Unpin Filter
+                <DropdownMenuShortcut>Del</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+                <Trash2Icon />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </PopoverAnchor>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            tabIndex={-1}
-            aria-label={`${filter.Name} actions`}
-            className={cn(
-              "size-6 shrink-0 mr-0.5 text-muted-foreground",
-              !active && "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-            )}
-          >
-            <MoreHorizontalIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onSelect={startRename}>
-            <PencilIcon />
-            Rename
-            <DropdownMenuShortcut>F2</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          {active && edited && (
-            <>
-              <DropdownMenuItem onSelect={onSave}>
-                <SaveIcon />
-                Save changes
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={onDiscard}>
-                <Undo2Icon />
-                Discard changes
-              </DropdownMenuItem>
-            </>
-          )}
-          {active && (
-            <DropdownMenuItem onSelect={onSaveAsNew}>
-              <BookmarkPlusIcon />
-              Save as new…
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem disabled={isFirst} onSelect={() => onMove(-1)}>
-            <ArrowLeftIcon />
-            Move left
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled={isLast} onSelect={() => onMove(1)}>
-            <ArrowRightIcon />
-            Move right
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={onUnpin}>
-            <PinOffIcon />
-            Remove from this board
-            <DropdownMenuShortcut>Del</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-            <Trash2Icon />
-            Delete filter…
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+      {editing && (
+        <QuickFilterEditPopover
+          filter={filter}
+          api={api}
+          sources={sources}
+          focusName={editing.focusName}
+          saveAsOpen={editing.saveAs}
+          onSaveAsOpenChange={(saveAs) => onEditingChange((prev) => prev && { ...prev, saveAs })}
+          onClose={() => onEditingChange(null)}
+        />
+      )}
+    </Popover>
   );
 }

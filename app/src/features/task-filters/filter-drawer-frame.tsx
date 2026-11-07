@@ -18,9 +18,7 @@ type Props = {
   trigger?: React.ReactNode;
   activeCount: number;
   onReset: () => void;
-  /** Replaces "Filters" in the header — the active saved filter's name. */
-  title?: React.ReactNode;
-  /** Extra footer actions above Reset, e.g. save / discard a saved filter. */
+  /** Extra footer actions above Reset, e.g. save as a quick filter. */
   footerActions?: React.ReactNode;
   children: React.ReactNode;
 };
@@ -36,7 +34,6 @@ export function FilterDrawerFrame({
   trigger,
   activeCount,
   onReset,
-  title,
   footerActions,
   children,
 }: Props) {
@@ -51,9 +48,8 @@ export function FilterDrawerFrame({
     >
       {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
       <DrawerContent
-        className="md:min-w-xl flex flex-col"
-        // Clicking a toast (e.g. Undo after clearing conditions) isn't a
-        // click away from the drawer.
+        className="flex flex-col"
+        // Clicking a toast isn't a click away from the drawer.
         onInteractOutside={(e) => {
           if ((e.target as Element | null)?.closest("[data-sonner-toaster]")) {
             e.preventDefault();
@@ -63,7 +59,7 @@ export function FilterDrawerFrame({
         <DrawerHeader>
           <DrawerTitle className="flex gap-2 items-center">
             <SlidersHorizontal className="size-4 text-muted-foreground shrink-0" />
-            {title ?? "Filters"}
+            Filters
             {activeCount > 0 && (
               <Badge variant="secondary">{activeCount}</Badge>
             )}

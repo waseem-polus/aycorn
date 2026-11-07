@@ -16,6 +16,7 @@ import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-con
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { UpcomingToolbar } from "@/features/upcoming/upcoming-page/toolbar";
 import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
+import { useUpcomingConditionSources } from "@/features/upcoming/hooks/useUpcomingConditionSources";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { UpcomingListView } from "@/features/upcoming/upcoming-page/list-view";
 import { UpcomingMonthView } from "@/features/upcoming/upcoming-page/month-view";
@@ -44,13 +45,14 @@ type Props = {
 
 export function UpcomingPage({ layout, setLayout }: Props) {
   const filtersApi = useUpcomingFilters();
-  const { filters, view, conditions } = filtersApi;
+  const { filters, view, conditionWires } = filtersApi;
 
   const [filterOpen, setFilterOpen] = useState(false);
+  const conditionSources = useUpcomingConditionSources();
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
     filters,
-    conditions.wire,
+    conditionWires,
     filtersApi.filtersReady,
   );
   const { data: facets = { assignees: [], checklists: [] } } =
@@ -137,7 +139,7 @@ export function UpcomingPage({ layout, setLayout }: Props) {
                         />
                       )}
                     </UpcomingToolbar>
-                    <QuickFilterBar api={filtersApi} />
+                    <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
 
                     <TabsContent
                       value="list"
