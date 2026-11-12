@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { CopyIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toDefinition } from "@/features/saved-filters/filter-definition";
+import { LayoutSelector } from "@/features/views/layout-selector";
 import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
@@ -24,13 +23,11 @@ import {
   GRANULARITIES,
   GROUP_LABELS,
   viewGroupings,
-  VIEW_TYPES,
 } from "@/features/views/view-groupings";
 import type {
   BoardView,
   Granularity,
   GroupByKey,
-  ViewType,
 } from "@/features/views/view-types";
 
 const NO_GROUPING = "__none";
@@ -120,20 +117,10 @@ export function ViewSettingsPopover({
 
       <section className="flex flex-col gap-2">
         <span className="text-sm text-muted-foreground">Layout</span>
-        <ToggleGroup
-          type="single"
-          variant="outline"
+        <LayoutSelector
           value={view.Type}
-          onValueChange={(type) => type && void api.update(view.ID, { type: type as ViewType })}
-          className="w-full"
-        >
-          {VIEW_TYPES.map((t) => (
-            <ToggleGroupItem key={t.type} value={t.type} className="flex-1 gap-1.5">
-              <DynamicIcon name={t.icon as IconName} className="size-4" />
-              {t.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          onChange={(type) => void api.update(view.ID, { type })}
+        />
       </section>
 
       {(groupings.options.length > 0 || view.GroupBy) && (
