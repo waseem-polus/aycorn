@@ -40,7 +40,7 @@ import type { ConditionOptionSources } from "@/features/task-filters/conditions/
 import { cn } from "@/lib/utils";
 
 /** Which part of a chip's editor is open: the editor, optionally with its Save as new form. */
-export type ChipEditing = { saveAs: boolean; focusName: boolean } | null;
+export type ChipEditing = { saveAs: boolean } | null;
 
 type Props = {
   filter: SavedFilter;
@@ -54,6 +54,9 @@ type Props = {
   editing: ChipEditing;
   /** Takes an updater too, for changes that land after an await. */
   onEditingChange: (next: ChipEditing | ((prev: ChipEditing) => ChipEditing)) => void;
+  /** Whether the name is being edited inline on the chip. */
+  renaming: boolean;
+  onRenamingChange: (renaming: boolean) => void;
   chipRef: Ref<HTMLButtonElement>;
   /** Makes this chip the toolbar's tab stop. */
   onFocus: () => void;
@@ -76,17 +79,22 @@ export function FilterChip({
   isLast,
   editing,
   onEditingChange,
+  renaming,
+  onRenamingChange,
   chipRef,
   onFocus,
   onMove,
   onDelete,
 }: Props) {
-  const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(filter.Name);
+  const cancelledRename = useRef(false);
   const format = useFormatForDisplay();
   const renameRef = useEditKeys({
     onEnter: () => commitRename(),
-    onEscape: () => setRenaming(false),
+    onEscape: () => {
+      cancelledRename.current = true;
+      onRenamingChange(false);
+    },
     enabled: renaming,
   });
   const {
@@ -102,23 +110,27 @@ export function FilterChip({
 
   const startRename = () => {
     setName(filter.Name);
-    setRenaming(true);
+    cancelledRename.current = false;
+    onRenamingChange(true);
   };
   const commitRename = () => {
-    setRenaming(false);
+    onRenamingChange(false);
+    if (cancelledRename.current) return;
     if (name.trim() && name.trim() !== filter.Name) void api.rename(filter.ID, name.trim());
   };
 
   /** Editing previews live, so it turns the filter on. */
   const openEditor = (saveAs = false) => {
     api.setActive(filter.ID, true);
-    onEditingChange({ saveAs, focusName: false });
+    onEditingChange({ saveAs });
   };
 
   // A menu item asks for the editor, which opens once the menu has finished
   // closing — opened sooner, the menu's teardown (returning focus to its
   // trigger) reads as an interaction outside the editor and dismisses it.
   const pendingEditor = useRef<{ saveAs: boolean } | null>(null);
+  // Likewise for rename: the input must not be stolen from by the menu's focus return.
+  const pendingRename = useRef(false);
   const requestEditor = (saveAs = false) => {
     pendingEditor.current = { saveAs };
   };
@@ -147,6 +159,7 @@ export function FilterChip({
               value={name}
               aria-label="Filter name"
               className="h-7 w-40 border-0 shadow-none focus-visible:ring-0"
+              onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => setName(e.target.value)}
               onBlur={commitRename}
               onKeyDown={(e) => e.stopPropagation()}
@@ -199,6 +212,12 @@ export function FilterChip({
               align="start"
               // Focus goes to the editor, not back to the menu trigger.
               onCloseAutoFocus={(e) => {
+                if (pendingRename.current) {
+                  pendingRename.current = false;
+                  e.preventDefault();
+                  startRename();
+                  return;
+                }
                 const pending = pendingEditor.current;
                 if (!pending) return;
                 pendingEditor.current = null;
@@ -210,7 +229,7 @@ export function FilterChip({
                 <SlidersHorizontalIcon />
                 Edit…
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={startRename}>
+              <DropdownMenuItem onSelect={() => (pendingRename.current = true)}>
                 <PencilIcon />
                 Rename
               </DropdownMenuItem>
@@ -259,7 +278,6 @@ export function FilterChip({
           filter={filter}
           api={api}
           sources={sources}
-          focusName={editing.focusName}
           saveAsOpen={editing.saveAs}
           onSaveAsOpenChange={(saveAs) => onEditingChange((prev) => prev && { ...prev, saveAs })}
           onClose={() => onEditingChange(null)}

@@ -1,7 +1,4 @@
-import { useState } from "react";
 import { PopoverContent } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { useEditKeys } from "@/hooks/useEditKeys";
 import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import { UnsavedChangesAlert } from "@/features/saved-filters/unsaved-changes-alert";
@@ -13,8 +10,6 @@ type Props = {
   filter: SavedFilter;
   api: QuickFiltersAPI;
   sources: ConditionOptionSources;
-  /** Focus and select the name first — a just-created filter. */
-  focusName: boolean;
   saveAsOpen: boolean;
   onSaveAsOpenChange: (open: boolean) => void;
   /** Closes the editor — after Save as new, the edits live on another chip. */
@@ -22,8 +17,8 @@ type Props = {
 };
 
 /**
- * A quick filter's editor, as the content of the chip's popover: its name
- * (renamed on blur), its condition tree, and — once the tree differs from
+ * A quick filter's editor, as the content of the chip's popover: its condition
+ * tree (the name is edited inline on the chip), and — once the tree differs from
  * what's saved — Save / Save as new / Discard. Tree edits apply to the board
  * live, as a local draft.
  */
@@ -31,25 +26,12 @@ export function QuickFilterEditPopover({
   filter,
   api,
   sources,
-  focusName,
   saveAsOpen,
   onSaveAsOpenChange,
   onClose,
 }: Props) {
   const tree = useConditionTree(api.treeOf(filter), (fn) => api.updateTree(filter.ID, fn));
-  const [name, setName] = useState(filter.Name);
   const edited = api.isEdited(filter);
-
-  const nameRef = useEditKeys({
-    onEnter: (input) => input.blur(),
-    onEscape: () => setName(filter.Name),
-  });
-
-  const commitName = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return setName(filter.Name);
-    if (trimmed !== filter.Name) void api.rename(filter.ID, trimmed);
-  };
 
   return (
     <PopoverContent
@@ -62,30 +44,8 @@ export function QuickFilterEditPopover({
           e.preventDefault();
         }
       }}
-      onOpenAutoFocus={(e) => {
-        if (!focusName) e.preventDefault();
-      }}
+      onOpenAutoFocus={(e) => e.preventDefault()}
     >
-      <div className="flex items-center gap-2">
-        <Input
-          ref={nameRef}
-          autoFocus={focusName}
-          onFocus={(e) => focusName && e.currentTarget.select()}
-          value={name}
-          aria-label="Filter name"
-          className="h-8 border-transparent px-1.5 text-base font-medium shadow-none hover:border-input focus-visible:border-input"
-          onChange={(e) => setName(e.target.value)}
-          onBlur={commitName}
-        />
-        {edited && (
-          <span
-            className="size-1.5 shrink-0 rounded-full bg-primary"
-            role="img"
-            aria-label="Unsaved changes"
-          />
-        )}
-      </div>
-
       <ConditionBuilder tree={tree} sources={sources} />
 
       {edited && (

@@ -41,6 +41,7 @@ export function QuickFilterBar({ api, sources }: Props) {
   const [deleting, setDeleting] = useState<SavedFilter | null>(null);
   // One editor open at a time, across the bar.
   const [editing, setEditing] = useState<{ id: number } & NonNullable<ChipEditing> | null>(null);
+  const [renamingId, setRenamingId] = useState<number | null>(null);
   const [focusIndex, setFocusIndex] = useState(0);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -93,10 +94,10 @@ export function QuickFilterBar({ api, sources }: Props) {
     );
   };
 
-  /** Create-empty-then-edit: the new filter opens with its name selected. */
+  /** Create-empty-then-edit: the new filter's name opens inline, selected. */
   const createFilter = async () => {
     const created = await api.create("Untitled filter");
-    if (created) setEditing({ id: created.ID, saveAs: false, focusName: true });
+    if (created) setRenamingId(created.ID);
   };
 
   return (
@@ -129,19 +130,21 @@ export function QuickFilterBar({ api, sources }: Props) {
                 isLast={i === pinned.length - 1}
                 editing={
                   editing?.id === filter.ID
-                    ? { saveAs: editing.saveAs, focusName: editing.focusName }
+                    ? { saveAs: editing.saveAs }
                     : null
                 }
                 onEditingChange={(next) =>
                   setEditing((prev) => {
                     const current =
                       prev?.id === filter.ID
-                        ? { saveAs: prev.saveAs, focusName: prev.focusName }
+                        ? { saveAs: prev.saveAs }
                         : null;
                     const resolved = typeof next === "function" ? next(current) : next;
                     return resolved ? { id: filter.ID, ...resolved } : null;
                   })
                 }
+                renaming={renamingId === filter.ID}
+                onRenamingChange={(on) => setRenamingId(on ? filter.ID : null)}
                 chipRef={(el) => {
                   chipRefs.current[i] = el;
                 }}

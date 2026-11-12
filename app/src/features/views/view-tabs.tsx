@@ -25,7 +25,7 @@ import type { ConditionOptionSources } from "@/features/task-filters/conditions/
 import { DeleteViewDialog } from "@/features/views/delete-view-dialog";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import { useViewShortcuts } from "@/features/views/hooks/useViewShortcuts";
-import { ViewTab, type TabEditing } from "@/features/views/view-tabs/view-tab";
+import { ViewTab } from "@/features/views/view-tabs/view-tab";
 import type { BoardView } from "@/features/views/view-types";
 
 type Props = {
@@ -44,12 +44,14 @@ type Props = {
  */
 export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   const { views } = api;
-  const [editing, setEditing] = useState<({ id: number } & NonNullable<TabEditing>) | null>(null);
+  // Which view has its settings open, and which is being renamed in its tab.
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [renamingId, setRenamingId] = useState<number | null>(null);
   // Switching to another view (tab click, shortcut, URL) closes the editor.
   const [lastSelectedId, setLastSelectedId] = useState(selectedId);
   if (lastSelectedId !== selectedId) {
     setLastSelectedId(selectedId);
-    if (editing && editing.id !== selectedId) setEditing(null);
+    if (editingId !== null && editingId !== selectedId) setEditingId(null);
   }
   const [deleting, setDeleting] = useState<BoardView | null>(null);
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
@@ -100,7 +102,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     const created = await api.create("list");
     if (!created) return;
     onSelect(created.ID);
-    setEditing({ id: created.ID, focus: "name" });
+    setRenamingId(created.ID);
   };
 
   const duplicate = async (id: number) => {
@@ -144,8 +146,10 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
                 shortcut={i < 9 ? i + 1 : null}
                 isFirst={i === 0}
                 isLast={i === views.length - 1}
-                editing={editing?.id === view.ID ? { focus: editing.focus } : null}
-                onEditingChange={(next) => setEditing(next ? { id: view.ID, ...next } : null)}
+                editing={editingId === view.ID}
+                onEditingChange={(open) => setEditingId(open ? view.ID : null)}
+                renaming={renamingId === view.ID}
+                onRenamingChange={(on) => setRenamingId(on ? view.ID : null)}
                 tabRef={(el) => {
                   tabRefs.current[i] = el;
                 }}
@@ -171,7 +175,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
             disabled={selectedId === null}
             onClick={() => {
               if (selectedId === null) return;
-              setEditing(editing ? null : { id: selectedId, focus: null });
+              setEditingId(editingId === null ? selectedId : null);
             }}
           >
             <Settings2Icon />

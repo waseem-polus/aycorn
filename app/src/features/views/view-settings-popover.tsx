@@ -1,8 +1,5 @@
-import { useState } from "react";
 import { CopyIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useEditKeys } from "@/hooks/useEditKeys";
 import { PopoverContent } from "@/components/ui/popover";
 import {
   Select,
@@ -13,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import { toDefinition } from "@/features/saved-filters/filter-definition";
 import { LayoutSelector } from "@/features/views/layout-selector";
-import { IconColorPicker } from "@/features/icon-picker/icon-color-picker";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { useConditionTree } from "@/features/task-filters/conditions/hooks/useConditionTree";
@@ -37,27 +33,22 @@ type Props = {
   view: BoardView;
   api: BoardViewsAPI;
   sources: ConditionOptionSources;
-  /** What to put in front of the user first: the name (selected) or the icon picker. */
-  focus: "name" | "icon" | null;
   onDuplicate: () => void;
   onDelete: () => void;
 };
 
 /**
- * A view's settings, as the content of its tab's popover: name and icon,
- * layout, grouping, and data source. Everything auto-saves — text on blur,
- * choices on change, the data source shortly after the last edit.
+ * A view's settings, as the content of its tab's popover: layout, grouping,
+ * and data source (name and icon are edited on the tab itself). Everything
+ * auto-saves — choices on change, the data source shortly after the last edit.
  */
 export function ViewSettingsPopover({
   view,
   api,
   sources,
-  focus,
   onDuplicate,
   onDelete,
 }: Props) {
-  const [name, setName] = useState(view.Name);
-  const [iconOpen, setIconOpen] = useState(focus === "icon");
   const source = useDebouncedSourceSave(
     view,
     (root) => void api.update(view.ID, { source: toDefinition(root) }),
@@ -66,17 +57,6 @@ export function ViewSettingsPopover({
   const groupings = viewGroupings(view.Type, api.board);
   const isDateGroup =
     view.GroupBy !== null && DATE_GROUP_KEYS.includes(view.GroupBy);
-
-  const nameRef = useEditKeys({
-    onEnter: (input) => input.blur(),
-    onEscape: () => setName(view.Name),
-  });
-
-  const commitName = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return setName(view.Name);
-    if (trimmed !== view.Name) void api.update(view.ID, { name: trimmed });
-  };
 
   return (
     <PopoverContent
@@ -95,31 +75,8 @@ export function ViewSettingsPopover({
           e.preventDefault();
         }
       }}
-      onOpenAutoFocus={(e) => {
-        if (focus !== "name") e.preventDefault();
-      }}
+      onOpenAutoFocus={(e) => e.preventDefault()}
     >
-      <div className="flex items-center gap-1">
-        <IconColorPicker
-          open={iconOpen}
-          onOpenChange={setIconOpen}
-          iconValue={view.Icon}
-          colorValue={view.Color}
-          onIconSelect={(icon) => void api.update(view.ID, { icon })}
-          onColorSelect={(color) => void api.update(view.ID, { color })}
-        />
-        <Input
-          ref={nameRef}
-          autoFocus={focus === "name"}
-          onFocus={(e) => focus === "name" && e.currentTarget.select()}
-          value={name}
-          aria-label="View name"
-          className="h-8 border-transparent px-1.5 text-base font-medium shadow-none hover:border-input focus-visible:border-input"
-          onChange={(e) => setName(e.target.value)}
-          onBlur={commitName}
-        />
-      </div>
-
       <section className="flex flex-col gap-2">
         <span className="text-sm text-muted-foreground">Layout</span>
         <LayoutSelector
