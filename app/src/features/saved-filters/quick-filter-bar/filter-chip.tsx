@@ -1,11 +1,10 @@
-import { useRef, useState, type Ref } from "react";
+import { useRef, useState } from "react";
 import { useFormatForDisplay } from "@tanstack/react-hotkeys";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  MoreHorizontalIcon,
   PencilIcon,
   PinOffIcon,
   SaveIcon,
@@ -14,7 +13,6 @@ import {
   Trash2Icon,
   Undo2Icon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +55,7 @@ type Props = {
   /** Whether the name is being edited inline on the chip. */
   renaming: boolean;
   onRenamingChange: (renaming: boolean) => void;
-  chipRef: Ref<HTMLButtonElement>;
+  chipRef: (el: HTMLButtonElement | null) => void;
   /** Makes this chip the toolbar's tab stop. */
   onFocus: () => void;
   onMove: (delta: -1 | 1) => void;
@@ -66,7 +64,7 @@ type Props = {
 
 /**
  * One pinned quick filter: a toggle (any number can be on at once), drag to
- * reorder (the whole chip, after 4px), and a ⋯ menu. Edit opens the filter's
+ * reorder (the whole chip, after 4px), and a right-click context menu. Edit opens the filter's
  * conditions in a popover anchored to the chip.
  */
 export function FilterChip({
@@ -87,6 +85,12 @@ export function FilterChip({
   onDelete,
 }: Props) {
   const [name, setName] = useState(filter.Name);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const setButtonRef = (el: HTMLButtonElement | null) => {
+    buttonRef.current = el;
+    chipRef(el);
+  };
   const cancelledRename = useRef(false);
   const format = useFormatForDisplay();
   const renameRef = useEditKeys({
@@ -145,7 +149,7 @@ export function FilterChip({
           data-task-card=""
           style={{ transform: CSS.Translate.toString(transform), transition }}
           className={cn(
-            "group flex h-8 shrink-0 items-center rounded-md border text-sm transition-colors",
+            "group relative flex h-8 shrink-0 items-center rounded-md border text-sm transition-colors",
             active
               ? "border-primary/40 bg-accent text-accent-foreground"
               : "bg-background hover:bg-accent/50",
@@ -170,12 +174,16 @@ export function FilterChip({
                 <button
                   {...attributes}
                   {...listeners}
-                  ref={chipRef}
+                  ref={setButtonRef}
                   type="button"
                   aria-pressed={active}
                   tabIndex={focusable ? 0 : -1}
-                  className="flex h-full min-w-0 max-w-48 cursor-pointer items-center rounded-l-md pl-2.5 pr-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-full min-w-0 max-w-48 cursor-pointer items-center rounded-md px-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => api.toggle(filter.ID)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setMenuOpen(true);
+                  }}
                   onFocus={onFocus}
                   onDoubleClick={startRename}
                 >
@@ -191,22 +199,10 @@ export function FilterChip({
             </Tooltip>
           )}
 
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+            {/* Invisible anchor so the menu lines up with the whole chip. */}
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                tabIndex={-1}
-                aria-label={`${filter.Name} actions`}
-                className={cn(
-                  "size-6 shrink-0 mr-0.5 text-muted-foreground",
-                  !active &&
-                    !edited &&
-                    "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-                )}
-              >
-                <MoreHorizontalIcon />
-              </Button>
+              <span className="pointer-events-none absolute inset-0" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
@@ -219,7 +215,11 @@ export function FilterChip({
                   return;
                 }
                 const pending = pendingEditor.current;
-                if (!pending) return;
+                if (!pending) {
+                  e.preventDefault();
+                  buttonRef.current?.focus();
+                  return;
+                }
                 pendingEditor.current = null;
                 e.preventDefault();
                 openEditor(pending.saveAs);

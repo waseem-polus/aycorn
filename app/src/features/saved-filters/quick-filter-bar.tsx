@@ -101,12 +101,12 @@ export function QuickFilterBar({ api, sources }: Props) {
   };
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 items-center gap-1.5">
       <div
         ref={toolbarRef}
         role="toolbar"
         aria-label="Quick filters"
-        className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5"
+        className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5"
       >
         <DndContext
           sensors={sensors}
