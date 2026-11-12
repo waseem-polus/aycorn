@@ -1,38 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useHotkeys } from "@tanstack/react-hotkeys";
+import type { Hotkey } from "@tanstack/hotkeys";
 
-const isTypingTarget = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+/** The hotkey for the nth (1-based) pinned quick filter. Also drives the chip's tooltip hint. */
+export const quickFilterHotkey = (position: number) => `Alt+${position}` as Hotkey;
+
+/** Turns every quick filter off. */
+export const clearQuickFiltersHotkey = "Alt+0" as Hotkey;
 
 /**
  * Alt+1…9 toggle the pinned quick filters in bar order and Alt+0 turns them
- * all off, while the board is mounted. Matches on `code` because Alt+digit
- * types a symbol on macOS.
+ * all off, while the board is mounted. (Alt+Shift+digit switches views.)
+ * Alt combos are ignored while typing in an input by default.
  */
 export function useQuickFilterShortcuts(
   pinnedIds: number[],
   toggle: (id: number) => void,
   clearAll: () => void,
 ) {
-  // Latest values without re-binding the listener every render.
-  const latest = useRef({ pinnedIds, toggle, clearAll });
-  useEffect(() => {
-    latest.current = { pinnedIds, toggle, clearAll };
-  });
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || isTypingTarget(e.target)) return;
-      const match = /^Digit([0-9])$/.exec(e.code);
-      if (!match) return;
-      const n = Number(match[1]);
-      const { pinnedIds: ids, toggle: flip, clearAll: clear } = latest.current;
-      if (n === 0) clear();
-      else if (ids[n - 1] !== undefined) flip(ids[n - 1]);
-      else return;
-      e.preventDefault();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  useHotkeys([
+    { hotkey: clearQuickFiltersHotkey, callback: clearAll },
+    ...pinnedIds.slice(0, 9).map((id, i) => ({
+      hotkey: quickFilterHotkey(i + 1),
+      callback: () => toggle(id),
+    })),
+  ]);
 }

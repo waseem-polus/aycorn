@@ -1,4 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { useFormatForDisplay } from "@tanstack/react-hotkeys";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -19,17 +20,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { quickFilterHotkey } from "@/features/saved-filters/hooks/useQuickFilterShortcuts";
 import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
 import { QuickFilterEditPopover } from "@/features/saved-filters/quick-filter-bar/quick-filter-edit-popover";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
@@ -63,8 +64,7 @@ type Props = {
 /**
  * One pinned quick filter: a toggle (any number can be on at once), drag to
  * reorder (the whole chip, after 4px), and a ⋯ menu. Edit opens the filter's
- * conditions in a popover anchored to the chip. F2 renames in place, Delete
- * unpins.
+ * conditions in a popover anchored to the chip.
  */
 export function FilterChip({
   filter,
@@ -84,6 +84,7 @@ export function FilterChip({
 }: Props) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(filter.Name);
+  const format = useFormatForDisplay();
   const {
     attributes,
     listeners,
@@ -163,17 +164,7 @@ export function FilterChip({
                   onClick={() => api.toggle(filter.ID)}
                   onFocus={onFocus}
                   onDoubleClick={startRename}
-                  onKeyDown={(e) => {
-                    if (e.key === "F2") {
-                      e.preventDefault();
-                      startRename();
-                    } else if (e.key === "Delete") {
-                      e.preventDefault();
-                      void api.unpin(filter.ID);
-                    } else {
-                      onNavigate(e);
-                    }
-                  }}
+                  onKeyDown={onNavigate}
                 >
                   <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
                 </button>
@@ -181,10 +172,7 @@ export function FilterChip({
               <TooltipContent className="flex items-center gap-3">
                 {filter.Name}
                 {shortcut !== null && (
-                  <KbdGroup>
-                    <Kbd>Alt</Kbd>
-                    <Kbd>{shortcut}</Kbd>
-                  </KbdGroup>
+                  <Kbd>{format(quickFilterHotkey(shortcut))}</Kbd>
                 )}
               </TooltipContent>
             </Tooltip>
@@ -225,7 +213,6 @@ export function FilterChip({
               <DropdownMenuItem onSelect={startRename}>
                 <PencilIcon />
                 Rename
-                <DropdownMenuShortcut>F2</DropdownMenuShortcut>
               </DropdownMenuItem>
               {edited && (
                 <>
@@ -257,7 +244,6 @@ export function FilterChip({
               <DropdownMenuItem onSelect={() => void api.unpin(filter.ID)}>
                 <PinOffIcon />
                 Unpin Filter
-                <DropdownMenuShortcut>Del</DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={onDelete}>
                 <Trash2Icon />

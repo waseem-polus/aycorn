@@ -2,6 +2,8 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
+import { useFormatForDisplay, useHotkey } from "@tanstack/react-hotkeys";
+import type { Hotkey } from "@tanstack/hotkeys";
 
 import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
@@ -22,14 +24,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { Kbd } from "@/components/ui/kbd";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
-const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+/** Toggles the sidebar. Also drives the trigger's tooltip hint. */
+export const sidebarHotkey = "Mod+B" as Hotkey;
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
@@ -93,20 +96,7 @@ function SidebarProvider({
   }, [isMobile, setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault();
-        toggleSidebar();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebar]);
+  useHotkey(sidebarHotkey, toggleSidebar);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
@@ -258,6 +248,7 @@ function SidebarTrigger({
   ...props
 }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar();
+  const format = useFormatForDisplay();
 
   return (
     <Tooltip>
@@ -280,10 +271,7 @@ function SidebarTrigger({
       </TooltipTrigger>
       <TooltipContent className="flex gap-6 items-center">
         Toggle Sidebar
-        <KbdGroup>
-          <Kbd>⌘</Kbd>
-          <Kbd>B</Kbd>
-        </KbdGroup>
+        <Kbd>{format(sidebarHotkey)}</Kbd>
       </TooltipContent>
     </Tooltip>
   );
