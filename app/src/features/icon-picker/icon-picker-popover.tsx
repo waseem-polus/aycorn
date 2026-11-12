@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Popover,
   PopoverContent,
@@ -67,15 +67,22 @@ export function IconPickerPopover({
       setQuery("");
       return;
     }
-    if (cache) {
-      setActiveIndex(initialIndex(cache));
-    } else {
-      loadIcons().then((c) => {
-        setCache(c);
-        setActiveIndex(initialIndex(c));
-      });
-    }
+    if (cache) setActiveIndex(initialIndex(cache));
   };
+
+  // Load on open however it was opened — a controlled `open` can start true.
+  useEffect(() => {
+    if (!open || cache) return;
+    let live = true;
+    void loadIcons().then((c) => {
+      if (!live) return;
+      setCache(c);
+      setActiveIndex(c.names.indexOf(value) >= 0 ? c.names.indexOf(value) : 0);
+    });
+    return () => {
+      live = false;
+    };
+  }, [open, cache, value]);
 
   const handleQueryChange = (q: string) => {
     setQuery(q);

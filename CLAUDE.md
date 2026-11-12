@@ -69,7 +69,7 @@ When a list of entities supports multi-select operations:
 
 ## UX Constraints
 
-- **Keyboard-first.** Every feature should be operable without a mouse. Think about keyboard shortcuts, focus management, and command-palette patterns from the start — not as an afterthought.
+- **Keyboard-first.** Every feature should be operable without a mouse. Think about keyboard shortcuts, focus management, and command-palette patterns from the start — not as an afterthought. Shortcuts and shortcut hints use TanStack Hotkeys (format) + shadcn `Kbd` — see `app/CLAUDE.md`.
 - **No over-engineering.** This is a personal tool. Avoid enterprise patterns.
 
 ---

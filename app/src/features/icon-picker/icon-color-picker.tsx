@@ -15,7 +15,10 @@ type IconColorPickerProps = {
   onIconSelect: (iconName: string) => void;
   onColorSelect: (color: string) => void;
   iconClassName?: string;
-  buttonSize?: "icon-sm" | "icon" | "icon-lg"
+  buttonSize?: "icon-sm" | "icon" | "icon-lg";
+  /** Optional controlled open state of the icon grid. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 const FALLBACK_ICON = "circle-dashed";
@@ -27,12 +30,16 @@ export function IconColorPicker({
   onColorSelect,
   iconClassName,
   buttonSize = "icon-sm",
+  open,
+  onOpenChange,
 }: IconColorPickerProps) {
   return (
     <Tooltip>
       <IconPickerPopover
         value={iconValue}
         onSelect={onIconSelect}
+        open={open}
+        onOpenChange={onOpenChange}
         trigger={
           <TooltipTrigger asChild>
             <Button variant="ghost" size={buttonSize} aria-label="Change icon">

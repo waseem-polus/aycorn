@@ -43,6 +43,14 @@ src/
 
 ---
 
+## Keyboard Shortcuts
+
+- **All keyboard shortcuts use TanStack Hotkeys** (`@tanstack/react-hotkeys`: `useHotkey` / `useHotkeys`) with its hotkey-string format (`Mod+K`, `Alt+Shift+1`). No hand-rolled `keydown` listeners or `e.altKey`/`e.metaKey` checks for shortcuts. Scope element-local keys with the `target` option.
+- **All shortcut hints use TanStack's `useFormatForDisplay`** (so `Mod`/`Alt` render per OS: ⌘/Ctrl, ⌥/Alt) inside the shadcn `Kbd` / `KbdGroup` (`@/components/ui/kbd`). Never hard-code "Alt+…" strings or `<Kbd>Alt</Kbd>`.
+- Define a hotkey string once and use it for both the binding and the hint so they can't drift (see `viewHotkey` in `features/views/hooks/useViewShortcuts.ts`).
+
+---
+
 ## Styling & Components
 
 - Use **Tailwind CSS** for all styling. No CSS modules, no styled-components.

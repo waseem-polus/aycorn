@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useRef, useState } from "react";
 import {
   closestCenter,
   DndContext,
@@ -13,7 +13,8 @@ import {
   horizontalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { PlusIcon } from "lucide-react";
+import { useHotkeys } from "@tanstack/react-hotkeys";
+import { PlusIcon, Settings2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -38,14 +39,22 @@ type Props = {
 /**
  * A board's views as a tab strip: select, drag to reorder, edit a view's
  * settings in place, and [+] to add one. A roving tablist — ←/→ move, Enter
- * on the selected tab opens its settings — plus Alt+Shift+1…9.
+ * on the selected tab toggles its settings — plus Alt+Shift+1…9. Right-click
+ * opens a tab's context menu.
  */
 export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   const { views } = api;
   const [editing, setEditing] = useState<({ id: number } & NonNullable<TabEditing>) | null>(null);
+  // Switching to another view (tab click, shortcut, URL) closes the editor.
+  const [lastSelectedId, setLastSelectedId] = useState(selectedId);
+  if (lastSelectedId !== selectedId) {
+    setLastSelectedId(selectedId);
+    if (editing && editing.id !== selectedId) setEditing(null);
+  }
   const [deleting, setDeleting] = useState<BoardView | null>(null);
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const tablistRef = useRef<HTMLDivElement | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
@@ -58,22 +67,19 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   const selectedIndex = Math.max(views.findIndex((v) => v.ID === selectedId), 0);
   const tabStop = Math.min(focusIndex ?? selectedIndex, Math.max(views.length - 1, 0));
 
-  const navigate = (index: number) => (e: KeyboardEvent<HTMLButtonElement>) => {
-    const last = views.length - 1;
-    const next =
-      e.key === "ArrowRight"
-        ? Math.min(index + 1, last)
-        : e.key === "ArrowLeft"
-          ? Math.max(index - 1, 0)
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? last
-              : null;
-    if (next === null) return;
-    e.preventDefault();
-    tabRefs.current[next]?.focus();
+  // ←/→/Home/End move focus between tabs, from whichever tab has it.
+  const focusTab = (index: number) => {
+    tabRefs.current[Math.min(Math.max(index, 0), views.length - 1)]?.focus();
   };
+  useHotkeys(
+    [
+      { hotkey: "ArrowRight", callback: () => focusTab(tabStop + 1) },
+      { hotkey: "ArrowLeft", callback: () => focusTab(tabStop - 1) },
+      { hotkey: "Home", callback: () => focusTab(0) },
+      { hotkey: "End", callback: () => focusTab(views.length - 1) },
+    ],
+    { target: tablistRef },
+  );
 
   const move = (id: number, delta: -1 | 1) => {
     const ids = views.map((v) => v.ID);
@@ -94,7 +100,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     const created = await api.create("list");
     if (!created) return;
     onSelect(created.ID);
-    setEditing({ id: created.ID, focusName: true });
+    setEditing({ id: created.ID, focus: "name" });
   };
 
   const duplicate = async (id: number) => {
@@ -115,6 +121,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   return (
     <div className="flex min-w-0 items-center gap-1">
       <div
+        ref={tablistRef}
         role="tablist"
         aria-label="Views"
         className="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted p-[3px]"
@@ -137,13 +144,12 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
                 shortcut={i < 9 ? i + 1 : null}
                 isFirst={i === 0}
                 isLast={i === views.length - 1}
-                editing={editing?.id === view.ID ? { focusName: editing.focusName } : null}
+                editing={editing?.id === view.ID ? { focus: editing.focus } : null}
                 onEditingChange={(next) => setEditing(next ? { id: view.ID, ...next } : null)}
                 tabRef={(el) => {
                   tabRefs.current[i] = el;
                 }}
                 onSelect={() => onSelect(view.ID)}
-                onNavigate={navigate(i)}
                 onFocus={() => setFocusIndex(i)}
                 onMove={(delta) => move(view.ID, delta)}
                 onDuplicate={() => void duplicate(view.ID)}
@@ -153,6 +159,26 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
           </SortableContext>
         </DndContext>
       </div>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 shrink-0"
+            aria-label="View settings"
+            data-view-settings-toggle=""
+            disabled={selectedId === null}
+            onClick={() => {
+              if (selectedId === null) return;
+              setEditing(editing ? null : { id: selectedId, focus: null });
+            }}
+          >
+            <Settings2Icon />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>View settings</TooltipContent>
+      </Tooltip>
 
       <Tooltip>
         <TooltipTrigger asChild>

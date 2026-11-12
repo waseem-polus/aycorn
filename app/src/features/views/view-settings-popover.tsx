@@ -39,8 +39,8 @@ type Props = {
   view: BoardView;
   api: BoardViewsAPI;
   sources: ConditionOptionSources;
-  /** Focus and select the name first — a just-created view. */
-  focusName: boolean;
+  /** What to put in front of the user first: the name (selected) or the icon picker. */
+  focus: "name" | "icon" | null;
   onDuplicate: () => void;
   onDelete: () => void;
 };
@@ -54,11 +54,12 @@ export function ViewSettingsPopover({
   view,
   api,
   sources,
-  focusName,
+  focus,
   onDuplicate,
   onDelete,
 }: Props) {
   const [name, setName] = useState(view.Name);
+  const [iconOpen, setIconOpen] = useState(focus === "icon");
   const source = useDebouncedSourceSave(view, (root) =>
     void api.update(view.ID, { source: toDefinition(root) }),
   );
@@ -77,26 +78,34 @@ export function ViewSettingsPopover({
       align="start"
       className="flex w-[36rem] max-w-[calc(100vw-2rem)] max-h-[75vh] flex-col gap-5 overflow-y-auto"
       // Clicking a toast (e.g. Undo after clearing conditions) isn't a
-      // click away from the settings.
+      // click away from the settings, and neither is a click on whatever
+      // toggles them (the selected tab, the settings button) — that click
+      // closes them itself.
       onInteractOutside={(e) => {
-        if ((e.target as Element | null)?.closest("[data-sonner-toaster]")) {
+        if (
+          (e.target as Element | null)?.closest(
+            "[data-sonner-toaster], [data-view-settings-toggle]",
+          )
+        ) {
           e.preventDefault();
         }
       }}
       onOpenAutoFocus={(e) => {
-        if (!focusName) e.preventDefault();
+        if (focus !== "name") e.preventDefault();
       }}
     >
       <div className="flex items-center gap-1">
         <IconColorPicker
+          open={iconOpen}
+          onOpenChange={setIconOpen}
           iconValue={view.Icon}
           colorValue={view.Color}
           onIconSelect={(icon) => void api.update(view.ID, { icon })}
           onColorSelect={(color) => void api.update(view.ID, { color })}
         />
         <Input
-          autoFocus={focusName}
-          onFocus={(e) => focusName && e.currentTarget.select()}
+          autoFocus={focus === "name"}
+          onFocus={(e) => focus === "name" && e.currentTarget.select()}
           value={name}
           aria-label="View name"
           className="h-8 border-transparent px-1.5 text-base font-medium shadow-none hover:border-input focus-visible:border-input"
