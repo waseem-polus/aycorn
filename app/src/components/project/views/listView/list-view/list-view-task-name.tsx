@@ -1,5 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
+import { useEditKeys } from "@/hooks/useEditKeys";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,12 +24,19 @@ export function ListViewTaskName() {
   const fullName = isEmpty ? "Untitled Task" : task.Name;
 
   useFocusAndSelect(editableRef, isEditing);
+  const editKeysRef = useEditKeys({
+    onEnter: (title) => title.blur(),
+    enabled: isEditing,
+  });
 
   if (isEditing) {
     return (
       <ItemTitle onClick={(e) => e.stopPropagation()}>
         <h1
-          ref={editableRef}
+          ref={(el) => {
+            editableRef.current = el;
+            editKeysRef(el);
+          }}
           contentEditable
           suppressContentEditableWarning
           className="outline-0"
@@ -39,12 +47,6 @@ export function ListViewTaskName() {
               const updated = { ...task, Name: text };
               setTask(updated);
               update.mutate(updated);
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              (e.currentTarget as HTMLHeadingElement).blur();
             }
           }}
         >

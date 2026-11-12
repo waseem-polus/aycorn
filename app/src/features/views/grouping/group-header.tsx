@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import { ChevronRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,14 @@ type Props = {
 export function GroupHeader({ group, collapsed, onToggle, children }: Props) {
   const isDanger = group.tone === "danger";
   const isMuted = group.tone === "muted";
+  const headerRef = useRef<HTMLDivElement>(null);
+  useHotkeys(
+    [
+      { hotkey: "Enter", callback: onToggle },
+      { hotkey: "Space", callback: onToggle },
+    ],
+    { target: headerRef },
+  );
 
   const marker = group.priority ? (
     <TaskPriorityIcon variant={group.priority as Priority} />
@@ -49,17 +58,12 @@ export function GroupHeader({ group, collapsed, onToggle, children }: Props) {
 
   return (
     <div
+      ref={headerRef}
       role="button"
       tabIndex={0}
       aria-expanded={!collapsed}
       className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none sticky top-0 z-10 border-b border-border bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       onClick={onToggle}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
     >
       <ChevronRight
         className={cn(

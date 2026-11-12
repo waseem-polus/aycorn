@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { useRef, useState, type Ref } from "react";
 import { useFormatForDisplay } from "@tanstack/react-hotkeys";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useEditKeys } from "@/hooks/useEditKeys";
 import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import {
@@ -54,7 +55,6 @@ type Props = {
   /** Takes an updater too, for changes that land after an await. */
   onEditingChange: (next: ChipEditing | ((prev: ChipEditing) => ChipEditing)) => void;
   chipRef: Ref<HTMLButtonElement>;
-  onNavigate: (e: KeyboardEvent<HTMLButtonElement>) => void;
   /** Makes this chip the toolbar's tab stop. */
   onFocus: () => void;
   onMove: (delta: -1 | 1) => void;
@@ -77,7 +77,6 @@ export function FilterChip({
   editing,
   onEditingChange,
   chipRef,
-  onNavigate,
   onFocus,
   onMove,
   onDelete,
@@ -85,6 +84,11 @@ export function FilterChip({
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(filter.Name);
   const format = useFormatForDisplay();
+  const renameRef = useEditKeys({
+    onEnter: () => commitRename(),
+    onEscape: () => setRenaming(false),
+    enabled: renaming,
+  });
   const {
     attributes,
     listeners,
@@ -138,17 +142,14 @@ export function FilterChip({
         >
           {renaming ? (
             <Input
+              ref={renameRef}
               autoFocus
               value={name}
               aria-label="Filter name"
               className="h-7 w-40 border-0 shadow-none focus-visible:ring-0"
               onChange={(e) => setName(e.target.value)}
               onBlur={commitRename}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-                if (e.key === "Enter") commitRename();
-                if (e.key === "Escape") setRenaming(false);
-              }}
+              onKeyDown={(e) => e.stopPropagation()}
             />
           ) : (
             <Tooltip>
@@ -164,7 +165,6 @@ export function FilterChip({
                   onClick={() => api.toggle(filter.ID)}
                   onFocus={onFocus}
                   onDoubleClick={startRename}
-                  onKeyDown={onNavigate}
                 >
                   <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
                 </button>

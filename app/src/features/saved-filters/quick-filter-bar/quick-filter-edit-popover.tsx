@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PopoverContent } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { useEditKeys } from "@/hooks/useEditKeys";
 import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import { UnsavedChangesAlert } from "@/features/saved-filters/unsaved-changes-alert";
@@ -39,6 +40,11 @@ export function QuickFilterEditPopover({
   const [name, setName] = useState(filter.Name);
   const edited = api.isEdited(filter);
 
+  const nameRef = useEditKeys({
+    onEnter: (input) => input.blur(),
+    onEscape: () => setName(filter.Name),
+  });
+
   const commitName = () => {
     const trimmed = name.trim();
     if (!trimmed) return setName(filter.Name);
@@ -62,6 +68,7 @@ export function QuickFilterEditPopover({
     >
       <div className="flex items-center gap-2">
         <Input
+          ref={nameRef}
           autoFocus={focusName}
           onFocus={(e) => focusName && e.currentTarget.select()}
           value={name}
@@ -69,10 +76,6 @@ export function QuickFilterEditPopover({
           className="h-8 border-transparent px-1.5 text-base font-medium shadow-none hover:border-input focus-visible:border-input"
           onChange={(e) => setName(e.target.value)}
           onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-            if (e.key === "Escape") setName(filter.Name);
-          }}
         />
         {edited && (
           <span

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useEditKeys } from "@/hooks/useEditKeys";
 
 type Props = {
   text: string;
@@ -34,8 +35,11 @@ export function TextValueEditor({ text, autoFocus, onChange }: Props) {
     if (value !== text) onChange(value);
   };
 
+  const inputRef = useEditKeys({ onEnter: () => commit(draft) });
+
   return (
     <Input
+      ref={inputRef}
       value={draft}
       autoFocus={autoFocus}
       placeholder="Type some text…"
@@ -46,9 +50,6 @@ export function TextValueEditor({ text, autoFocus, onChange }: Props) {
         timer.current = setTimeout(() => commit(value), DEBOUNCE_MS);
       }}
       onBlur={() => commit(draft)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") commit(draft);
-      }}
     />
   );
 }

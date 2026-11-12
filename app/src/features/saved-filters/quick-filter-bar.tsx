@@ -1,4 +1,5 @@
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useRef, useState } from "react";
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import {
   closestCenter,
   DndContext,
@@ -42,6 +43,7 @@ export function QuickFilterBar({ api, sources }: Props) {
   const [editing, setEditing] = useState<{ id: number } & NonNullable<ChipEditing> | null>(null);
   const [focusIndex, setFocusIndex] = useState(0);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
@@ -57,22 +59,19 @@ export function QuickFilterBar({ api, sources }: Props) {
   );
   const tabStop = Math.min(focusIndex, Math.max(pinned.length - 1, 0));
 
-  const navigate = (index: number) => (e: KeyboardEvent<HTMLButtonElement>) => {
-    const last = pinned.length - 1;
-    const next =
-      e.key === "ArrowRight"
-        ? Math.min(index + 1, last)
-        : e.key === "ArrowLeft"
-          ? Math.max(index - 1, 0)
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? last
-              : null;
-    if (next === null) return;
-    e.preventDefault();
-    chipRefs.current[next]?.focus();
+  // ←/→/Home/End move focus between chips, from whichever chip has it.
+  const focusChip = (index: number) => {
+    chipRefs.current[Math.min(Math.max(index, 0), pinned.length - 1)]?.focus();
   };
+  useHotkeys(
+    [
+      { hotkey: "ArrowRight", callback: () => focusChip(tabStop + 1) },
+      { hotkey: "ArrowLeft", callback: () => focusChip(tabStop - 1) },
+      { hotkey: "Home", callback: () => focusChip(0) },
+      { hotkey: "End", callback: () => focusChip(pinned.length - 1) },
+    ],
+    { target: toolbarRef },
+  );
 
   const move = (id: number, delta: -1 | 1) => {
     const ids = pinned.map((f) => f.ID);
@@ -103,6 +102,7 @@ export function QuickFilterBar({ api, sources }: Props) {
   return (
     <div className="flex items-center gap-1.5">
       <div
+        ref={toolbarRef}
         role="toolbar"
         aria-label="Quick filters"
         className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5"
@@ -145,7 +145,6 @@ export function QuickFilterBar({ api, sources }: Props) {
                 chipRef={(el) => {
                   chipRefs.current[i] = el;
                 }}
-                onNavigate={navigate(i)}
                 onFocus={() => setFocusIndex(i)}
                 onMove={(delta) => move(filter.ID, delta)}
                 onDelete={() => setDeleting(filter)}

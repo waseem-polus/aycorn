@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CopyIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useEditKeys } from "@/hooks/useEditKeys";
 import { PopoverContent } from "@/components/ui/popover";
 import {
   Select,
@@ -57,12 +58,19 @@ export function ViewSettingsPopover({
 }: Props) {
   const [name, setName] = useState(view.Name);
   const [iconOpen, setIconOpen] = useState(focus === "icon");
-  const source = useDebouncedSourceSave(view, (root) =>
-    void api.update(view.ID, { source: toDefinition(root) }),
+  const source = useDebouncedSourceSave(
+    view,
+    (root) => void api.update(view.ID, { source: toDefinition(root) }),
   );
   const tree = useConditionTree(source.root, source.update);
   const groupings = viewGroupings(view.Type, api.board);
-  const isDateGroup = view.GroupBy !== null && DATE_GROUP_KEYS.includes(view.GroupBy);
+  const isDateGroup =
+    view.GroupBy !== null && DATE_GROUP_KEYS.includes(view.GroupBy);
+
+  const nameRef = useEditKeys({
+    onEnter: (input) => input.blur(),
+    onEscape: () => setName(view.Name),
+  });
 
   const commitName = () => {
     const trimmed = name.trim();
@@ -101,6 +109,7 @@ export function ViewSettingsPopover({
           onColorSelect={(color) => void api.update(view.ID, { color })}
         />
         <Input
+          ref={nameRef}
           autoFocus={focus === "name"}
           onFocus={(e) => focus === "name" && e.currentTarget.select()}
           value={name}
@@ -108,10 +117,6 @@ export function ViewSettingsPopover({
           className="h-8 border-transparent px-1.5 text-base font-medium shadow-none hover:border-input focus-visible:border-input"
           onChange={(e) => setName(e.target.value)}
           onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-            if (e.key === "Escape") setName(view.Name);
-          }}
         />
       </div>
 
@@ -139,7 +144,9 @@ export function ViewSettingsPopover({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {groupings.optional && <SelectItem value={NO_GROUPING}>No grouping</SelectItem>}
+                {groupings.optional && (
+                  <SelectItem value={NO_GROUPING}>No grouping</SelectItem>
+                )}
                 {groupings.options.map((key) => (
                   <SelectItem key={key} value={key}>
                     {GROUP_LABELS[key]}
@@ -152,7 +159,10 @@ export function ViewSettingsPopover({
                 value={view.GroupOptions.granularity ?? "week"}
                 onValueChange={(granularity) =>
                   void api.update(view.ID, {
-                    groupOptions: { ...view.GroupOptions, granularity: granularity as Granularity },
+                    groupOptions: {
+                      ...view.GroupOptions,
+                      granularity: granularity as Granularity,
+                    },
                   })
                 }
               >
@@ -173,12 +183,6 @@ export function ViewSettingsPopover({
       )}
 
       <section className="flex flex-col gap-2">
-        <div className="flex flex-col">
-          <span className="text-sm text-muted-foreground">Data source</span>
-          <span className="text-xs text-muted-foreground">
-            Which tasks this view shows. Quick filters narrow it further.
-          </span>
-        </div>
         <ConditionBuilder tree={tree} sources={sources} />
       </section>
 
