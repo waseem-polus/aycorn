@@ -1,3 +1,4 @@
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEffect, useState, type ReactNode } from "react";
 import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
 import { NodeActionsMenu } from "@/features/task-filters/conditions/condition-builder/node-actions-menu";
@@ -6,7 +7,12 @@ import { PropertyPicker } from "@/features/task-filters/conditions/condition-bui
 import { ValueEditor } from "@/features/task-filters/conditions/condition-builder/value-editor";
 import { OPERATORS } from "@/features/task-filters/conditions/condition-operators";
 import { isComplete } from "@/features/task-filters/conditions/condition-tree-ops";
-import type { Condition } from "@/features/task-filters/conditions/condition-types";
+import { STATIC_PROPERTIES } from "@/features/task-filters/conditions/condition-properties";
+import type {
+  Condition,
+  DateSpan,
+  StaticPropertyKey,
+} from "@/features/task-filters/conditions/condition-types";
 
 type OpenPicker = "property" | "operator" | "value" | null;
 
@@ -41,6 +47,12 @@ export function ConditionRow({ condition, handle }: Props) {
   });
 
   const needsValue = !!operator && OPERATORS[operator].arity !== "none";
+  // Window properties (Time Planned) can require the whole window to match.
+  const showSpan =
+    needsValue &&
+    ["date", "range"].includes(OPERATORS[operator!].arity) &&
+    !!property &&
+    !!STATIC_PROPERTIES[property as StaticPropertyKey]?.spansRange;
   const pending = !!operator && !isComplete(condition) && openPicker === null;
 
   return (
@@ -69,6 +81,24 @@ export function ConditionRow({ condition, handle }: Props) {
       {needsValue && (
         <div className="flex flex-col gap-1 pr-9.5 pl-6.5">
           <ValueEditor condition={condition} {...pickerProps("value")} />
+          {showSpan && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={condition.span ?? "any"}
+              onValueChange={(v) => v && tree.setSpan(id, v as DateSpan)}
+              aria-label="Date span"
+              className="self-start"
+            >
+              <ToggleGroupItem value="any" className="px-3">
+                Any part
+              </ToggleGroupItem>
+              <ToggleGroupItem value="entire" className="px-3">
+                Entire range
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
           {pending && (
             <span className="px-1 text-xs text-muted-foreground">
               Not applied until a value is set

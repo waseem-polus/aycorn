@@ -6,6 +6,7 @@ import type {
   ConditionGroup,
   ConditionNode,
   ConditionValue,
+  DateSpan,
   MatchMode,
   OperatorKey,
   PropertyKey,
@@ -222,6 +223,9 @@ export const setOperator = (root: ConditionGroup, id: string, operator: Operator
     const keepValue = n.operator && OPERATORS[n.operator].arity === OPERATORS[operator].arity;
     return { ...n, operator, value: keepValue ? n.value : null };
   });
+
+export const setSpan = (root: ConditionGroup, id: string, span: DateSpan) =>
+  updateNode(root, id, (n) => (n.kind === "condition" ? { ...n, span } : n));
 
 export const setValue = (root: ConditionGroup, id: string, value: ConditionValue) =>
   updateNode(root, id, (n) => (n.kind === "condition" ? { ...n, value } : n));

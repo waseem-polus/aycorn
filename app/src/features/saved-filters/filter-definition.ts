@@ -32,7 +32,14 @@ export type FilterDefinition =
 
 const stripIds = (node: ConditionNode): StoredNode =>
   node.kind === "condition"
-    ? { kind: "condition", property: node.property, operator: node.operator, value: node.value }
+    ? {
+        kind: "condition",
+        property: node.property,
+        operator: node.operator,
+        value: node.value,
+        // Omitted when unset so conditions without a span keep their saved form.
+        ...(node.span && { span: node.span }),
+      }
     : { kind: "group", match: node.match, children: node.children.map(stripIds) };
 
 const addIds = (node: StoredNode): ConditionNode =>

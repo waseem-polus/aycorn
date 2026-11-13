@@ -28,18 +28,18 @@ export const OPERATORS: Record<OperatorKey, OperatorMeta> = {
   },
   before: {
     label: "before",
-    description: "Any part falls before the date",
+    description: "Falls before the date",
     arity: "date",
   },
   after: {
     label: "after",
-    description: "Any part falls after the date",
+    description: "Falls after the date",
     arity: "date",
   },
-  on: { label: "on", description: "Any part falls on the date", arity: "date" },
+  on: { label: "on", description: "Falls on the date", arity: "date" },
   between: {
     label: "between",
-    description: "Any part falls in the range",
+    description: "Falls in the range",
     arity: "range",
   },
   is_set: { label: "is set", description: "Has a date", arity: "none" },

@@ -4,7 +4,8 @@
  * kept in the picker's own units); `toWire` turns it into the server's JSON.
  */
 
-export type MatchMode = "all" | "any";
+/** all = AND, any = OR, none = NOR (matches only when no child does). */
+export type MatchMode = "all" | "any" | "none";
 
 /** Properties defined once in the registry. */
 export type StaticPropertyKey =
@@ -86,12 +87,20 @@ export type ConditionValue =
   | { kind: "text"; text: string }
   | null;
 
+/**
+ * How a date condition treats a task's planned window: `any` = any part of
+ * it meets the condition (overlap); `entire` = all of it must. Absent means
+ * `any`, so conditions saved before this existed keep their behaviour.
+ */
+export type DateSpan = "any" | "entire";
+
 export type Condition = {
   kind: "condition";
   id: string;
   property: PropertyKey | null;
   operator: OperatorKey | null;
   value: ConditionValue;
+  span?: DateSpan;
 };
 
 export type ConditionGroup = {
@@ -119,6 +128,7 @@ export type WireCondition = {
   from?: string;
   to?: string;
   text?: string;
+  span?: DateSpan;
   linkType?: number;
   direction?: LinkDirection;
 };

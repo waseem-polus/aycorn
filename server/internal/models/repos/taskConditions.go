@@ -32,7 +32,8 @@ const MaxTaskConditionDepth = 3
 const maxTaskConditionNodes = 200
 
 type TaskConditionGroup struct {
-	// Match is "all" (AND) or "any" (OR).
+	// Match is "all" (AND), "any" (OR) or "none" (NOR: matches only when no
+	// child does).
 	Match    string
 	Children []TaskConditionNode
 }
@@ -54,6 +55,9 @@ type TaskCondition struct {
 	At   string
 	From string
 	To   string
+	// Entire makes before / after / on / between require the task's whole
+	// window to satisfy the bound, instead of any part of it.
+	Entire bool
 	// Text is the operand for the text operators (contains, equals, …).
 	Text string
 	// LinkType and Direction pick one direction of one relationship type for
@@ -182,6 +186,7 @@ type wireConditionNode struct {
 	At       string              `json:"at"`
 	From     string              `json:"from"`
 	To       string              `json:"to"`
+	Span     string              `json:"span"`
 	Text     string              `json:"text"`
 	// taskLink only.
 	LinkType  *int   `json:"linkType"`
@@ -219,7 +224,7 @@ func parseConditionGroup(w wireConditionNode, depth int, nodes *int) (*TaskCondi
 	if depth > MaxTaskConditionDepth {
 		return nil, fmt.Errorf("groups nest deeper than %d levels", MaxTaskConditionDepth)
 	}
-	if *w.Match != "all" && *w.Match != "any" {
+	if *w.Match != "all" && *w.Match != "any" && *w.Match != "none" {
 		return nil, fmt.Errorf("unknown match %q", *w.Match)
 	}
 
@@ -283,6 +288,11 @@ func parseCondition(w wireConditionNode) (*TaskCondition, error) {
 		cond.Values = values
 
 	case conditionValueDate:
+		// A point-in-time date has no window, so the span choice is moot there.
+		if w.Span != "" && w.Span != "any" && w.Span != "entire" {
+			return nil, fmt.Errorf("%s: unknown span %q", w.Property, w.Span)
+		}
+		cond.Entire = w.Span == "entire" && prop.start != prop.end
 		switch w.Operator {
 		case "before", "after":
 			at, err := timefmt.Normalize(w.At)
@@ -403,7 +413,7 @@ func compileTaskConditions(group *TaskConditionGroup) (string, []any) {
 	}
 
 	joiner := " AND "
-	if group.Match == "any" {
+	if group.Match != "all" {
 		joiner = " OR "
 	}
 
@@ -420,7 +430,15 @@ func compileTaskConditions(group *TaskConditionGroup) (string, []any) {
 		parts = append(parts, part)
 		args = append(args, childArgs...)
 	}
-	return "(" + strings.Join(parts, joiner) + ")", args
+	joined := "(" + strings.Join(parts, joiner) + ")"
+	if group.Match == "none" {
+		// A child can evaluate to NULL (a date comparison on an unplanned
+		// task). Plain NOT NULL stays NULL and would drop the task, but a
+		// task that doesn't satisfy any child belongs in a "none" group, so
+		// NULL is folded to false before negating.
+		return "NOT COALESCE(" + joined + ", 0)", args
+	}
+	return joined, args
 }
 
 func compileTaskCondition(cond *TaskCondition) (string, []any) {
@@ -449,16 +467,28 @@ func compileTaskCondition(cond *TaskCondition) (string, []any) {
 	case "is_not_empty", "is_set":
 		return "NOT " + prop.emptyExpr, nil
 
-	// Date operators use overlap ("touches") semantics against the task's
-	// effective window: before matches anything that starts before the bound,
-	// after anything that ends after it, and on/between any window that
-	// intersects the range. NULL bounds compare to NULL, so unplanned tasks
-	// never match.
+	// Date operators compare against the task's effective window. By default
+	// they use overlap ("touches") semantics: before matches anything that
+	// starts before the bound, after anything that ends after it, and
+	// on/between any window that intersects the range. With Entire, the whole
+	// window must satisfy the bound instead: before needs the end before it,
+	// after needs the start after it, and on/between need the window inside
+	// the range. NULL bounds compare to NULL, so unplanned tasks never match
+	// (a "none" group folds that NULL to false).
 	case "before":
+		if cond.Entire {
+			return prop.end + " < ?", []any{cond.At}
+		}
 		return prop.start + " < ?", []any{cond.At}
 	case "after":
+		if cond.Entire {
+			return prop.start + " > ?", []any{cond.At}
+		}
 		return prop.end + " > ?", []any{cond.At}
 	case "on", "between":
+		if cond.Entire {
+			return "(" + prop.start + " >= ? AND " + prop.end + " <= ?)", []any{cond.From, cond.To}
+		}
 		return "(" + prop.start + " <= ? AND " + prop.end + " >= ?)", []any{cond.To, cond.From}
 
 	case "contains":

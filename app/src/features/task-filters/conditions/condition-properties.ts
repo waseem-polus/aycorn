@@ -50,6 +50,8 @@ export type PropertyMeta = {
    * project page has no Project source, so Project name is hidden there too.
    */
   requiresSource?: StaticPropertyKey;
+  /** Date properties that hold a window (start–end) rather than one instant, so "any part / entire range" applies. */
+  spansRange?: boolean;
 };
 
 const ENUM_OPERATORS: OperatorKey[] = ["is", "is_not"];
@@ -159,6 +161,7 @@ export const STATIC_PROPERTIES: Record<StaticPropertyKey, PropertyMeta> = {
     valueKind: "date",
     operators: DATE_OPERATORS,
     plural: "dates",
+    spansRange: true,
   },
   timeCompleted: {
     label: "Time Completed",

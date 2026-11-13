@@ -6,7 +6,7 @@ type Props = {
   onChange: (match: MatchMode) => void;
 };
 
-/** "Match [All | Any] of the following" — All is AND, Any is OR. */
+/** "Match [All | Any | None] of the following" — AND, OR, NOR. */
 export function MatchToggle({ value, onChange }: Props) {
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -24,6 +24,9 @@ export function MatchToggle({ value, onChange }: Props) {
         </ToggleGroupItem>
         <ToggleGroupItem value="any" className="px-3">
           Any
+        </ToggleGroupItem>
+        <ToggleGroupItem value="none" className="px-3">
+          None
         </ToggleGroupItem>
       </ToggleGroup>
       <span className="text-muted-foreground">of the following</span>

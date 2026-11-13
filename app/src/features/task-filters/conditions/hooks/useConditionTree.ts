@@ -7,6 +7,7 @@ import { useAppSettingsQuery } from "@/features/settings/queries/useAppSettingsQ
 import type {
   ConditionGroup,
   ConditionValue,
+  DateSpan,
   MatchMode,
   OperatorKey,
   PropertyKey,
@@ -101,6 +102,7 @@ export function useConditionTree(
       update((r) => ops.setProperty(r, id, property)),
     setOperator: (id: string, operator: OperatorKey) =>
       update((r) => ops.setOperator(r, id, operator)),
+    setSpan: (id: string, span: DateSpan) => update((r) => ops.setSpan(r, id, span)),
     setValue: (id: string, value: ConditionValue) =>
       update((r) => ops.setValue(r, id, value)),
   };

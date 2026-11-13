@@ -1,4 +1,7 @@
-import { parseLinkPropertyKey } from "@/features/task-filters/conditions/condition-properties";
+import {
+  parseLinkPropertyKey,
+  STATIC_PROPERTIES,
+} from "@/features/task-filters/conditions/condition-properties";
 import { isComplete } from "@/features/task-filters/conditions/condition-tree-ops";
 import type {
   Condition,
@@ -31,6 +34,9 @@ const toWireCondition = (c: Condition, ctx: DateContext): WireCondition => {
   const base: WireCondition = { ...wireProperty(c), operator: c.operator! };
   const v = c.value;
   if (!v) return base;
+  // Only sent when it changes the meaning; "any" is the server's default.
+  const entire = c.span === "entire" && !!STATIC_PROPERTIES[c.property as StaticPropertyKey]?.spansRange;
+  const withSpan = (w: WireCondition): WireCondition => (entire ? { ...w, span: "entire" } : w);
   switch (v.kind) {
     case "ids":
       return { ...base, values: v.ids };
@@ -38,19 +44,20 @@ const toWireCondition = (c: Condition, ctx: DateContext): WireCondition => {
       return { ...base, text: v.text.trim() };
     case "range":
       // isComplete guarantees both ends before a condition is sent.
-      return {
+      return withSpan({
         ...base,
         from: toApiDayStart(resolveDateRef(v.from!, ctx).start),
         to: toApiDayEnd(resolveDateRef(v.to!, ctx).end),
-      };
+      });
     case "date": {
       const span = resolveDateRef(v.ref, ctx);
-      // Overlap semantics: before = before the span's first instant, after =
-      // after its last instant, on = anywhere in it. A single day is a
-      // one-day span, so "on This week" and "on Nov 4" work the same way.
-      if (c.operator === "before") return { ...base, at: toApiDayStart(span.start) };
-      if (c.operator === "after") return { ...base, at: toApiDayEnd(span.end) };
-      return { ...base, from: toApiDayStart(span.start), to: toApiDayEnd(span.end) };
+      // The bounds are the same either way; the server's overlap-or-entire
+      // choice (`span`) decides what they're compared against. before = the
+      // span's first instant, after = its last, on = the whole span. A single
+      // day is a one-day span, so "on This week" and "on Nov 4" work alike.
+      if (c.operator === "before") return withSpan({ ...base, at: toApiDayStart(span.start) });
+      if (c.operator === "after") return withSpan({ ...base, at: toApiDayEnd(span.end) });
+      return withSpan({ ...base, from: toApiDayStart(span.start), to: toApiDayEnd(span.end) });
     }
   }
 };
