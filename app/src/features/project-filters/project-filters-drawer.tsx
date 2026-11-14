@@ -1,7 +1,5 @@
 import { useContext } from "react";
-import { FilterIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { FilterButton } from "@/features/task-filters/filter-button";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { SaveAdhocFilterButton } from "@/features/saved-filters/save-adhoc-filter-button";
 import { FilterDrawerFrame } from "@/features/task-filters/filter-drawer-frame";
@@ -46,24 +44,7 @@ export function ProjectFiltersDrawer() {
 
   return (
     <FilterDrawerFrame
-      trigger={
-        <Button
-          size="icon"
-          variant="outline"
-          aria-label="Filters"
-          className="relative"
-        >
-          <FilterIcon />
-          {activeCount > 0 && (
-            <Badge
-              variant="secondary"
-              className="absolute -top-1.5 -right-1.5 size-5 justify-center rounded-full p-0 text-xs tabular-nums"
-            >
-              {activeCount}
-            </Badge>
-          )}
-        </Button>
-      }
+      trigger={<FilterButton activeCount={activeCount} />}
       activeCount={activeCount}
       onReset={onReset}
       footerActions={

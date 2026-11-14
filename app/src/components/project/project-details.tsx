@@ -16,7 +16,7 @@ import { useSharedSelection } from "@/hooks/useSelection";
 import { BulkActionsToolbar } from "@/features/task/bulk-actions-toolbar";
 import { useBoardViews } from "@/features/views/hooks/useBoardViews";
 import { useViewSourceWire } from "@/features/views/hooks/useViewSourceWire";
-import { ViewTabs } from "@/features/views/view-tabs";
+import { ProjectBoardToolbar } from "@/components/project/project-details/project-board-toolbar";
 import { ViewLayout } from "@/components/project/project-details/view-layout";
 
 export function ProjectDetails({
@@ -102,11 +102,12 @@ export function ProjectDetails({
             >
               <DndProvider>
                 <div className="flex h-full min-h-0 flex-col gap-2">
-                  <ViewTabs
-                    api={views}
+                  <ProjectBoardToolbar
+                    views={views}
                     selectedId={view?.ID ?? null}
                     onSelect={setViewId}
                     sources={conditionSources}
+                    setTaskDrawerOpen={setNewTaskOpen}
                   />
                   {view && (
                     <div className="h-full min-h-0 overflow-visible">

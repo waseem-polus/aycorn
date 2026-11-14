@@ -3,19 +3,12 @@ import { ItemGroup, ItemSeparator } from "@/components/ui/item";
 import { ListViewRow } from "./list-view/list-view-row";
 import React, { useContext } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { ViewHeader } from "../view-header";
 import { useSharedSelection } from "@/hooks/useSelection";
 import type { BoardView } from "@/features/views/view-types";
 import { GroupedTaskList } from "./list-view/grouped-task-list";
 
 /** A project's tasks as rows: flat, or grouped when the view sets a grouping. */
-export function ListView({
-  view,
-  setTaskDrawerOpen,
-}: {
-  view: BoardView;
-  setTaskDrawerOpen: (open: boolean) => void;
-}) {
+export function ListView({ view }: { view: BoardView }) {
   const { Tasks, Stages, Checklists } = useContext(ProjectContext);
   const stagesById = React.useMemo(
     () => new Map(Stages.map((s) => [s.ID, s])),
@@ -25,8 +18,6 @@ export function ListView({
 
   return (
     <div className="h-full box-border flex flex-col gap-2 overflow-visible">
-      <ViewHeader setTaskDrawerOpen={setTaskDrawerOpen} />
-
       <div className="h-full min-h-0 overflow-auto">
         {view.GroupBy ? (
           <GroupedTaskList view={view} groupBy={view.GroupBy} />

@@ -10,8 +10,16 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 
@@ -31,8 +39,13 @@ export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 shrink-0" aria-label="Add a quick filter">
+            <Button
+              variant="ghost"
+              className="shrink-0 text-muted-foreground"
+              aria-label="Add a quick filter"
+            >
               <PlusIcon />
+              Filter
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
@@ -40,7 +53,9 @@ export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
       </Tooltip>
       <PopoverContent className="w-64 p-0" align="start">
         <Command>
-          {candidates.length > 0 && <CommandInput placeholder="Search filters…" />}
+          {candidates.length > 0 && (
+            <CommandInput placeholder="Search filters…" />
+          )}
           <CommandList>
             <CommandEmpty>No filters found.</CommandEmpty>
             <CommandGroup>

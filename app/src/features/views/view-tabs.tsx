@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   closestCenter,
   DndContext,
@@ -14,8 +14,9 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { useHotkeys } from "@tanstack/react-hotkeys";
-import { PlusIcon, Settings2Icon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -25,8 +26,14 @@ import type { ConditionOptionSources } from "@/features/task-filters/conditions/
 import { DeleteViewDialog } from "@/features/views/delete-view-dialog";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import { useViewShortcuts } from "@/features/views/hooks/useViewShortcuts";
+import { useVisibleTabs } from "@/features/views/hooks/useVisibleTabs";
+import { ViewSettingsPopover } from "@/features/views/view-settings-popover";
+import { useViewSettings } from "@/features/views/view-settings-context";
+import { ViewOverflowMenu } from "@/features/views/view-tabs/view-overflow-menu";
+import { ViewSelectMobile } from "@/features/views/view-tabs/view-select-mobile";
 import { ViewTab } from "@/features/views/view-tabs/view-tab";
 import type { BoardView } from "@/features/views/view-types";
+import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
   api: BoardViewsAPI;
@@ -40,22 +47,26 @@ type Props = {
  * A board's views as a tab strip: select, drag to reorder, edit a view's
  * settings in place, and [+] to add one. A roving tablist — ←/→ move, Enter
  * on the selected tab toggles its settings — plus Alt+Shift+1…9. Right-click
- * opens a tab's context menu.
+ * opens a tab's context menu. Tabs that don't fit collapse into a `+N` menu;
+ * on mobile the strip is a dropdown instead.
+ *
+ * Which view's settings are open is shared (see `ViewSettingsProvider`) so the
+ * toolbar's settings button can toggle them.
  */
 export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   const { views } = api;
-  // Which view has its settings open, and which is being renamed in its tab.
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const isMobile = useIsMobile();
+  const { editingId, setEditingId } = useViewSettings();
+  // Which view is being renamed in its tab.
   const [renamingId, setRenamingId] = useState<number | null>(null);
   // Switching to another view (tab click, shortcut, URL) closes the editor.
-  const [lastSelectedId, setLastSelectedId] = useState(selectedId);
-  if (lastSelectedId !== selectedId) {
-    setLastSelectedId(selectedId);
+  useEffect(() => {
     if (editingId !== null && editingId !== selectedId) setEditingId(null);
-  }
+  }, [selectedId, editingId, setEditingId]);
   const [deleting, setDeleting] = useState<BoardView | null>(null);
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const rowRef = useRef<HTMLDivElement | null>(null);
   const tablistRef = useRef<HTMLDivElement | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -66,19 +77,38 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     onSelect,
   );
 
-  const selectedIndex = Math.max(views.findIndex((v) => v.ID === selectedId), 0);
-  const tabStop = Math.min(focusIndex ?? selectedIndex, Math.max(views.length - 1, 0));
+  const visibleIds = useVisibleTabs({
+    rowRef,
+    tabButtons: tabRefs,
+    ids: views.map((v) => v.ID),
+    selectedId,
+    enabled: !isMobile,
+  });
+  const isShown = (index: number) =>
+    visibleIds === null || visibleIds.has(views[index].ID);
+  const hiddenViews = views.filter((_, i) => !isShown(i));
 
-  // ←/→/Home/End move focus between tabs, from whichever tab has it.
-  const focusTab = (index: number) => {
-    tabRefs.current[Math.min(Math.max(index, 0), views.length - 1)]?.focus();
+  const selectedIndex = Math.max(views.findIndex((v) => v.ID === selectedId), 0);
+  const tabStop =
+    focusIndex !== null && focusIndex < views.length && isShown(focusIndex)
+      ? focusIndex
+      : selectedIndex;
+
+  // ←/→/Home/End move focus between the tabs on show, from whichever has it.
+  const focusFrom = (from: number, delta: -1 | 1) => {
+    for (let i = from + delta; i >= 0 && i < views.length; i += delta) {
+      if (isShown(i)) {
+        tabRefs.current[i]?.focus();
+        return;
+      }
+    }
   };
   useHotkeys(
     [
-      { hotkey: "ArrowRight", callback: () => focusTab(tabStop + 1) },
-      { hotkey: "ArrowLeft", callback: () => focusTab(tabStop - 1) },
-      { hotkey: "Home", callback: () => focusTab(0) },
-      { hotkey: "End", callback: () => focusTab(views.length - 1) },
+      { hotkey: "ArrowRight", callback: () => focusFrom(tabStop, 1) },
+      { hotkey: "ArrowLeft", callback: () => focusFrom(tabStop, -1) },
+      { hotkey: "Home", callback: () => focusFrom(-1, 1) },
+      { hotkey: "End", callback: () => focusFrom(views.length, -1) },
     ],
     { target: tablistRef },
   );
@@ -97,12 +127,16 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     api.reorder(arrayMove(ids, ids.indexOf(Number(active.id)), ids.indexOf(Number(over.id))));
   };
 
-  /** Create-empty-then-edit: a new list view, selected, with its name ready to type. */
+  /**
+   * Create-empty-then-edit: a new list view, selected — with its name ready to
+   * type on a tab, or its settings open on mobile (which has no tab to rename).
+   */
   const addView = async () => {
     const created = await api.create("list");
     if (!created) return;
     onSelect(created.ID);
-    setRenamingId(created.ID);
+    if (isMobile) setEditingId(created.ID);
+    else setRenamingId(created.ID);
   };
 
   const duplicate = async (id: number) => {
@@ -120,13 +154,64 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     if (neighbour) onSelect(neighbour.ID);
   };
 
+  const deleteDialog = deleting && (
+    <DeleteViewDialog
+      view={deleting}
+      open
+      onOpenChange={(open) => !open && setDeleting(null)}
+      onConfirm={() => void confirmDelete()}
+    />
+  );
+
+  if (isMobile) {
+    const selectedView = views.find((v) => v.ID === selectedId);
+    return (
+      <>
+        {/* The settings popover is a sibling of the dropdown, so clicks in it
+            don't bubble into the menu's handlers. */}
+        <Popover
+          open={selectedView !== undefined && editingId === selectedView.ID}
+          onOpenChange={(open) => !open && setEditingId(null)}
+        >
+          <PopoverAnchor asChild>
+            <div className="min-w-0">
+              <ViewSelectMobile
+                views={views}
+                selectedId={selectedId}
+                onSelect={onSelect}
+                onAdd={() => void addView()}
+                onOpenSettings={() => selectedId !== null && setEditingId(selectedId)}
+              />
+            </div>
+          </PopoverAnchor>
+          {selectedView && editingId === selectedView.ID && (
+            <ViewSettingsPopover
+              view={selectedView}
+              api={api}
+              sources={sources}
+              onDuplicate={() => {
+                setEditingId(null);
+                void duplicate(selectedView.ID);
+              }}
+              onDelete={() => {
+                setEditingId(null);
+                setDeleting(selectedView);
+              }}
+            />
+          )}
+        </Popover>
+        {deleteDialog}
+      </>
+    );
+  }
+
   return (
-    <div className="flex min-w-0 items-center gap-1">
+    <div ref={rowRef} className="flex min-w-0 items-center gap-1">
       <div
         ref={tablistRef}
         role="tablist"
         aria-label="Views"
-        className="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted p-[3px]"
+        className="relative flex min-w-0 items-center gap-0.5 overflow-hidden rounded-lg bg-muted p-[3px]"
       >
         <DndContext
           sensors={sensors}
@@ -146,6 +231,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
                 shortcut={i < 9 ? i + 1 : null}
                 isFirst={i === 0}
                 isLast={i === views.length - 1}
+                overflowed={!isShown(i)}
                 editing={editingId === view.ID}
                 onEditingChange={(open) => setEditingId(open ? view.ID : null)}
                 renaming={renamingId === view.ID}
@@ -162,51 +248,34 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
             ))}
           </SortableContext>
         </DndContext>
+
+        {hiddenViews.length > 0 && (
+          <ViewOverflowMenu
+            views={hiddenViews}
+            onSelect={onSelect}
+            onAdd={() => void addView()}
+          />
+        )}
       </div>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 shrink-0"
-            aria-label="View settings"
-            data-view-settings-toggle=""
-            disabled={selectedId === null}
-            onClick={() => {
-              if (selectedId === null) return;
-              setEditingId(editingId === null ? selectedId : null);
-            }}
-          >
-            <Settings2Icon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>View settings</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 shrink-0"
-            aria-label="Add a view"
-            onClick={() => void addView()}
-          >
-            <PlusIcon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Add a view</TooltipContent>
-      </Tooltip>
-
-      {deleting && (
-        <DeleteViewDialog
-          view={deleting}
-          open
-          onOpenChange={(open) => !open && setDeleting(null)}
-          onConfirm={() => void confirmDelete()}
-        />
+      {hiddenViews.length === 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              aria-label="Add a view"
+              onClick={() => void addView()}
+            >
+              <PlusIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Add a view</TooltipContent>
+        </Tooltip>
       )}
+
+      {deleteDialog}
     </div>
   );
 }

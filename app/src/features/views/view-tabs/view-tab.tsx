@@ -45,6 +45,8 @@ type Props = {
   shortcut: number | null;
   isFirst: boolean;
   isLast: boolean;
+  /** Doesn't fit the strip: stays mounted (so it can be measured) but unseen. */
+  overflowed: boolean;
   /** Whether the tab's settings popover is open. */
   editing: boolean;
   onEditingChange: (editing: boolean) => void;
@@ -75,6 +77,7 @@ export function ViewTab({
   shortcut,
   isFirst,
   isLast,
+  overflowed,
   editing,
   onEditingChange,
   renaming,
@@ -168,6 +171,7 @@ export function ViewTab({
               ? "bg-background text-foreground shadow-sm dark:bg-input/30"
               : "text-muted-foreground hover:text-foreground",
             isDragging && "z-10 opacity-80 shadow-md",
+            overflowed && "pointer-events-none invisible absolute",
           )}
         >
           {renaming ? (

@@ -12,7 +12,10 @@ import { applyClientFilters } from "@/features/upcoming/upcoming-grouping";
 import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";
 import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
-import { UpcomingToolbar } from "@/features/upcoming/upcoming-page/toolbar";
+import { UpcomingSearch } from "@/features/upcoming/upcoming-page/upcoming-search";
+import { FilterButton } from "@/features/task-filters/filter-button";
+import { BoardToolbar } from "@/features/views/board-toolbar";
+import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
 import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
 import { useUpcomingConditionSources } from "@/features/upcoming/hooks/useUpcomingConditionSources";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
@@ -122,29 +125,45 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
               >
                 <DndProvider>
                   <div className="flex flex-col gap-4 flex-1 min-h-0">
-                    <ViewTabs
-                      api={views}
-                      selectedId={activeView?.ID ?? null}
-                      onSelect={setViewId}
-                      sources={conditionSources}
-                    />
-
-                    <UpcomingToolbar
-                      isFetching={isFetching}
-                      resultCount={searched.length}
-                      onFilterOpen={() => setFilterOpen(true)}
-                    >
-                      {layout === "list" && (
-                        <GroupByDropdown
-                          {...viewGroupings("list", UPCOMING_BOARD)}
-                          groupBy={view.groupBy}
-                          granularity={view.granularity}
-                          onChange={filtersApi.setGroupBy}
-                          onGranularityChange={filtersApi.setGranularity}
+                    <BoardToolbar
+                      tabs={
+                        <ViewTabs
+                          api={views}
+                          selectedId={activeView?.ID ?? null}
+                          onSelect={setViewId}
+                          sources={conditionSources}
                         />
-                      )}
-                    </UpcomingToolbar>
-                    <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
+                      }
+                      search={
+                        <UpcomingSearch
+                          isFetching={isFetching}
+                          resultCount={searched.length}
+                        />
+                      }
+                      filter={
+                        <FilterButton
+                          activeCount={filtersApi.activeFilterCount()}
+                          onClick={() => setFilterOpen(true)}
+                        />
+                      }
+                      viewSettings={
+                        <ViewSettingsButton selectedId={activeView?.ID ?? null} />
+                      }
+                      actions={
+                        layout === "list" && (
+                          <GroupByDropdown
+                            {...viewGroupings("list", UPCOMING_BOARD)}
+                            groupBy={view.groupBy}
+                            granularity={view.granularity}
+                            onChange={filtersApi.setGroupBy}
+                            onGranularityChange={filtersApi.setGranularity}
+                          />
+                        )
+                      }
+                      quickFilters={
+                        <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
+                      }
+                    />
 
                     {layout === "list" && (
                       <div className="flex flex-col flex-1 min-h-0">

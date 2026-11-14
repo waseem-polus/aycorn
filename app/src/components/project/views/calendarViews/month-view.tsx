@@ -3,15 +3,11 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { CalendarMonthView } from "@/features/calendar/views/monthView";
 import { useCalendarHost } from "@/features/calendar/contexts/calendar-host-context";
 import { splitCalendarEvents } from "@/features/calendar/date-field";
-import { CalendarViewHeader } from "./calendar-views-header";
+import { DateNavigator } from "@/features/calendar/header/date-navigator";
 import { Suspense } from "react";
 import { MonthViewSkeleton } from "@/features/calendar/skeletons/month-view-skeleton";
 
-export function MonthView({
-  setTaskDrawerOpen,
-}: {
-  setTaskDrawerOpen: (open: boolean) => void;
-}) {
+export function MonthView() {
   const { Tasks } = useContext(ProjectContext);
   const { dateField } = useCalendarHost();
   const { singleDayEvents, multiDayEvents } = useMemo(
@@ -21,7 +17,7 @@ export function MonthView({
 
   return (
     <div className="h-full min-h-0 flex flex-col gap-2">
-      <CalendarViewHeader setTaskDrawerOpen={setTaskDrawerOpen} view="month" />
+      <DateNavigator view="month" />
 
       <div className="div flex gap-2 h-full min-h-0 overflow-hidden">
         <Suspense fallback={<MonthViewSkeleton />}>

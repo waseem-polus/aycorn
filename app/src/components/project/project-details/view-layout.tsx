@@ -14,12 +14,12 @@ export function ViewLayout({
 }) {
   switch (view.Type) {
     case "list":
-      return <ListView view={view} setTaskDrawerOpen={setTaskDrawerOpen} />;
+      return <ListView view={view} />;
     case "board":
       return <KanbanView view={view} setTaskDrawerOpen={setTaskDrawerOpen} />;
     case "month":
-      return <MonthView setTaskDrawerOpen={setTaskDrawerOpen} />;
+      return <MonthView />;
     case "week":
-      return <WeekView setTaskDrawerOpen={setTaskDrawerOpen} />;
+      return <WeekView />;
   }
 }

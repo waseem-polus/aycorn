@@ -1,7 +1,6 @@
 import { useContext, useMemo } from "react";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ViewHeader } from "@/components/project/views/view-header";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
@@ -30,8 +29,6 @@ export function KanbanView({
 
   return (
     <div className="h-full overflow-visible min-h-0 flex flex-col gap-2">
-      <ViewHeader setTaskDrawerOpen={setTaskDrawerOpen} />
-
       <KanbanBoard
         columns={columns}
         projectId={Project.ID}
