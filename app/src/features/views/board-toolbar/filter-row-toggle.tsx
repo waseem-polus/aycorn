@@ -1,7 +1,11 @@
-import { FilterIcon } from "lucide-react";
+import { ListFilterIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = {
   shown: boolean;
@@ -23,7 +27,7 @@ export function FilterRowToggle({ shown, onToggle, activeCount }: Props) {
           aria-pressed={shown}
           onClick={onToggle}
         >
-          <FilterIcon />
+          <ListFilterIcon />
           {activeCount > 0 && (
             <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 justify-center px-1 text-[10px]">
               {activeCount}
