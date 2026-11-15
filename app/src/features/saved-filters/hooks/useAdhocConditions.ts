@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import { treeKey } from "@/features/saved-filters/filter-definition";
-import { isTree } from "@/features/saved-filters/hooks/useQuickFilters";
+import { isTree } from "@/features/saved-filters/hooks/useBoardSavedFilters";
 import { useAppSettingsQuery } from "@/features/settings/queries/useAppSettingsQuery";
 import {
   countCompleteLeaves,
@@ -18,8 +18,8 @@ import { useToday } from "@/features/task-filters/hooks/useToday";
 /**
  * A board view's unsaved condition tree: the Filter popover's ad hoc filter.
  * Nothing is named or persisted server-side — it lives under
- * `aycorn.<scope>.conditions`, so each view remembers its own, until it's
- * cleared or saved as a quick filter.
+ * `aycorn.<scope>.conditions`, so each view remembers its own until it's
+ * cleared or saved as a saved filter (pinned to the board).
  */
 export function useAdhocConditions(scope: string) {
   const [stored, setStored] = useLocalStorage<ConditionGroup>(

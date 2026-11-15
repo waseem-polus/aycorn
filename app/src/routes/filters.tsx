@@ -14,11 +14,11 @@ export const Route = createFileRoute("/filters")({
 function RouteComponent() {
   return (
     <Page>
-      <PageHeader breadcrumb={["Filters"]} />
+      <PageHeader breadcrumb={["Saved filters"]} />
       <PageContent>
         <PageTitle
-          title="Filters"
-          description="Saved filters you can pin to any board as a quick filter."
+          title="Saved filters"
+          description="Named filters you can pin to any board and toggle on top of a view."
         />
         <FiltersPage />
       </PageContent>

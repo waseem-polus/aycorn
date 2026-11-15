@@ -15,28 +15,28 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { DeleteSavedFiltersDialog } from "@/features/saved-filters/delete-saved-filters-dialog";
-import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
-import { useQuickFilterShortcuts } from "@/features/saved-filters/hooks/useQuickFilterShortcuts";
-import { AddFilterPopover } from "@/features/saved-filters/quick-filter-bar/add-filter-popover";
+import type { BoardSavedFiltersAPI } from "@/features/saved-filters/hooks/useBoardSavedFilters";
+import { useSavedFilterShortcuts } from "@/features/saved-filters/hooks/useSavedFilterShortcuts";
+import { AddFilterPopover } from "@/features/saved-filters/saved-filter-bar/add-filter-popover";
 import {
   FilterChip,
   type ChipEditing,
-} from "@/features/saved-filters/quick-filter-bar/filter-chip";
+} from "@/features/saved-filters/saved-filter-bar/filter-chip";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 
 type Props = {
-  api: QuickFiltersAPI;
+  api: BoardSavedFiltersAPI;
   /** The values the condition editor offers on this board. */
   sources: ConditionOptionSources;
 };
 
 /**
- * A board's quick filters: toggles that stack, each ANDed onto the tasks
+ * A board's saved filters: toggles that stack, each ANDed onto the tasks
  * shown. A toolbar with roving focus — ←/→ move, Enter/Space toggles — plus
  * Alt+1…9 to toggle, Alt+0 to turn all off, and drag to reorder.
  */
-export function QuickFilterBar({ api, sources }: Props) {
+export function SavedFilterBar({ api, sources }: Props) {
   const { pinned, savedFilters } = api;
   const [deleting, setDeleting] = useState<SavedFilter | null>(null);
   // One editor open at a time, across the bar.
@@ -49,7 +49,7 @@ export function QuickFilterBar({ api, sources }: Props) {
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
 
-  useQuickFilterShortcuts(
+  useSavedFilterShortcuts(
     pinned.map((f) => f.ID),
     api.toggle,
     api.clearAll,
@@ -105,7 +105,7 @@ export function QuickFilterBar({ api, sources }: Props) {
       <div
         ref={toolbarRef}
         role="toolbar"
-        aria-label="Quick filters"
+        aria-label="Saved filters"
         className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5"
       >
         <DndContext

@@ -35,7 +35,7 @@ export function ProjectDetails({
   const board = useMemo(() => ({ surface: "project" as const, projectId }), [projectId]);
   const views = useBoardViews(board, viewId);
   const view = views.active;
-  // Each view remembers its own ad-hoc drawer filters; quick filters are the
+  // Each view remembers its own Filter popover conditions; saved filters are the
   // board's, so their toggles carry across views.
   const filtersApi = useBoardFilter(
     board,

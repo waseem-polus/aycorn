@@ -6,7 +6,7 @@ export const viewHotkey = (position: number) => `Alt+Shift+${position}` as Hotke
 
 /**
  * Alt+Shift+1…9 switch to a board's views in tab order, while the board is
- * mounted. (Alt+digit alone toggles quick filters.)
+ * mounted. (Alt+digit alone toggles saved filters.)
  */
 export function useViewShortcuts(viewIds: number[], select: (id: number) => void) {
   useHotkeys(

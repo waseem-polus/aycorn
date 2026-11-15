@@ -1,5 +1,5 @@
 import { PopoverContent } from "@/components/ui/popover";
-import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
+import type { BoardSavedFiltersAPI } from "@/features/saved-filters/hooks/useBoardSavedFilters";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import { UnsavedChangesAlert } from "@/features/saved-filters/unsaved-changes-alert";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
@@ -8,7 +8,7 @@ import { useConditionTree } from "@/features/task-filters/conditions/hooks/useCo
 
 type Props = {
   filter: SavedFilter;
-  api: QuickFiltersAPI;
+  api: BoardSavedFiltersAPI;
   sources: ConditionOptionSources;
   saveAsOpen: boolean;
   onSaveAsOpenChange: (open: boolean) => void;
@@ -17,12 +17,12 @@ type Props = {
 };
 
 /**
- * A quick filter's editor, as the content of the chip's popover: its condition
+ * A saved filter's editor, as the content of the chip's popover: its condition
  * tree (the name is edited inline on the chip), and — once the tree differs from
  * what's saved — Save / Save as new / Discard. Tree edits apply to the board
  * live, as a local draft.
  */
-export function QuickFilterEditPopover({
+export function SavedFilterEditPopover({
   filter,
   api,
   sources,

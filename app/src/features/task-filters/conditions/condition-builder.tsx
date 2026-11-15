@@ -42,7 +42,7 @@ type Props = {
 type DropData = { groupId: string; end?: boolean };
 
 /**
- * The "Conditions" editor of a quick filter or view: header, root match toggle,
+ * The "Conditions" editor of a saved filter or view: header, root match toggle,
  * and the tree. Owns drag and drop for the whole tree so nodes can move
  * between groups, not just within one.
  */

@@ -36,7 +36,7 @@ const data = {
       icon: CalendarClockIcon,
     },
     {
-      title: "Saved Filters",
+      title: "Saved filters",
       url: "/filters",
       icon: FunnelIcon,
       badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,

@@ -28,7 +28,7 @@ export const isTree = (value: unknown): value is ConditionGroup =>
   !!value && typeof value === "object" && (value as ConditionGroup).kind === "group";
 
 /**
- * A board's quick filters: the saved filters pinned to it, which of them are
+ * A board's saved filters: the saved filters pinned to it, which of them are
  * toggled on, and their unsaved edits. Toggled filters stack — the server ANDs
  * every tree in `wires`.
  *
@@ -36,7 +36,7 @@ export const isTree = (value: unknown): value is ConditionGroup =>
  * `aycorn.<scope>.drafts` so every chip's unsaved dot updates as you type.
  * `save` commits a draft to the shared filter; `discard` drops it.
  */
-export function useQuickFilters(board: Board) {
+export function useBoardSavedFilters(board: Board) {
   const scope = boardScope(board);
   const { data: savedFilters = [], isPending } = useSavedFiltersQuery();
   const mutations = useSavedFilterMutations();
@@ -235,4 +235,4 @@ export function useQuickFilters(board: Board) {
   };
 }
 
-export type QuickFiltersAPI = ReturnType<typeof useQuickFilters>;
+export type BoardSavedFiltersAPI = ReturnType<typeof useBoardSavedFilters>;

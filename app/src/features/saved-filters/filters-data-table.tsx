@@ -100,7 +100,7 @@ export function FiltersDataTable({ data, projects, isLoading, emptyMessage }: Pr
       {
         id: "rules",
         accessorFn: (f) => definitionRuleCount(f.Definition),
-        header: ({ column }) => <SortableHeader label="Rules" column={column} />,
+        header: ({ column }) => <SortableHeader label="Conditions" column={column} />,
         cell: ({ getValue }) => (
           <span className="text-sm text-muted-foreground">{getValue<number>()}</span>
         ),

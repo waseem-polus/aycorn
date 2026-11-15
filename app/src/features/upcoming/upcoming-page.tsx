@@ -14,7 +14,7 @@ import { UpcomingSearch } from "@/features/upcoming/upcoming-page/upcoming-searc
 import { BoardToolbar } from "@/features/views/board-toolbar";
 import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
 import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
-import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
+import { SavedFilterBar } from "@/features/saved-filters/saved-filter-bar";
 import { useUpcomingConditionSources } from "@/features/upcoming/hooks/useUpcomingConditionSources";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
 import { UpcomingListView } from "@/features/upcoming/upcoming-page/list-view";
@@ -148,8 +148,8 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                       adhocFilter={
                         <AdhocFilterPopover api={filtersApi} sources={conditionSources} />
                       }
-                      quickFilters={
-                        <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />
+                      savedFilters={
+                        <SavedFilterBar api={filtersApi.saved} sources={conditionSources} />
                       }
                     />
 

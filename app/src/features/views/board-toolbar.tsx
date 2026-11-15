@@ -17,14 +17,14 @@ type Props = {
   actions?: React.ReactNode;
   /** The Filter popover (unsaved condition builder), right of Sort. */
   adhocFilter: React.ReactNode;
-  quickFilters: React.ReactNode;
+  savedFilters: React.ReactNode;
 };
 
 /**
  * The layout every board (a project page, `/upcoming`) shares. Desktop: views
  * on the left; search, the filter toggle, view settings and actions on the right; Sort
- * and the quick filters on a second row. Mobile: views and actions, then
- * search and filter, then Sort and the quick filters. Layout only — each page
+ * and the saved filters on a second row. Mobile: views and actions, then
+ * search and filter, then Sort and the saved filters. Layout only — each page
  * supplies the pieces.
  */
 export function BoardToolbar({
@@ -34,7 +34,7 @@ export function BoardToolbar({
   viewSettings,
   actions,
   adhocFilter,
-  quickFilters,
+  savedFilters,
 }: Props) {
   const isMobile = useIsMobile();
   const [filterRowShown, setFilterRowShown] = useLocalStorage(
@@ -83,7 +83,7 @@ export function BoardToolbar({
               orientation="vertical"
               className="data-[orientation=vertical]:h-5"
             />
-            <div className="min-w-0 flex-1">{quickFilters}</div>
+            <div className="min-w-0 flex-1">{savedFilters}</div>
           </div>
         )}
       </div>

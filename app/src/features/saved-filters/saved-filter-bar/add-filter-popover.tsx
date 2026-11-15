@@ -27,11 +27,11 @@ type Props = {
   /** Saved filters not yet on this board. */
   candidates: SavedFilter[];
   onAdd: (id: number) => void;
-  /** Creates an empty quick filter here and opens its editor. */
+  /** Creates an empty saved filter here and opens its editor. */
   onCreate: () => void;
 };
 
-/** [+] on the bar: start a new quick filter, or pin an existing saved one. */
+/** [+] on the bar: start a new saved filter, or pin an existing one. */
 export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
   const [open, setOpen] = useState(false);
   return (
@@ -42,14 +42,14 @@ export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
             <Button
               variant="ghost"
               className="shrink-0 text-muted-foreground"
-              aria-label="Add a quick filter"
+              aria-label="Add a saved filter"
             >
               <PlusIcon />
-              Filter
+              Saved filter
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Add a quick filter</TooltipContent>
+        <TooltipContent>Add a saved filter</TooltipContent>
       </Tooltip>
       <PopoverContent className="w-64 p-0" align="start">
         <Command>
@@ -68,7 +68,7 @@ export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
                 }}
               >
                 <PlusIcon />
-                New quick filter
+                New saved filter
               </CommandItem>
             </CommandGroup>
             {candidates.length > 0 && (

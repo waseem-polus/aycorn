@@ -15,7 +15,7 @@ type Props = {
 };
 
 /**
- * Commit controls for a quick filter with local edits: Save / Save as new /
+ * Commit controls for a saved filter with local edits: Save / Save as new /
  * Discard. Shared filters are committed explicitly (not auto-saved) so tweaks
  * on one board don't silently change every board using them.
  */

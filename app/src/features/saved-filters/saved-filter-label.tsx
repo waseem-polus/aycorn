@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * A saved filter's identity — the one place every surface (quick-filter bar,
+ * A saved filter's identity — the one place every surface (saved-filter bar,
  * drawer header, pickers, /filters) renders it. Cosmetic fields such as icon
  * and color belong here once they exist.
  */

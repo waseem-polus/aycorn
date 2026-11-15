@@ -11,7 +11,7 @@ import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 
 /**
  * The library of saved filters. Management only — filters are created and
- * their conditions edited from a board's filter drawer.
+ * their conditions edited from a board's Filter button.
  */
 export function FiltersPage() {
   const [search, setSearch] = useState("");
@@ -41,7 +41,7 @@ export function FiltersPage() {
         isLoading={isPending}
         emptyMessage={
           filters.length === 0
-            ? "No saved filters yet. Save one from any board's filter drawer."
+            ? "No saved filters yet. Create one from a board's Filter button."
             : "No filters match your search."
         }
       />

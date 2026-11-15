@@ -13,7 +13,7 @@ const UPCOMING_BOARD = { surface: "upcoming" } as const;
 
 /**
  * /upcoming's filters for the view being shown: its ad-hoc drawer filters
- * (remembered per view), the board's quick filters, and the view's grouping
+ * (remembered per view), the board's saved filters, and the view's grouping
  * and collapsed groups. Grouping lives on the view row, so changing it here
  * saves the view.
  */

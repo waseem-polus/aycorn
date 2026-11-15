@@ -7,7 +7,7 @@ export function useProjectDetailsQuery(
   projectId: number,
   search: string,
   enabled: boolean,
-  /** Condition trees, each ANDed: the view's source and the toggled quick filters. */
+  /** Condition trees, each ANDed: the view's source and the toggled saved filters. */
   conditions: WireGroup[] = [],
 ) {
   const { isPending, error, data, isFetching, refetch } = useQuery<ProjectDetails>({

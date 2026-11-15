@@ -11,7 +11,7 @@ const boardKey = (board: Board) =>
 const keyToBoard = (key: string): Board =>
   key === "upcoming" ? { surface: "upcoming" } : { surface: "project", projectId: Number(key.split(":")[1]) };
 
-/** Which boards show this filter as a quick filter; toggling a board pins or unpins it there. */
+/** Which boards show this filter as a chip; toggling a board pins or unpins it there. */
 export function FilterPinsCell({ filter, projects }: { filter: SavedFilter; projects: Project[] }) {
   const { setPins } = useSavedFilterMutations();
   const selected = filter.Pins.map((p) => boardKey(pinToBoard(p)));

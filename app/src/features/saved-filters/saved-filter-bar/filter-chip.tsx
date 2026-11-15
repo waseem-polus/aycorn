@@ -29,9 +29,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { quickFilterHotkey } from "@/features/saved-filters/hooks/useQuickFilterShortcuts";
-import type { QuickFiltersAPI } from "@/features/saved-filters/hooks/useQuickFilters";
-import { QuickFilterEditPopover } from "@/features/saved-filters/quick-filter-bar/quick-filter-edit-popover";
+import { savedFilterHotkey } from "@/features/saved-filters/hooks/useSavedFilterShortcuts";
+import type { BoardSavedFiltersAPI } from "@/features/saved-filters/hooks/useBoardSavedFilters";
+import { SavedFilterEditPopover } from "@/features/saved-filters/saved-filter-bar/saved-filter-edit-popover";
 import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
@@ -42,7 +42,7 @@ export type ChipEditing = { saveAs: boolean } | null;
 
 type Props = {
   filter: SavedFilter;
-  api: QuickFiltersAPI;
+  api: BoardSavedFiltersAPI;
   sources: ConditionOptionSources;
   /** 1-based Alt shortcut, or null past 9. */
   shortcut: number | null;
@@ -63,7 +63,7 @@ type Props = {
 };
 
 /**
- * One pinned quick filter: a toggle (any number can be on at once), drag to
+ * One pinned saved filter: a toggle (any number can be on at once), drag to
  * reorder (the whole chip, after 4px), and a right-click context menu. Edit opens the filter's
  * conditions in a popover anchored to the chip.
  */
@@ -193,7 +193,7 @@ export function FilterChip({
               <TooltipContent className="flex items-center gap-3">
                 {filter.Name}
                 {shortcut !== null && (
-                  <Kbd>{format(quickFilterHotkey(shortcut))}</Kbd>
+                  <Kbd>{format(savedFilterHotkey(shortcut))}</Kbd>
                 )}
               </TooltipContent>
             </Tooltip>
@@ -262,7 +262,7 @@ export function FilterChip({
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void api.unpin(filter.ID)}>
                 <PinOffIcon />
-                Unpin Filter
+                Unpin from board
               </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={onDelete}>
                 <Trash2Icon />
@@ -274,7 +274,7 @@ export function FilterChip({
       </PopoverAnchor>
 
       {editing && (
-        <QuickFilterEditPopover
+        <SavedFilterEditPopover
           filter={filter}
           api={api}
           sources={sources}

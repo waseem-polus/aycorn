@@ -1,7 +1,7 @@
 import type { FilterDefinition } from "@/features/saved-filters/filter-definition";
 
 /**
- * A place a filter can be pinned as a quick filter. Future surfaces (views,
+ * A place a filter can be pinned as a chip. Future surfaces (views,
  * widgets) join this union — and the server's surface check — with no table
  * change.
  */

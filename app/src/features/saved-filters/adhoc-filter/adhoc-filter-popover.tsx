@@ -34,7 +34,7 @@ type Props = {
 /**
  * The toolbar's Filter button: opens the condition builder on the view's
  * unsaved ad hoc tree, so filtering needs no name and nothing saved. Edits
- * apply live; "Save as filter" promotes the tree to a pinned quick filter.
+ * apply live; "Save filter" promotes the tree to a pinned saved filter.
  */
 export function AdhocFilterPopover({ api, sources }: Props) {
   const adhoc = api.adhocConditions;
@@ -108,14 +108,14 @@ export function AdhocFilterPopover({ api, sources }: Props) {
           open={saveOpen}
           onOpenChange={setSaveOpen}
           onSave={async (name) => {
-            await api.saveAdhocConditionsAsQuickFilter(name);
+            await api.saveAdhocConditionsAsSavedFilter(name);
             setOpen(false);
           }}
           align="start"
           trigger={
             <Button variant="secondary" size="sm" disabled={adhoc.count === 0}>
               <SavePlusIcon />
-              Save as filter
+              Save filter
             </Button>
           }
         />

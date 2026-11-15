@@ -1,5 +1,5 @@
 import { boardScope } from "@/features/saved-filters/board";
-import { activeFiltersKey } from "@/features/saved-filters/hooks/useQuickFilters";
+import { activeFiltersKey } from "@/features/saved-filters/hooks/useBoardSavedFilters";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
 
 /**

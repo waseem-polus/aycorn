@@ -3,7 +3,7 @@ import type { WireGroup } from "@/features/task-filters/conditions/condition-typ
 /**
  * Writes a task listing's condition trees onto its request URL — shared by
  * every endpoint that runs `parseTaskFilters` on the server. Each tree (the
- * Filter popover's, a quick filter, a view's source) is its own `conditions`
+ * Filter popover's, a saved filter, a view's source) is its own `conditions`
  * param, and the server ANDs them all.
  */
 export const appendTaskFilterParams = (url: URL, conditions: WireGroup[]) => {

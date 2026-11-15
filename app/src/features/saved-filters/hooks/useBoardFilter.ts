@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { boardScope } from "@/features/saved-filters/board";
 import { useAdhocConditions } from "@/features/saved-filters/hooks/useAdhocConditions";
-import { useQuickFilters } from "@/features/saved-filters/hooks/useQuickFilters";
+import { useBoardSavedFilters } from "@/features/saved-filters/hooks/useBoardSavedFilters";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
 import { useTaskSearch } from "@/features/task-filters/hooks/useTaskSearch";
 
@@ -10,35 +10,35 @@ import { useTaskSearch } from "@/features/task-filters/hooks/useTaskSearch";
  *
  * - `adhocConditions`: the Filter popover's unsaved condition tree, kept under
  *   `adhocScope` — each view remembers its own — and
- * - `quick`: the pinned quick filters, any number toggled on at once.
+ * - `saved`: the saved filters pinned to the board, any number toggled on at once.
  *
- * Plus the search term, which is applied separately. `saveAdhocConditionsAsQuickFilter`
- * promotes the popover's tree into a quick filter.
+ * Plus the search term, which is applied separately. `saveAdhocConditionsAsSavedFilter`
+ * promotes the popover's tree into a saved filter.
  */
 export function useBoardFilter(board: Board, adhocScope: string = boardScope(board)) {
   const { search, setSearch } = useTaskSearch();
-  const quick = useQuickFilters(board);
+  const saved = useBoardSavedFilters(board);
   const adhocConditions = useAdhocConditions(adhocScope);
 
-  /** Saves the Filter popover's tree as a new quick filter (toggled on) and clears it. */
-  const saveAdhocConditionsAsQuickFilter = async (name: string) => {
-    const created = await quick.create(name, adhocConditions.tree);
+  /** Saves the Filter popover's tree as a new saved filter (pinned and toggled on) and clears it. */
+  const saveAdhocConditionsAsSavedFilter = async (name: string) => {
+    const created = await saved.create(name, adhocConditions.tree);
     if (!created) return;
     adhocConditions.clear();
   };
 
   const conditionWires = useMemo(
-    () => (adhocConditions.wire ? [adhocConditions.wire, ...quick.wires] : quick.wires),
-    [adhocConditions.wire, quick.wires],
+    () => (adhocConditions.wire ? [adhocConditions.wire, ...saved.wires] : saved.wires),
+    [adhocConditions.wire, saved.wires],
   );
 
-  /** How many filters are narrowing the list: the popover's conditions plus toggled quick filters. */
-  const activeFilterCount = () => adhocConditions.count + quick.active.length;
+  /** How many filters are narrowing the list: the popover's conditions plus toggled saved filters. */
+  const activeFilterCount = () => adhocConditions.count + saved.active.length;
 
-  /** Clears the popover's conditions, toggled quick filters and the search. */
+  /** Clears the popover's conditions, toggled saved filters and the search. */
   const resetAll = () => {
     adhocConditions.clear();
-    quick.clearAll();
+    saved.clearAll();
     setSearch("");
   };
 
@@ -46,13 +46,13 @@ export function useBoardFilter(board: Board, adhocScope: string = boardScope(boa
     search,
     setSearch,
     board,
-    quick,
+    saved,
     /** The Filter popover's unsaved condition tree, remembered per view. */
     adhocConditions,
-    saveAdhocConditionsAsQuickFilter,
-    /** Condition trees for the request: the Filter popover's, then one per toggled quick filter. */
+    saveAdhocConditionsAsSavedFilter,
+    /** Condition trees for the request: the Filter popover's, then one per toggled saved filter. */
     conditionWires,
-    filtersReady: quick.ready,
+    filtersReady: saved.ready,
     activeFilterCount,
     resetAll,
   };
