@@ -6,11 +6,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 type Props = {
   shown: boolean;
   onToggle: () => void;
-  /** Filters narrowing the list; surfaced as a badge while the row is hidden. */
+  /** Filters narrowing the list, shown as a badge whether or not the row is open. */
   activeCount: number;
 };
 
-/** Shows or hides the sort and filter row. A badge keeps hidden filters from going unnoticed. */
+/** Shows or hides the sort and filter row. The badge counts active filters even while the row is open. */
 export function FilterRowToggle({ shown, onToggle, activeCount }: Props) {
   return (
     <Tooltip>
@@ -24,7 +24,7 @@ export function FilterRowToggle({ shown, onToggle, activeCount }: Props) {
           onClick={onToggle}
         >
           <FilterIcon />
-          {!shown && activeCount > 0 && (
+          {activeCount > 0 && (
             <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 justify-center px-1 text-[10px]">
               {activeCount}
             </Badge>

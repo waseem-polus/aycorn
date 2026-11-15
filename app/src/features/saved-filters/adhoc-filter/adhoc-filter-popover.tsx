@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { useHotkey, useFormatForDisplay } from "@tanstack/react-hotkeys";
 import type { Hotkey } from "@tanstack/hotkeys";
-import { FilterIcon, SavePlusIcon, XIcon } from "lucide-react";
+import { FilterIcon, SavePlusIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { BoardFilterAPI } from "@/features/saved-filters/hooks/useBoardFilter";
 import { SaveFilterPopover } from "@/features/saved-filters/save-filter-popover";
+import { cn } from "@/lib/utils";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { useConditionTree } from "@/features/task-filters/conditions/hooks/useConditionTree";
@@ -36,7 +46,8 @@ export function AdhocFilterPopover({ api, sources }: Props) {
   const changeOpen = (next: boolean) => {
     setOpen(next);
     // Start with a blank condition, its property picker already open.
-    if (next && tree.root.children.length === 0) tree.addCondition(tree.root.id);
+    if (next && tree.root.children.length === 0)
+      tree.addCondition(tree.root.id);
     // Don't leave an untouched blank row behind.
     if (!next && tree.completeCount === 0) adhoc.clear();
   };
@@ -46,19 +57,28 @@ export function AdhocFilterPopover({ api, sources }: Props) {
   return (
     <Popover open={open} onOpenChange={changeOpen}>
       <PopoverAnchor asChild>
-        <div className="flex shrink-0">
+        <div className="shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className={adhoc.count > 0 ? "rounded-r-none" : undefined}
+                  className={cn(
+                    "relative",
+                    adhoc.count > 0 &&
+                      // The outline variant's dark styles win unless overridden too.
+                      "border-primary/40 bg-accent text-accent-foreground dark:border-primary/40 dark:bg-accent dark:hover:bg-accent",
+                  )}
                   aria-label="Filter tasks"
                 >
                   <FilterIcon />
                   Filter
-                  {adhoc.count > 0 && <Badge variant="secondary">{adhoc.count}</Badge>}
+                  {adhoc.count > 0 && (
+                    <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 justify-center px-1 text-[10px]">
+                      {adhoc.count}
+                    </Badge>
+                  )}
                 </Button>
               </PopoverTrigger>
             </TooltipTrigger>
@@ -67,21 +87,6 @@ export function AdhocFilterPopover({ api, sources }: Props) {
               <Kbd>{format(adhocFilterHotkey)}</Kbd>
             </TooltipContent>
           </Tooltip>
-
-          {adhoc.count > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="-ml-px rounded-l-none px-2 text-muted-foreground"
-              aria-label="Clear filter"
-              onClick={() => {
-                tree.clearAll();
-                setOpen(false);
-              }}
-            >
-              <XIcon className="size-3.5" />
-            </Button>
-          )}
         </div>
       </PopoverAnchor>
 
