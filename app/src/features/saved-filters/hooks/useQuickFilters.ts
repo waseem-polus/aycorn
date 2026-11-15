@@ -24,7 +24,7 @@ type Drafts = Record<string, ConditionGroup>;
 
 export const activeFiltersKey = (scope: string) => `aycorn.${scope}.activeFilters`;
 
-const isTree = (value: unknown): value is ConditionGroup =>
+export const isTree = (value: unknown): value is ConditionGroup =>
   !!value && typeof value === "object" && (value as ConditionGroup).kind === "group";
 
 /**

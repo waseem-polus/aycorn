@@ -16,6 +16,7 @@ import { UpcomingSearch } from "@/features/upcoming/upcoming-page/upcoming-searc
 import { FilterButton } from "@/features/task-filters/filter-button";
 import { BoardToolbar } from "@/features/views/board-toolbar";
 import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
+import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
 import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
 import { useUpcomingConditionSources } from "@/features/upcoming/hooks/useUpcomingConditionSources";
 import { GroupByDropdown } from "@/features/upcoming/upcoming-page/group-by-dropdown";
@@ -159,6 +160,9 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                             onGranularityChange={filtersApi.setGranularity}
                           />
                         )
+                      }
+                      adhocFilter={
+                        <AdhocFilterPopover api={filtersApi} sources={conditionSources} />
                       }
                       quickFilters={
                         <QuickFilterBar api={filtersApi.quick} sources={conditionSources} />

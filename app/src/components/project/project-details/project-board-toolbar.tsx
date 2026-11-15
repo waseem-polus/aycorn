@@ -3,6 +3,7 @@ import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { ProjectFiltersDrawer } from "@/features/project-filters/project-filters-drawer";
 import { useProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 import { TaskSearch } from "@/features/project-filters/task-search";
+import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
 import { QuickFilterBar } from "@/features/saved-filters/quick-filter-bar";
 import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
@@ -50,6 +51,7 @@ export function ProjectBoardToolbar({
           </TaskProvider>
         </>
       }
+      adhocFilter={<AdhocFilterPopover api={filtersApi} sources={sources} />}
       quickFilters={<QuickFilterBar api={filtersApi.quick} sources={sources} />}
     />
   );

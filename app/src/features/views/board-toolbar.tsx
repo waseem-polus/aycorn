@@ -12,6 +12,8 @@ type Props = {
   viewSettings: React.ReactNode;
   /** Page-specific actions: Checklists and New Task, group-by, … */
   actions?: React.ReactNode;
+  /** The Filter popover (unsaved condition builder), right of Sort. */
+  adhocFilter: React.ReactNode;
   quickFilters: React.ReactNode;
 };
 
@@ -28,6 +30,7 @@ export function BoardToolbar({
   filter,
   viewSettings,
   actions,
+  adhocFilter,
   quickFilters,
 }: Props) {
   const isMobile = useIsMobile();
@@ -60,7 +63,11 @@ export function BoardToolbar({
 
         <div className="flex min-w-0 items-center gap-2">
           <SortButton />
-          <Separator orientation="vertical" className="data-[orientation=vertical]:h-5" />
+          {adhocFilter}
+          <Separator
+            orientation="vertical"
+            className="data-[orientation=vertical]:h-5"
+          />
           <div className="min-w-0 flex-1">{quickFilters}</div>
         </div>
       </div>

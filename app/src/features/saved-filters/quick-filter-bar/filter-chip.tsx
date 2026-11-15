@@ -185,7 +185,7 @@ export function FilterChip({
                     setMenuOpen(true);
                   }}
                   onFocus={onFocus}
-                  onDoubleClick={startRename}
+                  onDoubleClick={() => openEditor()}
                 >
                   <SavedFilterLabel filter={filter} edited={edited} tooltip={false} />
                 </button>
