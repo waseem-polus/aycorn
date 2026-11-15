@@ -1,4 +1,4 @@
-import { basicToConditions } from "@/features/task-filters/conditions/basic-to-conditions";
+import { basicToConditions, type LegacyBasicFilters } from "@/features/task-filters/conditions/basic-to-conditions";
 import {
   countCompleteLeaves,
   createRoot,
@@ -9,7 +9,6 @@ import type {
   ConditionNode,
 } from "@/features/task-filters/conditions/condition-types";
 import { upgradeGroup } from "@/features/task-filters/conditions/condition-upgrade";
-import type { PersistedFilterState } from "@/features/task-filters/task-filters";
 
 type StoredCondition = Omit<Condition, "id">;
 type StoredGroup = Omit<ConditionGroup, "id" | "children"> & { children: StoredNode[] };
@@ -28,7 +27,7 @@ type StoredNode = StoredCondition | StoredGroup;
  */
 export type FilterDefinition =
   | { version: 3; conditions: StoredGroup }
-  | { version: 1 | 2; basic?: Partial<PersistedFilterState>; conditions?: StoredGroup };
+  | { version: 1 | 2; basic?: Partial<LegacyBasicFilters>; conditions?: StoredGroup };
 
 const stripIds = (node: ConditionNode): StoredNode =>
   node.kind === "condition"

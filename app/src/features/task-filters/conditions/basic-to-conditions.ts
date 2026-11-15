@@ -7,13 +7,38 @@ import type {
   OperatorKey,
   StaticPropertyKey,
 } from "@/features/task-filters/conditions/condition-types";
-import {
-  FILTER_DIMS,
-  type DateFilterMode,
-  type FilterDim,
-  type PersistedFilterState,
-} from "@/features/task-filters/task-filters";
 import { parseApiDate, toYMD } from "@/utils/date";
+
+/**
+ * How a date was filtered in the old drawer. "all" ignores the dimension,
+ * "none" keeps tasks missing that date, "with" keeps tasks that have it —
+ * narrowed by a range when one was picked.
+ */
+export type DateFilterMode = "all" | "none" | "with";
+
+/**
+ * The drawer's flat filters, as stored in saved filters from before condition
+ * trees existed (definition v1/v2). Only read, to fold into a tree.
+ */
+export type LegacyBasicFilters = {
+  project: number[];
+  stage: number[];
+  type: number[];
+  priority: string[];
+  assignee: string[];
+  checklist: number[];
+  dates: {
+    plannedMode?: DateFilterMode;
+    completedMode?: DateFilterMode;
+    plannedFrom?: string;
+    plannedTo?: string;
+    completedFrom?: string;
+    completedTo?: string;
+  };
+};
+
+const FILTER_DIMS = ["project", "stage", "type", "priority", "assignee", "checklist"] as const;
+type FilterDim = (typeof FILTER_DIMS)[number];
 
 /** Basic filter dimensions and the condition property each one becomes. */
 const DIM_PROPERTY: Record<FilterDim, StaticPropertyKey> = {
@@ -59,11 +84,10 @@ const dateCondition = (
 };
 
 /**
- * The simple drawer filters as condition rows, ANDed — how ad-hoc filters
- * become a quick filter, and how pre-v3 saved filters fold their basic half
- * into the tree.
+ * The legacy drawer filters as condition rows, ANDed — how pre-v3 saved
+ * filters fold their basic half into the tree.
  */
-export const basicToConditions = (basic: Partial<PersistedFilterState>): Condition[] => {
+export const basicToConditions = (basic: Partial<LegacyBasicFilters>): Condition[] => {
   const rows: Condition[] = [];
   for (const dim of FILTER_DIMS) {
     const ids = (basic[dim] ?? []) as (string | number)[];

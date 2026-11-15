@@ -11,7 +11,6 @@ import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { EMPTY_FILTERS } from "@/features/task-filters/task-filters";
 import { EditableTaskName } from "@/features/task/header/editable-task-name";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { SelectTaskStage } from "@/features/stage/select-task-stage";
@@ -54,7 +53,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
   const { isPending, isFetching, data } = useProjectDetailsQuery(
     projectId,
-    EMPTY_FILTERS,
+    "",
     true,
   );
 

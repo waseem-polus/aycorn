@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useProjectDetailsQuery } from "@/queries/useProjectDetailsQuery";
-import { EMPTY_FILTERS } from "@/features/task-filters/task-filters";
 
 export function UpcomingProjectDetailsLoader({
   projectId,
@@ -11,7 +10,7 @@ export function UpcomingProjectDetailsLoader({
   open: boolean;
 }) {
   const { SetProject, SetStages, SetChecklists, SetWorkflow } = useContext(ProjectContext);
-  const { data } = useProjectDetailsQuery(projectId, EMPTY_FILTERS, open);
+  const { data } = useProjectDetailsQuery(projectId, "", open);
 
   useEffect(() => {
     if (!data) return;

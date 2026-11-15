@@ -52,7 +52,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
   const activeView = views.active;
   const layout = activeView?.Type ?? null;
   const filtersApi = useUpcomingFilters(activeView, views);
-  const { filters, view, conditionWires } = filtersApi;
+  const { search, view, conditionWires } = filtersApi;
   const sourceWire = useViewSourceWire(activeView);
   const conditions = useMemo(
     () => [...sourceWire, ...conditionWires],
@@ -62,7 +62,6 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
   const conditionSources = useUpcomingConditionSources();
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
-    filters,
     conditions,
     filtersApi.filtersReady && !views.isPending,
   );
@@ -85,8 +84,8 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
   );
 
   const searched = useMemo(
-    () => applyClientFilters(tasks, filters.search),
-    [tasks, filters.search],
+    () => applyClientFilters(tasks, search),
+    [tasks, search],
   );
 
   const taskScopeLookup = useMemo(

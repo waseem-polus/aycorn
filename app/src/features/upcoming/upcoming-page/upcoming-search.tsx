@@ -13,7 +13,7 @@ type Props = {
 
 /** The upcoming page's task search, with the number of tasks shown. */
 export function UpcomingSearch({ isFetching, resultCount }: Props) {
-  const { filters, setSearch } = useUpcomingFiltersContext();
+  const { search, setSearch } = useUpcomingFiltersContext();
 
   return (
     <InputGroup className="flex flex-1">
@@ -22,7 +22,7 @@ export function UpcomingSearch({ isFetching, resultCount }: Props) {
       </InputGroupAddon>
       <InputGroupInput
         placeholder="Search tasks…"
-        value={filters.search}
+        value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
       <InputGroupAddon align="inline-end">

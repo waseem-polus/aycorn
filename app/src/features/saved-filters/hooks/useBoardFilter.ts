@@ -4,10 +4,6 @@ import { useAdhocConditions } from "@/features/saved-filters/hooks/useAdhocCondi
 import { useQuickFilters } from "@/features/saved-filters/hooks/useQuickFilters";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
 import { useTaskSearch } from "@/features/task-filters/hooks/useTaskSearch";
-import {
-  EMPTY_PERSISTED_FILTERS,
-  type TaskFilterState,
-} from "@/features/task-filters/task-filters";
 
 /**
  * One board's filtering, in two independent layers that the server ANDs:
@@ -23,8 +19,6 @@ export function useBoardFilter(board: Board, adhocScope: string = boardScope(boa
   const { search, setSearch } = useTaskSearch();
   const quick = useQuickFilters(board);
   const adhocConditions = useAdhocConditions(adhocScope);
-
-  const filters: TaskFilterState = { ...EMPTY_PERSISTED_FILTERS, search };
 
   /** Saves the Filter popover's tree as a new quick filter (toggled on) and clears it. */
   const saveAdhocConditionsAsQuickFilter = async (name: string) => {
@@ -49,7 +43,7 @@ export function useBoardFilter(board: Board, adhocScope: string = boardScope(boa
   };
 
   return {
-    filters,
+    search,
     setSearch,
     board,
     quick,

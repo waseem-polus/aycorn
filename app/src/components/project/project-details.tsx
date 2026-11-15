@@ -54,7 +54,7 @@ export function ProjectDetails({
   );
   const { isPending, data, isFetching } = useProjectDetailsQuery(
     projectId,
-    filtersApi.filters,
+    filtersApi.search,
     !newTaskOpen && filtersApi.filtersReady && !views.isPending,
     conditions,
   );

@@ -10,14 +10,14 @@ import { Search } from "lucide-react";
 
 export function TaskSearch() {
   const { Tasks } = useContext(ProjectContext);
-  const { filters, setSearch } = useProjectFiltersContext();
+  const { search, setSearch } = useProjectFiltersContext();
 
   return (
     <InputGroup className="flex-1">
       <InputGroupInput
         placeholder="Filter Tasks..."
         onChange={(e) => setSearch(e.target.value ?? "")}
-        value={filters.search}
+        value={search}
       />
       <InputGroupAddon>
         <Search />
