@@ -1,6 +1,5 @@
 import { ProjectChecklists } from "@/components/project/views/project-checklists";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
-import { ProjectFiltersDrawer } from "@/features/project-filters/project-filters-drawer";
 import { useProjectFiltersContext } from "@/features/project-filters/project-filters-context";
 import { TaskSearch } from "@/features/project-filters/task-search";
 import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
@@ -41,7 +40,7 @@ export function ProjectBoardToolbar({
         />
       }
       search={<TaskSearch />}
-      filter={<ProjectFiltersDrawer />}
+      activeFilterCount={filtersApi.activeFilterCount()}
       viewSettings={<ViewSettingsButton selectedId={selectedId} />}
       actions={
         <>

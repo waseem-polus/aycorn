@@ -1,4 +1,6 @@
 import { Separator } from "@/components/ui/separator";
+import { useLocalStorage } from "@/features/calendar/hooks";
+import { FilterRowToggle } from "@/features/views/board-toolbar/filter-row-toggle";
 import { SortButton } from "@/features/views/board-toolbar/sort-button";
 import { ViewSettingsProvider } from "@/features/views/view-settings-provider";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -7,7 +9,8 @@ type Props = {
   /** The view switcher; renders itself as a dropdown on mobile. */
   tabs: React.ReactNode;
   search: React.ReactNode;
-  filter: React.ReactNode;
+  /** Filters narrowing the list, shown on the filter row's toggle while the row is hidden. */
+  activeFilterCount: number;
   /** The view-settings button. Desktop only — on mobile it's in the views dropdown. */
   viewSettings: React.ReactNode;
   /** Page-specific actions: Checklists and New Task, group-by, … */
@@ -19,7 +22,7 @@ type Props = {
 
 /**
  * The layout every board (a project page, `/upcoming`) shares. Desktop: views
- * on the left; search, filter, view settings and actions on the right; Sort
+ * on the left; search, the filter toggle, view settings and actions on the right; Sort
  * and the quick filters on a second row. Mobile: views and actions, then
  * search and filter, then Sort and the quick filters. Layout only — each page
  * supplies the pieces.
@@ -27,13 +30,24 @@ type Props = {
 export function BoardToolbar({
   tabs,
   search,
-  filter,
+  activeFilterCount,
   viewSettings,
   actions,
   adhocFilter,
   quickFilters,
 }: Props) {
   const isMobile = useIsMobile();
+  const [filterRowShown, setFilterRowShown] = useLocalStorage(
+    "aycorn.board.filterRow",
+    true,
+  );
+  const filterToggle = (
+    <FilterRowToggle
+      shown={filterRowShown}
+      onToggle={() => setFilterRowShown((shown) => !shown)}
+      activeCount={activeFilterCount}
+    />
+  );
 
   return (
     <ViewSettingsProvider>
@@ -46,7 +60,7 @@ export function BoardToolbar({
             </div>
             <div className="flex items-center gap-2">
               <div className="flex min-w-0 flex-1">{search}</div>
-              {filter}
+              {filterToggle}
             </div>
           </>
         ) : (
@@ -54,22 +68,24 @@ export function BoardToolbar({
             <div className="min-w-0 flex-1">{tabs}</div>
             <div className="flex shrink-0 items-center gap-2">
               <div className="flex w-72">{search}</div>
-              {filter}
+              {filterToggle}
               {viewSettings}
               {actions}
             </div>
           </div>
         )}
 
-        <div className="flex min-w-0 items-center gap-2">
-          <SortButton />
-          {adhocFilter}
-          <Separator
-            orientation="vertical"
-            className="data-[orientation=vertical]:h-5"
-          />
-          <div className="min-w-0 flex-1">{quickFilters}</div>
-        </div>
+        {filterRowShown && (
+          <div className="flex min-w-0 items-center gap-2">
+            <SortButton />
+            {adhocFilter}
+            <Separator
+              orientation="vertical"
+              className="data-[orientation=vertical]:h-5"
+            />
+            <div className="min-w-0 flex-1">{quickFilters}</div>
+          </div>
+        )}
       </div>
     </ViewSettingsProvider>
   );

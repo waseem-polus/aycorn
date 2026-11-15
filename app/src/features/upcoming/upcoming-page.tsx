@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import {
   Page,
   PageContent,
@@ -6,14 +6,11 @@ import {
   PageTitle,
 } from "@/components/page/Page";
 import { useUpcomingTasksQuery } from "@/features/upcoming/queries/useUpcomingTasksQuery";
-import { useTaskFacetsQuery } from "@/features/task-filters/queries/useTaskFacetsQuery";
 import { useUpcomingFilters } from "@/features/upcoming/hooks/useUpcomingFilters";
 import { applyClientFilters } from "@/features/upcoming/upcoming-grouping";
-import { UpcomingFilterDrawer } from "@/features/upcoming/upcoming-filter-drawer";
 import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { UpcomingSearch } from "@/features/upcoming/upcoming-page/upcoming-search";
-import { FilterButton } from "@/features/task-filters/filter-button";
 import { BoardToolbar } from "@/features/views/board-toolbar";
 import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
 import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
@@ -34,8 +31,6 @@ import { useSharedSelection } from "@/hooks/useSelection";
 import { useAllProjectsQuery } from "@/queries/useAllProjectsQuery";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
 import { useAllStagesQuery } from "@/features/stage/queries/useAllStagesQuery";
-import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
-import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import type { GroupingData } from "@/features/views/grouping/task-grouping";
 import type { Stage } from "@/types/types";
 import { useBoardViews } from "@/features/views/hooks/useBoardViews";
@@ -64,7 +59,6 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
     [sourceWire, conditionWires],
   );
 
-  const [filterOpen, setFilterOpen] = useState(false);
   const conditionSources = useUpcomingConditionSources();
 
   const { data: tasks = [], isFetching } = useUpcomingTasksQuery(
@@ -72,13 +66,9 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
     conditions,
     filtersApi.filtersReady && !views.isPending,
   );
-  const { data: facets = { assignees: [], checklists: [] } } =
-    useTaskFacetsQuery();
   const { data: projects = [] } = useAllProjectsQuery();
   const { data: workflows = [] } = useAllWorkflowsQuery();
   const { data: allStagesData = [] } = useAllStagesQuery();
-  const { data: taskTypes = [] } = useTaskTypesQuery();
-  const { data: taskTypeCategories = [] } = useTaskTypeCategoriesQuery();
 
   const projectById = useMemo(
     () => Object.fromEntries(projects.map((p) => [p.ID, p])),
@@ -141,12 +131,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                           resultCount={searched.length}
                         />
                       }
-                      filter={
-                        <FilterButton
-                          activeCount={filtersApi.activeFilterCount()}
-                          onClick={() => setFilterOpen(true)}
-                        />
-                      }
+                      activeFilterCount={filtersApi.activeFilterCount()}
                       viewSettings={
                         <ViewSettingsButton selectedId={activeView?.ID ?? null} />
                       }
@@ -203,18 +188,6 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
           <ClearSelectionOnViewChange viewId={activeView?.ID ?? null} />
         </PageContent>
       </Page>
-
-      {/* Filter drawer */}
-      <UpcomingFilterDrawer
-        open={filterOpen}
-        projects={projects}
-        stages={allStages}
-        workflows={workflows}
-        taskTypes={taskTypes}
-        taskTypeCategories={taskTypeCategories}
-        facets={facets}
-        onClose={() => setFilterOpen(false)}
-      />
     </UpcomingFiltersContext.Provider>
   );
 }

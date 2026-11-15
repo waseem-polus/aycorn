@@ -3,32 +3,28 @@ import { boardScope } from "@/features/saved-filters/board";
 import { useAdhocConditions } from "@/features/saved-filters/hooks/useAdhocConditions";
 import { useQuickFilters } from "@/features/saved-filters/hooks/useQuickFilters";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
-import { basicToConditions } from "@/features/task-filters/conditions/basic-to-conditions";
-import { createRoot } from "@/features/task-filters/conditions/condition-tree-ops";
-import { useTaskFilters } from "@/features/task-filters/hooks/useTaskFilters";
+import { useTaskSearch } from "@/features/task-filters/hooks/useTaskSearch";
+import {
+  EMPTY_PERSISTED_FILTERS,
+  type TaskFilterState,
+} from "@/features/task-filters/task-filters";
 
 /**
  * One board's filtering, in two independent layers that the server ANDs:
  *
- * - the ad-hoc drawer filters (spread at the top level, so the drawer, search
- *   and queries use them as before), kept under `adhocScope` — each view
- *   remembers its own — and
+ * - `adhocConditions`: the Filter popover's unsaved condition tree, kept under
+ *   `adhocScope` — each view remembers its own — and
  * - `quick`: the pinned quick filters, any number toggled on at once.
  *
- * `saveAdhocAsQuickFilter` promotes the drawer's filters into a quick filter.
+ * Plus the search term, which is applied separately. `saveAdhocConditionsAsQuickFilter`
+ * promotes the popover's tree into a quick filter.
  */
 export function useBoardFilter(board: Board, adhocScope: string = boardScope(board)) {
-  const adhoc = useTaskFilters(adhocScope);
+  const { search, setSearch } = useTaskSearch();
   const quick = useQuickFilters(board);
   const adhocConditions = useAdhocConditions(adhocScope);
 
-  /** Saves the ad-hoc filters as a new quick filter (toggled on) and clears them. */
-  const saveAdhocAsQuickFilter = async (name: string) => {
-    const root = { ...createRoot(), children: basicToConditions(adhoc.persisted) };
-    const created = await quick.create(name, root);
-    if (!created) return;
-    adhoc.resetAll();
-  };
+  const filters: TaskFilterState = { ...EMPTY_PERSISTED_FILTERS, search };
 
   /** Saves the Filter popover's tree as a new quick filter (toggled on) and clears it. */
   const saveAdhocConditionsAsQuickFilter = async (name: string) => {
@@ -42,8 +38,19 @@ export function useBoardFilter(board: Board, adhocScope: string = boardScope(boa
     [adhocConditions.wire, quick.wires],
   );
 
+  /** How many filters are narrowing the list: the popover's conditions plus toggled quick filters. */
+  const activeFilterCount = () => adhocConditions.count + quick.active.length;
+
+  /** Clears the popover's conditions, toggled quick filters and the search. */
+  const resetAll = () => {
+    adhocConditions.clear();
+    quick.clearAll();
+    setSearch("");
+  };
+
   return {
-    ...adhoc,
+    filters,
+    setSearch,
     board,
     quick,
     /** The Filter popover's unsaved condition tree, remembered per view. */
@@ -52,7 +59,8 @@ export function useBoardFilter(board: Board, adhocScope: string = boardScope(boa
     /** Condition trees for the request: the Filter popover's, then one per toggled quick filter. */
     conditionWires,
     filtersReady: quick.ready,
-    saveAdhocAsQuickFilter,
+    activeFilterCount,
+    resetAll,
   };
 }
 
