@@ -41,7 +41,14 @@ export function ProjectBoardToolbar({
       }
       search={<TaskSearch />}
       activeFilterCount={filtersApi.activeFilterCount()}
-      viewSettings={<ViewSettingsButton selectedId={selectedId} />}
+      viewSettings={
+        <ViewSettingsButton
+          api={views}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          sources={sources}
+        />
+      }
       actions={
         <>
           <ProjectChecklists />

@@ -16,7 +16,6 @@ import {
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -25,14 +24,14 @@ import {
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { DeleteViewDialog } from "@/features/views/delete-view-dialog";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
+import { useViewActions } from "@/features/views/hooks/useViewActions";
 import { useViewShortcuts } from "@/features/views/hooks/useViewShortcuts";
 import { useVisibleTabs } from "@/features/views/hooks/useVisibleTabs";
-import { ViewSettingsPopover } from "@/features/views/view-settings-popover";
-import { useViewSettings } from "@/features/views/view-settings-context";
+import { ViewMenu } from "@/features/views/view-menu";
+import { useViewMenuState } from "@/features/views/view-menu-context";
 import { ViewOverflowMenu } from "@/features/views/view-tabs/view-overflow-menu";
 import { ViewSelectMobile } from "@/features/views/view-tabs/view-select-mobile";
 import { ViewTab } from "@/features/views/view-tabs/view-tab";
-import type { BoardView } from "@/features/views/view-types";
 import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
@@ -44,26 +43,28 @@ type Props = {
 };
 
 /**
- * A board's views as a tab strip: select, drag to reorder, edit a view's
- * settings in place, and [+] to add one. A roving tablist — ←/→ move, Enter
- * on the selected tab toggles its settings — plus Alt+Shift+1…9. Right-click
- * opens a tab's context menu. Tabs that don't fit collapse into a `+N` menu;
- * on mobile the strip is a dropdown instead.
+ * A board's views as a tab strip: select, drag to reorder, and [+] to add
+ * one. A roving tablist — ←/→ move, Enter on the selected tab opens its menu —
+ * plus Alt+Shift+1…9. Right-click opens a tab's menu (see `ViewMenu`). Tabs
+ * that don't fit collapse into a `+N` menu; on mobile the strip is a dropdown
+ * instead.
  *
- * Which view's settings are open is shared (see `ViewSettingsProvider`) so the
- * toolbar's settings button can toggle them.
+ * Which view's menu is open is shared (see `ViewMenuProvider`) so the
+ * toolbar's settings button can open the same one.
  */
 export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
   const { views } = api;
   const isMobile = useIsMobile();
-  const { editingId, setEditingId } = useViewSettings();
+  const menuState = useViewMenuState();
+  const { openMenu, closeAll } = menuState;
   // Which view is being renamed in its tab.
   const [renamingId, setRenamingId] = useState<number | null>(null);
-  // Switching to another view (tab click, shortcut, URL) closes the editor.
+  // Switching to another view (tab click, shortcut, URL) closes its menu.
   useEffect(() => {
-    if (editingId !== null && editingId !== selectedId) setEditingId(null);
-  }, [selectedId, editingId, setEditingId]);
-  const [deleting, setDeleting] = useState<BoardView | null>(null);
+    if (openMenu !== null && openMenu.viewId !== selectedId) closeAll();
+  }, [selectedId, openMenu, closeAll]);
+  const actions = useViewActions(api, selectedId, onSelect);
+  const { deleting, setDeleting } = actions;
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const rowRef = useRef<HTMLDivElement | null>(null);
@@ -113,14 +114,6 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     { target: tablistRef },
   );
 
-  const move = (id: number, delta: -1 | 1) => {
-    const ids = views.map((v) => v.ID);
-    const from = ids.indexOf(id);
-    const to = from + delta;
-    if (to < 0 || to >= ids.length) return;
-    api.reorder(arrayMove(ids, from, to));
-  };
-
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
     const ids = views.map((v) => v.ID);
@@ -129,29 +122,14 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
 
   /**
    * Create-empty-then-edit: a new list view, selected — with its name ready to
-   * type on a tab, or its settings open on mobile (which has no tab to rename).
+   * type on a tab, or its menu open on mobile (which has no tab to rename).
    */
   const addView = async () => {
     const created = await api.create("list");
     if (!created) return;
     onSelect(created.ID);
-    if (isMobile) setEditingId(created.ID);
+    if (isMobile) menuState.open(created.ID, "mobile");
     else setRenamingId(created.ID);
-  };
-
-  const duplicate = async (id: number) => {
-    const created = await api.duplicate(id);
-    if (created) onSelect(created.ID);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleting) return;
-    const index = views.findIndex((v) => v.ID === deleting.ID);
-    const removed = await api.remove(deleting.ID);
-    setDeleting(null);
-    if (!removed || deleting.ID !== selectedId) return;
-    const neighbour = views[index + 1] ?? views[index - 1];
-    if (neighbour) onSelect(neighbour.ID);
   };
 
   const deleteDialog = deleting && (
@@ -159,7 +137,7 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
       view={deleting}
       open
       onOpenChange={(open) => !open && setDeleting(null)}
-      onConfirm={() => void confirmDelete()}
+      onConfirm={() => void actions.confirmDelete()}
     />
   );
 
@@ -167,39 +145,40 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     const selectedView = views.find((v) => v.ID === selectedId);
     return (
       <>
-        {/* The settings popover is a sibling of the dropdown, so clicks in it
-            don't bubble into the menu's handlers. */}
-        <Popover
-          open={selectedView !== undefined && editingId === selectedView.ID}
-          onOpenChange={(open) => !open && setEditingId(null)}
-        >
-          <PopoverAnchor asChild>
-            <div className="min-w-0">
-              <ViewSelectMobile
-                views={views}
-                selectedId={selectedId}
-                onSelect={onSelect}
-                onAdd={() => void addView()}
-                onOpenSettings={() => selectedId !== null && setEditingId(selectedId)}
-              />
-            </div>
-          </PopoverAnchor>
-          {selectedView && editingId === selectedView.ID && (
-            <ViewSettingsPopover
+        <div className="relative min-w-0">
+          <ViewSelectMobile
+            views={views}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            onAdd={() => void addView()}
+            onOpenSettings={() =>
+              selectedId !== null && menuState.open(selectedId, "mobile")
+            }
+          />
+          {selectedView && (
+            <ViewMenu
               view={selectedView}
               api={api}
               sources={sources}
-              onDuplicate={() => {
-                setEditingId(null);
-                void duplicate(selectedView.ID);
-              }}
-              onDelete={() => {
-                setEditingId(null);
-                setDeleting(selectedView);
-              }}
+              isFirst={views[0]?.ID === selectedView.ID}
+              isLast={views[views.length - 1]?.ID === selectedView.ID}
+              open={
+                openMenu?.viewId === selectedView.ID &&
+                openMenu.anchor === "mobile"
+              }
+              onOpenChange={(open) =>
+                open
+                  ? menuState.open(selectedView.ID, "mobile")
+                  : menuState.close(selectedView.ID, "mobile")
+              }
+              onMove={(delta) => actions.move(selectedView.ID, delta)}
+              onDuplicate={() => void actions.duplicate(selectedView.ID)}
+              onDelete={() => setDeleting(selectedView)}
+              // Invisible anchor so the menu lines up with the switcher.
+              trigger={<span className="pointer-events-none absolute inset-0" />}
             />
           )}
-        </Popover>
+        </div>
         {deleteDialog}
       </>
     );
@@ -232,8 +211,6 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
                 isFirst={i === 0}
                 isLast={i === views.length - 1}
                 overflowed={!isShown(i)}
-                editing={editingId === view.ID}
-                onEditingChange={(open) => setEditingId(open ? view.ID : null)}
                 renaming={renamingId === view.ID}
                 onRenamingChange={(on) => setRenamingId(on ? view.ID : null)}
                 tabRef={(el) => {
@@ -241,8 +218,8 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
                 }}
                 onSelect={() => onSelect(view.ID)}
                 onFocus={() => setFocusIndex(i)}
-                onMove={(delta) => move(view.ID, delta)}
-                onDuplicate={() => void duplicate(view.ID)}
+                onMove={(delta) => actions.move(view.ID, delta)}
+                onDuplicate={() => void actions.duplicate(view.ID)}
                 onDelete={() => setDeleting(view)}
               />
             ))}

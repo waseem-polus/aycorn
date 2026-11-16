@@ -8,7 +8,6 @@ import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { navigateDate } from "@/features/calendar/helpers";
 
 import type { TCalendarView } from "@/features/calendar/types";
-import { Settings } from "../settings/settings";
 
 interface IProps {
   view: TCalendarView;
@@ -80,8 +79,6 @@ export function DateNavigator({ view }: IProps) {
         >
           <ChevronRight className="h-4 w-4" />
         </MotionButton>
-
-        <Settings />
       </div>
     </div>
   );

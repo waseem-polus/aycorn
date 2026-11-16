@@ -132,7 +132,12 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                       }
                       activeFilterCount={filtersApi.activeFilterCount()}
                       viewSettings={
-                        <ViewSettingsButton selectedId={activeView?.ID ?? null} />
+                        <ViewSettingsButton
+                          api={views}
+                          selectedId={activeView?.ID ?? null}
+                          onSelect={setViewId}
+                          sources={conditionSources}
+                        />
                       }
                       actions={
                         layout === "list" && (

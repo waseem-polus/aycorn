@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import { FilterRowToggle } from "@/features/views/board-toolbar/filter-row-toggle";
 import { SortButton } from "@/features/views/board-toolbar/sort-button";
-import { ViewSettingsProvider } from "@/features/views/view-settings-provider";
+import { ViewMenuProvider } from "@/features/views/view-menu-provider";
 import { useIsMobile } from "@/hooks/useMobile";
 
 type Props = {
@@ -50,7 +50,7 @@ export function BoardToolbar({
   );
 
   return (
-    <ViewSettingsProvider>
+    <ViewMenuProvider>
       <div className="flex min-w-0 flex-col gap-2">
         {isMobile ? (
           <>
@@ -87,6 +87,6 @@ export function BoardToolbar({
           </div>
         )}
       </div>
-    </ViewSettingsProvider>
+    </ViewMenuProvider>
   );
 }
