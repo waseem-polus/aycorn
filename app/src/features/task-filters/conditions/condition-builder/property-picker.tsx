@@ -1,17 +1,11 @@
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OptionCommandList } from "@/components/ui/option-command-list";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useConditionBuilder } from "@/features/task-filters/conditions/condition-builder-context";
 import { PropertyIcon } from "@/features/task-filters/conditions/condition-builder/property-icon";
-import {
-  linkPropertyKeys,
-  PROPERTY_SECTIONS,
-  resolveProperty,
-  STATIC_PROPERTIES,
-  STATIC_PROPERTY_KEYS,
-} from "@/features/task-filters/conditions/condition-properties";
+import { PropertyList } from "@/features/task-filters/conditions/condition-builder/property-list";
+import { resolveProperty } from "@/features/task-filters/conditions/condition-properties";
 import type { PropertyKey } from "@/features/task-filters/conditions/condition-types";
 
 type Props = {
@@ -23,28 +17,6 @@ type Props = {
 
 export function PropertyPicker({ value, open, onOpenChange, onSelect }: Props) {
   const { sources, linkTypes } = useConditionBuilder();
-  // Enum properties need values to pick from; without a source on this
-  // surface they aren't offered, nor is anything that requires that source.
-  const staticKeys = STATIC_PROPERTY_KEYS.filter((key) => {
-    const meta = STATIC_PROPERTIES[key];
-    if (meta.valueKind === "enum" && !sources[key]) return false;
-    return !meta.requiresSource || !!sources[meta.requiresSource];
-  });
-  // "Task links" first, then each direction of each relationship type.
-  const available: PropertyKey[] = [...staticKeys, ...linkPropertyKeys(linkTypes)];
-
-  const groups = PROPERTY_SECTIONS.map((section) => ({
-    label: section,
-    options: available
-      .map((key) => ({ key, meta: resolveProperty(key, linkTypes) }))
-      .filter(({ meta }) => meta.section === section)
-      .map(({ key, meta }) => ({
-        key,
-        label: meta.label,
-        lead: <PropertyIcon icon={meta.icon} className="size-4 shrink-0" />,
-      })),
-  })).filter((g) => g.options.length > 0);
-
   const meta = value ? resolveProperty(value, linkTypes) : null;
 
   return (
@@ -72,11 +44,11 @@ export function PropertyPicker({ value, open, onOpenChange, onSelect }: Props) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-60 p-0" align="start" data-vaul-no-drag>
-        <OptionCommandList
-          groups={groups}
-          selected={value ? [value] : []}
-          onSelect={(key) => onSelect(key as PropertyKey)}
-          searchPlaceholder="Search properties…"
+        <PropertyList
+          sources={sources}
+          linkTypes={linkTypes}
+          selected={value}
+          onSelect={onSelect}
         />
       </PopoverContent>
     </Popover>

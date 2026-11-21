@@ -13,6 +13,9 @@ import type {
   PropertyKey,
 } from "@/features/task-filters/conditions/condition-types";
 
+/** A just-added condition and the picker it opens with. */
+type AutoOpen = { id: string; picker: "property" | "operator" };
+
 /** Long enough to notice and reach for Undo; sonner's 4s default is gone before you can. */
 export const UNDO_TOAST_MS = 8000;
 
@@ -27,11 +30,12 @@ export function useConditionTree(
   update: (fn: (root: ConditionGroup) => ConditionGroup) => void,
 ) {
   /**
-   * The condition whose property picker should open as soon as it renders —
-   * set when a condition is added, so building a filter flows from the
-   * keyboard without hunting for the new row.
+   * The condition whose picker should open as soon as it renders — set when
+   * a condition is added, so building a filter flows from the keyboard
+   * without hunting for the new row. A condition added with its property
+   * already chosen opens its operator instead.
    */
-  const [autoOpenId, setAutoOpenId] = useState<string | null>(null);
+  const [autoOpen, setAutoOpen] = useState<AutoOpen | null>(null);
 
   const replaceRoot = (next: ConditionGroup) => update(() => next);
 
@@ -45,14 +49,14 @@ export function useConditionTree(
   const addCondition = (groupId: string, property: PropertyKey | null = null) => {
     const condition = ops.createCondition(property);
     update((r) => ops.addChild(r, groupId, condition));
-    setAutoOpenId(condition.id);
+    setAutoOpen({ id: condition.id, picker: property ? "operator" : "property" });
   };
 
   /** A new group starts with one empty condition, ready for its property. */
   const addGroup = (groupId: string) => {
     const condition = ops.createCondition();
     update((r) => ops.addChild(r, groupId, ops.createGroup([condition])));
-    setAutoOpenId(condition.id);
+    setAutoOpen({ id: condition.id, picker: "property" });
   };
 
   /** Deleting a group with content can be undone; a single condition is cheap to redo. */
@@ -84,8 +88,8 @@ export function useConditionTree(
     root,
     wire,
     completeCount,
-    autoOpenId,
-    clearAutoOpen: () => setAutoOpenId(null),
+    autoOpen,
+    clearAutoOpen: () => setAutoOpen(null),
     replaceRoot,
     addCondition,
     addGroup,

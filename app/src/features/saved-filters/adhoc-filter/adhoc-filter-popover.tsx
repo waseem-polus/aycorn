@@ -21,7 +21,9 @@ import { SaveFilterPopover } from "@/features/saved-filters/save-filter-popover"
 import { cn } from "@/lib/utils";
 import { ConditionBuilder } from "@/features/task-filters/conditions/condition-builder";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
+import { PropertyList } from "@/features/task-filters/conditions/condition-builder/property-list";
 import { useConditionTree } from "@/features/task-filters/conditions/hooks/useConditionTree";
+import { useLinkConditionData } from "@/features/task-filters/conditions/hooks/useLinkConditionData";
 
 /** Opens the Filter popover. Also drives the button's tooltip hint. */
 export const adhocFilterHotkey = "Alt+F" as Hotkey;
@@ -35,19 +37,24 @@ type Props = {
  * The toolbar's Filter button: opens the condition builder on the view's
  * unsaved ad hoc tree, so filtering needs no name and nothing saved. Edits
  * apply live; "Save filter" promotes the tree to a pinned saved filter.
+ *
+ * Opened with no conditions it's just the property list; picking one adds
+ * the first condition and the full editor takes over. Clearing every
+ * condition keeps the editor (with its empty message) until it closes.
  */
 export function AdhocFilterPopover({ api, sources }: Props) {
   const adhoc = api.adhocConditions;
   const tree = useConditionTree(adhoc.tree, adhoc.update);
   const [open, setOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  // Opened with nothing to edit: show only the property list.
+  const [bare, setBare] = useState(false);
+  const { linkTypes } = useLinkConditionData();
   const format = useFormatForDisplay();
 
   const changeOpen = (next: boolean) => {
     setOpen(next);
-    // Start with a blank condition, its property picker already open.
-    if (next && tree.root.children.length === 0)
-      tree.addCondition(tree.root.id);
+    if (next) setBare(tree.root.children.length === 0);
     // Don't leave an untouched blank row behind.
     if (!next && tree.completeCount === 0) adhoc.clear();
   };
@@ -92,7 +99,11 @@ export function AdhocFilterPopover({ api, sources }: Props) {
 
       <PopoverContent
         align="start"
-        className="flex w-[36rem] max-w-[calc(100vw-2rem)] max-h-[70vh] flex-col gap-4 overflow-y-auto"
+        className={
+          bare
+            ? "w-60 p-0"
+            : "flex w-[36rem] max-w-[calc(100vw-2rem)] max-h-[70vh] flex-col gap-4 overflow-y-auto"
+        }
         // Clicking a toast (e.g. Undo after clearing conditions) isn't a
         // click away from the editor.
         onInteractOutside={(e) => {
@@ -100,25 +111,47 @@ export function AdhocFilterPopover({ api, sources }: Props) {
             e.preventDefault();
           }
         }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        // The bare property list takes focus so you can type to search; the
+        // full editor leaves it where it was.
+        onOpenAutoFocus={(e) => {
+          if (!bare) e.preventDefault();
+        }}
       >
-        <ConditionBuilder tree={tree} sources={sources} />
+        {bare ? (
+          <PropertyList
+            sources={sources}
+            linkTypes={linkTypes}
+            onSelect={(property) => {
+              // The new condition opens its operator picker next.
+              tree.addCondition(tree.root.id, property);
+              setBare(false);
+            }}
+          />
+        ) : (
+          <>
+            <ConditionBuilder tree={tree} sources={sources} />
 
-        <SaveFilterPopover
-          open={saveOpen}
-          onOpenChange={setSaveOpen}
-          onSave={async (name) => {
-            await api.saveAdhocConditionsAsSavedFilter(name);
-            setOpen(false);
-          }}
-          align="start"
-          trigger={
-            <Button variant="secondary" size="sm" disabled={adhoc.count === 0}>
-              <SavePlusIcon />
-              Save filter
-            </Button>
-          }
-        />
+            <SaveFilterPopover
+              open={saveOpen}
+              onOpenChange={setSaveOpen}
+              onSave={async (name) => {
+                await api.saveAdhocConditionsAsSavedFilter(name);
+                setOpen(false);
+              }}
+              align="start"
+              trigger={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={adhoc.count === 0}
+                >
+                  <SavePlusIcon />
+                  Save filter
+                </Button>
+              }
+            />
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );

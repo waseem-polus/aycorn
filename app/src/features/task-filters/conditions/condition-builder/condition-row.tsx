@@ -31,15 +31,15 @@ export function ConditionRow({ condition, handle }: Props) {
   const { tree } = useConditionBuilder();
   const { id, property, operator } = condition;
   const [openPicker, setOpenPicker] = useState<OpenPicker>(() =>
-    tree.autoOpenId === id ? "property" : null,
+    tree.autoOpen?.id === id ? tree.autoOpen.picker : null,
   );
 
-  // A freshly added condition opens its property picker once; clear the flag
-  // so it doesn't reopen when the row remounts after a move or wrap.
-  const { autoOpenId, clearAutoOpen } = tree;
+  // A freshly added condition opens its picker once; clear the flag so it
+  // doesn't reopen when the row remounts after a move or wrap.
+  const { autoOpen, clearAutoOpen } = tree;
   useEffect(() => {
-    if (autoOpenId === id) clearAutoOpen();
-  }, [autoOpenId, id, clearAutoOpen]);
+    if (autoOpen?.id === id) clearAutoOpen();
+  }, [autoOpen, id, clearAutoOpen]);
 
   const pickerProps = (picker: Exclude<OpenPicker, null>) => ({
     open: openPicker === picker,
