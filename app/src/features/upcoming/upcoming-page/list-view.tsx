@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { UpcomingTaskList } from "@/features/upcoming/upcoming-page/task-list";
 import { useUpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-context";
 import { buildGroups, sortTasks } from "@/features/views/grouping/task-grouping";
+import { applySort } from "@/features/views/grouping/task-sorting";
 import type { GroupingData } from "@/features/views/grouping/task-grouping";
 import type { Project, Stage, TaskWithProject } from "@/types/types";
 import type { TaskGroup } from "@/features/views/grouping/task-grouping";
@@ -23,14 +24,21 @@ export function UpcomingListView({
   const { view } = useUpcomingFiltersContext();
 
   const today = useToday();
-  const { groupBy, granularity } = view;
+  const { groupBy, granularity, sort } = view;
   const groups = useMemo<TaskGroup<TaskWithProject>[]>(
     () =>
       groupBy
-        ? buildGroups(tasks, { groupBy, granularity, today, data: groupingData })
+        ? buildGroups(tasks, { groupBy, granularity, today, data: groupingData, sort })
         : // Ungrouped: one headerless group.
-          [{ key: "all", label: "All tasks", order: 0, tasks: sortTasks(tasks) }],
-    [tasks, groupBy, granularity, today, groupingData],
+          [
+            {
+              key: "all",
+              label: "All tasks",
+              order: 0,
+              tasks: sort.length > 0 ? applySort(tasks, sort, groupingData) : sortTasks(tasks),
+            },
+          ],
+    [tasks, groupBy, granularity, today, groupingData, sort],
   );
 
   return (

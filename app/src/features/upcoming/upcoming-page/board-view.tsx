@@ -3,7 +3,8 @@ import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQue
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import { buildBoardColumns } from "@/features/views/board/board-columns";
 import { KanbanBoard } from "@/features/views/board/kanban-board";
-import type { GroupByKey } from "@/features/views/view-types";
+import { applySort, type SortData } from "@/features/views/grouping/task-sorting";
+import type { GroupByKey, SortRule } from "@/features/views/view-types";
 import type { Stage, TaskWithProject, WorkflowSummary } from "@/types/types";
 
 type Props = {
@@ -11,6 +12,8 @@ type Props = {
   groupBy: GroupByKey | null;
   stages: Stage[];
   workflows: WorkflowSummary[];
+  sort: SortRule[];
+  sortData: SortData;
 };
 
 /**
@@ -19,18 +22,19 @@ type Props = {
  * move to another workflow's stage. Tasks are created from a project, so
  * columns have no create control here.
  */
-export function UpcomingBoardView({ tasks, groupBy, stages, workflows }: Props) {
+export function UpcomingBoardView({ tasks, groupBy, stages, workflows, sort, sortData }: Props) {
   const { data: taskTypes = [] } = useTaskTypesQuery();
   const { data: categories = [] } = useTaskTypeCategoriesQuery();
   const columns = useMemo(
     () =>
-      buildBoardColumns(groupBy, tasks, {
+      // Columns keep their tasks' relative order, so sorting first sorts every column.
+      buildBoardColumns(groupBy, applySort(tasks, sort, sortData), {
         stages,
         workflowNames: Object.fromEntries(workflows.map((w) => [w.ID, w.Name])),
         taskTypes,
         categories,
       }),
-    [groupBy, tasks, stages, workflows, taskTypes, categories],
+    [groupBy, tasks, stages, workflows, taskTypes, categories, sort, sortData],
   );
 
   return (

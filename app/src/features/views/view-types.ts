@@ -22,6 +22,26 @@ export type Granularity = "day" | "week" | "month";
 
 export type GroupOptions = { granularity?: Granularity };
 
+/** A property a view can sort its tasks by. New keys join `SORT_LABELS` and the server's `viewSortKeys`. */
+export type SortKey =
+  | "name"
+  | "priority"
+  | "stage"
+  | "stageType"
+  | "type"
+  | "assignee"
+  | "checklist"
+  | "project"
+  | "timePlanned"
+  | "timeCompleted"
+  | "timeCreated"
+  | "timeModified";
+
+export type SortDirection = "asc" | "desc";
+
+/** One level of a view's sort. A view's rules apply in order; later ones break earlier ties. */
+export type SortRule = { property: SortKey; direction: SortDirection };
+
 /**
  * A user-defined way of looking at a board's tasks: a layout, a grouping, and
  * `Source` — the view's own filter, in the saved-filter definition shape.
@@ -37,6 +57,8 @@ export type BoardView = {
   GroupBy: GroupByKey | null;
   GroupOptions: GroupOptions;
   Source: FilterDefinition;
+  /** Applied in order on list and board layouts; empty keeps the default order. */
+  Sort: SortRule[];
   Position: number;
   TimeCreated: string;
   TimeModified: string;
@@ -51,4 +73,5 @@ export type ViewPatch = Partial<{
   groupBy: GroupByKey | null;
   groupOptions: GroupOptions;
   source: FilterDefinition;
+  sort: SortRule[];
 }>;

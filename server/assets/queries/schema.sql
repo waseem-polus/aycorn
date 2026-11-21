@@ -360,6 +360,7 @@ INSERT INTO app_settings (id) VALUES (1);
 -- week) and `groupBy` are unconstrained on purpose — the service validates
 -- them, so new layouts and groupings need no migration. `source` is the view's
 -- own filter, in the same versioned JSON shape as saved_filter.definition.
+-- `sort` is an ordered array of {property, direction} rules (service-validated).
 CREATE TABLE board_view (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     surface      TEXT    NOT NULL,
@@ -374,6 +375,7 @@ CREATE TABLE board_view (
     position     INTEGER NOT NULL,
     timeCreated  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     timeModified TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    sort         TEXT    NOT NULL DEFAULT '[]' CHECK (json_valid(sort)),
     CHECK ((surface = 'project') = (project IS NOT NULL))
 );
 

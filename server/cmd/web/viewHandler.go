@@ -108,6 +108,9 @@ func (app *app) patchView(w http.ResponseWriter, r *http.Request) {
 	if value, ok := raw["source"]; ok {
 		patch.Source = &value
 	}
+	if value, ok := raw["sort"]; ok {
+		patch.Sort = &value
+	}
 
 	updated, err := app.viewService.Update(id, patch)
 	if err != nil {

@@ -7,6 +7,7 @@ import { SavedFilterBar } from "@/features/saved-filters/saved-filter-bar";
 import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import { BoardToolbar } from "@/features/views/board-toolbar";
+import { SortPopover } from "@/features/views/board-toolbar/sort-popover";
 import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import { ViewTabs } from "@/features/views/view-tabs";
@@ -56,6 +57,12 @@ export function ProjectBoardToolbar({
             <NewTaskEditorDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
           </TaskProvider>
         </>
+      }
+      sort={
+        <SortPopover
+          api={views}
+          view={views.views.find((v) => v.ID === selectedId) ?? null}
+        />
       }
       adhocFilter={<AdhocFilterPopover api={filtersApi} sources={sources} />}
       savedFilters={<SavedFilterBar api={filtersApi.saved} sources={sources} />}

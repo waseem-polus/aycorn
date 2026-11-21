@@ -7,6 +7,7 @@ import { NewTaskEditorDrawer } from "@/features/task/new-task-editor-drawer";
 import { useTaskTypesQuery } from "@/features/task-types/queries/useTaskTypesQuery";
 import { useTaskTypeCategoriesQuery } from "@/features/task-types/queries/useTaskTypeCategoriesQuery";
 import { buildBoardColumns } from "@/features/views/board/board-columns";
+import { applySort } from "@/features/views/grouping/task-sorting";
 import { KanbanBoard } from "@/features/views/board/kanban-board";
 import type { BoardView } from "@/features/views/view-types";
 
@@ -22,10 +23,14 @@ export function KanbanView({
   const { data: taskTypes = [] } = useTaskTypesQuery();
   const { data: categories = [] } = useTaskTypeCategoriesQuery();
 
-  const columns = useMemo(
-    () => buildBoardColumns(view.GroupBy, Tasks, { stages: Stages, taskTypes, categories }),
-    [view.GroupBy, Tasks, Stages, taskTypes, categories],
-  );
+  // Columns keep their tasks' relative order, so sorting first sorts every column.
+  const columns = useMemo(() => {
+    const sorted = applySort(Tasks, view.Sort, {
+      projectById: { [Project.ID]: Project },
+      stageById: Object.fromEntries(Stages.map((s) => [s.ID, s])),
+    });
+    return buildBoardColumns(view.GroupBy, sorted, { stages: Stages, taskTypes, categories });
+  }, [view.GroupBy, view.Sort, Tasks, Project, Stages, taskTypes, categories]);
 
   return (
     <div className="h-full overflow-visible min-h-0 flex flex-col gap-2">

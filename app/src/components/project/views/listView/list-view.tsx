@@ -6,15 +6,24 @@ import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { useSharedSelection } from "@/hooks/useSelection";
 import type { BoardView } from "@/features/views/view-types";
 import { GroupedTaskList } from "./list-view/grouped-task-list";
+import { applySort } from "@/features/views/grouping/task-sorting";
 
 /** A project's tasks as rows: flat, or grouped when the view sets a grouping. */
 export function ListView({ view }: { view: BoardView }) {
-  const { Tasks, Stages, Checklists } = useContext(ProjectContext);
+  const { Project, Tasks: allTasks, Stages, Checklists } = useContext(ProjectContext);
   const stagesById = React.useMemo(
     () => new Map(Stages.map((s) => [s.ID, s])),
     [Stages],
   );
   const { getItemProps } = useSharedSelection();
+  const Tasks = React.useMemo(
+    () =>
+      applySort(allTasks, view.Sort, {
+        projectById: { [Project.ID]: Project },
+        stageById: Object.fromEntries(Stages.map((s) => [s.ID, s])),
+      }),
+    [allTasks, view.Sort, Project, Stages],
+  );
 
   return (
     <div className="h-full box-border flex flex-col gap-2 overflow-visible">

@@ -31,8 +31,8 @@ export function GroupedTaskList({ view, groupBy }: Props) {
       projectById: { [Project.ID]: Project },
       stageById: Object.fromEntries(Stages.map((s) => [s.ID, s])),
     };
-    return buildGroups(Tasks, { groupBy, granularity, today, data });
-  }, [Tasks, Stages, Project, groupBy, granularity, today]);
+    return buildGroups(Tasks, { groupBy, granularity, today, data, sort: view.Sort });
+  }, [Tasks, Stages, Project, groupBy, granularity, today, view.Sort]);
 
   if (groups.length === 0) {
     return (

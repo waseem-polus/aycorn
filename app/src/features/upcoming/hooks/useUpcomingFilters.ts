@@ -1,12 +1,14 @@
 import { useBoardFilter } from "@/features/saved-filters/hooks/useBoardFilter";
 import { useCollapsedGroups } from "@/features/views/hooks/useCollapsedGroups";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
-import type { BoardView, Granularity, GroupByKey } from "@/features/views/view-types";
+import type { BoardView, Granularity, GroupByKey, SortRule } from "@/features/views/view-types";
 
 export type UpcomingViewSettings = {
   /** Null for an ungrouped list. */
   groupBy: GroupByKey | null;
   granularity: Granularity;
+  /** The view's sort rules (empty for the default order). */
+  sort: SortRule[];
 };
 
 const UPCOMING_BOARD = { surface: "upcoming" } as const;
@@ -29,6 +31,7 @@ export function useUpcomingFilters(view: BoardView | null, views: BoardViewsAPI)
   const settings: UpcomingViewSettings = {
     groupBy: view ? view.GroupBy : "timePlanned",
     granularity: view?.GroupOptions.granularity ?? "week",
+    sort: view?.Sort ?? [],
   };
 
   const setGroupBy = (groupBy: GroupByKey | null) => {

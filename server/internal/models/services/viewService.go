@@ -51,6 +51,21 @@ var viewTypeDefaults = map[string]struct{ name, icon string }{
 	"week":  {"Week", "calendar"},
 }
 
+// viewSortKeys are the properties a view can sort by. Sorting runs on the
+// client; the server only validates. upcomingSortKeys are /upcoming-only.
+var (
+	viewSortKeys = map[string]bool{
+		"name": true, "priority": true, "stage": true, "stageType": true, "type": true,
+		"assignee": true, "checklist": true, "timePlanned": true, "timeCompleted": true,
+		"timeCreated": true, "timeModified": true,
+	}
+	upcomingSortKeys = map[string]bool{"project": true}
+)
+
+const maxSortRules = 5
+
+var emptyViewSort = json.RawMessage(`[]`)
+
 var emptyViewSource = json.RawMessage(`{"version":3,"conditions":{"kind":"group","match":"all","children":[]}}`)
 
 type ViewService struct {
@@ -69,6 +84,7 @@ type ViewPatch struct {
 	HasGroupBy   bool
 	GroupOptions *json.RawMessage
 	Source       *json.RawMessage
+	Sort         *json.RawMessage
 }
 
 func (s *ViewService) ForBoard(board models.FilterBoard) ([]models.View, error) {
@@ -109,6 +125,7 @@ func (s *ViewService) Duplicate(id int) (*models.View, error) {
 		GroupBy:      v.GroupBy,
 		GroupOptions: v.GroupOptions,
 		Source:       v.Source,
+		Sort:         v.Sort,
 	}})
 	if err != nil {
 		return nil, err
@@ -137,6 +154,13 @@ func (s *ViewService) Update(id int, p ViewPatch) (*models.View, error) {
 	}
 
 	patch := repos.ViewPatch{Icon: p.Icon, Color: p.Color, GroupOptions: p.GroupOptions, Source: p.Source}
+	if p.Sort != nil {
+		normalized, err := validateSort(*p.Sort, current.Surface)
+		if err != nil {
+			return nil, err
+		}
+		patch.Sort = &normalized
+	}
 	if p.Name != nil {
 		name := normalizeViewName(*p.Name, current.Type)
 		patch.Name = &name
@@ -254,7 +278,42 @@ func newView(board models.FilterBoard, viewType string) repos.NewView {
 		GroupBy:      groupBy,
 		GroupOptions: options,
 		Source:       emptyViewSource,
+		Sort:         emptyViewSort,
 	}
+}
+
+type sortRule struct {
+	Property  string `json:"property"`
+	Direction string `json:"direction"`
+}
+
+// validateSort checks a view's sort rules and returns them re-encoded, so
+// only the known fields are stored.
+func validateSort(raw json.RawMessage, surface string) (json.RawMessage, error) {
+	var rules []sortRule
+	if err := json.Unmarshal(raw, &rules); err != nil {
+		return nil, fmt.Errorf("%w: sort must be an array of rules: %v", ErrInvalidView, err)
+	}
+	if rules == nil {
+		rules = []sortRule{}
+	}
+	if len(rules) > maxSortRules {
+		return nil, fmt.Errorf("%w: at most %d sort rules", ErrInvalidView, maxSortRules)
+	}
+	seen := map[string]bool{}
+	for _, r := range rules {
+		if !viewSortKeys[r.Property] && !(surface == "upcoming" && upcomingSortKeys[r.Property]) {
+			return nil, fmt.Errorf("%w: can't sort by %q", ErrInvalidView, r.Property)
+		}
+		if r.Direction != "asc" && r.Direction != "desc" {
+			return nil, fmt.Errorf("%w: sort direction must be asc or desc, got %q", ErrInvalidView, r.Direction)
+		}
+		if seen[r.Property] {
+			return nil, fmt.Errorf("%w: %q is sorted twice", ErrInvalidView, r.Property)
+		}
+		seen[r.Property] = true
+	}
+	return json.Marshal(rules)
 }
 
 // defaultGrouping is a type's default. /upcoming's list keeps grouping by

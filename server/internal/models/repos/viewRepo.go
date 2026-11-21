@@ -21,6 +21,7 @@ type NewView struct {
 	GroupBy      *string
 	GroupOptions json.RawMessage
 	Source       json.RawMessage
+	Sort         json.RawMessage
 }
 
 // ViewPatch is a partial update: nil fields are left alone. ClearGroupBy
@@ -34,17 +35,18 @@ type ViewPatch struct {
 	ClearGroupBy bool
 	GroupOptions *json.RawMessage
 	Source       *json.RawMessage
+	Sort         *json.RawMessage
 }
 
-const viewColumns = "id, surface, project, name, icon, color, type, groupBy, groupOptions, source, position, timeCreated, timeModified"
+const viewColumns = "id, surface, project, name, icon, color, type, groupBy, groupOptions, source, sort, position, timeCreated, timeModified"
 
 func scanView(row interface{ Scan(...any) error }) (models.View, error) {
 	var v models.View
 	var project sql.NullInt64
 	var groupBy sql.NullString
-	var groupOptions, source string
+	var groupOptions, source, sort string
 	if err := row.Scan(&v.ID, &v.Surface, &project, &v.Name, &v.Icon, &v.Color, &v.Type,
-		&groupBy, &groupOptions, &source, &v.Position, &v.TimeCreated, &v.TimeModified); err != nil {
+		&groupBy, &groupOptions, &source, &sort, &v.Position, &v.TimeCreated, &v.TimeModified); err != nil {
 		return v, err
 	}
 	if project.Valid {
@@ -56,6 +58,7 @@ func scanView(row interface{ Scan(...any) error }) (models.View, error) {
 	}
 	v.GroupOptions = json.RawMessage(groupOptions)
 	v.Source = json.RawMessage(source)
+	v.Sort = json.RawMessage(sort)
 	return v, nil
 }
 
@@ -102,8 +105,8 @@ func (repo *ViewRepo) CreateMany(board models.FilterBoard, views []NewView) ([]i
 	ids := make([]int, 0, len(views))
 	for i, v := range views {
 		res, err := tx.Exec(
-			"INSERT INTO board_view (surface, project, name, icon, color, type, groupBy, groupOptions, source, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-			append(boardArgs(board), v.Name, v.Icon, v.Color, v.Type, v.GroupBy, string(v.GroupOptions), string(v.Source), next+i)...,
+			"INSERT INTO board_view (surface, project, name, icon, color, type, groupBy, groupOptions, source, sort, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+			append(boardArgs(board), v.Name, v.Icon, v.Color, v.Type, v.GroupBy, string(v.GroupOptions), string(v.Source), string(v.Sort), next+i)...,
 		)
 		if err != nil {
 			return nil, err
@@ -147,6 +150,9 @@ func (repo *ViewRepo) Update(id int, patch ViewPatch) error {
 	}
 	if patch.Source != nil {
 		add("source", string(*patch.Source))
+	}
+	if patch.Sort != nil {
+		add("sort", string(*patch.Sort))
 	}
 	if len(sets) == 0 {
 		_, err := repo.FindOne(id)

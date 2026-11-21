@@ -21,10 +21,12 @@ import { GroupByFlyout } from "@/features/views/view-menu/group-by-flyout";
 import { LayoutFlyout } from "@/features/views/view-menu/layout-flyout";
 import { ViewMenuFlyout } from "@/features/views/view-menu/view-menu-flyout";
 import { ViewMenuHeader } from "@/features/views/view-menu/view-menu-header";
+import { SortEditor } from "@/features/views/sort/sort-editor";
+import { sortApplies, sortSummary } from "@/features/views/view-sorts";
 import { GROUP_LABELS, viewTypeLabel } from "@/features/views/view-groupings";
 import type { BoardView, ViewPatch } from "@/features/views/view-types";
 
-type Flyout = "layout" | "groupBy" | "filter";
+type Flyout = "layout" | "groupBy" | "sort" | "filter";
 
 type Props = {
   view: BoardView;
@@ -100,11 +102,22 @@ export function ViewMenuBody({
         />
       </ViewMenuFlyout>
 
-      {/* Sorting isn't designed yet; the row holds its place. */}
-      <DropdownMenuItem disabled>
-        <ArrowUpDownIcon className={icon} />
-        Sort
-      </DropdownMenuItem>
+      <ViewMenuFlyout
+        {...flyoutState("sort")}
+        icon={<ArrowUpDownIcon className={icon} />}
+        label="Sort"
+        // Calendars place tasks by time; the saved rules wait for a list or board.
+        disabled={!sortApplies(view.Type)}
+        value={sortApplies(view.Type) ? (sortSummary(view.Sort) ?? "None") : "By time"}
+        // SortEditor sizes itself: a bare property list when empty, the rule editor otherwise.
+        contentClassName="w-auto p-0"
+      >
+        <SortEditor
+          view={view}
+          board={api.board}
+          onChange={(sort) => onUpdate({ sort })}
+        />
+      </ViewMenuFlyout>
 
       <ViewMenuFlyout
         {...flyoutState("filter")}

@@ -1,6 +1,13 @@
 import { startOfDay } from "date-fns";
 import { STAGE_TYPE_LABELS } from "@/features/task-filters/option-groups";
-import type { Granularity, GroupByKey } from "@/features/views/view-types";
+import {
+  STAGE_TYPE_ORDER,
+  compareTasks,
+  priRank,
+  sortTasks,
+  type SortData,
+} from "@/features/views/grouping/task-sorting";
+import type { Granularity, GroupByKey, SortRule } from "@/features/views/view-types";
 import { STAGE_TYPE_COLORS } from "@/features/workflows/shared/stage-type-rules";
 import type { Priority, StageType, Task } from "@/types/types";
 import {
@@ -18,10 +25,10 @@ export type GroupableTask = Task & { ProjectID?: number; ChecklistName?: string 
 
 type Visual = { Name: string; Icon: string; Color: string };
 
-/** Lookups the category buckets label themselves from. */
-export type GroupingData = {
+/** Lookups the category buckets label themselves from (and sorts read). */
+export type GroupingData = SortData & {
   projectById: Record<number, Visual>;
-  stageById: Record<number, Visual & { Type?: StageType }>;
+  stageById: Record<number, Visual & { Type?: StageType; Position?: number; Workflow?: number }>;
 };
 
 export type TaskGroup<T extends GroupableTask = GroupableTask> = {
@@ -38,11 +45,7 @@ export type TaskGroup<T extends GroupableTask = GroupableTask> = {
 
 type Bucket = Omit<TaskGroup, "tasks">;
 
-export const PRIORITY_ORDER = ["Urgent", "High", "Medium", "Low"] as const;
-const priRank = (p: string) => {
-  const i = PRIORITY_ORDER.indexOf(p as (typeof PRIORITY_ORDER)[number]);
-  return i < 0 ? 99 : i;
-};
+export { PRIORITY_ORDER, sortTasks } from "@/features/views/grouping/task-sorting";
 
 const startOfWeek = (date: Date) => {
   const x = startOfDay(date);
@@ -143,8 +146,6 @@ function timeBucket(task: Task, field: DateKey, gran: Granularity, today: Date):
   };
 }
 
-const STAGE_TYPE_ORDER: Record<StageType, number> = { open: 0, todo: 1, doing: 2, done: 3 };
-
 function categoryBucket(task: GroupableTask, dim: GroupByKey, data: GroupingData): Bucket {
   switch (dim) {
     case "project": {
@@ -213,25 +214,23 @@ function categoryBucket(task: GroupableTask, dim: GroupByKey, data: GroupingData
   }
 }
 
-/** Planned date first (unplanned last), then priority. */
-export const sortTasks = <T extends Task>(tasks: T[]): T[] =>
-  [...tasks].sort((a, b) => {
-    const ad = a.TimePlannedStart ? new Date(a.TimePlannedStart).getTime() : Infinity;
-    const bd = b.TimePlannedStart ? new Date(b.TimePlannedStart).getTime() : Infinity;
-    if (ad !== bd) return ad - bd;
-    return priRank(a.Priority) - priRank(b.Priority);
-  });
-
 /**
  * Buckets tasks by a view's grouping, in display order. Dates bucket by
  * `granularity` relative to `today`; everything else by the property's value.
- * Within a group, tasks sort by planned date, then priority.
+ * Within a group, tasks follow the view's `sort`, or planned date then
+ * priority when it has none.
  */
 export function buildGroups<T extends GroupableTask>(
   tasks: T[],
-  opts: { groupBy: GroupByKey; granularity: Granularity; today: Date; data: GroupingData },
+  opts: {
+    groupBy: GroupByKey;
+    granularity: Granularity;
+    today: Date;
+    data: GroupingData;
+    sort?: SortRule[];
+  },
 ): TaskGroup<T>[] {
-  const { groupBy, granularity, today, data } = opts;
+  const { groupBy, granularity, today, data, sort = [] } = opts;
   const map = new Map<string, TaskGroup<T>>();
   for (const t of tasks) {
     const b = isDateKey(groupBy)
@@ -242,6 +241,7 @@ export function buildGroups<T extends GroupableTask>(
   }
 
   const groups = [...map.values()].sort((a, b) => a.order - b.order);
-  for (const g of groups) g.tasks = sortTasks(g.tasks);
+  const compare = sort.length > 0 ? compareTasks(sort, data) : null;
+  for (const g of groups) g.tasks = compare ? [...g.tasks].sort(compare) : sortTasks(g.tasks);
   return groups;
 }

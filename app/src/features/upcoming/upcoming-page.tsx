@@ -12,6 +12,7 @@ import { UpcomingFiltersContext } from "@/features/upcoming/upcoming-filters-con
 import { UpcomingBulkActionsToolbar } from "@/features/upcoming/upcoming-bulk-actions-toolbar";
 import { UpcomingSearch } from "@/features/upcoming/upcoming-page/upcoming-search";
 import { BoardToolbar } from "@/features/views/board-toolbar";
+import { SortPopover } from "@/features/views/board-toolbar/sort-popover";
 import { ViewSettingsButton } from "@/features/views/board-toolbar/view-settings-button";
 import { AdhocFilterPopover } from "@/features/saved-filters/adhoc-filter/adhoc-filter-popover";
 import { SavedFilterBar } from "@/features/saved-filters/saved-filter-bar";
@@ -150,6 +151,7 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                           />
                         )
                       }
+                      sort={<SortPopover api={views} view={activeView} />}
                       adhocFilter={
                         <AdhocFilterPopover api={filtersApi} sources={conditionSources} />
                       }
@@ -174,6 +176,8 @@ export function UpcomingPage({ viewId, setViewId }: Props) {
                         groupBy={view.groupBy}
                         stages={allStages}
                         workflows={workflows}
+                        sort={view.sort}
+                        sortData={groupingData}
                       />
                     )}
                     {(layout === "month" || layout === "week") && (

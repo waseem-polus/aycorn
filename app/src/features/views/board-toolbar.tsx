@@ -1,7 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import { FilterRowToggle } from "@/features/views/board-toolbar/filter-row-toggle";
-import { SortButton } from "@/features/views/board-toolbar/sort-button";
 import { ViewMenuProvider } from "@/features/views/view-menu-provider";
 import { useIsMobile } from "@/hooks/useMobile";
 
@@ -15,6 +14,8 @@ type Props = {
   viewSettings: React.ReactNode;
   /** Page-specific actions: Checklists and New Task, group-by, … */
   actions?: React.ReactNode;
+  /** The Sort popover: the shown view's sort rules. */
+  sort: React.ReactNode;
   /** The Filter popover (unsaved condition builder), right of Sort. */
   adhocFilter: React.ReactNode;
   savedFilters: React.ReactNode;
@@ -33,6 +34,7 @@ export function BoardToolbar({
   activeFilterCount,
   viewSettings,
   actions,
+  sort,
   adhocFilter,
   savedFilters,
 }: Props) {
@@ -77,7 +79,7 @@ export function BoardToolbar({
 
         {filterRowShown && (
           <div className="flex min-w-0 items-center gap-2">
-            <SortButton />
+            {sort}
             {adhocFilter}
             <Separator
               orientation="vertical"

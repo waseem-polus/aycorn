@@ -226,6 +226,7 @@ type View struct {
 	GroupBy      *string
 	GroupOptions json.RawMessage
 	Source       json.RawMessage
+	Sort         json.RawMessage
 	Position     int
 	TimeCreated  string
 	TimeModified string
