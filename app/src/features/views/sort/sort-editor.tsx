@@ -21,7 +21,6 @@ import {
   ChevronDownIcon,
   GripVerticalIcon,
   PlusIcon,
-  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -61,11 +60,11 @@ type Props = {
 };
 
 /**
- * Edits a view's sort: an ordered list of property + direction rules. With
- * no rules it's just the property list — picking one adds the first rule and
- * the editor takes over. It sizes itself, so its container should be
- * `w-auto p-0`. Rows
- * reorder by drag or keyboard (focus the grip, Space, arrows, Space). Every
+ * Edits a view's sort: an ordered list of property + direction rules. Opened
+ * with no rules it's just the property list — picking one adds the first rule
+ * and the editor takes over. Clearing every rule keeps the editor, with an
+ * empty message, so an open popover doesn't change shape. It sizes itself, so
+ * its container should be `w-auto p-0`. Rows reorder by drag or keyboard (focus the grip, Space, arrows, Space). Every
  * change saves at once — there's no Save button. A local copy keeps a
  * reorder in place while the save is in flight.
  */
@@ -79,7 +78,11 @@ export function SortEditor({ view, board, onChange }: Props) {
     setRules(view.Sort);
   }
 
+  // Only a sort that's empty when the editor mounts shows the bare property list.
+  const [bare, setBare] = useState(view.Sort.length === 0);
+
   const change = (next: SortRule[]) => {
+    if (next.length > 0) setBare(false);
     setRules(next);
     onChange(next);
   };
@@ -114,12 +117,17 @@ export function SortEditor({ view, board, onChange }: Props) {
   const addRule = (property: SortKey) =>
     change([...rules, { property, direction: "asc" }]);
 
-  if (rules.length === 0) {
+  if (rules.length === 0 && bare) {
     return <PropertyList options={unused} onPick={addRule} className="w-56" />;
   }
 
   return (
     <div className="flex w-[26rem] max-w-[calc(100vw-2rem)] flex-col gap-2 p-4">
+      {rules.length === 0 && (
+        <div className="rounded-md border border-dashed py-3 text-center text-sm text-muted-foreground">
+          No sorts. Tasks keep their default order.
+        </div>
+      )}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -158,14 +166,16 @@ export function SortEditor({ view, board, onChange }: Props) {
             Add sort
           </Button>
         </PropertyPicker>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground"
-          onClick={clearAll}
-        >
-          Clear all
-        </Button>
+        {rules.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={clearAll}
+          >
+            Clear all
+          </Button>
+        )}
       </div>
     </div>
   );
