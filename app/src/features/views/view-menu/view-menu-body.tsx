@@ -4,9 +4,9 @@ import {
   ArrowRightIcon,
   ArrowUpDownIcon,
   CopyIcon,
+  FilterIcon,
   GroupIcon,
   LayoutGridIcon,
-  ListFilterIcon,
   Trash2Icon,
 } from "lucide-react";
 import {
@@ -108,7 +108,11 @@ export function ViewMenuBody({
         label="Sort"
         // Calendars place tasks by time; the saved rules wait for a list or board.
         disabled={!sortApplies(view.Type)}
-        value={sortApplies(view.Type) ? (sortSummary(view.Sort) ?? "None") : "By time"}
+        value={
+          sortApplies(view.Type)
+            ? (sortSummary(view.Sort) ?? "None")
+            : "By time"
+        }
         // SortEditor sizes itself: a bare property list when empty, the rule editor otherwise.
         contentClassName="w-auto p-0"
       >
@@ -121,7 +125,7 @@ export function ViewMenuBody({
 
       <ViewMenuFlyout
         {...flyoutState("filter")}
-        icon={<ListFilterIcon className={icon} />}
+        icon={<FilterIcon className={icon} />}
         label="Filter"
         value={ruleCount > 0 ? ruleCount : "None"}
         contentClassName="max-h-[75vh] w-[36rem] max-w-[calc(100vw-2rem)] overflow-y-auto"
