@@ -8,6 +8,7 @@ import {
   searchPaletteHotkey,
 } from "@/features/command-palette/command-palette-context";
 import { createCommandRegistry } from "@/features/command-palette/command-registry";
+import type { EntityKind } from "@/features/command-palette/entity-search/entity-scopes";
 import type {
   PaletteCommand,
   PaletteMode,
@@ -22,10 +23,12 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [pages, setPages] = useState<PaletteCommand[]>([]);
+  const [scope, setScope] = useState<EntityKind | null>(null);
 
   const openPalette = (mode: PaletteMode) => {
     setQuery(mode === "commands" ? commandPrefix : "");
     setPages([]);
+    setScope(null);
     setOpen(true);
   };
 
@@ -55,6 +58,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
         onQueryChange={setQuery}
         pages={pages}
         onPagesChange={setPages}
+        scope={scope}
+        onScopeChange={setScope}
         registry={registry}
       />
     </CommandPaletteContext.Provider>

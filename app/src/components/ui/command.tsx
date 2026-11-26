@@ -65,14 +65,19 @@ function CommandDialog({
 
 function CommandInput({
   className,
+  adornment,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  /** Rendered between the search icon and the input (e.g. a scope chip). */
+  adornment?: React.ReactNode
+}) {
   return (
     <div
       data-slot="command-input-wrapper"
       className="flex h-9 items-center gap-2 border-b px-3"
     >
       <SearchIcon className="size-4 shrink-0 opacity-50" />
+      {adornment}
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(

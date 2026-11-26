@@ -7,7 +7,6 @@ import {
   CommandInput,
   CommandList,
 } from "@/components/ui/command";
-import { Kbd } from "@/components/ui/kbd";
 import {
   buildCommandSections,
   buildPageSections,
@@ -20,6 +19,13 @@ import type {
 } from "@/features/command-palette/command-types";
 import { PaletteCommandItem } from "@/features/command-palette/command-palette/palette-command-item";
 import { useRecentCommands } from "@/features/command-palette/hooks/useRecentCommands";
+import { EntitySearchResults } from "@/features/command-palette/entity-search/entity-search-results";
+import {
+  entityScopes,
+  parseScopeToken,
+  type EntityKind,
+} from "@/features/command-palette/entity-search/entity-scopes";
+import { ScopeChip } from "@/features/command-palette/entity-search/scope-chip";
 
 /** The input's text decides the mode: a leading ">" means commands, like VS Code. */
 const parseQuery = (query: string): { mode: PaletteMode; search: string } =>
@@ -34,6 +40,8 @@ export function CommandPalette({
   onQueryChange,
   pages,
   onPagesChange,
+  scope,
+  onScopeChange,
   registry,
 }: {
   open: boolean;
@@ -43,6 +51,9 @@ export function CommandPalette({
   /** The nested pages entered, outermost first (e.g. ["Create project"]). */
   pages: PaletteCommand[];
   onPagesChange: (pages: PaletteCommand[]) => void;
+  /** Search narrowed to one kind of entity, shown as a chip. */
+  scope: EntityKind | null;
+  onScopeChange: (scope: EntityKind | null) => void;
   registry: CommandRegistry;
 }) {
   const sources = useSyncExternalStore(registry.subscribe, registry.getSnapshot);
@@ -51,10 +62,23 @@ export function CommandPalette({
   const pendingRun = useRef<(() => void) | null>(null);
 
   const currentPage = pages.at(-1);
-  // Inside a nested page the whole input is the search; there's no prefix.
+  // Inside a nested page, or with a scope chip, the whole input is the search.
   const { mode, search } = currentPage
     ? { mode: "commands" as const, search: query.trim() }
-    : parseQuery(query);
+    : scope
+      ? { mode: "search" as const, search: query.trim() }
+      : parseQuery(query);
+
+  // A leading scope token ("t ") becomes a chip and leaves the input.
+  const handleQueryChange = (value: string) => {
+    const scoped = !currentPage && !scope ? parseScopeToken(value) : null;
+    if (scoped) {
+      onScopeChange(scoped.scope);
+      onQueryChange(scoped.rest);
+      return;
+    }
+    onQueryChange(value);
+  };
   const sections = currentPage?.items
     ? buildPageSections(currentPage.items, search)
     : mode === "commands"
@@ -69,7 +93,11 @@ export function CommandPalette({
     }
     // Recents list the top-level command ("Create project"), not the choice made in it.
     recordRecent((pages[0] ?? command).id);
-    pendingRun.current = command.run;
+    runAfterClose(command.run);
+  };
+
+  const runAfterClose = (run: () => void) => {
+    pendingRun.current = run;
     onOpenChange(false);
   };
 
@@ -98,17 +126,19 @@ export function CommandPalette({
     onQueryChange(parentPages.length ? "" : commandPrefix);
   };
 
-  useHotkey("Backspace", goBack, {
+  useHotkey("Backspace", () => (currentPage ? goBack() : onScopeChange(null)), {
     target: inputRef,
-    enabled: open && !!currentPage && query === "",
+    enabled: open && (!!currentPage || !!scope) && query === "",
     ignoreInputs: false,
   });
 
   const placeholder = currentPage
     ? (currentPage.placeholder ?? "Choose…")
-    : mode === "commands"
-      ? "Type a command…"
-      : `Search… (type ${commandPrefix} for commands)`;
+    : scope
+      ? entityScopes[scope].placeholder
+      : mode === "commands"
+        ? "Type a command…"
+        : `Search… (type ${commandPrefix} for commands)`;
 
   return (
     <CommandDialog
@@ -134,15 +164,27 @@ export function CommandPalette({
       <CommandInput
         ref={inputRef}
         value={query}
-        onValueChange={onQueryChange}
+        onValueChange={handleQueryChange}
         placeholder={placeholder}
+        adornment={
+          scope && (
+            <ScopeChip
+              scope={scope}
+              onRemove={() => {
+                onScopeChange(null);
+                inputRef.current?.focus();
+              }}
+            />
+          )
+        }
       />
       <CommandList className="max-h-[min(420px,60vh)]">
         {mode === "search" ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            Search isn't available yet. Type <Kbd>{commandPrefix}</Kbd> for
-            commands.
-          </div>
+          <EntitySearchResults
+            search={search}
+            scope={scope}
+            onRun={runAfterClose}
+          />
         ) : (
           <>
             <CommandEmpty>

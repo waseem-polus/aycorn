@@ -49,7 +49,11 @@ export const useProjectPageCommands = ({
   const { data: folders = [] } = useProjectFoldersQuery();
   const { data: workflows = [] } = useAllWorkflowsQuery();
   // This project's stages with their task counts, for the stage-mapping dialog.
-  const { data: workflowSettings } = useProjectWorkflowSettingsQuery(Project.ID);
+  // Project.ID is 0 until the project page has loaded the project.
+  const { data: workflowSettings } = useProjectWorkflowSettingsQuery(
+    Project.ID,
+    { enabled: Project.ID !== 0 },
+  );
   const currentStages = workflowSettings?.Stages ?? [];
   const switchWorkflow = useSwitchWorkflow({
     projectId: Project.ID,
