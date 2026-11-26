@@ -16,6 +16,7 @@ export function NewTaskEditorDrawer({
   setTaskDrawerOpen,
   defaults,
   children,
+  triggerRef,
 }: {
   setTaskDrawerOpen: (open: boolean) => void;
   // Fields the new task starts with, e.g. a board column's stage or priority.
@@ -23,6 +24,8 @@ export function NewTaskEditorDrawer({
   defaults?: Partial<Task>;
   // Custom trigger; defaults to a "New Task" button.
   children?: React.ReactNode;
+  // Lets a keyboard command press the trigger, running the same create-and-open flow.
+  triggerRef?: React.Ref<HTMLElement>;
 }) {
   const { setState: setTask } = useContext(TaskContext);
   const { Project, Checklists, Stages } = useContext(ProjectContext);
@@ -60,7 +63,7 @@ export function NewTaskEditorDrawer({
         }
       }}
     >
-      <Slot onClick={handleAddTask}>
+      <Slot ref={triggerRef} onClick={handleAddTask}>
         {children ?? (
           <Button className="hover:cursor-pointer">
             <Plus />

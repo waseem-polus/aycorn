@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useHotkey, useFormatForDisplay } from "@tanstack/react-hotkeys";
+import { useFormatForDisplay } from "@tanstack/react-hotkeys";
 import type { Hotkey } from "@tanstack/hotkeys";
 import { ArrowUpDownIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useBoardToolbarRequest } from "@/features/views/board-toolbar/board-toolbar-requests";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import { SortEditor } from "@/features/views/sort/sort-editor";
 import { sortApplies, sortSummary } from "@/features/views/view-sorts";
@@ -33,7 +34,8 @@ export function SortPopover({ api, view }: Props) {
   const rules = view?.Sort ?? [];
   const active = enabled && rules.length > 0;
 
-  useHotkey(sortHotkey, () => {
+  // Alt+S and the command palette, via the board toolbar.
+  useBoardToolbarRequest("sort", () => {
     if (enabled) setOpen((o) => !o);
   });
 

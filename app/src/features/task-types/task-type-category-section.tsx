@@ -22,31 +22,8 @@ import { EditableHeader } from "@/components/EditableHeader";
 import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { DeleteTaskTypeCategoryDialog } from "@/features/task-types/delete-task-type-category-dialog";
 import { useTaskTypeCategoryMutation } from "@/features/task-types/queries/useTaskTypeCategoryMutation";
-import { useTaskTypeMutation } from "@/features/task-types/queries/useTaskTypeMutation";
 import { cn } from "@/lib/utils";
 import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
-
-const COLLAPSED_STORAGE_KEY = (id: number) => `taskType_cat_collapsed_${id}`;
-
-function readCollapsed(id: number): boolean {
-  try {
-    return localStorage.getItem(COLLAPSED_STORAGE_KEY(id)) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function writeCollapsed(id: number, collapsed: boolean) {
-  try {
-    if (collapsed) {
-      localStorage.setItem(COLLAPSED_STORAGE_KEY(id), "true");
-    } else {
-      localStorage.removeItem(COLLAPSED_STORAGE_KEY(id));
-    }
-  } catch {
-    // ignore
-  }
-}
 
 type Props = {
   category: TaskTypeCategory;
@@ -54,6 +31,11 @@ type Props = {
   types: TaskTypeGlobal[];
   isDropTarget: boolean;
   renderTypeCard: (type: TaskTypeGlobal) => React.ReactNode;
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+  /** Creates a type in this category (the page owns it so the palette shares it). */
+  onCreateType: () => void;
+  isCreatingType: boolean;
 };
 
 export function TaskTypeCategorySection({
@@ -62,14 +44,16 @@ export function TaskTypeCategorySection({
   types,
   isDropTarget,
   renderTypeCard,
+  collapsed,
+  onCollapsedChange,
+  onCreateType,
+  isCreatingType,
 }: Props) {
-  const [collapsed, setCollapsed] = useState(() => readCollapsed(category.ID));
   const [isEditingName, setIsEditingName] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);
 
   const { updateCategory } = useTaskTypeCategoryMutation();
-  const { createTaskType } = useTaskTypeMutation();
 
   useFocusAndSelect(nameRef, isEditingName);
 
@@ -90,11 +74,7 @@ export function TaskTypeCategorySection({
     transition,
   };
 
-  const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    writeCollapsed(category.ID, next);
-  };
+  const toggleCollapsed = () => onCollapsedChange(!collapsed);
 
   const handleSaveName = (newName: string) => {
     setIsEditingName(false);
@@ -103,17 +83,6 @@ export function TaskTypeCategorySection({
         { id: category.ID, name: newName },
         { onError: () => toast.error("Failed to rename category.") },
       );
-    }
-  };
-
-  const handleCreateType = () => {
-    createTaskType.mutate(
-      { Category: category.ID },
-      { onError: () => toast.error("Failed to create type.") },
-    );
-    if (collapsed) {
-      setCollapsed(false);
-      writeCollapsed(category.ID, false);
     }
   };
 
@@ -192,8 +161,8 @@ export function TaskTypeCategorySection({
               variant="ghost"
               size="icon"
               className="size-7"
-              onClick={handleCreateType}
-              disabled={createTaskType.isPending}
+              onClick={onCreateType}
+              disabled={isCreatingType}
               aria-label="Add type to category"
             >
               <Plus className="size-4" />

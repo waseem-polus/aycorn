@@ -1,6 +1,6 @@
 import { Empty, EmptyDescription } from "@/components/ui/empty";
 import React, { useContext, useMemo } from "react";
-import { LandPlot } from "lucide-react";
+import { LandPlot, ListPlusIcon } from "lucide-react";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
 import {
   Drawer,
@@ -17,6 +17,8 @@ import {
   type ChecklistStatusFilter,
 } from "@/features/checklists/checklist-filters";
 import { ChecklistCard } from "@/features/checklists/checklist-card";
+import { useCreateChecklist } from "@/features/checklists/hooks/useCreateChecklist";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 
 export default function ChecklistsSideDrawer({
   children,
@@ -34,6 +36,37 @@ export default function ChecklistsSideDrawer({
   const [statusFilter, setStatusFilter] =
     useState<ChecklistStatusFilter>("all");
 
+  const { createChecklist } = useCreateChecklist();
+
+  const changeOpen = (next: boolean) => {
+    setOpen(next);
+    onOpenChange(next);
+  };
+
+  useRegisterCommands([
+    {
+      id: "project.checklists.open",
+      title: "Open checklists",
+      group: "Project",
+      icon: LandPlot,
+      run: () => changeOpen(true),
+    },
+    {
+      id: "project.checklist.create",
+      title: "Create checklist",
+      group: "Project",
+      icon: ListPlusIcon,
+      keywords: ["new", "add"],
+      run: () => {
+        // Clear the drawer's filters so the new checklist is listed, name focused.
+        setSearch("");
+        setStatusFilter("all");
+        changeOpen(true);
+        createChecklist(setNewlyCreatedId);
+      },
+    },
+  ]);
+
   const filteredChecklists = useMemo(
     () =>
       Checklists.filter((c) => {
@@ -50,10 +83,7 @@ export default function ChecklistsSideDrawer({
       handleOnly={!isMobile}
       direction={isMobile ? "bottom" : "right"}
       open={open}
-      onOpenChange={(open) => {
-        setOpen(open);
-        onOpenChange(open);
-      }}
+      onOpenChange={changeOpen}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent className="h-full sm:min-w-xl">

@@ -3,13 +3,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { useContext } from "react";
-import { ProjectContext } from "@/contexts/project/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
-import { useChecklistMutation } from "@/queries/useChecklistMutation";
+import { useCreateChecklist } from "@/features/checklists/hooks/useCreateChecklist";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { Checklist, ChecklistStatus } from "@/types/types";
+import type { ChecklistStatus } from "@/types/types";
 
 export type ChecklistStatusFilter = "all" | ChecklistStatus;
 
@@ -30,8 +28,7 @@ export function ChecklistFilters({
   count,
   onCreated,
 }: ChecklistFiltersProps) {
-  const { Checklists, SetChecklists, Project } = useContext(ProjectContext);
-  const { create } = useChecklistMutation(Project.ID);
+  const { createChecklist } = useCreateChecklist();
 
   return (
     <div className="flex flex-col gap-2">
@@ -48,23 +45,7 @@ export function ChecklistFilters({
           <InputGroupAddon align="inline-end">{count} lists</InputGroupAddon>
         </InputGroup>
         <Button
-          onClick={() =>
-            create.mutate("", {
-              onSuccess: (newChecklist: Checklist) => {
-                SetChecklists([
-                  ...Checklists,
-                  {
-                    TotalCount: 0,
-                    DoneCount: 0,
-                    Status: "unused",
-                    StageCounts: [],
-                    ...newChecklist,
-                  },
-                ]);
-                onCreated?.(newChecklist.ID);
-              },
-            })
-          }
+          onClick={() => createChecklist(onCreated)}
           className="hover:cursor-pointer"
         >
           <Plus />

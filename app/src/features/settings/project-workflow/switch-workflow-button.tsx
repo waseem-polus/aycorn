@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Check, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import type { Stage } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
-import { useProjectWorkflowMutation } from "@/features/settings/project-workflow/queries/useProjectWorkflowMutation";
+import { useSwitchWorkflow } from "@/features/settings/project-workflow/hooks/useSwitchWorkflow";
 import { SwitchWorkflowDialog } from "@/features/settings/project-workflow/switch-workflow-dialog";
 
 export function SwitchWorkflowButton({
@@ -32,31 +31,17 @@ export function SwitchWorkflowButton({
   currentStages: Stage[];
 }) {
   const [open, setOpen] = useState(false);
-  const [target, setTarget] = useState<{ ID: number; Name: string } | null>(
-    null,
-  );
   const { data: workflows } = useAllWorkflowsQuery();
-  const { switchWorkflow } = useProjectWorkflowMutation(projectId);
-
-  const hasTasks = currentStages.some((s) => s.TaskCount > 0);
+  const { selectWorkflow, target, closeDialog, isPending } = useSwitchWorkflow({
+    projectId,
+    currentWorkflowId,
+    currentStages,
+  });
 
   const handleSelect = (workflow: { ID: number; Name: string }) => {
     if (workflow.ID === currentWorkflowId) return;
     setOpen(false);
-
-    if (!hasTasks) {
-      switchWorkflow.mutate(
-        { workflowId: workflow.ID, stageMappings: {} },
-        {
-          onSuccess: () => toast.success(`Switched to ${workflow.Name}.`),
-          onError: (err) =>
-            toast.error(err.message || "Failed to switch workflow."),
-        },
-      );
-      return;
-    }
-
-    setTarget(workflow);
+    selectWorkflow(workflow);
   };
 
   return (
@@ -65,7 +50,7 @@ export function SwitchWorkflowButton({
         <PopoverTrigger asChild>
           <Button
             className="flex-1 sm:flex-none"
-            disabled={switchWorkflow.isPending}
+            disabled={isPending}
           >
             <RefreshCw />
             Switch workflow
@@ -117,7 +102,7 @@ export function SwitchWorkflowButton({
         <SwitchWorkflowDialog
           open={target !== null}
           onOpenChange={(next) => {
-            if (!next) setTarget(null);
+            if (!next) closeDialog();
           }}
           projectId={projectId}
           currentWorkflowName={currentWorkflowName}

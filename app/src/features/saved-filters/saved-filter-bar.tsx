@@ -24,6 +24,7 @@ import {
 } from "@/features/saved-filters/saved-filter-bar/filter-chip";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
+import { useBoardToolbarRequest } from "@/features/views/board-toolbar/board-toolbar-requests";
 
 type Props = {
   api: BoardSavedFiltersAPI;
@@ -99,6 +100,8 @@ export function SavedFilterBar({ api, sources }: Props) {
     const created = await api.create("Untitled filter");
     if (created) setRenamingId(created.ID);
   };
+
+  useBoardToolbarRequest("createSavedFilter", () => void createFilter());
 
   return (
     <div className="flex min-w-0 items-center gap-1.5">

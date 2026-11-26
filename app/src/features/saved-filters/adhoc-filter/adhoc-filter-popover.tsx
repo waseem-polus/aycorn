@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useHotkey, useFormatForDisplay } from "@tanstack/react-hotkeys";
+import { useFormatForDisplay } from "@tanstack/react-hotkeys";
+import { useBoardToolbarRequest } from "@/features/views/board-toolbar/board-toolbar-requests";
 import type { Hotkey } from "@tanstack/hotkeys";
 import { FilterIcon, SavePlusIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,8 @@ export function AdhocFilterPopover({ api, sources }: Props) {
     if (!next && tree.completeCount === 0) adhoc.clear();
   };
 
-  useHotkey(adhocFilterHotkey, () => changeOpen(!open));
+  // Alt+F and the command palette, via the board toolbar.
+  useBoardToolbarRequest("filter", () => changeOpen(!open));
 
   return (
     <Popover open={open} onOpenChange={changeOpen}>

@@ -27,6 +27,7 @@ import { StageRow } from "@/features/workflows/details/stage-row";
 import { StageTypeBadge } from "@/features/workflows/details/stage-type-badge";
 import { useStageMutation } from "@/features/workflows/shared/queries/useStageMutation";
 import { useSharedSelection } from "@/hooks/useSelection";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 
 const ADDABLE_STAGE_TYPES: Exclude<StageType, "open">[] = ["todo", "doing", "done"];
 
@@ -125,11 +126,32 @@ export function StageList({
     },
   );
 
+  // The stage just added from here, whose row mounts with its name focused.
+  const [newStageId, setNewStageId] = useState<number | null>(null);
+
   const handleAdd = (type: Exclude<StageType, "open">) => {
     createStage.mutate(type, {
+      onSuccess: (stage) => setNewStageId(stage.ID),
       onError: (err) => toast(err.message || "Failed to add stage."),
     });
   };
+
+  useRegisterCommands([
+    {
+      id: "workflow.stage.add",
+      title: "Add stage",
+      group: "Workflow",
+      icon: Plus,
+      keywords: ["new", "create"],
+      placeholder: "Choose the stage type…",
+      items: ADDABLE_STAGE_TYPES.map((type) => ({
+        id: `workflow.stage.add.${type}`,
+        title: type,
+        group: "Stage type",
+        run: () => handleAdd(type),
+      })),
+    },
+  ]);
 
   return (
     <section className="flex flex-col gap-3 flex-1 min-h-0">
@@ -173,6 +195,7 @@ export function StageList({
                 stage={stage}
                 stages={items}
                 workflowId={workflowId}
+                autoFocusName={stage.ID === newStageId}
               />
             ))}
           </div>

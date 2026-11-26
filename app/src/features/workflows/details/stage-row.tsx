@@ -20,14 +20,17 @@ export function StageRow({
   stage,
   stages,
   workflowId,
+  autoFocusName = false,
 }: {
   stage: Stage;
   stages: Stage[];
   workflowId: number;
+  /** Start with the name focused and selected, e.g. for a just-added stage. */
+  autoFocusName?: boolean;
 }) {
   const { updateStage } = useStageMutation(workflowId);
   const { getItemProps } = useSharedSelection();
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(autoFocusName);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const nameRef = useRef<HTMLHeadingElement>(null);

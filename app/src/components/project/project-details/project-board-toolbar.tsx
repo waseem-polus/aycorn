@@ -1,3 +1,6 @@
+import { useRef } from "react";
+import { PlusIcon } from "lucide-react";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 import { ProjectChecklists } from "@/components/project/views/project-checklists";
 import { TaskProvider } from "@/contexts/task/TaskProvider";
 import { useProjectFiltersContext } from "@/features/project-filters/project-filters-context";
@@ -29,6 +32,19 @@ export function ProjectBoardToolbar({
   setTaskDrawerOpen,
 }: Props) {
   const filtersApi = useProjectFiltersContext();
+  const newTaskRef = useRef<HTMLElement>(null);
+
+  useRegisterCommands([
+    {
+      id: "project.task.create",
+      title: "Create task",
+      group: "Project",
+      icon: PlusIcon,
+      keywords: ["new", "add"],
+      // Presses New Task, so it creates the task and opens its drawer the same way.
+      run: () => newTaskRef.current?.click(),
+    },
+  ]);
 
   return (
     <BoardToolbar
@@ -54,7 +70,10 @@ export function ProjectBoardToolbar({
         <>
           <ProjectChecklists />
           <TaskProvider>
-            <NewTaskEditorDrawer setTaskDrawerOpen={setTaskDrawerOpen} />
+            <NewTaskEditorDrawer
+              setTaskDrawerOpen={setTaskDrawerOpen}
+              triggerRef={newTaskRef}
+            />
           </TaskProvider>
         </>
       }

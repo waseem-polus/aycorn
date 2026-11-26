@@ -33,6 +33,7 @@ import { ViewOverflowMenu } from "@/features/views/view-tabs/view-overflow-menu"
 import { ViewSelectMobile } from "@/features/views/view-tabs/view-select-mobile";
 import { ViewTab } from "@/features/views/view-tabs/view-tab";
 import { useIsMobile } from "@/hooks/useMobile";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 
 type Props = {
   api: BoardViewsAPI;
@@ -131,6 +132,17 @@ export function ViewTabs({ api, selectedId, onSelect, sources }: Props) {
     if (isMobile) menuState.open(created.ID, "mobile");
     else setRenamingId(created.ID);
   };
+
+  useRegisterCommands([
+    {
+      id: "board.view.create",
+      title: "Create view",
+      group: "Board",
+      icon: PlusIcon,
+      keywords: ["new", "add", "tab"],
+      run: () => void addView(),
+    },
+  ]);
 
   const deleteDialog = deleting && (
     <DeleteViewDialog

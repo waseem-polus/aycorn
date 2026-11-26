@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DeleteWorkflowDialog } from "@/features/workflows/list/delete-workflow-dialog";
 import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 import type { WorkflowSummary } from "@/types/types";
 
 export function WorkflowPageHeader({
@@ -63,6 +64,24 @@ export function WorkflowPageHeader({
       });
     }
   };
+
+  useRegisterCommands([
+    {
+      id: "workflow.rename",
+      title: "Rename workflow",
+      group: "Workflow",
+      icon: TextCursorInputIcon,
+      keywords: ["name", "title", "edit"],
+      run: () => editableTitleRef.current?.focus(),
+    },
+    {
+      id: "workflow.editDescription",
+      title: "Edit workflow description",
+      group: "Workflow",
+      icon: RectangleEllipsisIcon,
+      run: () => editableDescriptionRef.current?.focus(),
+    },
+  ]);
 
   return (
     <div className="flex flex-col gap-1">

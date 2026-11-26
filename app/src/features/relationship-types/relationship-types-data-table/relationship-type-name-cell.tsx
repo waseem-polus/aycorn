@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { LockIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -7,6 +8,8 @@ import {
 } from "@/components/ui/tooltip";
 import { EditableHeader } from "@/components/EditableHeader";
 import { useRelationshipTypeMutation } from "@/features/relationship-types/queries/useRelationshipTypeMutation";
+import { useNewRelationshipType } from "@/features/relationship-types/hooks/useNewRelationshipType";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 import { cn } from "@/lib/utils";
 import type { TaskRelationshipType } from "@/types/types";
 
@@ -30,6 +33,17 @@ export function RelationshipTypeNameCell({
 }: Props) {
   const { updateRelationshipTypeNames } = useRelationshipTypeMutation();
   const value = type[field];
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const focusAndSelect = useFocusAndSelect(nameRef);
+  const { focusId, clearFocusId } = useNewRelationshipType();
+  const shouldFocus = field === "FromName" && focusId === type.ID;
+
+  // A just-created link starts with its name being edited.
+  useEffect(() => {
+    if (!shouldFocus) return;
+    focusAndSelect();
+    clearFocusId();
+  }, [shouldFocus, focusAndSelect, clearFocusId]);
 
   if (type.IsSystem) {
     const content = (
@@ -82,6 +96,7 @@ export function RelationshipTypeNameCell({
       onKeyDown={(e) => e.stopPropagation()}
     >
       <EditableHeader
+        ref={nameRef}
         value={value}
         setValue={handleSave}
         placeholder={placeholder}

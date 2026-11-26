@@ -20,7 +20,7 @@ import {
   arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { GripVertical, Plus, Search } from "lucide-react";
+import { FolderIcon, GripVertical, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import {
   InputGroup,
@@ -38,6 +38,8 @@ import { useTaskTypeCategoryMutation } from "@/features/task-types/queries/useTa
 import { TaskTypeCard } from "@/features/task-types/task-type-card";
 import { TaskTypeCategorySection } from "@/features/task-types/task-type-category-section";
 import { TaskTypesBulkActionsToolbar } from "@/features/task-types/task-types-bulk-actions-toolbar";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
+import { useCategoryCollapse } from "@/features/task-types/hooks/useCategoryCollapse";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import type { TaskTypeCategory, TaskTypeGlobal } from "@/types/types";
@@ -100,7 +102,9 @@ export function TaskTypesPage() {
     useTaskTypesQuery(usageFilter);
   const { data: categories = [], isFetching: categoriesFetching } =
     useTaskTypeCategoriesQuery();
-  const { updateTaskType, bulkUpdateTaskTypes } = useTaskTypeMutation();
+  const { createTaskType, updateTaskType, bulkUpdateTaskTypes } =
+    useTaskTypeMutation();
+  const { isCollapsed, setCollapsed } = useCategoryCollapse();
   const { createCategory, reorderCategories } = useTaskTypeCategoryMutation();
   const { wrapDragStart, wrapDragEnd } = useSharedSelection();
 
@@ -292,6 +296,48 @@ export function TaskTypesPage() {
     });
   };
 
+  const handleCreateType = (categoryId: number) => {
+    createTaskType.mutate(
+      { Category: categoryId },
+      { onError: () => toast.error("Failed to create type.") },
+    );
+    // Expand the category so the new type is visible.
+    setCollapsed(categoryId, false);
+  };
+
+  const categoryName = (category: TaskTypeCategory) =>
+    category.Name || "Untitled Category";
+
+  useRegisterCommands([
+    {
+      id: "taskType.create",
+      title: "Create task type",
+      group: "Task types",
+      icon: Plus,
+      keywords: ["new", "add"],
+      ...(orderedCategories.length === 1
+        ? { run: () => handleCreateType(orderedCategories[0].ID) }
+        : {
+            placeholder: "Choose the task type's category…",
+            items: orderedCategories.map((category) => ({
+              id: `taskType.create.category.${category.ID}`,
+              title: categoryName(category),
+              group: "Categories",
+              icon: FolderIcon,
+              run: () => handleCreateType(category.ID),
+            })),
+          }),
+    },
+    {
+      id: "taskType.category.create",
+      title: "Create task type category",
+      group: "Task types",
+      icon: Plus,
+      keywords: ["new", "add", "group"],
+      run: handleCreateCategory,
+    },
+  ]);
+
   const isLoading =
     (typesFetching && types.length === 0) ||
     (categoriesFetching && categories.length === 0);
@@ -386,6 +432,12 @@ export function TaskTypesPage() {
                       dragOverCategoryId === category.ID &&
                       activeDragId?.startsWith("tt-") === true
                     }
+                    collapsed={isCollapsed(category.ID)}
+                    onCollapsedChange={(collapsed) =>
+                      setCollapsed(category.ID, collapsed)
+                    }
+                    onCreateType={() => handleCreateType(category.ID)}
+                    isCreatingType={createTaskType.isPending}
                     renderTypeCard={(type) => (
                       <DraggableTaskTypeCard key={type.ID} type={type} />
                     )}

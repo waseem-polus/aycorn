@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import type { TaskRelationshipType } from "@/types/types";
 import { DataTablePagination } from "@/components/data-table-pagination";
+import { useNewRelationshipType } from "@/features/relationship-types/hooks/useNewRelationshipType";
 import { SortableHeader } from "@/components/data-table-sortable-header";
 import {
   BEHAVIOR_FROM_NAME_PLACEHOLDER,
@@ -162,6 +163,17 @@ export function RelationshipTypesDataTable({
     initialState: { pagination: { pageSize: 10 } },
     getRowId: (row) => `${row.ID}`,
   });
+
+  // Show the page holding a just-created link so its name can take focus.
+  const { focusId } = useNewRelationshipType();
+  useEffect(() => {
+    if (focusId === null) return;
+    const index = table
+      .getSortedRowModel()
+      .rows.findIndex((row) => row.original.ID === focusId);
+    if (index < 0) return;
+    table.setPageIndex(Math.floor(index / table.getState().pagination.pageSize));
+  }, [focusId, data, table]);
 
   const selectedTypes = table
     .getSelectedRowModel()

@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
 import {
   Command,
   CommandEmpty,
@@ -15,8 +13,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAllWorkflowsQuery } from "@/features/workflows/shared/queries/useAllWorkflowsQuery";
-import { useAllProjectsMutation } from "@/queries/useAllProjectsMutation";
-import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
+import { useCreateProject } from "@/features/projects/hooks/useCreateProject";
+import { useCreateWorkflow } from "@/features/workflows/shared/hooks/useCreateWorkflow";
 
 type Props = {
   folderId?: number;
@@ -36,28 +34,12 @@ export function CreateProjectMenu({
 }: Props) {
   const [open, setOpen] = useState(false);
   const { data: workflows } = useAllWorkflowsQuery();
-  const { createProject } = useAllProjectsMutation();
-  const { createWorkflow } = useWorkflowMutation();
-  const navigate = useNavigate();
-
-  const create = (workflowId: number) => {
-    createProject.mutate(
-      { workflowId, folder: folderId },
-      {
-        onSuccess: (id) => {
-          onCreated?.(id);
-          if (navigateOnCreate) {
-            navigate({
-              to: "/project/$projectId",
-              params: { projectId: String(id) },
-            });
-          }
-        },
-        onError: (err) =>
-          toast.error(err.message || "Failed to create project."),
-      },
-    );
-  };
+  const { create, isPending } = useCreateProject({
+    folderId,
+    onCreated,
+    navigateOnCreate,
+  });
+  const { create: handleCreateWorkflow } = useCreateWorkflow();
 
   const handleTriggerClick = () => {
     if ((workflows ?? []).length === 1) {
@@ -72,25 +54,12 @@ export function CreateProjectMenu({
     create(workflow.ID);
   };
 
-  const handleCreateWorkflow = () => {
-    createWorkflow.mutate(undefined, {
-      onSuccess: (newId) => {
-        navigate({
-          to: "/workflow/$workflowId",
-          params: { workflowId: String(newId) },
-          search: { new: true },
-        });
-      },
-      onError: () => toast.error("Failed to create workflow."),
-    });
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {renderTrigger({
           onClick: handleTriggerClick,
-          disabled: createProject.isPending,
+          disabled: isPending,
         })}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[360px] p-0">

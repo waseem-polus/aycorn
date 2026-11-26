@@ -11,7 +11,14 @@ import { cn } from "@/lib/utils";
  * The project's icon beside its editable name, click-to-edit. The card version
  * is read-only (see project-card.tsx) because the card navigates on click.
  */
-export function ProjectIconPicker() {
+export function ProjectIconPicker({
+  open,
+  onOpenChange,
+}: {
+  /** Optional controlled open state, e.g. so a keyboard command can open it. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
   const { Project, SetProject } = useContext(ProjectContext);
   const { updateProject } = useProjectMutation(Project.ID);
 
@@ -34,6 +41,8 @@ export function ProjectIconPicker() {
       onColorSelect={(color) => save({ Color: color })}
       iconClassName={cn(stageStrokeClass(Project.Color), "size-8 stroke-[1.7]")}
       buttonSize="icon-lg"
+      open={open}
+      onOpenChange={onOpenChange}
     />
   );
 }

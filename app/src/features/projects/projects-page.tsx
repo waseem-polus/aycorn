@@ -40,6 +40,7 @@ import { ProjectFolderSection } from "@/features/projects/project-folder-section
 import { ProjectsBulkActionsToolbar } from "@/features/projects/projects-bulk-actions-toolbar";
 import { NewProjectButton } from "@/features/projects/new-project-button";
 import { useFolderCollapse } from "@/features/projects/hooks/useFolderCollapse";
+import { useProjectsPageCommands } from "@/features/projects/hooks/useProjectsPageCommands";
 import { useSharedSelection } from "@/hooks/useSelection";
 import { bulkResultToast } from "@/features/workflows/shared/bulk-result-toast";
 import type { Project, ProjectFolder } from "@/types/types";
@@ -346,6 +347,18 @@ export function ProjectsPage() {
         .map((f) => f.ID),
     [visibleFolders, projectsByFolder],
   );
+
+  useProjectsPageCommands({
+    archivedView,
+    onShowArchived: (archived) =>
+      setArchiveFilter(archived ? "archived" : "open"),
+    onCreateFolder: handleCreateFolder,
+    visibleFolderIds,
+    emptyFolderIds,
+    nonEmptyFolderIds,
+    collapseFolders: collapseIds,
+    expandFolders: expandIds,
+  });
 
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">

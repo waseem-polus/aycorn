@@ -26,6 +26,7 @@ import { SelectionContext, useSelection } from "@/hooks/useSelection";
 import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { CommandPaletteButton } from "@/features/command-palette/command-palette-button";
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
@@ -188,7 +189,10 @@ export function PageHeader({
             })}
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-auto flex items-center gap-2">{children}</div>
+        <div className="ml-auto flex items-center gap-2">
+          <CommandPaletteButton />
+          {children}
+        </div>
       </div>
     </header>
   );

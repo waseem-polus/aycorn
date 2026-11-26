@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Outlet, createRootRoute, useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
+import { CommandPaletteProvider } from "@/features/command-palette/command-palette-provider";
+import { GlobalCommands } from "@/features/command-palette/global-commands";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 
 export const Route = createRootRoute({
@@ -47,11 +49,14 @@ function RootComponent() {
         } as React.CSSProperties
       }
     >
-      <MobileSidebarClose />
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <Outlet />
-      </SidebarInset>
+      <CommandPaletteProvider>
+        <GlobalCommands />
+        <MobileSidebarClose />
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <Outlet />
+        </SidebarInset>
+      </CommandPaletteProvider>
     </SidebarProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { DataTablePagination } from "@/components/data-table-pagination";
+import { useNewRelationshipType } from "@/features/relationship-types/hooks/useNewRelationshipType";
 import { RelationshipTypeCard } from "@/features/relationship-types/relationship-types-card-list/relationship-type-card";
 import type { TaskRelationshipType } from "@/types/types";
 
@@ -22,6 +23,17 @@ export function RelationshipTypesCardList({
     () => [...data].sort((a, b) => a.FromName.localeCompare(b.FromName)),
     [data],
   );
+
+  // Jump to the page holding a just-created link so its name can take focus.
+  // Adjusted during render (not in an effect) since it only derives from props.
+  const { focusId } = useNewRelationshipType();
+  const focusIndex =
+    focusId === null ? -1 : sorted.findIndex((type) => type.ID === focusId);
+  const [pagedToId, setPagedToId] = useState<number | null>(null);
+  if (focusIndex >= 0 && pagedToId !== focusId) {
+    setPagedToId(focusId);
+    setPageIndex(Math.floor(focusIndex / PAGE_SIZE));
+  }
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePageIndex = Math.min(pageIndex, pageCount - 1);

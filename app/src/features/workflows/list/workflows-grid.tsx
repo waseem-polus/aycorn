@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
-import { toast } from "sonner";
 import type { WorkflowSummary } from "@/types/types";
 import {
   InputGroup,
@@ -11,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { WorkflowCard } from "@/features/workflows/list/workflow-card";
-import { useWorkflowMutation } from "@/features/workflows/shared/queries/useWorkflowMutation";
+import { useCreateWorkflow } from "@/features/workflows/shared/hooks/useCreateWorkflow";
+import { useRegisterCommands } from "@/features/command-palette/hooks/useRegisterCommands";
 
 type FilterTab = "all" | "in-use" | "unused";
 
@@ -24,21 +23,18 @@ export function WorkflowsGrid({
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<FilterTab>("all");
-  const navigate = useNavigate();
-  const { createWorkflow } = useWorkflowMutation();
+  const { create: handleCreate, isPending: isCreating } = useCreateWorkflow();
 
-  const handleCreate = () => {
-    createWorkflow.mutate(undefined, {
-      onSuccess: (newId) => {
-        navigate({
-          to: "/workflow/$workflowId",
-          params: { workflowId: String(newId) },
-          search: { new: true },
-        });
-      },
-      onError: () => toast.error("Failed to create workflow."),
-    });
-  };
+  useRegisterCommands([
+    {
+      id: "workflow.create",
+      title: "Create workflow",
+      group: "Workflows",
+      icon: Plus,
+      keywords: ["new", "add"],
+      run: handleCreate,
+    },
+  ]);
 
   const filtered = useMemo(() => {
     return workflows.filter((w) => {
@@ -83,7 +79,7 @@ export function WorkflowsGrid({
             <ToggleGroupItem value="unused">Unused</ToggleGroupItem>
           </ToggleGroup>
 
-          <Button onClick={handleCreate} disabled={createWorkflow.isPending}>
+          <Button onClick={handleCreate} disabled={isCreating}>
             <Plus />
             New Workflow
           </Button>

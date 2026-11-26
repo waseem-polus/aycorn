@@ -10,68 +10,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  CalendarClockIcon,
-  ChartAreaIcon,
-  FolderIcon,
-  LinkIcon,
-  SettingsIcon,
-  Squirrel,
-  TagsIcon,
-  WorkflowIcon,
-  FunnelIcon,
-} from "lucide-react";
-import { Badge } from "../ui/badge";
-
-const data = {
-  navMain: [
-    {
-      title: "Projects",
-      url: "/",
-      icon: FolderIcon,
-    },
-    {
-      title: "Upcoming",
-      url: "/upcoming",
-      icon: CalendarClockIcon,
-    },
-    {
-      title: "Saved filters",
-      url: "/filters",
-      icon: FunnelIcon,
-      badge: <Badge className="text-xs py-0.5 -rotate-2">New!</Badge>,
-    },
-  ],
-  navConfigure: [
-    {
-      title: "Workflows",
-      url: "/workflows",
-      icon: WorkflowIcon,
-    },
-    {
-      title: "Task Types",
-      url: "/task-types",
-      icon: TagsIcon,
-    },
-    {
-      title: "Task Links",
-      url: "/task-links",
-      icon: LinkIcon,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Usage",
-      url: "/usage",
-      icon: ChartAreaIcon,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: SettingsIcon,
-    },
-  ],
-};
+import { Squirrel } from "lucide-react";
+import { navConfigure, navMain, navSecondary } from "@/components/sidebar/nav-items";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -92,10 +32,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavMain items={data.navConfigure} label="Configuration" />
+        <NavMain items={navMain} />
+        <NavMain items={navConfigure} label="Configuration" />
         <NavPinnedProjects />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
   );

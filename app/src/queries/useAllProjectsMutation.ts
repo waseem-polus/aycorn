@@ -76,7 +76,11 @@ export function useAllProjectsMutation() {
       }
       return (await res.json()) as BulkResult;
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      // An open project page reads its folder from its own details query.
+      queryClient.invalidateQueries({ queryKey: ["projectDetails"] });
+    },
   });
 
   // Whitelisted fields only (Icon, Color) — the server ignores anything else.
