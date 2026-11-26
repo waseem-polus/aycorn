@@ -47,5 +47,5 @@ export type CommandSource = {
   commands: PaletteCommand[];
 };
 
-/** "commands" is entered by typing the ">" prefix; anything else is entity search. */
+/** "commands" is entered by typing the ":" prefix; anything else is entity search. */
 export type PaletteMode = "search" | "commands";

@@ -12,7 +12,7 @@ export const searchPaletteHotkey = "Mod+P" as Hotkey;
 export const commandPaletteHotkey = "Mod+K" as Hotkey;
 
 /** Typed at the start of the input, switches the palette into command mode. */
-export const commandPrefix = ">";
+export const commandPrefix = ":";
 
 type CommandPaletteContextValue = {
   registry: CommandRegistry;

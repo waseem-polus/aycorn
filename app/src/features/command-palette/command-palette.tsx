@@ -25,9 +25,12 @@ import {
   parseScopeToken,
   type EntityKind,
 } from "@/features/command-palette/entity-search/entity-scopes";
-import { ScopeChip } from "@/features/command-palette/entity-search/scope-chip";
+import { PaletteChip } from "@/features/command-palette/command-palette/palette-chip";
 
-/** The input's text decides the mode: a leading ">" means commands, like VS Code. */
+/**
+ * The query decides the mode: a leading ":" means commands. The
+ * ":" stays in the query but not in the input, which shows a "Commands" chip.
+ */
 const parseQuery = (query: string): { mode: PaletteMode; search: string } =>
   query.startsWith(commandPrefix)
     ? { mode: "commands", search: query.slice(commandPrefix.length).trim() }
@@ -69,8 +72,16 @@ export function CommandPalette({
       ? { mode: "search" as const, search: query.trim() }
       : parseQuery(query);
 
-  // A leading scope token ("t ") becomes a chip and leaves the input.
+  const isCommandMode = !currentPage && mode === "commands";
+  const inputValue = isCommandMode ? query.slice(commandPrefix.length) : query;
+
+  // A leading scope token ("t ") becomes a chip and leaves the input, and so
+  // does a leading ":" (it's in the query, which hides it from the input).
   const handleQueryChange = (value: string) => {
+    if (isCommandMode) {
+      onQueryChange(commandPrefix + value);
+      return;
+    }
     const scoped = !currentPage && !scope ? parseScopeToken(value) : null;
     if (scoped) {
       onScopeChange(scoped.scope);
@@ -102,7 +113,7 @@ export function CommandPalette({
   };
 
   // The dialog's default autofocus selects the input's text, so typing would
-  // replace the ">" that command mode opens with. Put the caret after it.
+  // replace it. Put the caret at the end instead.
   const handleOpenAutoFocus = (event: Event) => {
     event.preventDefault();
     const input = inputRef.current;
@@ -126,11 +137,40 @@ export function CommandPalette({
     onQueryChange(parentPages.length ? "" : commandPrefix);
   };
 
-  useHotkey("Backspace", () => (currentPage ? goBack() : onScopeChange(null)), {
+  const leaveCommandMode = () => onQueryChange("");
+
+  const removeChip = () => {
+    if (currentPage) goBack();
+    else if (scope) onScopeChange(null);
+    else leaveCommandMode();
+  };
+
+  useHotkey("Backspace", removeChip, {
     target: inputRef,
-    enabled: open && (!!currentPage || !!scope) && query === "",
+    enabled:
+      open && (!!currentPage || !!scope || isCommandMode) && inputValue === "",
     ignoreInputs: false,
   });
+
+  const chip = scope ? (
+    <PaletteChip
+      label={entityScopes[scope].label}
+      removeLabel={`Search everything, not just ${entityScopes[scope].label.toLowerCase()}`}
+      onRemove={() => {
+        onScopeChange(null);
+        inputRef.current?.focus();
+      }}
+    />
+  ) : isCommandMode ? (
+    <PaletteChip
+      label="Commands"
+      removeLabel="Search instead of commands"
+      onRemove={() => {
+        leaveCommandMode();
+        inputRef.current?.focus();
+      }}
+    />
+  ) : null;
 
   const placeholder = currentPage
     ? (currentPage.placeholder ?? "Choose…")
@@ -163,20 +203,10 @@ export function CommandPalette({
       )}
       <CommandInput
         ref={inputRef}
-        value={query}
+        value={inputValue}
         onValueChange={handleQueryChange}
         placeholder={placeholder}
-        adornment={
-          scope && (
-            <ScopeChip
-              scope={scope}
-              onRemove={() => {
-                onScopeChange(null);
-                inputRef.current?.focus();
-              }}
-            />
-          )
-        }
+        adornment={chip}
       />
       <CommandList className="max-h-[min(420px,60vh)]">
         {mode === "search" ? (
