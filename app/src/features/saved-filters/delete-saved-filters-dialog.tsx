@@ -20,7 +20,7 @@ type Props = {
   onDeleted?: () => void;
 };
 
-/** Confirms deleting one or more filters — they disappear from every board they're pinned to. */
+/** Confirms deleting one or more filters — they disappear from every view they’re pinned to. */
 export function DeleteSavedFiltersDialog({ filters, open, onOpenChange, onDeleted }: Props) {
   const { bulkDelete } = useSavedFilterMutations();
   const pinCount = filters.reduce((n, f) => n + f.Pins.length, 0);
@@ -47,7 +47,7 @@ export function DeleteSavedFiltersDialog({ filters, open, onOpenChange, onDelete
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
             {pinCount > 0
-              ? `${filters.length === 1 ? "It's" : "They're"} pinned to ${pinCount} board${pinCount === 1 ? "" : "s"} and will be removed from all of them. `
+              ? `${filters.length === 1 ? "It's" : "They're"} pinned to ${pinCount} view${pinCount === 1 ? "" : "s"} and will be removed from all of them. `
               : ""}
             This can't be undone.
           </AlertDialogDescription>

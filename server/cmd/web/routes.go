@@ -72,10 +72,8 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PATCH /api/filter/{id}", app.patchSavedFilter)
 	mux.HandleFunc("DELETE /api/filter/{id}", app.deleteSavedFilter)
 	mux.HandleFunc("POST /api/filter/{id}/duplicate", app.postDuplicateSavedFilter)
-	mux.HandleFunc("PUT /api/filter/{id}/pins", app.putSavedFilterPins)
 	mux.HandleFunc("POST /api/filter-pin", app.postFilterPin)
 	mux.HandleFunc("DELETE /api/filter-pin", app.deleteFilterPin)
-	mux.HandleFunc("PUT /api/filter-pin/order", app.putFilterPinOrder)
 
 	mux.HandleFunc("GET /api/view", app.getViews)
 	mux.HandleFunc("POST /api/view", app.postView)
@@ -83,6 +81,7 @@ func (app *app) routes() http.Handler {
 	mux.HandleFunc("PATCH /api/view/{id}", app.patchView)
 	mux.HandleFunc("DELETE /api/view/{id}", app.deleteView)
 	mux.HandleFunc("POST /api/view/{id}/duplicate", app.postDuplicateView)
+	mux.HandleFunc("PUT /api/view/{id}/filters", app.putViewFilters)
 
 	mux.HandleFunc("GET /api/settings", app.getAppSettings)
 	mux.HandleFunc("PUT /api/settings", app.putAppSettings)

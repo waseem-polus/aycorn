@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * The Filter flyout: the view's data-source condition tree. Mounts when the
+ * The Data source flyout: the view's data-source condition tree. Mounts when the
  * flyout opens and saves what's pending when it closes (see
  * `useDebouncedSourceSave`); edits save shortly after the last change.
  */

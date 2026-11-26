@@ -205,7 +205,7 @@ func main() {
 	appSettingsRepo := &repos.AppSettingsRepo{DB: db}
 	usageRepo := &repos.UsageRepo{DB: db}
 
-	viewService := &services.ViewService{ViewRepo: viewRepo, SavedFilterRepo: savedFilterRepo}
+	viewService := &services.ViewService{ViewRepo: viewRepo}
 
 	projectService := &services.ProjectService{
 		ViewService:   viewService,
@@ -241,7 +241,7 @@ func main() {
 		TaskRelationshipRepo: taskRelationshipRepo,
 	}
 
-	savedFilterService := &services.SavedFilterService{SavedFilterRepo: savedFilterRepo}
+	savedFilterService := &services.SavedFilterService{SavedFilterRepo: savedFilterRepo, ViewRepo: viewRepo}
 	appSettingsService := &services.AppSettingsService{SettingsRepo: appSettingsRepo}
 	usageService := &services.UsageService{UsageRepo: usageRepo}
 

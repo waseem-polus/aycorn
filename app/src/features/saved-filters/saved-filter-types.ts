@@ -1,13 +1,15 @@
 import type { FilterDefinition } from "@/features/saved-filters/filter-definition";
 
-/**
- * A place a filter can be pinned as a chip. Future surfaces (views,
- * widgets) join this union — and the server's surface check — with no table
- * change.
- */
+/** A page with views: /upcoming, or one project. */
 export type Board = { surface: "upcoming" } | { surface: "project"; projectId: number };
 
+/**
+ * A filter's place on one view's bar. The view's board and name come along so
+ * a pin can be placed on its board without loading that board's views.
+ */
 export type SavedFilterPin = {
+  ViewID: number;
+  ViewName: string;
   Surface: Board["surface"];
   ProjectID: number | null;
   Position: number;

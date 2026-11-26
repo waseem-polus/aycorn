@@ -24,7 +24,7 @@ import { SavedFilterLabel } from "@/features/saved-filters/saved-filter-label";
 import type { SavedFilter } from "@/features/saved-filters/saved-filter-types";
 
 type Props = {
-  /** Saved filters not yet on this board. */
+  /** Saved filters not yet on this view. */
   candidates: SavedFilter[];
   onAdd: (id: number) => void;
   /** Creates an empty saved filter here and opens its editor. */
@@ -88,7 +88,7 @@ export function AddFilterPopover({ candidates, onAdd, onCreate }: Props) {
                       <SavedFilterLabel filter={f} />
                       {f.Pins.length > 0 && (
                         <span className="ml-auto text-xs text-muted-foreground">
-                          {f.Pins.length} board{f.Pins.length === 1 ? "" : "s"}
+                          {f.Pins.length} view{f.Pins.length === 1 ? "" : "s"}
                         </span>
                       )}
                     </CommandItem>

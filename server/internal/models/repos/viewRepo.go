@@ -22,6 +22,9 @@ type NewView struct {
 	GroupOptions json.RawMessage
 	Source       json.RawMessage
 	Sort         json.RawMessage
+	// FilterPinsFrom, when set, copies that view's saved-filter pins onto the
+	// new view in the same transaction (duplicating a view keeps its chips).
+	FilterPinsFrom *int
 }
 
 // ViewPatch is a partial update: nil fields are left alone. ClearGroupBy
@@ -39,6 +42,18 @@ type ViewPatch struct {
 }
 
 const viewColumns = "id, surface, project, name, icon, color, type, groupBy, groupOptions, source, sort, position, timeCreated, timeModified"
+
+// boardMatch matches a board's rows. `project IS ?` is SQLite's null-safe
+// equality, so the upcoming board (no project) matches too.
+const boardMatch = "surface = ? AND project IS ?"
+
+func boardArgs(board models.FilterBoard) []any {
+	var project any
+	if board.ProjectID != nil {
+		project = *board.ProjectID
+	}
+	return []any{board.Surface, project}
+}
 
 func scanView(row interface{ Scan(...any) error }) (models.View, error) {
 	var v models.View
@@ -114,6 +129,14 @@ func (repo *ViewRepo) CreateMany(board models.FilterBoard, views []NewView) ([]i
 		id, err := res.LastInsertId()
 		if err != nil {
 			return nil, err
+		}
+		if v.FilterPinsFrom != nil {
+			if _, err := tx.Exec(
+				"INSERT INTO saved_filter_pin (filter, view, position) SELECT filter, ?, position FROM saved_filter_pin WHERE view = ?;",
+				id, *v.FilterPinsFrom,
+			); err != nil {
+				return nil, err
+			}
 		}
 		ids = append(ids, int(id))
 	}
@@ -228,4 +251,10 @@ func (repo *ViewRepo) Reorder(ids []int) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func (repo *ViewRepo) ProjectExists(id int) (bool, error) {
+	var n int
+	err := repo.DB.QueryRow("SELECT COUNT(*) FROM project WHERE id = ?;", id).Scan(&n)
+	return n > 0, err
 }

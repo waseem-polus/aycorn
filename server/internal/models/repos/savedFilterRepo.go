@@ -21,18 +21,6 @@ type SavedFilterPatch struct {
 
 const savedFilterColumns = "id, name, definition, timeCreated, timeModified"
 
-// boardMatch matches pins on one board. `project IS ?` is SQLite's null-safe
-// equality, so the upcoming board (no project) matches too.
-const boardMatch = "surface = ? AND project IS ?"
-
-func boardArgs(board models.FilterBoard) []any {
-	var project any
-	if board.ProjectID != nil {
-		project = *board.ProjectID
-	}
-	return []any{board.Surface, project}
-}
-
 func scanSavedFilter(row interface{ Scan(...any) error }) (models.SavedFilter, error) {
 	f := models.SavedFilter{Pins: []models.SavedFilterPin{}}
 	var definition string
@@ -44,7 +32,7 @@ func scanSavedFilter(row interface{ Scan(...any) error }) (models.SavedFilter, e
 }
 
 // All returns every filter with its pins. The list is small (a personal
-// tool's handful of filters), so boards derive their pins from it client-side.
+// tool's handful of filters), so views derive their pins from it client-side.
 func (repo *SavedFilterRepo) All() ([]models.SavedFilter, error) {
 	rows, err := repo.DB.Query("SELECT " + savedFilterColumns + " FROM saved_filter ORDER BY name COLLATE NOCASE, id;")
 	if err != nil {
@@ -66,7 +54,11 @@ func (repo *SavedFilterRepo) All() ([]models.SavedFilter, error) {
 		return nil, err
 	}
 
-	pins, err := repo.DB.Query("SELECT filter, surface, project, position FROM saved_filter_pin ORDER BY position, id;")
+	pins, err := repo.DB.Query(`
+SELECT p.filter, p.view, v.name, v.surface, v.project, p.position
+FROM saved_filter_pin p
+JOIN board_view v ON v.id = p.view
+ORDER BY v.position, v.id, p.position, p.id;`)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +67,7 @@ func (repo *SavedFilterRepo) All() ([]models.SavedFilter, error) {
 		var filterID int
 		var project sql.NullInt64
 		pin := models.SavedFilterPin{}
-		if err := pins.Scan(&filterID, &pin.Surface, &project, &pin.Position); err != nil {
+		if err := pins.Scan(&filterID, &pin.ViewID, &pin.ViewName, &pin.Surface, &project, &pin.Position); err != nil {
 			return nil, err
 		}
 		if project.Valid {
@@ -97,9 +89,9 @@ func (repo *SavedFilterRepo) FindOne(id int) (*models.SavedFilter, error) {
 	return &f, nil
 }
 
-// Create inserts a filter and, when pin is set, pins it to the end of that
-// board in the same transaction — "save as new" from a board is one action.
-func (repo *SavedFilterRepo) Create(name string, definition json.RawMessage, pin *models.FilterBoard) (int, error) {
+// Create inserts a filter and, when pinView is set, pins it to the end of that
+// view in the same transaction — "save as new" from a view is one action.
+func (repo *SavedFilterRepo) Create(name string, definition json.RawMessage, pinView *int) (int, error) {
 	tx, err := repo.DB.Begin()
 	if err != nil {
 		return 0, err
@@ -116,8 +108,8 @@ func (repo *SavedFilterRepo) Create(name string, definition json.RawMessage, pin
 	}
 	id := int(id64)
 
-	if pin != nil {
-		if err := insertPinAtEnd(tx, id, *pin); err != nil {
+	if pinView != nil {
+		if err := insertPinAtEnd(tx, id, *pinView); err != nil {
 			return 0, err
 		}
 	}
@@ -192,48 +184,8 @@ func (repo *SavedFilterRepo) DeleteMany(ids []int) (int, error) {
 	return int(affected), err
 }
 
-// SetPins makes boards exactly the set the filter is pinned to: pins on other
-// boards are removed, existing ones keep their position, new ones go last.
-func (repo *SavedFilterRepo) SetPins(id int, boards []models.FilterBoard) error {
-	tx, err := repo.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	current, err := filterBoards(tx, id)
-	if err != nil {
-		return err
-	}
-	wanted := map[boardID]bool{}
-	for _, b := range boards {
-		wanted[boardKey(b)] = true
-	}
-	for _, b := range current {
-		if !wanted[boardKey(b)] {
-			if _, err := tx.Exec("DELETE FROM saved_filter_pin WHERE filter = ? AND "+boardMatch+";", append([]any{id}, boardArgs(b)...)...); err != nil {
-				return err
-			}
-		}
-	}
-	have := map[boardID]bool{}
-	for _, b := range current {
-		have[boardKey(b)] = true
-	}
-	for _, b := range boards {
-		if have[boardKey(b)] {
-			continue
-		}
-		if err := insertPinAtEnd(tx, id, b); err != nil {
-			return err
-		}
-		have[boardKey(b)] = true
-	}
-	return tx.Commit()
-}
-
-// Pin adds a filter to the end of a board. Pinning twice is a no-op.
-func (repo *SavedFilterRepo) Pin(id int, board models.FilterBoard) error {
+// Pin adds a filter to the end of a view. Pinning twice is a no-op.
+func (repo *SavedFilterRepo) Pin(id int, viewID int) error {
 	tx, err := repo.DB.Begin()
 	if err != nil {
 		return err
@@ -241,112 +193,78 @@ func (repo *SavedFilterRepo) Pin(id int, board models.FilterBoard) error {
 	defer tx.Rollback()
 
 	var exists int
-	err = tx.QueryRow("SELECT COUNT(*) FROM saved_filter_pin WHERE filter = ? AND "+boardMatch+";", append([]any{id}, boardArgs(board)...)...).Scan(&exists)
-	if err != nil {
+	if err := tx.QueryRow("SELECT COUNT(*) FROM saved_filter_pin WHERE filter = ? AND view = ?;", id, viewID).Scan(&exists); err != nil {
 		return err
 	}
 	if exists == 0 {
-		if err := insertPinAtEnd(tx, id, board); err != nil {
+		if err := insertPinAtEnd(tx, id, viewID); err != nil {
 			return err
 		}
 	}
 	return tx.Commit()
 }
 
-func (repo *SavedFilterRepo) Unpin(id int, board models.FilterBoard) error {
-	_, err := repo.DB.Exec("DELETE FROM saved_filter_pin WHERE filter = ? AND "+boardMatch+";", append([]any{id}, boardArgs(board)...)...)
+func (repo *SavedFilterRepo) Unpin(id int, viewID int) error {
+	_, err := repo.DB.Exec("DELETE FROM saved_filter_pin WHERE filter = ? AND view = ?;", id, viewID)
 	return err
 }
 
-// BoardFilterIDs returns the filters pinned to a board, in bar order.
-func (repo *SavedFilterRepo) BoardFilterIDs(board models.FilterBoard) ([]int, error) {
-	rows, err := repo.DB.Query("SELECT filter FROM saved_filter_pin WHERE "+boardMatch+" ORDER BY position, id;", boardArgs(board)...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	ids := []int{}
-	for rows.Next() {
-		var id int
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	return ids, rows.Err()
-}
-
-// ReorderBoard rewrites a board's pin order atomically.
-func (repo *SavedFilterRepo) ReorderBoard(board models.FilterBoard, ids []int) error {
+// SetViewFilters makes ids exactly the filters pinned to a view, in that
+// order: pins not listed are removed, listed ones are added or moved. One
+// transaction, so add, remove and reorder are a single atomic change.
+func (repo *SavedFilterRepo) SetViewFilters(viewID int, ids []int) error {
 	tx, err := repo.DB.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare("UPDATE saved_filter_pin SET position = ? WHERE filter = ? AND " + boardMatch + ";")
+	if len(ids) == 0 {
+		if _, err := tx.Exec("DELETE FROM saved_filter_pin WHERE view = ?;", viewID); err != nil {
+			return err
+		}
+		return tx.Commit()
+	}
+
+	placeholders, args := intIdPlaceholders(ids)
+	if _, err := tx.Exec(
+		"DELETE FROM saved_filter_pin WHERE view = ? AND filter NOT IN ("+placeholders+");",
+		append([]any{viewID}, args...)...,
+	); err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare(`
+INSERT INTO saved_filter_pin (filter, view, position) VALUES (?, ?, ?)
+ON CONFLICT (filter, view) DO UPDATE SET position = excluded.position;`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for i, id := range ids {
-		if _, err := stmt.Exec(append([]any{i, id}, boardArgs(board)...)...); err != nil {
+		if _, err := stmt.Exec(id, viewID, i); err != nil {
 			return err
 		}
 	}
 	return tx.Commit()
 }
 
-func (repo *SavedFilterRepo) ProjectExists(id int) (bool, error) {
+// CountExisting returns how many of ids are saved filters.
+func (repo *SavedFilterRepo) CountExisting(ids []int) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	placeholders, args := intIdPlaceholders(ids)
 	var n int
-	err := repo.DB.QueryRow("SELECT COUNT(*) FROM project WHERE id = ?;", id).Scan(&n)
-	return n > 0, err
+	err := repo.DB.QueryRow("SELECT COUNT(*) FROM saved_filter WHERE id IN ("+placeholders+");", args...).Scan(&n)
+	return n, err
 }
 
-func insertPinAtEnd(tx *sql.Tx, filterID int, board models.FilterBoard) error {
+func insertPinAtEnd(tx *sql.Tx, filterID int, viewID int) error {
 	var next int
-	if err := tx.QueryRow("SELECT COALESCE(MAX(position) + 1, 0) FROM saved_filter_pin WHERE "+boardMatch+";", boardArgs(board)...).Scan(&next); err != nil {
+	if err := tx.QueryRow("SELECT COALESCE(MAX(position) + 1, 0) FROM saved_filter_pin WHERE view = ?;", viewID).Scan(&next); err != nil {
 		return err
 	}
-	_, err := tx.Exec(
-		"INSERT INTO saved_filter_pin (filter, surface, project, position) VALUES (?, ?, ?, ?);",
-		append(append([]any{filterID}, boardArgs(board)...), next)...,
-	)
+	_, err := tx.Exec("INSERT INTO saved_filter_pin (filter, view, position) VALUES (?, ?, ?);", filterID, viewID, next)
 	return err
-}
-
-func filterBoards(tx *sql.Tx, filterID int) ([]models.FilterBoard, error) {
-	rows, err := tx.Query("SELECT surface, project FROM saved_filter_pin WHERE filter = ?;", filterID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	boards := []models.FilterBoard{}
-	for rows.Next() {
-		var b models.FilterBoard
-		var project sql.NullInt64
-		if err := rows.Scan(&b.Surface, &project); err != nil {
-			return nil, err
-		}
-		if project.Valid {
-			id := int(project.Int64)
-			b.ProjectID = &id
-		}
-		boards = append(boards, b)
-	}
-	return boards, rows.Err()
-}
-
-// boardID is a comparable stand-in for a FilterBoard: a struct holding a
-// *int compares by pointer, so two equal project boards would look different.
-type boardID struct {
-	surface string
-	project int
-}
-
-func boardKey(b models.FilterBoard) boardID {
-	if b.ProjectID == nil {
-		return boardID{surface: b.Surface, project: -1}
-	}
-	return boardID{surface: b.Surface, project: *b.ProjectID}
 }

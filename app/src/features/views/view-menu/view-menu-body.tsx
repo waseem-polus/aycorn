@@ -4,6 +4,7 @@ import {
   ArrowRightIcon,
   ArrowUpDownIcon,
   CopyIcon,
+  DatabaseIcon,
   FilterIcon,
   GroupIcon,
   LayoutGridIcon,
@@ -13,12 +14,15 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { viewFilters } from "@/features/saved-filters/board";
 import { definitionRuleCount } from "@/features/saved-filters/filter-definition";
+import { useSavedFiltersQuery } from "@/features/saved-filters/queries/useSavedFiltersQuery";
 import type { ConditionOptionSources } from "@/features/task-filters/conditions/condition-builder-context";
 import type { BoardViewsAPI } from "@/features/views/hooks/useBoardViews";
 import { FilterFlyout } from "@/features/views/view-menu/filter-flyout";
 import { GroupByFlyout } from "@/features/views/view-menu/group-by-flyout";
 import { LayoutFlyout } from "@/features/views/view-menu/layout-flyout";
+import { SavedFiltersFlyout } from "@/features/views/view-menu/saved-filters-flyout";
 import { ViewMenuFlyout } from "@/features/views/view-menu/view-menu-flyout";
 import { ViewMenuHeader } from "@/features/views/view-menu/view-menu-header";
 import { SortEditor } from "@/features/views/sort/sort-editor";
@@ -26,7 +30,7 @@ import { sortApplies, sortSummary } from "@/features/views/view-sorts";
 import { GROUP_LABELS, viewTypeLabel } from "@/features/views/view-groupings";
 import type { BoardView, ViewPatch } from "@/features/views/view-types";
 
-type Flyout = "layout" | "groupBy" | "sort" | "filter";
+type Flyout = "layout" | "groupBy" | "sort" | "filter" | "savedFilters";
 
 type Props = {
   view: BoardView;
@@ -69,6 +73,8 @@ export function ViewMenuBody({
   });
 
   const ruleCount = definitionRuleCount(view.Source);
+  const { data: savedFilters = [] } = useSavedFiltersQuery();
+  const pinnedCount = viewFilters(savedFilters, view.ID).length;
 
   return (
     <>
@@ -125,12 +131,22 @@ export function ViewMenuBody({
 
       <ViewMenuFlyout
         {...flyoutState("filter")}
-        icon={<FilterIcon className={icon} />}
-        label="Filter"
+        icon={<DatabaseIcon className={icon} />}
+        label="Data source"
         value={ruleCount > 0 ? ruleCount : "None"}
         contentClassName="max-h-[75vh] w-[36rem] max-w-[calc(100vw-2rem)] overflow-y-auto"
       >
         <FilterFlyout view={view} sources={sources} onUpdate={onUpdate} />
+      </ViewMenuFlyout>
+
+      <ViewMenuFlyout
+        {...flyoutState("savedFilters")}
+        icon={<FilterIcon className={icon} />}
+        label="Saved filters"
+        value={pinnedCount > 0 ? pinnedCount : "None"}
+        contentClassName="w-72 p-0"
+      >
+        <SavedFiltersFlyout view={view} />
       </ViewMenuFlyout>
 
       <DropdownMenuSeparator />

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { boardToWire } from "@/features/saved-filters/board";
+import { SAVED_FILTERS_KEY } from "@/features/saved-filters/queries/useSavedFiltersQuery";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
 import { viewsKey } from "@/features/views/queries/useViewsQuery";
 import type { BoardView, ViewPatch, ViewType } from "@/features/views/view-types";
@@ -20,6 +21,10 @@ export function useViewMutations(board: Board) {
   const queryClient = useQueryClient();
   const key = viewsKey(board);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: key });
+  // Saved filters carry their pins' views (id and name): duplicating a view
+  // copies its pins, deleting one drops them, renaming changes the name.
+  const invalidateWithPins = () =>
+    Promise.all([invalidate(), queryClient.invalidateQueries({ queryKey: SAVED_FILTERS_KEY })]);
 
   const create = useMutation({
     mutationFn: (type: ViewType) =>
@@ -31,21 +36,24 @@ export function useViewMutations(board: Board) {
     mutationFn: ({ id, patch }: { id: number; patch: ViewPatch }) =>
       request<BoardView>("PATCH", `/api/view/${id}`, patch),
     // The server's copy (with any grouping it normalized) replaces ours.
-    onSuccess: (updated) => {
+    onSuccess: (updated, { patch }) => {
       queryClient.setQueryData<BoardView[]>(key, (old) =>
         old?.map((v) => (v.ID === updated.ID ? updated : v)),
       );
+      if (patch.name !== undefined) {
+        void queryClient.invalidateQueries({ queryKey: SAVED_FILTERS_KEY });
+      }
     },
   });
 
   const duplicate = useMutation({
     mutationFn: (id: number) => request<BoardView>("POST", `/api/view/${id}/duplicate`),
-    onSuccess: invalidate,
+    onSuccess: invalidateWithPins,
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => request<boolean>("DELETE", `/api/view/${id}`),
-    onSuccess: invalidate,
+    onSuccess: invalidateWithPins,
   });
 
   /**

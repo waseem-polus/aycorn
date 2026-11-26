@@ -262,7 +262,7 @@ export function FilterChip({
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void api.unpin(filter.ID)}>
                 <PinOffIcon />
-                Unpin from board
+                Unpin from view
               </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onSelect={onDelete}>
                 <Trash2Icon />

@@ -10,15 +10,16 @@ export const boardToWire = (board: Board) => ({
   projectId: board.surface === "project" ? board.projectId : null,
 });
 
+/** Whether a pin is on one of the board's views. */
 export const pinIsOnBoard = (pin: SavedFilterPin, board: Board) =>
   pin.Surface === board.surface &&
   (board.surface !== "project" || pin.ProjectID === board.projectId);
 
-/** The filters pinned to a board, in bar order. */
-export const boardFilters = (filters: SavedFilter[], board: Board): SavedFilter[] =>
+/** The filters pinned to a view, in bar order. None while the view is loading. */
+export const viewFilters = (filters: SavedFilter[], viewId: number | null): SavedFilter[] =>
   filters
     .flatMap((f) => {
-      const pin = f.Pins.find((p) => pinIsOnBoard(p, board));
+      const pin = viewId === null ? undefined : f.Pins.find((p) => p.ViewID === viewId);
       return pin ? [{ filter: f, position: pin.Position }] : [];
     })
     .sort((a, b) => a.position - b.position || a.filter.ID - b.filter.ID)

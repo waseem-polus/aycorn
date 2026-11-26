@@ -18,7 +18,7 @@ function RouteComponent() {
       <PageContent>
         <PageTitle
           title="Saved filters"
-          description="Named filters you can pin to any board and toggle on top of a view."
+          description="Named filters you can pin to views and toggle on top of them."
         />
         <FiltersPage />
       </PageContent>

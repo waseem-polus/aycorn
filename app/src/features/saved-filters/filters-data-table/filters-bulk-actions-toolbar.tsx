@@ -21,7 +21,7 @@ export function FiltersBulkActionsToolbar({ selected, onClear }: Props) {
         title: `Delete ${selected.length} filter${selected.length === 1 ? "" : "s"}?`,
         description:
           (pinCount > 0
-            ? `They're pinned to ${pinCount} board${pinCount === 1 ? "" : "s"} and will be removed from all of them. `
+            ? `They're pinned to ${pinCount} view${pinCount === 1 ? "" : "s"} and will be removed from all of them. `
             : "") + "This can't be undone.",
         busy: bulkDelete.isPending,
         onConfirm: () =>

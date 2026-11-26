@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/features/calendar/hooks";
-import { boardFilters, boardScope } from "@/features/saved-filters/board";
+import { boardScope, pinIsOnBoard, viewFilters } from "@/features/saved-filters/board";
 import {
   fromDefinition,
   toDefinition,
@@ -19,6 +19,7 @@ import type {
 import { upgradeGroup } from "@/features/task-filters/conditions/condition-upgrade";
 import { toWire } from "@/features/task-filters/conditions/condition-wire";
 import { useToday } from "@/features/task-filters/hooks/useToday";
+import type { BoardView } from "@/features/views/view-types";
 
 type Drafts = Record<string, ConditionGroup>;
 
@@ -28,19 +29,24 @@ export const isTree = (value: unknown): value is ConditionGroup =>
   !!value && typeof value === "object" && (value as ConditionGroup).kind === "group";
 
 /**
- * A board's saved filters: the saved filters pinned to it, which of them are
+ * The saved filters on a view's bar: the ones pinned to the view, which are
  * toggled on, and their unsaved edits. Toggled filters stack — the server ANDs
  * every tree in `wires`.
+ *
+ * Toggles are kept per board, not per view: a filter pinned to several of the
+ * board's views is on or off in all of them, and switching to a view without
+ * it leaves it on for when you come back. Only the view's own pinned filters
+ * apply to it.
  *
  * Edits are local drafts, one per filter, kept together under
  * `aycorn.<scope>.drafts` so every chip's unsaved dot updates as you type.
  * `save` commits a draft to the shared filter; `discard` drops it.
  */
-export function useBoardSavedFilters(board: Board) {
+export function useBoardSavedFilters(board: Board, view: BoardView | null) {
   const scope = boardScope(board);
   const { data: savedFilters = [], isPending } = useSavedFiltersQuery();
   const mutations = useSavedFilterMutations();
-  const pinned = boardFilters(savedFilters, board);
+  const pinned = viewFilters(savedFilters, view?.ID ?? null);
 
   const [activeIds, setActiveIds] = useLocalStorage<number[]>(activeFiltersKey(scope), []);
   const [drafts, setDrafts] = useLocalStorage<Drafts>(`aycorn.${scope}.drafts`, {});
@@ -75,11 +81,16 @@ export function useBoardSavedFilters(board: Board) {
 
   const active = pinned.filter((f) => activeIds.includes(f.ID));
 
-  // Drop state for filters that left the board (deleted, or unpinned
-  // elsewhere) once the list has loaded.
+  // Drop state for filters that left the board — deleted, or pinned to none
+  // of its views — once the list has loaded. A filter that's only missing
+  // from this view keeps its toggle and draft.
+  const onBoardKey = savedFilters
+    .filter((f) => f.Pins.some((p) => pinIsOnBoard(p, board)))
+    .map((f) => f.ID)
+    .join(",");
   useEffect(() => {
     if (isPending) return;
-    const ids = new Set(pinned.map((f) => f.ID));
+    const ids = new Set(onBoardKey ? onBoardKey.split(",").map(Number) : []);
     if (activeIds.some((id) => !ids.has(id))) {
       setActiveIds((prev) => prev.filter((id) => ids.has(id)));
     }
@@ -88,7 +99,7 @@ export function useBoardSavedFilters(board: Board) {
         Object.fromEntries(Object.entries(prev).filter(([id]) => ids.has(Number(id)))),
       );
     }
-  }, [isPending, pinned, activeIds, drafts, setActiveIds, setDrafts]);
+  }, [isPending, onBoardKey, activeIds, drafts, setActiveIds, setDrafts]);
 
   const today = useToday();
   const { weekStartsOn } = useAppSettingsQuery().settings;
@@ -144,7 +155,7 @@ export function useBoardSavedFilters(board: Board) {
   };
 
   /**
-   * Creates a filter pinned to this board and toggles it on. Returns it, or
+   * Creates a filter pinned to this view and toggles it on. Returns it, or
    * null when the request failed (already reported).
    */
   const create = async (name: string, root: ConditionGroup = createRoot()) => {
@@ -152,7 +163,7 @@ export function useBoardSavedFilters(board: Board) {
       const created = await mutations.create.mutateAsync({
         name,
         definition: toDefinition(root),
-        pin: board,
+        viewId: view?.ID,
       });
       setActive(created.ID, true);
       return created;
@@ -178,8 +189,9 @@ export function useBoardSavedFilters(board: Board) {
   };
 
   const pin = async (id: number) => {
+    if (!view) return;
     try {
-      await mutations.pin.mutateAsync({ id, board });
+      await mutations.pin.mutateAsync({ id, viewId: view.ID });
       setActive(id, true);
     } catch {
       toast.error("Couldn't add the filter. Try again.");
@@ -187,8 +199,9 @@ export function useBoardSavedFilters(board: Board) {
   };
 
   const unpin = async (id: number) => {
+    if (!view) return;
     try {
-      await mutations.unpin.mutateAsync({ id, board });
+      await mutations.unpin.mutateAsync({ id, viewId: view.ID });
     } catch {
       toast.error("Couldn't remove the filter. Try again.");
     }
@@ -202,14 +215,17 @@ export function useBoardSavedFilters(board: Board) {
     }
   };
 
-  const reorder = (ids: number[]) =>
-    mutations.reorder.mutate(
-      { board, ids },
+  const reorder = (ids: number[]) => {
+    if (!view) return;
+    mutations.setViewFilters.mutate(
+      { view, ids },
       { onError: () => toast.error("Couldn't reorder filters. Try again.") },
     );
+  };
 
   return {
     board,
+    view,
     savedFilters,
     pinned,
     active,

@@ -22,13 +22,14 @@ export function FilterRowActions({ filter }: { filter: SavedFilter }) {
   const { duplicate } = useSavedFilterMutations();
   const firstPin = filter.Pins[0];
 
-  /** Conditions are edited on a board, so "open" means: go to one where it's pinned, with it active. */
+  /** Conditions are edited on a board, so "open" means: go to a view where it's pinned, with it active. */
   const open = () => {
     if (!firstPin) return;
     const board = pinToBoard(firstPin);
     setActiveFilterOnBoard(board, filter.ID);
-    if (board.surface === "upcoming") navigate({ to: "/upcoming", search: {} });
-    else navigate({ to: "/project/$projectId", params: { projectId: String(board.projectId) } });
+    const search = { view: firstPin.ViewID };
+    if (board.surface === "upcoming") navigate({ to: "/upcoming", search });
+    else navigate({ to: "/project/$projectId", params: { projectId: String(board.projectId) }, search });
   };
 
   return (
@@ -48,7 +49,7 @@ export function FilterRowActions({ filter }: { filter: SavedFilter }) {
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuItem disabled={!firstPin} onSelect={open}>
             <ExternalLinkIcon />
-            {firstPin ? "Open on a board" : "Pin to a board to edit"}
+            {firstPin ? "Open in a view" : "Pin to a view to edit"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() =>

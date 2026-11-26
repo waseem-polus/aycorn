@@ -60,8 +60,8 @@ func httpStatusForError(err error) int {
 		errors.Is(err, services.ErrInvalidDestinationStage),
 		errors.Is(err, services.ErrDestinationChecklistRequired),
 		errors.Is(err, services.ErrInvalidFilterDefinition),
-		errors.Is(err, services.ErrInvalidFilterBoard),
-		errors.Is(err, services.ErrInvalidFilterOrder),
+		errors.Is(err, services.ErrInvalidFilterView),
+		errors.Is(err, services.ErrInvalidFilterList),
 		errors.Is(err, services.ErrInvalidView),
 		errors.Is(err, services.ErrInvalidViewOrder),
 		errors.Is(err, services.ErrInvalidSettings):

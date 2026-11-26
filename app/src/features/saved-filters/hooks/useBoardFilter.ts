@@ -4,21 +4,26 @@ import { useAdhocConditions } from "@/features/saved-filters/hooks/useAdhocCondi
 import { useBoardSavedFilters } from "@/features/saved-filters/hooks/useBoardSavedFilters";
 import type { Board } from "@/features/saved-filters/saved-filter-types";
 import { useTaskSearch } from "@/features/task-filters/hooks/useTaskSearch";
+import type { BoardView } from "@/features/views/view-types";
 
 /**
- * One board's filtering, in two independent layers that the server ANDs:
+ * The filtering of a board's current view, in two independent layers that the
+ * server ANDs:
  *
- * - `adhocConditions`: the Filter popover's unsaved condition tree, kept under
- *   `adhocScope` — each view remembers its own — and
- * - `saved`: the saved filters pinned to the board, any number toggled on at once.
+ * - `adhocConditions`: the Filter popover's unsaved condition tree — each
+ *   view remembers its own — and
+ * - `saved`: the saved filters pinned to the view, any number toggled on at
+ *   once (toggles carry across the board's views).
  *
  * Plus the search term, which is applied separately. `saveAdhocConditionsAsSavedFilter`
  * promotes the popover's tree into a saved filter.
  */
-export function useBoardFilter(board: Board, adhocScope: string = boardScope(board)) {
+export function useBoardFilter(board: Board, view: BoardView | null) {
   const { search, setSearch } = useTaskSearch();
-  const saved = useBoardSavedFilters(board);
-  const adhocConditions = useAdhocConditions(adhocScope);
+  const saved = useBoardSavedFilters(board, view);
+  const adhocConditions = useAdhocConditions(
+    view ? `${boardScope(board)}.view.${view.ID}` : boardScope(board),
+  );
 
   /** Saves the Filter popover's tree as a new saved filter (pinned and toggled on) and clears it. */
   const saveAdhocConditionsAsSavedFilter = async (name: string) => {

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
-	"github.com/waseem-polus/aycorn/server/internal/models"
 )
 
 func (app *app) getAllSavedFilters(w http.ResponseWriter, r *http.Request) {
@@ -20,15 +18,16 @@ func (app *app) getAllSavedFilters(w http.ResponseWriter, r *http.Request) {
 func (app *app) postSavedFilter(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	body := struct {
-		Name       string              `json:"name"`
-		Definition json.RawMessage     `json:"definition"`
-		Pin        *models.FilterBoard `json:"pin"`
+		Name       string          `json:"name"`
+		Definition json.RawMessage `json:"definition"`
+		// The view to pin the new filter to, if any.
+		ViewID *int `json:"viewId"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	created, err := app.savedFilterService.Create(body.Name, body.Definition, body.Pin)
+	created, err := app.savedFilterService.Create(body.Name, body.Definition, body.ViewID)
 	if err != nil {
 		respondErr(w, err)
 		return
@@ -104,31 +103,9 @@ func (app *app) bulkDeleteSavedFilters(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
-// putSavedFilterPins replaces the full set of boards a filter is pinned to.
-func (app *app) putSavedFilterPins(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	body := struct {
-		Boards []models.FilterBoard `json:"boards"`
-	}{}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err := app.savedFilterService.SetPins(id, body.Boards); err != nil {
-		respondErr(w, err)
-		return
-	}
-	writeJSON(w, http.StatusOK, true)
-}
-
 type filterPinBody struct {
-	FilterID int                `json:"filterId"`
-	Board    models.FilterBoard `json:"board"`
+	FilterID int `json:"filterId"`
+	ViewID   int `json:"viewId"`
 }
 
 func (app *app) postFilterPin(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +115,7 @@ func (app *app) postFilterPin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err := app.savedFilterService.Pin(body.FilterID, body.Board); err != nil {
+	if err := app.savedFilterService.Pin(body.FilterID, body.ViewID); err != nil {
 		respondErr(w, err)
 		return
 	}
@@ -152,24 +129,29 @@ func (app *app) deleteFilterPin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err := app.savedFilterService.Unpin(body.FilterID, body.Board); err != nil {
+	if err := app.savedFilterService.Unpin(body.FilterID, body.ViewID); err != nil {
 		respondErr(w, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, true)
 }
 
-func (app *app) putFilterPinOrder(w http.ResponseWriter, r *http.Request) {
+// putViewFilters replaces a view's pinned saved filters, in order.
+func (app *app) putViewFilters(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	body := struct {
-		Board     models.FilterBoard `json:"board"`
-		FilterIDs []int              `json:"filterIds"`
+		FilterIDs []int `json:"filterIds"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	result, err := app.savedFilterService.ReorderBoard(body.Board, body.FilterIDs)
+	result, err := app.savedFilterService.SetViewFilters(id, body.FilterIDs)
 	if err != nil {
 		respondErr(w, err)
 		return

@@ -1,10 +1,10 @@
 package services
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/waseem-polus/aycorn/server/internal/models"
@@ -13,8 +13,8 @@ import (
 
 var (
 	ErrInvalidFilterDefinition = errors.New("invalid filter definition")
-	ErrInvalidFilterBoard      = errors.New("invalid filter board")
-	ErrInvalidFilterOrder      = errors.New("filter order must be a permutation of the filters pinned to that board")
+	ErrInvalidFilterView       = errors.New("invalid filter view")
+	ErrInvalidFilterList       = errors.New("invalid filter list")
 )
 
 // supportedDefinitionVersions are the client definition versions the server
@@ -27,30 +27,27 @@ const maxDefinitionBytes = 64 * 1024
 
 const untitledFilterName = "Untitled filter"
 
-// filterSurfaces are the places a filter can be pinned. A future surface (a
-// view, a widget) is added here — the table deliberately doesn't constrain it.
-var filterSurfaces = map[string]bool{"upcoming": true, "project": true}
-
 type SavedFilterService struct {
 	SavedFilterRepo *repos.SavedFilterRepo
+	ViewRepo        *repos.ViewRepo
 }
 
 func (s *SavedFilterService) GetAll() ([]models.SavedFilter, error) {
 	return s.SavedFilterRepo.All()
 }
 
-// Create saves a new filter, optionally pinning it to the board it was saved
+// Create saves a new filter, optionally pinning it to the view it was saved
 // from, and returns it with its pins.
-func (s *SavedFilterService) Create(name string, definition json.RawMessage, pin *models.FilterBoard) (*models.SavedFilter, error) {
+func (s *SavedFilterService) Create(name string, definition json.RawMessage, pinView *int) (*models.SavedFilter, error) {
 	if err := validateDefinition(definition); err != nil {
 		return nil, err
 	}
-	if pin != nil {
-		if err := s.validateBoard(*pin); err != nil {
+	if pinView != nil {
+		if err := s.validateView(*pinView); err != nil {
 			return nil, err
 		}
 	}
-	id, err := s.SavedFilterRepo.Create(normalizeFilterName(name), definition, pin)
+	id, err := s.SavedFilterRepo.Create(normalizeFilterName(name), definition, pinView)
 	if err != nil {
 		return nil, err
 	}
@@ -91,49 +88,45 @@ func (s *SavedFilterService) BulkDelete(ids []int) (models.BulkResult, error) {
 	return models.BulkResult{Success: deleted, Skipped: len(ids) - deleted}, nil
 }
 
-func (s *SavedFilterService) SetPins(id int, boards []models.FilterBoard) error {
-	for _, b := range boards {
-		if err := s.validateBoard(b); err != nil {
-			return err
-		}
-	}
-	if _, err := s.SavedFilterRepo.FindOne(id); err != nil {
-		return err
-	}
-	return s.SavedFilterRepo.SetPins(id, boards)
-}
-
-func (s *SavedFilterService) Pin(id int, board models.FilterBoard) error {
-	if err := s.validateBoard(board); err != nil {
+func (s *SavedFilterService) Pin(id int, viewID int) error {
+	if err := s.validateView(viewID); err != nil {
 		return err
 	}
 	if _, err := s.SavedFilterRepo.FindOne(id); err != nil {
 		return err
 	}
-	return s.SavedFilterRepo.Pin(id, board)
+	return s.SavedFilterRepo.Pin(id, viewID)
 }
 
-func (s *SavedFilterService) Unpin(id int, board models.FilterBoard) error {
-	if err := s.validateBoard(board); err != nil {
+func (s *SavedFilterService) Unpin(id int, viewID int) error {
+	if err := s.validateView(viewID); err != nil {
 		return err
 	}
-	return s.SavedFilterRepo.Unpin(id, board)
+	return s.SavedFilterRepo.Unpin(id, viewID)
 }
 
-// ReorderBoard rewrites a board's quick-filter order. The ids must be exactly
-// the filters pinned there, so a stale client can't drop or duplicate pins.
-func (s *SavedFilterService) ReorderBoard(board models.FilterBoard, ids []int) (models.BulkResult, error) {
-	if err := s.validateBoard(board); err != nil {
+// SetViewFilters replaces a view's pinned filters with ids, in order — the
+// bar's drag reorder and the view menu's add / remove / reorder. Atomic: it
+// commits all of ids or returns an error.
+func (s *SavedFilterService) SetViewFilters(viewID int, ids []int) (models.BulkResult, error) {
+	if err := s.validateView(viewID); err != nil {
 		return models.BulkResult{}, err
 	}
-	current, err := s.SavedFilterRepo.BoardFilterIDs(board)
+	seen := map[int]bool{}
+	for _, id := range ids {
+		if seen[id] {
+			return models.BulkResult{}, fmt.Errorf("%w: filter %d listed twice", ErrInvalidFilterList, id)
+		}
+		seen[id] = true
+	}
+	existing, err := s.SavedFilterRepo.CountExisting(ids)
 	if err != nil {
 		return models.BulkResult{}, err
 	}
-	if !samePermutation(current, ids) {
-		return models.BulkResult{}, ErrInvalidFilterOrder
+	if existing != len(ids) {
+		return models.BulkResult{}, fmt.Errorf("%w: unknown filter", ErrInvalidFilterList)
 	}
-	if err := s.SavedFilterRepo.ReorderBoard(board, ids); err != nil {
+	if err := s.SavedFilterRepo.SetViewFilters(viewID, ids); err != nil {
 		return models.BulkResult{}, err
 	}
 	return models.BulkResult{Success: len(ids)}, nil
@@ -153,21 +146,12 @@ func (s *SavedFilterService) findWithPins(id int) (*models.SavedFilter, error) {
 	return nil, err
 }
 
-func (s *SavedFilterService) validateBoard(b models.FilterBoard) error {
-	if !filterSurfaces[b.Surface] {
-		return fmt.Errorf("%w: unknown surface %q", ErrInvalidFilterBoard, b.Surface)
-	}
-	if (b.Surface == "project") != (b.ProjectID != nil) {
-		return fmt.Errorf("%w: only project boards take a projectId", ErrInvalidFilterBoard)
-	}
-	if b.ProjectID != nil {
-		exists, err := s.SavedFilterRepo.ProjectExists(*b.ProjectID)
-		if err != nil {
-			return err
+func (s *SavedFilterService) validateView(id int) error {
+	if _, err := s.ViewRepo.FindOne(id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%w: view %d does not exist", ErrInvalidFilterView, id)
 		}
-		if !exists {
-			return fmt.Errorf("%w: project %d does not exist", ErrInvalidFilterBoard, *b.ProjectID)
-		}
+		return err
 	}
 	return nil
 }
@@ -197,20 +181,4 @@ func normalizeFilterName(name string) string {
 		return trimmed
 	}
 	return untitledFilterName
-}
-
-func samePermutation(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	x := append([]int(nil), a...)
-	y := append([]int(nil), b...)
-	sort.Ints(x)
-	sort.Ints(y)
-	for i := range x {
-		if x[i] != y[i] {
-			return false
-		}
-	}
-	return true
 }

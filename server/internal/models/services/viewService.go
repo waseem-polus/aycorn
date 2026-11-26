@@ -69,8 +69,7 @@ var emptyViewSort = json.RawMessage(`[]`)
 var emptyViewSource = json.RawMessage(`{"version":3,"conditions":{"kind":"group","match":"all","children":[]}}`)
 
 type ViewService struct {
-	ViewRepo        *repos.ViewRepo
-	SavedFilterRepo *repos.SavedFilterRepo
+	ViewRepo *repos.ViewRepo
 }
 
 // ViewPatch mirrors the PATCH body: nil fields are left alone. GroupBy is
@@ -126,6 +125,8 @@ func (s *ViewService) Duplicate(id int) (*models.View, error) {
 		GroupOptions: v.GroupOptions,
 		Source:       v.Source,
 		Sort:         v.Sort,
+		// The copy offers the same saved filters as the original.
+		FilterPinsFrom: &v.ID,
 	}})
 	if err != nil {
 		return nil, err
@@ -252,7 +253,7 @@ func (s *ViewService) validateBoard(b models.FilterBoard) error {
 		return fmt.Errorf("%w: only project boards take a projectId", ErrInvalidView)
 	}
 	if b.ProjectID != nil {
-		exists, err := s.SavedFilterRepo.ProjectExists(*b.ProjectID)
+		exists, err := s.ViewRepo.ProjectExists(*b.ProjectID)
 		if err != nil {
 			return err
 		}

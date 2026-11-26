@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { boardToWire, pinIsOnBoard } from "@/features/saved-filters/board";
 import type { FilterDefinition } from "@/features/saved-filters/filter-definition";
 import { SAVED_FILTERS_KEY } from "@/features/saved-filters/queries/useSavedFiltersQuery";
 import type {
-  Board,
   SavedFilter,
   SavedFilterPatch,
 } from "@/features/saved-filters/saved-filter-types";
+import type { BoardView } from "@/features/views/view-types";
 import type { BulkResult } from "@/types/types";
 
 const request = async <T>(method: string, url: string, body?: unknown): Promise<T> => {
@@ -25,11 +24,11 @@ export function useSavedFilterMutations() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: SAVED_FILTERS_KEY });
 
   const create = useMutation({
-    mutationFn: (body: { name: string; definition: FilterDefinition; pin?: Board }) =>
+    mutationFn: (body: { name: string; definition: FilterDefinition; viewId?: number }) =>
       request<SavedFilter>("POST", "/api/filter", {
         name: body.name,
         definition: body.definition,
-        pin: body.pin ? boardToWire(body.pin) : null,
+        viewId: body.viewId ?? null,
       }),
     onSuccess: invalidate,
   });
@@ -50,41 +49,49 @@ export function useSavedFilterMutations() {
     onSuccess: invalidate,
   });
 
-  const setPins = useMutation({
-    mutationFn: ({ id, boards }: { id: number; boards: Board[] }) =>
-      request<boolean>("PUT", `/api/filter/${id}/pins`, { boards: boards.map(boardToWire) }),
-    onSuccess: invalidate,
-  });
-
   const pin = useMutation({
-    mutationFn: ({ id, board }: { id: number; board: Board }) =>
-      request<boolean>("POST", "/api/filter-pin", { filterId: id, board: boardToWire(board) }),
+    mutationFn: ({ id, viewId }: { id: number; viewId: number }) =>
+      request<boolean>("POST", "/api/filter-pin", { filterId: id, viewId }),
     onSuccess: invalidate,
   });
 
   const unpin = useMutation({
-    mutationFn: ({ id, board }: { id: number; board: Board }) =>
-      request<boolean>("DELETE", "/api/filter-pin", { filterId: id, board: boardToWire(board) }),
+    mutationFn: ({ id, viewId }: { id: number; viewId: number }) =>
+      request<boolean>("DELETE", "/api/filter-pin", { filterId: id, viewId }),
     onSuccess: invalidate,
   });
 
   /**
-   * Drag-reorder carve-out: the new order shows immediately and is rolled back
-   * if the server rejects it.
+   * Replaces a view's pinned filters with `ids`, in order: drag reorder, and
+   * the view menu's add / remove. Drag-reorder and membership-toggle
+   * carve-outs: the change shows immediately and is rolled back if the server
+   * rejects it.
    */
-  const reorder = useMutation({
-    mutationFn: ({ board, ids }: { board: Board; ids: number[] }) =>
-      request<BulkResult>("PUT", "/api/filter-pin/order", { board: boardToWire(board), filterIds: ids }),
-    onMutate: async ({ board, ids }) => {
+  const setViewFilters = useMutation({
+    mutationFn: ({ view, ids }: { view: BoardView; ids: number[] }) =>
+      request<BulkResult>("PUT", `/api/view/${view.ID}/filters`, { filterIds: ids }),
+    onMutate: async ({ view, ids }) => {
       await queryClient.cancelQueries({ queryKey: SAVED_FILTERS_KEY });
       const previous = queryClient.getQueryData<SavedFilter[]>(SAVED_FILTERS_KEY);
       queryClient.setQueryData<SavedFilter[]>(SAVED_FILTERS_KEY, (old) =>
-        old?.map((f) => ({
-          ...f,
-          Pins: f.Pins.map((p) =>
-            pinIsOnBoard(p, board) ? { ...p, Position: ids.indexOf(f.ID) } : p,
-          ),
-        })),
+        old?.map((f) => {
+          const others = f.Pins.filter((p) => p.ViewID !== view.ID);
+          const position = ids.indexOf(f.ID);
+          if (position < 0) return { ...f, Pins: others };
+          return {
+            ...f,
+            Pins: [
+              ...others,
+              {
+                ViewID: view.ID,
+                ViewName: view.Name,
+                Surface: view.Surface,
+                ProjectID: view.ProjectID,
+                Position: position,
+              },
+            ],
+          };
+        }),
       );
       return { previous };
     },
@@ -94,5 +101,5 @@ export function useSavedFilterMutations() {
     onSettled: invalidate,
   });
 
-  return { create, update, duplicate, bulkDelete, setPins, pin, unpin, reorder };
+  return { create, update, duplicate, bulkDelete, pin, unpin, setViewFilters };
 }

@@ -198,15 +198,19 @@ type SavedFilter struct {
 	TimeModified string
 }
 
-// SavedFilterPin places a filter on one board's quick-filter bar.
+// SavedFilterPin places a filter on one view's saved-filter bar. The view's
+// board (Surface, ProjectID) and name are joined in, so clients can tell which
+// board a pin belongs to without loading every board's views.
 type SavedFilterPin struct {
+	ViewID    int
+	ViewName  string
 	Surface   string
 	ProjectID *int
 	Position  int
 }
 
-// FilterBoard names a place a filter can be pinned: the upcoming page, or one
-// project. Future surfaces (views, widgets) extend Surface.
+// FilterBoard names a board: the upcoming page, or one project. Each board
+// has views, and saved filters are pinned to those views.
 type FilterBoard struct {
 	Surface   string `json:"surface"`
 	ProjectID *int   `json:"projectId"`

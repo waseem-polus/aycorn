@@ -35,12 +35,9 @@ export function ProjectDetails({
   const board = useMemo(() => ({ surface: "project" as const, projectId }), [projectId]);
   const views = useBoardViews(board, viewId);
   const view = views.active;
-  // Each view remembers its own Filter popover conditions; saved filters are the
-  // board's, so their toggles carry across views.
-  const filtersApi = useBoardFilter(
-    board,
-    view ? `project.${projectId}.view.${view.ID}` : `project.${projectId}`,
-  );
+  // Each view has its own Filter popover conditions and pinned saved filters;
+  // saved-filter toggles are the board's, so they carry across views.
+  const filtersApi = useBoardFilter(board, view);
   const sourceWire = useViewSourceWire(view);
   const conditions = useMemo(
     () => [...sourceWire, ...filtersApi.conditionWires],

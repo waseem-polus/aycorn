@@ -1,5 +1,7 @@
 package services
 
+import "sort"
+
 // dedupeInts returns ids with duplicates removed, preserving first-seen order.
 // Bulk endpoints receive raw client ID lists; deduping here keeps BulkResult
 // counts honest (otherwise a duplicated or non-existent ID inflates `failed`
@@ -15,4 +17,21 @@ func dedupeInts(ids []int) []int {
 		out = append(out, id)
 	}
 	return out
+}
+
+// samePermutation reports whether a and b hold the same ids, in any order.
+func samePermutation(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	x := append([]int(nil), a...)
+	y := append([]int(nil), b...)
+	sort.Ints(x)
+	sort.Ints(y)
+	for i := range x {
+		if x[i] != y[i] {
+			return false
+		}
+	}
+	return true
 }
