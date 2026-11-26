@@ -10,7 +10,7 @@ func (app *app) routes() http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.WriteHeader(http.StatusNoContent)
 	})
-	mux.HandleFunc("GET /api/", app.getDashboard)
+	mux.HandleFunc("GET /api/usage", app.getUsage)
 
 	mux.HandleFunc("GET /api/project", app.getAllProjects)
 	mux.HandleFunc("GET /api/project/pinned", app.getPinnedProjects)

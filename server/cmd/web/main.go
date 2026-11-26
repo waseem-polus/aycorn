@@ -117,6 +117,7 @@ type app struct {
 	savedFilterRepo      *repos.SavedFilterRepo
 	viewRepo             *repos.ViewRepo
 	appSettingsRepo      *repos.AppSettingsRepo
+	usageRepo            *repos.UsageRepo
 
 	projectService          *services.ProjectService
 	projectFolderService    *services.ProjectFolderService
@@ -130,6 +131,7 @@ type app struct {
 	savedFilterService      *services.SavedFilterService
 	viewService             *services.ViewService
 	appSettingsService      *services.AppSettingsService
+	usageService            *services.UsageService
 }
 
 func main() {
@@ -201,6 +203,7 @@ func main() {
 	savedFilterRepo := &repos.SavedFilterRepo{DB: db}
 	viewRepo := &repos.ViewRepo{DB: db}
 	appSettingsRepo := &repos.AppSettingsRepo{DB: db}
+	usageRepo := &repos.UsageRepo{DB: db}
 
 	viewService := &services.ViewService{ViewRepo: viewRepo, SavedFilterRepo: savedFilterRepo}
 
@@ -240,6 +243,7 @@ func main() {
 
 	savedFilterService := &services.SavedFilterService{SavedFilterRepo: savedFilterRepo}
 	appSettingsService := &services.AppSettingsService{SettingsRepo: appSettingsRepo}
+	usageService := &services.UsageService{UsageRepo: usageRepo}
 
 	app := app{
 		projectRepo:          projectRepo,
@@ -253,6 +257,7 @@ func main() {
 		savedFilterRepo:      savedFilterRepo,
 		viewRepo:             viewRepo,
 		appSettingsRepo:      appSettingsRepo,
+		usageRepo:            usageRepo,
 
 		projectService:          projectService,
 		projectFolderService:    projectFolderService,
@@ -266,6 +271,7 @@ func main() {
 		savedFilterService:      savedFilterService,
 		viewService:             viewService,
 		appSettingsService:      appSettingsService,
+		usageService:            usageService,
 	}
 
 	host := resolveHost()

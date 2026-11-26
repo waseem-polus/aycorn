@@ -237,3 +237,44 @@ type View struct {
 type AppSettings struct {
 	WeekStartsOn int `json:"weekStartsOn"`
 }
+
+// Usage is the /usage page's summary. Window stats compare the last WindowDays
+// days against the WindowDays before them; the client derives trends.
+type Usage struct {
+	WindowDays     int
+	ActiveProjects int
+	NewProjects    int // non-archived projects created in the current window
+	CompletedTasks UsageComparison
+	OnTimeRate     UsageRate
+	OpenPriority   UsagePriority
+	Activity       []UsageDay
+}
+
+type UsageComparison struct {
+	Current  int
+	Previous int
+}
+
+// UsageRate is the share (0–100) of tasks due in a window that were completed
+// by their deadline. A rate is nil when nothing was due in that window.
+type UsageRate struct {
+	Current        *int
+	Previous       *int
+	CurrentDue     int
+	CurrentOnTime  int
+	PreviousDue    int
+	PreviousOnTime int
+}
+
+type UsagePriority struct {
+	Urgent  int
+	High    int
+	Overdue int
+}
+
+// UsageDay is one local calendar day of activity; Date is YYYY-MM-DD.
+type UsageDay struct {
+	Date      string
+	Created   int
+	Completed int
+}
