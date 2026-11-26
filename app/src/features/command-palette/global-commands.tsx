@@ -63,7 +63,7 @@ export function GlobalCommands() {
         run: toggleSidebar,
       },
     ],
-    "global",
+    { scope: "global" },
   );
 
   return null;

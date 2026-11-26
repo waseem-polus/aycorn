@@ -64,11 +64,11 @@ export function MoveCopyMenu({
             <CopyIcon className="text-muted-foreground" />
             Duplicate
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={transfer.openCopy}>
+          <DropdownMenuItem onClick={() => transfer.openCopy()}>
             <CopyPlusIcon className="text-muted-foreground" />
             Copy to project
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={transfer.openMove}>
+          <DropdownMenuItem onClick={() => transfer.openMove()}>
             <FolderInputIcon className="text-muted-foreground" />
             Move to project
           </DropdownMenuItem>

@@ -30,12 +30,22 @@ type NewRelState =
   | { step: "category" }
   | { step: "task"; typeId: number; direction: "from" | "to" };
 
-export function TaskRelationshipsDrawer() {
+/** A link type and direction picked before the drawer opened (command palette). */
+export type NewLinkRequest = { typeId: number; direction: "from" | "to" };
+
+export function TaskRelationshipsDrawer({
+  initialLink = null,
+}: {
+  /** Opens straight on the task picker for this link. Read on mount only. */
+  initialLink?: NewLinkRequest | null;
+}) {
   const { state: task } = useContext(TaskContext);
   const { data, isLoading } = useTaskRelationshipsQuery(task.ID);
   const createRelationship = useCreateTaskRelationshipMutation();
 
-  const [newRelState, setNewRelState] = useState<NewRelState>(null);
+  const [newRelState, setNewRelState] = useState<NewRelState>(
+    initialLink ? { step: "task", ...initialLink } : null,
+  );
   const [search, setSearch] = useState("");
 
   const filteredRelationships = useMemo(() => {

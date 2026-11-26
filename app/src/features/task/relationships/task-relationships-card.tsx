@@ -1,11 +1,14 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import {
   stageBadgeClass,
   stageStrokeClass,
 } from "@/features/stage/stage-palette";
-import { TaskRelationshipsDrawer } from "@/features/task/relationships/task-relationships-drawer";
+import {
+  TaskRelationshipsDrawer,
+  type NewLinkRequest,
+} from "@/features/task/relationships/task-relationships-drawer";
 import { useTaskRelationshipsQuery } from "@/features/task/relationships/queries/useTaskRelationshipsQuery";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -30,8 +33,27 @@ const sectionLabel = (section: RelationshipSection) => {
   );
 };
 
-export function TaskRelationshipsCard() {
+export function TaskRelationshipsCard({
+  linkRequest = null,
+}: {
+  /**
+   * Set to a new object to open the drawer on the task picker for that link
+   * (the "Add task link" command). Each new object is one request.
+   */
+  linkRequest?: NewLinkRequest | null;
+}) {
   const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
+  const [handledRequest, setHandledRequest] = useState<NewLinkRequest | null>(
+    null,
+  );
+  // The drawer reads its initial link on mount; remount it per request.
+  const [requestCount, setRequestCount] = useState(0);
+  if (linkRequest && linkRequest !== handledRequest) {
+    setHandledRequest(linkRequest);
+    setRequestCount((count) => count + 1);
+    setOpen(true);
+  }
   const { state: task } = useContext(TaskContext);
   const { data, isError } = useTaskRelationshipsQuery(task.ID);
 
@@ -44,7 +66,12 @@ export function TaskRelationshipsCard() {
   const total = relationships.length;
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} handleOnly={!isMobile}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      handleOnly={!isMobile}
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DrawerTrigger asChild>
         <div className="relative flex justify-between items-start gap-3">
             <span className="text-sm font-medium flex items-center gap-2 text-muted-foreground min-w-1/5 sm:min-w-1/7 min-h-9 align-middle">
@@ -79,7 +106,10 @@ export function TaskRelationshipsCard() {
             </Button>
         </div>
       </DrawerTrigger>
-      <TaskRelationshipsDrawer />
+      <TaskRelationshipsDrawer
+        key={requestCount}
+        initialLink={handledRequest}
+      />
     </Drawer>
   );
 }

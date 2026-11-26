@@ -11,7 +11,11 @@ import { ChevronDown, LandPlotIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskContext } from "@/contexts/task/TaskContext";
 import { ProjectContext } from "@/contexts/project/ProjectContext";
-import { EditableTaskName } from "@/features/task/header/editable-task-name";
+import {
+  EditableTaskName,
+  type EditableTaskNameHandle,
+} from "@/features/task/header/editable-task-name";
+import { useTaskEditorCommands } from "@/features/task/hooks/useTaskEditorCommands";
 import { SelectChecklist } from "@/features/task/properties/select-checklist";
 import { SelectTaskStage } from "@/features/stage/select-task-stage";
 import { SelectTaskType } from "@/features/task/properties/select-task-type";
@@ -50,6 +54,8 @@ export function TaskPage({ projectId }: { projectId: number }) {
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const editorRef = useRef<PlateEditor | null>(null);
   const [editorReady, setEditorReady] = useState(false);
+  const nameRef = useRef<EditableTaskNameHandle>(null);
+  const propertiesRef = useRef<HTMLElement>(null);
 
   const { isPending, isFetching, data } = useProjectDetailsQuery(
     projectId,
@@ -102,6 +108,15 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
   const stage = Stages.find((s) => s.ID === task.Stage);
 
+  const { linkRequest } = useTaskEditorCommands({
+    onChange: handleTaskChanges,
+    nameRef,
+    editorRef,
+    propertiesRef,
+    propertiesOpen,
+    setPropertiesOpen,
+  });
+
   const handleDelete = () => {
     const taskName = task.Name === "" ? "Untitled Task" : task.Name;
     deleteTask.mutate(task.ID, {
@@ -128,7 +143,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
     <div className="flex flex-col gap-2 w-full">
       <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
         <div className="flex items-start gap-1">
-          <EditableTaskName onChange={handleTaskChanges} />
+          <EditableTaskName ref={nameRef} onChange={handleTaskChanges} />
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="icon" className="shrink-0 self-start">
               <ChevronDown
@@ -183,7 +198,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
         )}
 
         <CollapsibleContent className="border pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up my-2">
-          <section className="flex flex-col gap-2">
+          <section ref={propertiesRef} className="flex flex-col gap-2">
             <TaskProperty label="Priority" htmlFor="priority">
               <SelectTaskPriority onChange={handleTaskChanges} />
             </TaskProperty>
@@ -205,7 +220,7 @@ export function TaskPage({ projectId }: { projectId: number }) {
 
             <Separator orientation="horizontal" className="my-2" />
 
-            <TaskRelationshipsCard />
+            <TaskRelationshipsCard linkRequest={linkRequest} />
           </section>
         </CollapsibleContent>
       </Collapsible>

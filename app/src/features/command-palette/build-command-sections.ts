@@ -11,11 +11,11 @@ export type CommandSection = {
 
 const RECENT_SHOWN = 5;
 
-/** Context commands first, then global, each source's commands in registration order. Ids are unique. */
+/** Overlay commands first, then context, then global, each source's commands in registration order. Ids are unique. */
 const orderedCommands = (sources: CommandSource[]) => {
   const seen = new Set<string>();
   const ordered: PaletteCommand[] = [];
-  const scopes = ["context", "global"] as const;
+  const scopes = ["overlay", "context", "global"] as const;
   scopes.forEach((scope) =>
     sources
       .filter((source) => source.scope === scope)

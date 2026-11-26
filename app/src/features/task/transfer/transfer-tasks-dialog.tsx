@@ -49,6 +49,8 @@ type Props = {
   mode: "move" | "copy";
   tasks: TransferTask[];
   excludeProjectId?: number | null;
+  /** A destination picked before the dialog opened (e.g. from the command palette). */
+  initialProjectId?: number | null;
   onSuccess?: () => void;
 };
 
@@ -76,9 +78,14 @@ export function TransferTasksDialog({
   mode,
   tasks,
   excludeProjectId,
+  initialProjectId = null,
   onSuccess,
 }: Props) {
-  const [destProjectId, setDestProjectId] = useState<number | null>(null);
+  // Mounted per open (see TaskTransferDialogs), so the initial pick applies
+  // to each opening.
+  const [destProjectId, setDestProjectId] = useState<number | null>(
+    initialProjectId,
+  );
   // Only the user's explicit picks live in state; the effective values are
   // derived, so a destination change re-derives instead of racing an effect.
   const [checklistPick, setChecklistPick] = useState<number | null>(null);
@@ -217,7 +224,7 @@ export function TransferTasksDialog({
               value={destProjectId}
               onValueChange={handleDestinationChange}
               excludeProjectId={excludeProjectId}
-              autoFocus
+              autoFocus={initialProjectId === null}
             />
           </TaskProperty>
 

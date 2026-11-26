@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactElement } from "react";
 import type { Hotkey } from "@tanstack/hotkeys";
 
 type PaletteCommandBase = {
@@ -7,7 +7,8 @@ type PaletteCommandBase = {
   title: string;
   /** Section heading the command is listed under (e.g. "Navigation"). */
   group: string;
-  icon?: ComponentType<{ className?: string }>;
+  /** A lucide-style component, or a ready element for icons that need props (e.g. a stage's colored icon). */
+  icon?: ComponentType<{ className?: string }> | ReactElement;
   /** Extra words that should match in search but aren't shown. */
   keywords?: string[];
   /** Short muted text shown at the end of the row (e.g. "Dark → System"). */
@@ -33,11 +34,13 @@ export type PaletteCommand = PaletteCommandBase &
   );
 
 /**
- * Where a registered set of commands sorts: "context" commands come from the
- * page or panel currently mounted and are listed before the always-available
- * "global" ones.
+ * Where a registered set of commands sorts:
+ * - "overlay": a surface layered over the page, like the task drawer. Listed
+ *   first, since it's what the user is looking at.
+ * - "context": the page currently mounted.
+ * - "global": always available.
  */
-export type CommandScope = "global" | "context";
+export type CommandScope = "global" | "context" | "overlay";
 
 export type CommandSource = {
   scope: CommandScope;

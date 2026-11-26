@@ -38,6 +38,9 @@ import { TaskRelationshipsCard } from "@/features/task/relationships/task-relati
 import { TaskRelationshipBadges } from "@/features/task/relationships/task-relationship-badges";
 import { Separator } from "@/components/ui/separator";
 import RelativePlannedDateBadge from "./properties/relative-planned-date-badge";
+import { useNavigate } from "@tanstack/react-router";
+import { CommandScopeContext } from "@/features/command-palette/command-scope-context";
+import { useTaskEditorCommands } from "@/features/task/hooks/useTaskEditorCommands";
 
 export default function TaskEditorDrawer({
   children,
@@ -52,6 +55,8 @@ export default function TaskEditorDrawer({
   const editorRef = useRef<PlateEditor | null>(null);
   const [editorReady, setEditorReady] = useState(false);
   const nameRef = useRef<EditableTaskNameHandle>(null);
+  const propertiesRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
   // The body as it was last persisted (or as the editor normalised it on mount).
   // Only used to decide whether the close-flush has anything to write.
   const savedBodyRef = useRef<Value | null>(null);
@@ -117,145 +122,170 @@ export default function TaskEditorDrawer({
 
   const stage = Stages.find((s) => s.ID === task.Stage)!;
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) commitPendingEdits();
+    setOpen(open);
+    onOpenChange(open);
+    setPropertiesOpen(!isMobile || task.ID === 0);
+    if (!open) {
+      editorRef.current = null;
+      setEditorReady(false);
+    }
+  };
+
+  // Every card has a closed drawer, so only the open one registers.
+  const { linkRequest } = useTaskEditorCommands({
+    onChange: handleTaskChanges,
+    nameRef,
+    editorRef,
+    propertiesRef,
+    propertiesOpen,
+    setPropertiesOpen,
+    onOpenFullPage:
+      task.ID === 0
+        ? undefined
+        : () => {
+            const taskId = String(task.ID);
+            handleOpenChange(false);
+            navigate({ to: "/task/$taskId", params: { taskId } });
+          },
+    scope: "overlay",
+    enabled: open,
+  });
+
   return (
     <Drawer
       handleOnly={!isMobile}
       repositionInputs={!isMobile}
       direction={isMobile ? "bottom" : "right"}
       open={open}
-      onOpenChange={(open) => {
-        if (!open) commitPendingEdits();
-        setOpen(open);
-        onOpenChange(open);
-        setPropertiesOpen(!isMobile || task.ID === 0);
-        if (!open) {
-          editorRef.current = null;
-          setEditorReady(false);
-        }
-      }}
+      onOpenChange={handleOpenChange}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent className="md:min-w-3xl p-0 overflow-x-visible box-border rounded-lg data-[vaul-drawer-direction=bottom]:h-[calc(100dvh-var(--header-height))] data-[vaul-drawer-direction=bottom]:max-h-dvh">
-        <TaskEditorHeader
-          setOpen={setOpen}
-          onCopyAsMarkdown={handleCopyAsMarkdown}
-          onCopyAsPlainText={handleCopyAsPlainText}
-          isEditorReady={editorReady}
-          taskStage={stage}
-        />
-        <div
-          className="flex-1 min-h-0 overflow-y-auto"
-          data-vaul-no-drag
-          onWheel={(e) => e.stopPropagation()}
-        >
-          <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
-            <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
-              <EditableTaskName ref={nameRef} onChange={handleTaskChanges} />
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 self-start"
-                >
-                  <ChevronDown
-                    className={cn(
-                      "transition-transform duration-200",
-                      propertiesOpen && "rotate-180",
-                    )}
+        {/* Commands from inside the drawer (its actions menu) list first. */}
+        <CommandScopeContext.Provider value="overlay">
+          <TaskEditorHeader
+            setOpen={setOpen}
+            onCopyAsMarkdown={handleCopyAsMarkdown}
+            onCopyAsPlainText={handleCopyAsPlainText}
+            isEditorReady={editorReady}
+            taskStage={stage}
+          />
+          <div
+            className="flex-1 min-h-0 overflow-y-auto"
+            data-vaul-no-drag
+            onWheel={(e) => e.stopPropagation()}
+          >
+            <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
+              <div className="flex items-start gap-1 mx-3 sm:mx-6 mt-3 sm:mt-6">
+                <EditableTaskName ref={nameRef} onChange={handleTaskChanges} />
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 self-start"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "transition-transform duration-200",
+                        propertiesOpen && "rotate-180",
+                      )}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {!propertiesOpen && (
+                <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
+                  <Badge variant="secondary">
+                    <LandPlotIcon className="size-2" />
+                    {task.ChecklistName}
+                  </Badge>
+
+                  <Badge
+                    variant={task.Assignee !== "" ? "secondary" : "outline"}
+                    className={
+                      task.Assignee !== "" ? "" : "text-muted-foreground"
+                    }
+                  >
+                    <User className="size-2" />
+                    {task.Assignee !== "" ? task.Assignee : "—"}
+                  </Badge>
+
+                  <RelativePlannedDateBadge
+                    start={task.TimePlannedStart}
+                    end={task.TimePlannedEnd}
+                    overdue={
+                      task.TimePlannedStart !== null &&
+                      new Date(task.TimePlannedEnd ?? task.TimePlannedStart) <
+                        new Date() &&
+                      stage.Type !== "done"
+                    }
                   />
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            {!propertiesOpen && (
-              <div className="flex flex-wrap items-center gap-1.5 mx-3 sm:mx-6 pb-2">
-                <Badge variant="secondary">
-                  <LandPlotIcon className="size-2" />
-                  {task.ChecklistName}
-                </Badge>
 
-                <Badge
-                  variant={task.Assignee !== "" ? "secondary" : "outline"}
-                  className={
-                    task.Assignee !== "" ? "" : "text-muted-foreground"
-                  }
-                >
-                  <User className="size-2" />
-                  {task.Assignee !== "" ? task.Assignee : "—"}
-                </Badge>
+                  <Separator orientation="vertical" className="h-4! sm:mx-2" />
 
-                <RelativePlannedDateBadge
-                  start={task.TimePlannedStart}
-                  end={task.TimePlannedEnd}
-                  overdue={
-                    task.TimePlannedStart !== null &&
-                    new Date(task.TimePlannedEnd ?? task.TimePlannedStart) <
-                      new Date() &&
-                    stage.Type !== "done"
-                  }
+                  <TaskRelationshipBadges taskId={task.ID} />
+                </div>
+              )}
+              <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
+                <section ref={propertiesRef} className="flex flex-col gap-2">
+                  <TaskProperty label="Priority" htmlFor="priority">
+                    <SelectTaskPriority onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <TaskProperty label="Type" htmlFor="type">
+                    <SelectTaskType onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <TaskProperty label="Stage" htmlFor="stage">
+                    <SelectTaskStage onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <TaskProperty label="Checklist" htmlFor="checklist">
+                    <SelectChecklist onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <TaskProperty label="Assignee" htmlFor="assignee">
+                    <TaskAssignee onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <TaskProperty label="Date" htmlFor="date">
+                    <DatePickerInput onChange={handleTaskChanges} />
+                  </TaskProperty>
+
+                  <Separator orientation="horizontal" className="my-2" />
+
+                  <TaskRelationshipsCard linkRequest={linkRequest} />
+                </section>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {open &&
+            (task.ID === 0 ||
+              (data !== undefined && !isFetching && !isPending)) ? (
+              <div data-vaul-no-drag>
+                <RichEditor
+                  key={`${task.ID}-${open}`}
+                  onDebounceChange={handleEditorValueChange}
+                  onEditorReady={(editor) => {
+                    editorRef.current = editor;
+                    savedBodyRef.current = editor.children;
+                    setEditorReady(true);
+                  }}
+                  debounceDuration={250}
+                  initialValue={data}
                 />
-
-                <Separator orientation="vertical" className="h-4! sm:mx-2" />
-
-                <TaskRelationshipBadges taskId={task.ID} />
+              </div>
+            ) : (
+              <div className="flex w-full flex-col gap-2 py-4 px-8">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
             )}
-            <CollapsibleContent className="border mx-3 sm:mx-6 pl-3 p-2 sm:p-5 rounded-lg overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up mb-2">
-              <section className="flex flex-col gap-2">
-                <TaskProperty label="Priority" htmlFor="priority">
-                  <SelectTaskPriority onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Type" htmlFor="type">
-                  <SelectTaskType onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Stage" htmlFor="stage">
-                  <SelectTaskStage onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Checklist" htmlFor="checklist">
-                  <SelectChecklist onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Assignee" htmlFor="assignee">
-                  <TaskAssignee onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <TaskProperty label="Date" htmlFor="date">
-                  <DatePickerInput onChange={handleTaskChanges} />
-                </TaskProperty>
-
-                <Separator orientation="horizontal" className="my-2" />
-
-                <TaskRelationshipsCard />
-              </section>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {open &&
-          (task.ID === 0 ||
-            (data !== undefined && !isFetching && !isPending)) ? (
-            <div data-vaul-no-drag>
-              <RichEditor
-                key={`${task.ID}-${open}`}
-                onDebounceChange={handleEditorValueChange}
-                onEditorReady={(editor) => {
-                  editorRef.current = editor;
-                  savedBodyRef.current = editor.children;
-                  setEditorReady(true);
-                }}
-                debounceDuration={250}
-                initialValue={data}
-              />
-            </div>
-          ) : (
-            <div className="flex w-full flex-col gap-2 py-4 px-8">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          )}
-        </div>
+          </div>
+        </CommandScopeContext.Provider>
       </DrawerContent>
     </Drawer>
   );

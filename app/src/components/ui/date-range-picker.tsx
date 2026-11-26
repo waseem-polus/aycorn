@@ -26,6 +26,8 @@ import {
 } from "@/utils/date";
 
 type Props = {
+  /** Put on the trigger, so a label's htmlFor (or a command) can reach it. */
+  id?: string;
   from?: string | null;
   to?: string | null;
   hasFromTime?: boolean;
@@ -41,6 +43,7 @@ type Props = {
 };
 
 export function DateRangePicker({
+  id,
   from,
   to,
   hasFromTime = false,
@@ -140,7 +143,11 @@ export function DateRangePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-start font-normal">
+        <Button
+          id={id}
+          variant="outline"
+          className="w-full justify-start font-normal"
+        >
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
           {label ?? (
             <span className="text-muted-foreground">{placeholder}</span>

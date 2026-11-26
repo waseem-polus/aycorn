@@ -49,6 +49,7 @@ export function DatePickerInput({
 
   return (
     <DateRangePicker
+      id="date"
       mode="datetime"
       from={from}
       to={to}

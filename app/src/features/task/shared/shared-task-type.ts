@@ -32,3 +32,18 @@ export function isUnchangedBy(task: Task, changes: Partial<Task>): boolean {
       : task[key as keyof Task] === value,
   );
 }
+
+/**
+ * Types come back as TaskTypeGlobal (with ProjectCount/TaskCount attached for
+ * the task types page). Strip down to the plain TaskType before writing one
+ * onto a task so the usage counters don't ride along into PUT /api/task.
+ */
+export const toTaskType = (t: TaskType): TaskType => ({
+  ID: t.ID,
+  Name: t.Name,
+  Description: t.Description,
+  Icon: t.Icon,
+  Color: t.Color,
+  IsDefault: t.IsDefault,
+  Category: t.Category,
+});

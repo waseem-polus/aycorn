@@ -30,6 +30,9 @@ export function useTaskTransfer({
   onCopied,
 }: Options) {
   const [transferMode, setTransferMode] = useState<"move" | "copy" | null>(null);
+  // Set when the destination was already picked (the command palette lists
+  // projects), so the dialog opens on it and only asks for what's left.
+  const [initialProjectId, setInitialProjectId] = useState<number | null>(null);
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const { copyTasks } = useTaskTransferMutation();
 
@@ -67,11 +70,18 @@ export function useTaskTransfer({
     onMoved,
     onCopied,
     transferMode,
+    initialProjectId,
     duplicateOpen,
     setTransferMode,
     setDuplicateOpen,
-    openMove: () => setTransferMode("move"),
-    openCopy: () => setTransferMode("copy"),
+    openMove: (projectId: number | null = null) => {
+      setInitialProjectId(projectId);
+      setTransferMode("move");
+    },
+    openCopy: (projectId: number | null = null) => {
+      setInitialProjectId(projectId);
+      setTransferMode("copy");
+    },
     duplicate,
     busy: copyTasks.isPending,
   };

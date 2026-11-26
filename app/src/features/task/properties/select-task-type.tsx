@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ShapesIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { toTaskType } from "@/features/task/shared/shared-task-type";
 
 type Props = {
   onChange?: (task: Task) => void;
@@ -35,21 +36,6 @@ type TypeGroup = {
   heading: string;
   types: TaskType[];
 };
-
-/**
- * Types come back as TaskTypeGlobal (with ProjectCount/TaskCount attached for
- * the task types page). Strip down to the plain TaskType before writing one
- * onto a task so the usage counters don't ride along into PUT /api/task.
- */
-const toTaskType = (t: TaskType): TaskType => ({
-  ID: t.ID,
-  Name: t.Name,
-  Description: t.Description,
-  Icon: t.Icon,
-  Color: t.Color,
-  IsDefault: t.IsDefault,
-  Category: t.Category,
-});
 
 const groupByCategory = (
   types: TaskType[],

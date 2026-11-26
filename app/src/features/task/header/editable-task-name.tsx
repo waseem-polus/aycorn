@@ -5,12 +5,15 @@ import { cn } from "@/lib/utils";
 import type { Task } from "@/types/types";
 import TaskPriorityIcon from "../properties/icons/TaskPriorityIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useFocusAndSelect } from "@/hooks/useFocusAndSelect";
 
 export type EditableTaskNameHandle = {
   // Persist whatever is currently in the DOM. Blur is not a reliable commit
   // point — when the drawer is dismissed straight from the focused title, blur
   // fires *after* the close handler has already reset the task context.
   commit: () => void;
+  /** Focus the title with its text selected, ready to rename. */
+  focus: () => void;
 };
 
 export const EditableTaskName = forwardRef<
@@ -19,6 +22,7 @@ export const EditableTaskName = forwardRef<
 >(function EditableTaskName({ onChange = () => {}, className = "" }, forwardedRef) {
   const { state: task, setState: setTask } = useContext(TaskContext);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const focusAndSelect = useFocusAndSelect(headingRef);
 
   const saveName = (value: string) => {
     const name = value.trim();
@@ -29,6 +33,7 @@ export const EditableTaskName = forwardRef<
 
   useImperativeHandle(forwardedRef, () => ({
     commit: () => saveName(headingRef.current?.textContent ?? ""),
+    focus: focusAndSelect,
   }));
 
   return (

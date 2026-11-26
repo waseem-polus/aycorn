@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { isValidElement, useState } from "react";
 import { useFormatForDisplay } from "@tanstack/react-hotkeys";
 import { ChevronRightIcon } from "lucide-react";
 import { CommandItem } from "@/components/ui/command";
@@ -21,13 +21,14 @@ export function PaletteCommandItem({
   onSelect: (command: PaletteCommand) => void;
 }) {
   const format = useFormatForDisplay();
-  const Icon = command.icon;
+  const icon = command.icon;
+  const Icon = isValidElement(icon) ? null : icon;
   // Checked on hover so the tooltip only appears when the title is cut off.
   const [isTruncated, setIsTruncated] = useState(false);
 
   return (
     <CommandItem value={command.id} onSelect={() => onSelect(command)}>
-      {Icon && <Icon />}
+      {isValidElement(icon) ? icon : Icon && <Icon />}
       <Tooltip>
         <TooltipTrigger asChild>
           <span

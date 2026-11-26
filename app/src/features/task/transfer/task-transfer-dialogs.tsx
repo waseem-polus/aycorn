@@ -16,6 +16,7 @@ export function TaskTransferDialogs({ transfer }: { transfer: TaskTransfer }) {
           onOpenChange={(open) => !open && transfer.setTransferMode(null)}
           mode={transfer.transferMode}
           tasks={transfer.tasks}
+          initialProjectId={transfer.initialProjectId}
           excludeProjectId={transfer.excludeProjectId}
           onSuccess={
             transfer.transferMode === "move"
